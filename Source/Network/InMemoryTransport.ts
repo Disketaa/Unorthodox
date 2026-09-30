@@ -20,6 +20,7 @@ export class InMemoryTransport implements Transport {
   /** Callbacks for incoming messages and peer leave */
   private onMessageCallback: ((message: unknown, fromHost: boolean) => void) | null = null;
   private onPeerLeaveCallback: ((playerId: string) => void) | null = null;
+  private onHostReadyCallback: (() => void) | null = null;
 
   /** Callback for receiving messages from the broker */
   private receiveCallback: (message: unknown, fromHost: boolean) => void;
@@ -78,7 +79,10 @@ export class InMemoryTransport implements Transport {
     if (hostEntry) {
       // Deliver the message to the host's receive callback (fromHost = false)
       hostEntry.receive(message, false);
+      return;
     }
+    // No host is reachable, so the caller should retry once one appears.
+    this.onHostReadyCallback?.();
   }
 
   sendToPlayer(playerId: string, message: unknown): void {
@@ -112,6 +116,10 @@ export class InMemoryTransport implements Transport {
 
   onPeerLeave(callback: (playerId: string) => void): void {
     this.onPeerLeaveCallback = callback;
+  }
+
+  onHostReady(callback: () => void): void {
+    this.onHostReadyCallback = callback;
   }
 
   /**

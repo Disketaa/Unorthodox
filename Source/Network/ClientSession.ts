@@ -14,6 +14,8 @@ export class ClientSession {
   private playerId: string | null = null; // We'll set this when we receive a SetPlayerId message from the host
   private temporaryClientId: string; // Temporary client ID used until we get the real one from the host
   private updateListener: (() => void) | undefined = undefined;
+  /** Join message held back until the transport can address the host. */
+  private pendingJoin: { type: 'Join'; name: string; temporaryClientId: string } | null = null;
 
   /** Subscribe to state changes so the UI can re-render. */
   onUpdate(listener: () => void): void {
@@ -25,11 +27,24 @@ export class ClientSession {
     this.transport.onPeerLeave(() => listener());
   }
 
+  /** Flush the buffered join once the transport can address the host. */
+  private flushPendingJoin(): void {
+    if (!this.pendingJoin) {
+      return;
+    }
+    const message = this.pendingJoin;
+    this.pendingJoin = null;
+    log('debug', 'host reachable, sending buffered join');
+    this.transport.sendToHost(message);
+  }
+
   constructor(transport: Transport) {
     this.transport = transport;
     // Generate a temporary client ID
     this.temporaryClientId =
       Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+    this.transport.onHostReady(() => this.flushPendingJoin());
 
     // Set up incoming message handler
     this.transport.onMessage((message, fromHost) => {
@@ -61,6 +76,7 @@ export class ClientSession {
     this.transport.stop();
     this.state = undefined;
     this.playerId = null;
+    this.pendingJoin = null;
     this.updateListener = undefined;
   }
 
@@ -86,7 +102,8 @@ export class ClientSession {
   /** Send a join message to the host */
   join(playerName: string): void {
     log('info', 'joining as', playerName);
-    this.transport.sendToHost({ type: 'Join', name: playerName, temporaryClientId: this.temporaryClientId });
+    this.pendingJoin = { type: 'Join', name: playerName, temporaryClientId: this.temporaryClientId };
+    this.transport.sendToHost(this.pendingJoin);
   }
 
   /** Send an answer submission to the host */

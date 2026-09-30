@@ -1,34 +1,15 @@
 import { Transport } from './Transport';
-import { joinRoom, type JsonValue, type MessageAction } from 'trystero';
+import { readHostPeerId, toPayload } from './Payload';
+import { joinRoom, selfId, type JsonValue, type MessageAction } from 'trystero';
 
-/**
- * Trystero can only carry structured-clone/JSON payloads. Protocol messages are
- * plain JSON objects, so anything else is rejected rather than sent blindly.
- */
-function toPayload(message: unknown): JsonValue | undefined {
-  if (typeof message === 'string' || typeof message === 'number' || typeof message === 'boolean') {
-    return message;
-  }
-  if (message === null || Array.isArray(message) || typeof message === 'object') {
-    return { ...message };
-  }
-  return undefined;
-}
-
-/**
- * Read the host's peerId out of the internal `HostPeerId` announcement.
- * Returns undefined for any other message.
- */
-function readHostPeerId(message: JsonValue): string | undefined {
-  if (typeof message !== 'object' || message === null || Array.isArray(message)) {
-    return undefined;
-  }
-  const record: Record<string, unknown> = { ...message };
-  if (record.type !== 'HostPeerId') {
-    return undefined;
-  }
-  return typeof record.peerId === 'string' ? record.peerId : undefined;
-}
+/** Signaling relays used for matchmaking, tried in order until one connects. */
+const RelayUrls = [
+  'wss://relay.damus.io',
+  'wss://nos.lol',
+  'wss://nostr.wine',
+  'wss://relay.nostr.band',
+  'wss://nostr.mom',
+];
 
 /**
  * Trystero transport implementation.
@@ -38,7 +19,10 @@ export class TrysteroTransport implements Transport {
   private appId: string = 'unorthodox-game'; // Unique app ID for this project
   private roomId: string = '';
   private isHost: boolean = false;
-  private playerId: string | null = null; // This will be set to the Trystero peerId
+  private playerId: string | null = null; // The game-level id of this peer
+  // The Trystero peerId is not the game playerId: the host is addressed as the
+  // reserved `host` id in game state but on the wire as its trystero selfId.
+  private peerId: string = selfId;
 
   // Actions for sending messages
   private hostToClientAction: MessageAction<JsonValue> | null = null;
@@ -47,6 +31,7 @@ export class TrysteroTransport implements Transport {
   // Callbacks for incoming messages and peer leave
   private onMessageCallback: ((message: unknown, fromHost: boolean) => void) | null = null;
   private onPeerLeaveCallback: ((playerId: string) => void) | null = null;
+  private onHostReadyCallback: (() => void) | null = null;
 
   // Store the host's peerId (known to clients)
   private hostPeerId: string | null = null;
@@ -55,8 +40,15 @@ export class TrysteroTransport implements Transport {
     this.roomId = roomCode;
     this.isHost = isHost;
 
-    // Create or join the room
-    const room = joinRoom({ appId: this.appId }, this.roomId);
+    // Create or join the room. The library's default relays are frequently
+    // unreachable, so several well-known nostr relays are configured instead.
+    const room = joinRoom(
+      {
+        appId: this.appId,
+        relayConfig: { urls: RelayUrls, redundancy: 3, warnOnRelayFailure: false },
+      },
+      this.roomId,
+    );
     this.room = room;
 
     // Set up room event listeners
@@ -78,9 +70,10 @@ export class TrysteroTransport implements Transport {
   private setupRoomListeners(room: ReturnType<typeof joinRoom>): void {
     // Listen for peers joining
     room.onPeerJoin = (peerId) => {
-      // If we are the host, send our peerId to the new peer
-      if (this.isHost && this.playerId) {
-        this.hostToClientAction?.send({ type: 'HostPeerId', peerId: this.playerId }, { target: peerId });
+      // If we are the host, send our trystero peerId to the new peer, so the
+      // client knows whom to address on the wire.
+      if (this.isHost) {
+        this.hostToClientAction?.send({ type: 'HostPeerId', peerId: this.peerId }, { target: peerId });
       }
     };
 
@@ -117,7 +110,11 @@ export class TrysteroTransport implements Transport {
       // protocol message, so it is consumed here rather than propagated.
       const peerId = readHostPeerId(message);
       if (peerId !== undefined) {
+        const wasUnknown = this.hostPeerId === null;
         this.hostPeerId = peerId;
+        if (wasUnknown) {
+          this.onHostReadyCallback?.();
+        }
         return;
       }
       if (this.onMessageCallback) {
@@ -135,6 +132,7 @@ export class TrysteroTransport implements Transport {
     this.clientToHostAction = null;
     this.onMessageCallback = null;
     this.onPeerLeaveCallback = null;
+    this.onHostReadyCallback = null;
     this.playerId = null;
     this.hostPeerId = null;
   }
@@ -192,5 +190,9 @@ export class TrysteroTransport implements Transport {
 
   onPeerLeave(callback: (playerId: string) => void): void {
     this.onPeerLeaveCallback = callback;
+  }
+
+  onHostReady(callback: () => void): void {
+    this.onHostReadyCallback = callback;
   }
 }
