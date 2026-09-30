@@ -12,7 +12,8 @@ export type GameAction =
   | { type: 'START_REVIEWING'; startedAt: number; durationMs: number }
   | { type: 'REJECT_GROUP'; playerId: PlayerId; groupId: number }
   | { type: 'END_REVIEWING'; startedAt: number; durationMs: number }
-  | { type: 'NEXT_ROUND'; topic: string; durationMs: number; startedAt: number };
+  | { type: 'NEXT_ROUND'; topic: string; durationMs: number; startedAt: number }
+  | { type: 'FINAL' };
 
 export type ActionOf<T extends GameAction['type']> = Extract<GameAction, { type: T }>;
 
@@ -141,20 +142,25 @@ export function handleNextRound(state: HostState, action: ActionOf<'NEXT_ROUND'>
   if (state.phase !== 'Reviewing' && state.phase !== 'Scores') {
     return state;
   }
-  // From Scores, fold this round's results into the running totals. From
-  // Reviewing the round was abandoned before scoring, so totals carry over as-is.
-  const newCumulativeScores = new Map(state.cumulativeScores);
-  if (state.phase === 'Scores') {
-    for (const [playerId, score] of state.scores) {
-      newCumulativeScores.set(playerId, (newCumulativeScores.get(playerId) ?? 0) + score);
-    }
-  }
+  // Round points were already folded into `cumulativeScores` by END_REVIEWING, so
+  // totals carry over untouched here. A round abandoned from Reviewing never
+  // scored, so it also carries over as-is.
   return {
     phase: 'Writing',
     topic: action.topic,
     durationMs: action.durationMs,
     startedAt: action.startedAt,
     answers: new Map<PlayerId, string>(),
-    cumulativeScores: newCumulativeScores,
+    cumulativeScores: state.cumulativeScores,
+  };
+}
+
+export function handleFinal(state: HostState): HostState {
+  if (state.phase !== 'Scores' && state.phase !== 'Reviewing') {
+    return state;
+  }
+  return {
+    phase: 'Final',
+    cumulativeScores: state.cumulativeScores,
   };
 }

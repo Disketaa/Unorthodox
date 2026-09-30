@@ -1,0 +1,52 @@
+import { useCallback, useRef } from 'preact/hooks';
+import { GameConfig } from '@/Game';
+import { topicAt } from '@/Content';
+import { Session } from '../Session';
+
+export interface GameActions {
+  startGame: () => void;
+  nextRound: () => void;
+  submitAnswer: (text: string) => void;
+  rejectGroup: (groupId: number) => void;
+  playAgain: () => void;
+}
+
+/** Everything the UI can ask the session to do. Only the host acts on round flow. */
+export function useGameActions(
+  session: Session,
+  onSubmitted: () => void,
+  onVoted: (groupId: number) => void,
+): GameActions {
+  const roundsRef = useRef(0);
+
+  const startGame = useCallback(() => {
+    roundsRef.current = 1;
+    session.startGame(topicAt(0), GameConfig.timing.writingDurationMs);
+  }, [session]);
+
+  const nextRound = useCallback(() => {
+    const next = roundsRef.current + 1;
+    roundsRef.current = next;
+    if (next >= GameConfig.rounds.count) {
+      session.finish();
+      return;
+    }
+    session.startNextRound(topicAt(next - 1), GameConfig.timing.writingDurationMs);
+  }, [session]);
+
+  return {
+    startGame,
+    nextRound,
+    submitAnswer: (text: string) => {
+      session.submitAnswer(text);
+      onSubmitted();
+    },
+    rejectGroup: (groupId: number) => {
+      session.rejectGroup(groupId);
+      onVoted(groupId);
+    },
+    playAgain: () => {
+      window.location.hash = '#/';
+    },
+  };
+}

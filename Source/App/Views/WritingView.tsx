@@ -1,0 +1,28 @@
+import { useState } from 'preact/hooks';
+import { WritingScreen } from '@/Screens';
+import { useCountdown } from '../Hooks/UseCountdown';
+import { PhaseViewProps } from './LobbyView';
+
+/** Writing: topic, timer and the answer draft, which is local UI state. */
+export function WritingView({ view }: PhaseViewProps) {
+  const [draft, setDraft] = useState('');
+  const remainingMs = useCountdown(view.durationMs, view.phaseStartedAt);
+  const topic = view.publicState?.phase === 'Writing' ? view.publicState.topic : '';
+
+  return (
+    <WritingScreen
+      topic={topic}
+      remainingMs={remainingMs}
+      totalMs={view.durationMs}
+      value={draft}
+      submitted={view.hasSubmitted}
+      submittedCount={view.submittedCount}
+      playerCount={view.playerCount}
+      onValueChange={setDraft}
+      onSubmit={() => {
+        view.submitAnswer(draft);
+        setDraft('');
+      }}
+    />
+  );
+}

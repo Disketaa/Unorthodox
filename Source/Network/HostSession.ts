@@ -5,6 +5,9 @@ import { PlayerId, createLogger } from '@/Core';
 
 const log = createLogger('HostSession');
 
+/** Reserved player id of the room creator. */
+export const HostPlayerId: PlayerId = 'host';
+
 /**
  * Manages the host side of the game state and communication.
  */
@@ -15,6 +18,7 @@ export class HostSession {
   // Roster of joined player ids. The game state only carries `players` in the
   // Lobby phase, so we track it here to know when everyone has answered.
   private readonly playerIds = new Set<PlayerId>();
+  private updateListener: (() => void) | undefined = undefined;
 
   constructor(transport: Transport) {
     this.transport = transport;
@@ -36,19 +40,26 @@ export class HostSession {
     });
   }
 
+  /** Subscribe to state changes so the UI can re-render. */
+  onUpdate(listener: () => void): void {
+    this.updateListener = listener;
+  }
+
   /** Start the host session with a room code and host name */
   start(roomCode: string, hostName: string): void {
     log('info', 'starting host session', roomCode, hostName);
     this.transport.start(roomCode, hostName, true);
     // Set the host's playerId (special value)
-    this.transport.setPlayerId('host');
+    this.transport.setPlayerId(HostPlayerId);
     // Initialize state to lobby with no players
     this.state = {
       phase: 'Lobby',
       players: new Map(),
       cumulativeScores: new Map(),
     };
-    // Note: we are not adding the host as a player. This is a known limitation.
+    // The host plays too, under the reserved `host` id.
+    this.playerIds.add(HostPlayerId);
+    this.apply({ type: 'JOIN', playerId: HostPlayerId, name: hostName });
   }
 
   /** Stop the host session */
@@ -57,6 +68,7 @@ export class HostSession {
     this.transport.stop();
     this.state = undefined;
     this.playerIds.clear();
+    this.updateListener = undefined;
   }
 
   /** Handle a message from a client */
@@ -154,11 +166,27 @@ export class HostSession {
     });
   }
 
+  /** Submit the host's own answer, so the host plays the same way as everyone else. */
+  submitOwnAnswer(text: string): void {
+    this.apply({ type: 'SUBMIT_ANSWER', playerId: HostPlayerId, text });
+  }
+
+  /** The host's own rejection vote on an answer group. */
+  rejectOwnGroup(groupId: number): void {
+    this.apply({ type: 'REJECT_GROUP', playerId: HostPlayerId, groupId });
+  }
+
+  /** Close the game and show the final ranking. */
+  finish(): void {
+    this.apply({ type: 'FINAL' });
+  }
+
   /** Reduce an action into the host state and broadcast the result */
   private apply(action: Game.GameAction): void {
     log('debug', 'reducing action', action.type);
     this.state = Game.reducer(this.state, action);
     this.broadcastState();
+    this.updateListener?.();
   }
 
   /** Get the current host state (for debugging) */

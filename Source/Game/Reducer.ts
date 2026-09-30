@@ -1,7 +1,7 @@
 import { PlayerId } from '@/Core';
 import { HostState } from './GameState';
 import { assertNever } from '@/Core';
-import { GameAction, handleJoin, handleStartGame, handleSubmitAnswer, handleStartReviewing, handleRejectGroup, handleEndReviewing, handleNextRound } from './GameActions';
+import { GameAction, handleJoin, handleStartGame, handleSubmitAnswer, handleStartReviewing, handleRejectGroup, handleEndReviewing, handleNextRound, handleFinal } from './GameActions';
 
 /**
  * Reducer function for the game state.
@@ -34,6 +34,8 @@ export function reducer(
       return handleEndReviewing(state, action);
     case 'NEXT_ROUND':
       return handleNextRound(state, action);
+    case 'FINAL':
+      return handleFinal(state);
     default:
       return assertNever(action);
   }

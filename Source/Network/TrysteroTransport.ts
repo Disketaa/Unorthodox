@@ -86,13 +86,16 @@ export class TrysteroTransport implements Transport {
 
     // Listen for peers leaving
     room.onPeerLeave = (peerId) => {
-      // If the leaving peer is the host, clear the hostPeerId
+      if (this.isHost) {
+        // The host only cares about clients leaving.
+        this.onPeerLeaveCallback?.(peerId);
+        return;
+      }
+      // A client only cares about the host leaving, and it learns the host's
+      // peerId from the announcement above.
       if (peerId === this.hostPeerId) {
         this.hostPeerId = null;
-      }
-      // Notify the onPeerLeave callback
-      if (this.onPeerLeaveCallback && this.playerId) {
-        this.onPeerLeaveCallback(peerId);
+        this.onPeerLeaveCallback?.(peerId);
       }
     };
   }

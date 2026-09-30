@@ -22,7 +22,8 @@ Source/
   Game/        PURE logic: phases, reducer, scoring, normalization, GameConfig.
   Network/     Transport (interface), TrysteroTransport, InMemoryTransport, Protocol, HostSession, ClientSession.
   Design/      Tokens/, Primitives/, Components/. Knows nothing about Game and Network.
-  Screens/     JoinScreen, LobbyScreen, WritingScreen, ReviewScreen, ScoresScreen, FinalScreen. Receive data ONLY via props.
+  Screens/     JoinScreen, LobbyScreen, WritingScreen, ReviewScreen, ScoresScreen, FinalScreen, HostLeftScreen. Receive data ONLY via props.
+               Screens may hold local UI state only inside a sub-component (e.g. the answer draft in `AnswerInput`), never game state.
   App/         Assembly: providers, hooks (useGameSession, useCountdown), routing. Only place where everything meets.
   Dev/         ComponentGallery.
 ```
@@ -38,14 +39,11 @@ Cross-module imports go through `index.ts` only (`@/Game`), not deep (`@/Game/in
 
 # NAMING
 PascalCase: code files/folders, components, types, interfaces (no `I` prefix), classes, enum members, constant objects (`GameConfig`, `Strings`), variant values (`"Primary"`), message `type` values (`"SubmitAnswer"`), CSS classes in modules (`.Root`, `.VariantPrimary`), tokens (`Color.Surface.Default` → `--Color-Surface-Default`).
-camelCase: variables, parameters, functions, props, object fields. Hooks are `useXxx` (hooks rule).
+camelCase: variables, parameters, functions, props, object fields. Hooks are `useXxx` (hooks rule), but the file that holds a hook is PascalCase (`UseGameSession.ts`), because the linter's `check-file/filename-naming-convention` is PASCAL_CASE for every file under `Source/`.
 Naming rules enforced by linter (`@typescript-eslint/naming-convention` + `eslint-plugin-check-file`). Red lint = stage not done.
 
 # DESIGN SYSTEM "LIKE IN FIGMA"
-1. **Tokens = Figma variables.** Single source: `Design/Tokens/Tokens.json` in DTCG format (`$type`, `$value`). Two layers:
-   - Primitive: raw values (`Color.Blue.500`, `Space.4`, `Radius.2`, `FontSize.3`).
-   - Semantic: meaning (`Color.Surface.Default`, `Color.Text.Muted`, `Color.Action.Primary.Background`, `Space.Gap.Md`), references Primitive.
-   Components use ONLY Semantic. Script `npm run tokens` generates `Tokens.css` (runs in `predev` and `prebuild`, file in `.gitignore`, not edited by hand). Themes: `Tokens.Dark.json` overrides Semantic layer only.
+1. **Tokens = Figma variables.** Single source: `Design/Tokens/Tokens.css`, one `--Token-Name` per line, split into a primitive layer (raw values, e.g. `--Color-Blue-500`, `--Space-4`) and a semantic layer (meaning, e.g. `--Color-Surface-Default`), where semantic tokens reference primitives with `var()`. There is no `Tokens.json` and no generator script: the file is hand-written and committed. Components use ONLY semantic tokens. Adding a token means adding a line to `Tokens.css` first, then using it. Themes are not implemented in v1.
 2. **Primitives = Auto Layout / Frame:** `Box`, `Stack` (direction, gap, align, justify; gap only `"Xs" | "Sm" | "Md" | "Lg" | "Xl"`), `Text` (variant: `"Title" | "Body" | "Caption" | "Mono"`), `Spacer`.
 3. **Components = Components + Variants:** Button, TextField, Card, PlayerChip, RoomCodeBadge, Timer, AnswerCard, VoteButton, ScoreRow, Banner.
    - One folder per component: `X.tsx`, `X.module.css`, `X.Gallery.tsx`, `index.ts`.
@@ -62,18 +60,19 @@ Naming rules enforced by linter (`@typescript-eslint/naming-convention` + `eslin
 - Time: host sends `{ phase: "Writing", durationMs }` once. Client records `performance.now()` on receipt and counts remainder locally (device clocks not synced). Host closes phase by its timer and accepts late answers until `GameConfig.timing.graceMs`.
 - Player input: name ≤16 chars, answer ≤80, all trimmed. User text rendered as text only, `dangerouslySetInnerHTML` forbidden.
 - Room code: 4 letters, no lookalikes (no O/0, I/1). Also Trystero room name. `appId` unique to project, lives in constant.
+- Group ids are plain `number`s end to end (they are indices into the grouped answer list). The `GroupId` string type in `Core/Types.ts` is unused and exists only as a placeholder.
 - Routing: hash (`#/Join/ABCD`, `#/Gallery`), because GitHub Pages does not SPA path rewriting.
 - Out of v1 scope (do not implement, only do not block): player reconnect, host migration. If host leaves, show "Host left" screen.
 
 # GAME LOGIC
 - Entire `Game/` module is pure functions, no DOM, no `Date.now`, no `Math.random` without injection, no network, no timers.
 - Normalization: lowercase, `ё`→`е`, remove punctuation and extra spaces. Grouping: Levenshtein ≤1 for words ≥5 chars (exact match for short) plus stripping typical Russian endings.
-- Group rejection: "not suitable" votes strictly > half of players, excluding group authors.
+- Group rejection: a group is rejected when "not suitable" votes are strictly more than half of that group's own authors. (The earlier wording — majority of all players — was a spec change that was never implemented; the reducer in `Game/GameActions.ts` is the source of truth.)
 - Every function in `Game/` covered by Vitest tests: `normalizeAnswer`, `groupAnswers`, `calculateRoundScores`, phase reducer, `toPublicState`.
 
 # HARD PROHIBITIONS
 1. No `any`, no `as` (except `as const`), no `!` (non-null), no `@ts-ignore`.
-2. No hex colors, `px` spacing, or font names outside `Tokens.json`. No `style={{}}`.
+2. No hex colors, `px` spacing, or font names outside `Tokens.css`. No `style={{}}`.
 3. No user text strings in JSX or logic: only `Strings`.
 4. No magic numbers in logic: only `GameConfig`.
 5. One component = one file, file ≤150 lines, function ≤40. Split if more.
@@ -181,7 +180,7 @@ GOOD:
 export type ClientMessage =
   | { type: "Join"; name: string }
   | { type: "SubmitAnswer"; text: string }
-  | { type: "RejectGroup"; groupId: GroupId }
+  | { type: "RejectGroup"; groupId: number }
   | { type: "StartGame" };
 
 export function isClientMessage(value: unknown): value is ClientMessage { /* check fields */ }
@@ -285,7 +284,7 @@ if (!player) return err("PlayerNotFound");
 # WORK ORDER
 Work in stages. Stop at end of each stage and wait for "Next" command. Do not start next stage yourself.
 - **Stage 0. Scaffold:** Vite + TS strict + Preact, alias `@/`, ESLint (naming, module boundaries), Prettier, Vitest, workflow `.github/workflows/deploy.yml` for GitHub Pages (`base` = `'/<REPO>/'`, source = GitHub Actions), `DECISIONS.md`.
-- **Stage 1. Design system:** `Tokens.json`, Primitives, Components with `Gallery` files, `#/Gallery` page. Verified in gallery, no game logic yet.
+- **Stage 1. Design system:** `Tokens.css`, Primitives, Components with `Gallery` files, `#/Gallery` page. Verified in gallery, no game logic yet.
 - **Stage 2. Game:** types, `GameConfig`, normalization, grouping, scoring, phase reducer, `toPublicState`, tests.
 - **Stage 3. Network:** `Transport`, `InMemoryTransport`, `Protocol` with guards, `HostSession`, `ClientSession`, integration test "host + 3 clients" on `InMemoryTransport`, then `TrysteroTransport`.
 - **Stage 4. Screens and assembly:** Screens, `useGameSession`, `useCountdown`, hash routing, `Strings`, `Topics` (30 topics to start).
@@ -300,8 +299,8 @@ Do not duplicate code in chat, it is already in files.
 
 # DEFINITION OF DONE
 - `lint`, `tsc --noEmit`, `test`, `build` pass with no warnings.
-- Changing a value in `Tokens.json` changes appearance of whole app without editing components.
-- Changing `Tokens.Dark.json` gives dark theme without editing components.
+- Changing a value in `Tokens.css` changes appearance of whole app without editing components.
+- Dark theme is out of v1 scope: there is no second token file, so "change the theme" currently means editing the semantic layer in `Tokens.css`.
 - Replacing `TrysteroTransport` with another `Transport` requires no edits outside `Network/` and `App/`.
 - Game on `InMemoryTransport` can be played from Lobby to Final in a test.
 - No prohibition from "Hard Prohibitions" section violated.

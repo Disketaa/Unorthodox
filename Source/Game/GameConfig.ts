@@ -6,8 +6,19 @@ export const GameConfig = {
   },
   timing: {
     writingDurationMs: 60000,
-    reviewingDurationMs: 0,
-    graceMs: 0,
-    uiTickMs: 0,
+    reviewingDurationMs: 90000,
+    scoresDurationMs: 15000,
+    graceMs: 3000,
+    uiTickMs: 100,
+  },
+  rounds: {
+    count: 5,
+  },
+  limits: {
+    nameMaxLength: 16,
+    answerMaxLength: 80,
+    roomCodeLength: 4,
+    minPlayers: 3,
+    maxPlayers: 10,
   },
 };

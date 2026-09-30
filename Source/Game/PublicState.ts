@@ -19,7 +19,7 @@ export type PublicReviewingState = {
   phase: 'Reviewing';
   topic: string;
   durationMs: number;
-  groups: { text: string; playerCount: number }[];
+  groups: { groupId: number; text: string; playerCount: number }[];
 };
 
 export type PublicScoresState = {
@@ -100,6 +100,7 @@ function toPublicReviewingState(state: HostState): PublicReviewingState {
   // Build groups for public state: each group has the answer text and player count.
   // We don't reveal which players submitted which answer.
   const groups = grouped.map(g => ({
+    groupId: g.groupId,
     text: g.answers[0], // we can use any answer from the group as the representative text
     playerCount: g.answers.length,
   }));

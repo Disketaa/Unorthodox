@@ -8,7 +8,7 @@ const roomCode = 'ABCD';
 const hostName = 'Host';
 const clientNames = ['Alice', 'Bob', 'Charlie'];
 // Distinct enough that the fuzzy grouper keeps them in separate groups.
-const answers = ['Answer One', 'Answer Two', 'Answer Three'];
+const answers = ['Answer One', 'Answer Two', 'Answer Three', 'Answer Four'];
 // A solo answer is a unique group, worth GameConfig.scoring.uniquePoints.
 const soloGroupPoints = 3;
 
@@ -38,12 +38,13 @@ function startRound(): Fixture {
   return fixture;
 }
 
-/** Join the lobby, start a round, and collect one answer per client. */
+/** Join the lobby, start a round, and collect one answer per player (host included). */
 function playRound(): Fixture {
   const fixture = startRound();
   fixture.clientSessions.forEach((session, index) => {
     session.submitAnswer(answers[index]);
   });
+  fixture.hostSession.submitOwnAnswer(answers[3]);
   return fixture;
 }
 
@@ -69,7 +70,8 @@ function clientWriting(session: ClientSession) {
 function checkPlayerIdsAssigned(fixture: Fixture): void {
   const hostState = fixture.hostSession.getState();
   expect(hostState?.phase).toBe('Lobby');
-  expect(hostState?.phase === 'Lobby' && hostState.players.size).toBe(clientNames.length);
+  // The host plays as well, so the roster is the host plus the three clients.
+  expect(hostState?.phase === 'Lobby' && hostState.players.size).toBe(clientNames.length + 1);
   expect(fixture.clientSessions.map(session => session.getPlayerId())).toEqual(['p1', 'p2', 'p3']);
 }
 
@@ -94,7 +96,7 @@ function checkReviewingGroups(round: Fixture): void {
   expect(clientStates(round).every(state =>
     state.phase === 'Reviewing' &&
     state.topic === 'Test topic' &&
-    state.groups.length === 3 &&
+    state.groups.length === 4 &&
     state.groups.every(group => group.playerCount === 1)
   )).toBe(true);
 }
@@ -103,7 +105,7 @@ function checkScores(round: Fixture): void {
   expect(round.hostSession.getState()?.phase).toBe('Scores');
   expect(clientStates(round).every(state =>
     state.phase === 'Scores' &&
-    state.scores.length === 3 &&
+    state.scores.length === 4 &&
     state.scores.every(score => score.score === soloGroupPoints)
   )).toBe(true);
 }

@@ -13,6 +13,17 @@ export class ClientSession {
   private transport: Transport;
   private playerId: string | null = null; // We'll set this when we receive a SetPlayerId message from the host
   private temporaryClientId: string; // Temporary client ID used until we get the real one from the host
+  private updateListener: (() => void) | undefined = undefined;
+
+  /** Subscribe to state changes so the UI can re-render. */
+  onUpdate(listener: () => void): void {
+    this.updateListener = listener;
+  }
+
+  /** Called when the host leaves. The transport only reports host departures to clients. */
+  onHostLeave(listener: () => void): void {
+    this.transport.onPeerLeave(() => listener());
+  }
 
   constructor(transport: Transport) {
     this.transport = transport;
@@ -50,6 +61,7 @@ export class ClientSession {
     this.transport.stop();
     this.state = undefined;
     this.playerId = null;
+    this.updateListener = undefined;
   }
 
   /** Handle a message from the host */
@@ -58,10 +70,12 @@ export class ClientSession {
       case 'State':
         this.state = message.state;
         log('debug', 'state updated to', message.state.phase);
+        this.updateListener?.();
         break;
       case 'SetPlayerId':
         log('info', 'playerId assigned:', message.playerId);
         this.playerId = message.playerId;
+        this.updateListener?.();
         // Re-key the transport from the temporary id to the real player id, so the
         // host can address us by the id it now knows us by.
         this.transport.setPlayerId(message.playerId);
