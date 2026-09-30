@@ -30,17 +30,17 @@
 /*
  * The two rows of choices.
  *
- * Both are grids of four equal square tracks filling the width, so the cast and
+ * Both are grids of eight equal square tracks filling the width, so the cast and
  * the palette line up column for column and the two rows are the same shape. That
  * is what makes them read as the same kind of control: eight of one thing, eight of
- * the other, in two rows of four. `minmax(0, ...)` keeps a track from refusing to
+ * the other, in one row each. `minmax(0, ...)` keeps a track from refusing to
  * shrink under its contents, which is what pushes padding off a narrow screen.
  */
 .Characters,
 .Colors {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--Space-Sm);
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: var(--Space-Xs);
   width: 100%;
 }
 
