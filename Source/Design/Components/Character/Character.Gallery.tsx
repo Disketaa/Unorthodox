@@ -26,6 +26,13 @@ export function CharacterGallery() {
         <Character character="Character1" color="Mint" size="Medium" />
         <Character character="Character1" color="Mint" size="Large" />
       </Stack>
+
+      <Text variant="Body">Still, and the selected one</Text>
+      <Stack direction="Horizontal" gap="Sm" align="End">
+        <Character character="Character1" color="Mint" moving={false} />
+        <Character character="Character1" color="Mint" selected />
+        <Character character="Character1" color="Mint" moving={false} selected />
+      </Stack>
     </Stack>
   );
 }

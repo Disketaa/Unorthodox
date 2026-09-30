@@ -61,7 +61,7 @@ export function CharacterChoice({
 }: CharacterChoiceProps) {
   return (
     <Choice label={label} selected={selected} onSelect={() => onPick(id, color)}>
-      <Character character={id} color={color} size="Fill" />
+      <Character character={id} color={color} size="Fill" selected={selected} />
     </Choice>
   );
 }

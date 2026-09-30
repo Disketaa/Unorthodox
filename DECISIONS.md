@@ -67,6 +67,30 @@ drawings are square on a 512 viewBox, so that keeps them round at any width with
 query. The tint row is `auto-fill` with a floor of a comfortable target, so the discs wrap on
 a phone and spread on a wide screen rather than all eight squeezing onto one row.
 
+## 2026-09-30 — characters sway side to side, rolled per instance, almost imperceptibly
+Each character is given a resting lean, a swing width, a tempo, a step count, a jump keyword
+and a place in its cycle, all rolled once when it mounts and written onto its node as custom
+properties, the way the paper overlay sets its own drift. Six values rather than one is the
+whole point: a shared duration and amplitude makes a row of characters look like one item on
+a conveyor, and it is the disagreement between them that reads as a crowd.
+
+The movement is a slow lateral sway with a lean, not a hop. A character that bounces draws
+the eye, and a picker holding nine of them becomes busy rather than alive, so the vertical
+travel is a single pixel and the swing carries everything. The amplitudes are deliberately at
+the edge of being noticeable: they are there if you watch for them, and invisible if you are
+reading the room code. Getting there took three passes, the first two of which were visibly
+too big.
+
+The chosen character lifts by 5% and stands straight, eased. The scale is on its own layer
+beneath the animation, so the two transforms cannot reset one another.
+
+Two things worth knowing if this is changed later. A `var()` cannot be used *inside* the
+`steps()` function: the build strips the wrapper and leaves `steps(Steps)`, an invalid timing
+function that silently cancels the animation with no error. The step count and keyword
+therefore travel as one finished `steps()` call in a custom property, which does survive. And
+the scoreboard passes `moving={false}`, because those rows re-order as scores land and a sway
+on top of that movement is noise.
+
 ## 2026-09-30 — phase transitions and round scoring split out of the session and the actions
 `HostSession` and `Game/GameActions.ts` passed the 150-line limit once the roster grew. The
 rules about when a phase may end now live in `Network/HostPhases.ts`, and the rejection rule

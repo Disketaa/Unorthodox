@@ -1,5 +1,6 @@
 import { CharacterColor, CharacterId } from '@/Core';
 import { artFor } from '../../Characters';
+import { useCharacterMotion } from './UseCharacterMotion';
 import styles from './Character.module.css';
 
 export type CharacterSize = 'Small' | 'Medium' | 'Large' | 'Fill';
@@ -8,6 +9,13 @@ export interface CharacterProps {
   character: CharacterId;
   color: CharacterColor;
   size?: CharacterSize;
+  /**
+   * Whether the character idles. On by default, since a still character is the
+   * odd one out; off for rows that are changing anyway.
+   */
+  moving?: boolean;
+  /** Draws it as the chosen one: a little larger, and standing straight. */
+  selected?: boolean;
 }
 
 /**
@@ -21,13 +29,30 @@ export interface CharacterProps {
  * carries, so it is hidden from assistive technology rather than given a label
  * that would be read out twice.
  */
-export function Character({ character, color, size = 'Medium' }: CharacterProps) {
+export function Character({
+  character,
+  color,
+  size = 'Medium',
+  moving = true,
+  selected = false,
+}: CharacterProps) {
   const Art = artFor(character);
-  const classes = [styles.Root, styles[`Size${size}`], styles[color]].join(' ');
+  const motionRef = useCharacterMotion();
+  const classes = [
+    styles.Root,
+    styles[`Size${size}`],
+    styles[color],
+    moving ? styles.Moving : styles.Still,
+    selected && styles.Selected,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <span class={classes}>
-      <Art />
+    <span class={classes} ref={motionRef}>
+      <span class={styles.Layer}>
+        <Art />
+      </span>
     </span>
   );
 }
