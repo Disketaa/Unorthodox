@@ -31,7 +31,7 @@ export const Strings = {
     /** Built from the limit, so the hint cannot drift from the actual rule. */
     notEnoughPlayers: (min: number) => `Нужно минимум ${min} игрока`,
     roomFull: 'Комната заполнена',
-    characterHeading: 'Ваш персонаж',
+    characterHeading: 'Персонаж',
     characterHint: 'Можно менять, пока игра не началась',
   },
   /**

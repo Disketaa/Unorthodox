@@ -33,6 +33,20 @@
   height: var(--Size-Character-Large);
 }
 
+/*
+ * Sized by whatever contains it, for the picker.
+ *
+ * The tint cells are a share of the row, so the disc has to be square for the
+ * radius to read as a circle. Deriving the height from the width with
+ * `aspect-ratio` keeps it round in a cell of any shape, rather than stretching
+ * to fill one that is wider than it is tall.
+ */
+.SizeFill {
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1;
+}
+
 .Coral {
   --Character-Tint: var(--Color-Character-Coral);
 }

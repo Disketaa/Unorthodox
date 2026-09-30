@@ -7,15 +7,24 @@ import styles from './CharacterPicker.module.css';
 function Choice({
   label,
   selected,
+  compact = false,
   onSelect,
   children,
 }: {
   label: string;
   selected: boolean;
+  /** Tighter padding, for choices that are a solid disc rather than a drawing. */
+  compact?: boolean;
   onSelect: () => void;
   children: preact.ComponentChildren;
 }) {
-  const classes = selected ? `${styles.Choice} ${styles.Selected}` : styles.Choice;
+  const classes = [
+    styles.Choice,
+    compact && styles.ChoiceCompact,
+    selected && styles.Selected,
+  ]
+    .filter(Boolean)
+    .join(' ');
   return (
     <button
       type="button"
@@ -52,7 +61,7 @@ export function CharacterChoice({
 }: CharacterChoiceProps) {
   return (
     <Choice label={label} selected={selected} onSelect={() => onPick(id, color)}>
-      <Character character={id} color={color} size="Large" />
+      <Character character={id} color={color} size="Fill" />
     </Choice>
   );
 }
@@ -73,8 +82,8 @@ export interface ColorChoiceProps {
  */
 export function ColorChoice({ name, label, selected, onPick }: ColorChoiceProps) {
   return (
-    <Choice label={label} selected={selected} onSelect={() => onPick(name)}>
-      <ColorSwatch color={name} />
+    <Choice label={label} selected={selected} compact onSelect={() => onPick(name)}>
+      <ColorSwatch color={name} size="Fill" />
     </Choice>
   );
 }

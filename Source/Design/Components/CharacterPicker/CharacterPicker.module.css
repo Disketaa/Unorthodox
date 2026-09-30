@@ -1,25 +1,39 @@
 /*
  * The picker's layout.
  *
- * The grid is sized in the same tokens the roster and scoreboard use, so a
- * character is the same size wherever it appears, and the choice buttons are
- * padded to a comfortable touch target on a phone.
+ * The grid is a share of the screen, and the characters inside it are sized by
+ * the cell rather than in pixels, so the panel keeps its padding on a narrow
+ * phone instead of overflowing it. The tints are a row of discs that wraps, so
+ * eight of them fit however much room there is.
  */
 .Root {
   display: flex;
   flex-direction: column;
   gap: var(--Space-Md);
+  /* Without this a flex or grid child can refuse to shrink below its content. */
+  min-width: 0;
 }
 
 .Characters {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /*
+   * `minmax(0, 1fr)` rather than `1fr`: a bare `1fr` floor is `min-content`, so
+   * the column refuses to shrink under the drawing and pushes the padding out
+   * of the page on a small screen. Allowing zero is what makes it fluid.
+   */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--Space-Sm);
 }
 
 .Colors {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  /*
+   * `auto-fill` with a floor the size of a comfortable target, rather than a
+   * fixed count, so the tints wrap into rows on a narrow screen and spread out
+   * on a wide one. A smaller floor would squeeze all eight onto one row on a
+   * phone, leaving discs too small to tell apart.
+   */
+  grid-template-columns: repeat(auto-fill, minmax(var(--Size-Character-Medium), 1fr));
   gap: var(--Space-Sm);
 }
 
@@ -28,6 +42,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--Space-Sm);
+  min-width: 0;
   background: var(--Color-Surface-Default);
   border: var(--Border-Width-Default) solid var(--Color-Border-Default);
   border-radius: var(--Radius-Md);
@@ -35,8 +50,22 @@
   transition: border-color var(--Duration-Fast) var(--Easing-Standard);
 }
 
+/*
+ * Tighter padding for the discs, which are solid colour and need none of the
+ * breathing room the drawings do. It buys a disc that is big enough to read.
+ */
+.ChoiceCompact {
+  padding: var(--Space-Xs);
+}
+
 .Choice:hover {
   border-color: var(--Color-Border-Focus);
+}
+
+/* Keyboard focus, described by the same token as hover so the two agree. */
+.Choice:focus-visible {
+  outline: var(--Border-Width-Default) solid var(--Color-Border-Focus);
+  outline-offset: var(--Space-Xs);
 }
 
 /* The current choice, marked by the outline the buttons share. */

@@ -56,6 +56,17 @@ the room is not seeing.
 import. `Design` may not import `Content`, so the picker's display names arrive as a
 `labels` prop rather than being read from `Strings` directly.
 
+## 2026-09-30 — the picker sizes its characters from the cell, not from a token
+The character grid was three columns of a fixed 96px, so on a narrow phone three drawings
+overflowed the column and pushed the panel's padding off the page. Two things were wrong
+together: the grid used a bare `1fr`, whose floor is `min-content`, so a column cannot shrink
+under its contents however narrow the screen is; and the drawing inside it had a fixed pixel
+size. The columns are now `minmax(0, 1fr)`, and `Character` and `ColorSwatch` gained a `Fill`
+size that takes its width from the cell and derives the height with `aspect-ratio`. The
+drawings are square on a 512 viewBox, so that keeps them round at any width without a media
+query. The tint row is `auto-fill` with a floor of a comfortable target, so the discs wrap on
+a phone and spread on a wide screen rather than all eight squeezing onto one row.
+
 ## 2026-09-30 — phase transitions and round scoring split out of the session and the actions
 `HostSession` and `Game/GameActions.ts` passed the 150-line limit once the roster grew. The
 rules about when a phase may end now live in `Network/HostPhases.ts`, and the rejection rule
