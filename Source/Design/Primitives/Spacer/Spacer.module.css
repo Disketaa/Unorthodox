@@ -1,0 +1,20 @@
+.Root {
+  flex-shrink: 0;
+  --spacer-size: var(--Space-Md);
+}
+
+.AxisVertical {
+  width: 100%;
+  height: var(--spacer-size);
+}
+
+.AxisHorizontal {
+  height: 100%;
+  width: var(--spacer-size);
+}
+
+.SizeXs { --spacer-size: var(--Space-Xs); }
+.SizeSm { --spacer-size: var(--Space-Sm); }
+.SizeMd { --spacer-size: var(--Space-Md); }
+.SizeLg { --spacer-size: var(--Space-Lg); }
+.SizeXl { --spacer-size: var(--Space-Xl); }

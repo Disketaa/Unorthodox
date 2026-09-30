@@ -1,0 +1,14 @@
+.Root {
+  background: var(--Color-Surface-Default);
+  color: var(--Color-Text-Default);
+  border-radius: var(--Radius-Card);
+  overflow: hidden;
+}
+
+.VariantElevated {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.VariantOutlined {
+  border: 1px solid var(--Color-Border-Default);
+}

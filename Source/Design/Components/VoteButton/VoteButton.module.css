@@ -1,0 +1,20 @@
+.Root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--Space-Xs);
+  padding: var(--Space-Sm) var(--Space-Md);
+  background: var(--Color-Surface-Hover);
+  border-radius: var(--Radius-Button);
+  font-size: var(--FontSize-Body);
+  cursor: pointer;
+  transition: background var(--Duration-Fast) var(--Easing-Standard);
+}
+
+.Voted {
+  background: var(--Color-Feedback-Success);
+}
+
+.Voted:hover {
+  background: var(--Color-Feedback-Success);
+  opacity: 0.9;
+}

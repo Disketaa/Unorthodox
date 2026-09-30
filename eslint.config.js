@@ -4,8 +4,9 @@ import checkFile from "eslint-plugin-check-file";
 import prettier from "eslint-config-prettier";
 
 const deepImport = {
-  group: ["@/*/*"],
-  message: "Import through the module index: '@/Module', not into subfolders.",
+  regex: "^@/(?!Design/(Primitives|Components)$)[^/]+/.+",
+  message:
+    "Import through the module index: '@/Module'. For the design system, only '@/Design/Primitives' and '@/Design/Components' are allowed.",
 };
 const trysteroBan = {
   group: ["trystero", "trystero/*"],

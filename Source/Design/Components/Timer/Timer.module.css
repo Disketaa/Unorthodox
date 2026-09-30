@@ -1,0 +1,32 @@
+.Root {
+  position: relative;
+  height: 8px;
+  background: var(--Color-Surface-Hover);
+  border-radius: var(--Radius-Input);
+  overflow: hidden;
+  margin-top: var(--Space-Sm);
+}
+
+.Bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--Color-Action-Primary-Background);
+  transition: width var(--Duration-Normal) var(--Easing-Standard);
+}
+
+.Urgent {
+  background: var(--Color-Feedback-Error);
+}
+
+.Text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--FontFamily-Body);
+  font-size: var(--FontSize-Sm);
+  color: var(--Color-Text-Default);
+  font-weight: 600;
+}

@@ -1,0 +1,28 @@
+.Root {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--Space-Sm) var(--Space-Md);
+  border-radius: var(--Radius-Card);
+  font-size: var(--FontSize-Body);
+  font-weight: 500;
+}
+
+.VariantInfo {
+  background: var(--Color-Feedback-Info);
+  color: var(--Color-Surface-Default);
+}
+
+.VariantSuccess {
+  background: var(--Color-Feedback-Success);
+  color: var(--Color-Surface-Default);
+}
+
+.VariantWarning {
+  background: var(--Color-Feedback-Warning);
+  color: var(--Color-Surface-Default);
+}
+
+.VariantError {
+  background: var(--Color-Feedback-Error);
+  color: var(--Color-Surface-Default);
+}

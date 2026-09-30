@@ -1,0 +1,31 @@
+.Root {
+  font-family: var(--FontFamily-Body);
+  color: var(--Color-Text-Default);
+}
+
+.VariantTitle {
+  font-family: var(--FontFamily-Display);
+  font-size: var(--FontSize-H1);
+  line-height: 1.2;
+}
+
+.VariantBody {
+  font-size: var(--FontSize-Body);
+  line-height: 1.5;
+}
+
+.VariantCaption {
+  font-size: var(--FontSize-Caption);
+  line-height: 1.4;
+  color: var(--Color-Text-Muted);
+}
+
+.VariantMono {
+  font-family: monospace;
+  font-size: var(--FontSize-Mono);
+}
+
+/* Font weights */
+.WeightNormal { font-weight: 400; }
+.WeightMedium { font-weight: 500; }
+.WeightBold { font-weight: 600; }

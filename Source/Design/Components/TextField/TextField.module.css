@@ -1,0 +1,40 @@
+.Root {
+  font-family: var(--FontFamily-Body);
+  font-size: var(--FontSize-Md);
+  color: var(--Color-Text-Default);
+  border: none;
+  outline: none;
+  transition: border-color var(--Duration-Fast) var(--Easing-Standard);
+  min-height: 44px;
+}
+
+.Root::placeholder {
+  color: var(--Color-Text-Muted);
+}
+
+.Root:focus-visible {
+  outline: 2px solid var(--Color-Border-Focus);
+  outline-offset: 2px;
+}
+
+.VariantFilled {
+  background: var(--Color-Surface-Hover);
+  border-radius: var(--Radius-Input);
+  padding: var(--Space-Sm) var(--Space-Md);
+}
+
+.VariantFilled:focus-visible {
+  background: var(--Color-Surface-Default);
+  border: 2px solid var(--Color-Border-Focus);
+}
+
+.VariantUnderline {
+  background: transparent;
+  border-bottom: 2px solid var(--Color-Border-Default);
+  border-radius: 0;
+  padding: var(--Space-Sm) 0;
+}
+
+.VariantUnderline:focus-visible {
+  border-bottom-color: var(--Color-Border-Focus);
+}

@@ -1,0 +1,12 @@
+.Root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--Space-Sm) var(--Space-Md);
+  background: var(--Color-Action-Secondary-Background);
+  color: var(--Color-Action-Secondary-Text);
+  border-radius: var(--Radius-Badge);
+  font-family: monospace;
+  font-size: var(--FontSize-Lg);
+  letter-spacing: 0.1em;
+}

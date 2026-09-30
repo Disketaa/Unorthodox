@@ -1,0 +1,30 @@
+.Root {
+  display: flex;
+  align-items: center;
+  padding: var(--Space-Sm) var(--Space-Md);
+  gap: var(--Space-Sm);
+  background: var(--Color-Surface-Hover);
+  border-radius: var(--Radius-Card);
+}
+
+.Rank {
+  font-size: var(--FontSize-Lg);
+  font-weight: 600;
+  color: var(--Color-Text-Muted);
+  min-width: 24px;
+  text-align: right;
+}
+
+.Name {
+  flex: 1;
+  font-size: var(--FontSize-Body);
+  color: var(--Color-Text-Default);
+}
+
+.Score {
+  font-size: var(--FontSize-Lg);
+  font-weight: 600;
+  color: var(--Color-Action-Primary-Background);
+  min-width: 24px;
+  text-align: right;
+}

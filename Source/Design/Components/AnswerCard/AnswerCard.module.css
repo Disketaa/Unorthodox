@@ -1,0 +1,37 @@
+.Root {
+  display: flex;
+  align-items: center;
+  gap: var(--Space-Sm);
+  padding: var(--Space-Sm) var(--Space-Md);
+  background: var(--Color-Surface-Hover);
+  border-radius: var(--Radius-Card);
+}
+
+.Player {
+  font-weight: 600;
+  color: var(--Color-Text-Default);
+}
+
+.Text {
+  flex: 1;
+  font-size: var(--FontSize-Body);
+  color: var(--Color-Text-Default);
+}
+
+.Rejected {
+  opacity: 0.5;
+}
+
+.RejectButton {
+  background: transparent;
+  border: none;
+  color: var(--Color-Feedback-Error);
+  font-size: var(--FontSize-Lg);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.RejectButton:hover {
+  opacity: 0.8;
+}

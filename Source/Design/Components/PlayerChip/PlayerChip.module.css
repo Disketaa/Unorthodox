@@ -1,0 +1,36 @@
+.Root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--Space-Sm);
+  padding: var(--Space-Sm) var(--Space-Md);
+  background: var(--Color-Surface-Hover);
+  border-radius: var(--Radius-Full);
+}
+
+.Name {
+  font-size: var(--FontSize-Body);
+  color: var(--Color-Text-Default);
+}
+
+.Dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--Color-Neutral-400);
+}
+
+.Online {
+  background: var(--Color-Feedback-Success);
+}
+
+.Offline {
+  background: var(--Color-Neutral-400);
+}
+
+.HostIndicator {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 10px solid var(--Color-Action-Primary-Background);
+}

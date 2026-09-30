@@ -1,0 +1,19 @@
+.Root {
+  /* Container for the whole gallery */
+}
+
+.gallery-item {
+  margin-bottom: var(--Space-Lg);
+  padding: var(--Space-Md);
+  background: var(--Color-Surface-Hover);
+  border-radius: var(--Radius-Card);
+}
+
+.gallery-component {
+  margin-top: var(--Space-Sm);
+  padding: var(--Space-Sm);
+  background: var(--Color-Surface-Default);
+  border: 1px solid var(--Color-Border-Default);
+  border-radius: var(--Radius-Input);
+  min-height: 100px;
+}
