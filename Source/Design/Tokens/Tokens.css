@@ -145,8 +145,8 @@ body {
 
   --Color-Text-Default: #212121;
   --Color-Text-Muted: #757575;
-  /* The game title, tinted with the primary action colour instead of near-black. */
-  --Color-Text-Display: #C77700;
+  /* The game title, a deep blue rather than the near-black of body text. */
+  --Color-Text-Display: #1B4F9C;
   --Color-Text-Inverse: #FFFFFF;
   --Color-Text-Link: #FF9800;
 
