@@ -56,6 +56,13 @@ export class ClientSession {
     if (!this.pendingJoin || this.playerId !== null) {
       return;
     }
+    // The host has to announce itself before it can be addressed. Reporting a
+    // send that the transport is about to drop is what made a room that never
+    // connected look as though it was.
+    if (!this.transport.isHostAddressable()) {
+      log('debug', 'host has not announced itself yet, holding the join back');
+      return;
+    }
     log('info', 'host is reachable, sending the join now');
     this.transport.sendToHost(this.pendingJoin);
   }

@@ -21,6 +21,14 @@ export interface Transport {
    * next retry. Only clients receive this.
    */
   onHostReady(callback: () => void): void;
+  /**
+   * Whether the host can actually be addressed right now.
+   *
+   * A client cannot reach the host until it has answered, so asking this is how
+   * a caller tells "sent" apart from "queued for later", instead of assuming a
+   * send went out. Hosts report false, since they address clients directly.
+   */
+  isHostAddressable(): boolean;
   /** Start the transport with a room code and player name */
   start(roomCode: string, playerName: string, isHost: boolean): void;
   /** Stop the transport and clean up */
