@@ -1,0 +1,135 @@
+/*
+ * One band of marks down the side of the screen.
+ *
+ * The band is a placement area, not a window. It is deliberately not clipping:
+ * the marks are anchored to the outer edge, so the crowded part of the field is
+ * the outer fifteen per cent of the screen and everything past that is a mark
+ * spilling out of its band and thinning as it goes. Clipping would cut those
+ * marks off in a straight line and the band would read as a hard-edged panel
+ * rather than as marks that happen to be thickest at the screen edge.
+ *
+ * The field as a whole is still clipped to the viewport, so nothing is drawn
+ * off screen.
+ */
+.Root {
+  position: absolute;
+  top: calc(-1 * var(--Glyph-Overscan));
+  bottom: calc(-1 * var(--Glyph-Overscan));
+  width: var(--Glyph-BandWidth);
+}
+
+/*
+ * A mark's resting place.
+ *
+ * The transform here is the parallax: the shared offset scaled by this mark's
+ * own depth, so a shallow mark barely answers the pointer while a deep one
+ * travels. It is separate from the animation because a running animation owns
+ * its transform and would replace this one entirely.
+ */
+.Glyph {
+  position: absolute;
+  top: var(--Glyph-Top, 0%);
+  transform: translate3d(
+    calc(var(--Glyph-OffsetX, 0px) * var(--Glyph-Depth, 1)),
+    calc(var(--Glyph-OffsetY, 0px) * var(--Glyph-Depth, 1)),
+    0
+  );
+  will-change: transform;
+  /* Promoted to its own layer, so easing one mark does not repaint the band. */
+  contain: layout paint;
+}
+
+/*
+ * A mark hangs from the band's outer edge, its centre placed off the edge of the
+ * screen, centred on that point rather than starting there.
+ *
+ * The same rolled value anchors both bands, and the right band reads it from the
+ * right instead of the left. That is the whole trick: the two bands are the same
+ * arrangement seen from the same side, rather than one of them mirrored wrongly
+ * and pushed out of its own band. Centring on a point beyond the edge is what
+ * spreads a mark evenly to both sides of it, so each one leans out of the screen
+ * and reaches only a little way in, rather than lying flat against the edge with
+ * all of its bulk inside the band.
+ */
+.SideLeft .Glyph {
+  left: calc(var(--Glyph-Inward, 0%) - 50%);
+}
+
+.SideRight .Glyph {
+  right: calc(var(--Glyph-Inward, 0%) - 50%);
+}
+
+.Mark {
+  display: block;
+  font-family: var(--FontFamily-Display);
+  line-height: 1;
+  /*
+   * The token is the ceiling; the mark brings its own share of it, so the band
+   * has range from barely-there to fully present without any of them going hard
+   * enough to compete with the text.
+   */
+  opacity: calc(var(--Glyph-Opacity) * var(--Glyph-Fade, 1));
+  transform: rotate(var(--Glyph-Rotation, 0deg));
+  animation: MarkDrift var(--Glyph-Duration, 20s) var(--Easing-Standard) infinite alternate;
+  animation-delay: var(--Glyph-Delay, 0s);
+  user-select: none;
+}
+
+/*
+ * Three fixed sizes rather than one multiplied by a random factor, and each one
+ * divided by the page's current zoom.
+ *
+ * The size tokens are the size a mark is meant to appear at. Dividing by the
+ * pinch factor holds that size when a player pinches the page on a phone. It is
+ * only the pinch factor and not the browser's zoom level, because a page cannot
+ * read its own browser zoom: inferring it would tie the field to whatever zoom
+ * the page happened to open at, and the same URL would look different depending
+ * on that. Browser zoom moves the marks along with everything else.
+ */
+.SizeSmall {
+  font-size: calc(var(--Glyph-Size-Small) / var(--Glyph-Zoom, 1));
+}
+
+.SizeMedium {
+  font-size: calc(var(--Glyph-Size-Medium) / var(--Glyph-Zoom, 1));
+}
+
+.SizeLarge {
+  font-size: calc(var(--Glyph-Size-Large) / var(--Glyph-Zoom, 1));
+}
+
+/*
+ * Muted greys only. Anything with chroma would compete with the colours the
+ * players are given, and the field is behind the game rather than part of it.
+ */
+.ToneLight {
+  color: var(--Glyph-Tone-Light);
+}
+
+.ToneMid {
+  color: var(--Glyph-Tone-Mid);
+}
+
+.ToneDeep {
+  color: var(--Glyph-Tone-Deep);
+}
+
+@keyframes MarkDrift {
+  from {
+    transform: translateY(var(--Glyph-Drift)) rotate(var(--Glyph-Rotation, 0deg));
+  }
+
+  to {
+    transform: translateY(calc(-1 * var(--Glyph-Drift))) rotate(var(--Glyph-Rotation, 0deg));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .Mark {
+    animation: none;
+  }
+
+  .Glyph {
+    transform: none;
+  }
+}
