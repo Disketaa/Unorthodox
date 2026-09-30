@@ -1,0 +1,52 @@
+/*
+ * A base for the document, below the tokens.
+ *
+ * Only the two things a browser does on its own that this design does not want. Both
+ * are about a control being pressed: the blue square on a phone and the ring on a
+ * desktop are the browser saying "you touched this", and every component here already
+ * says what it looks like when it is chosen, hover or focused. Left alone they arrive
+ * on top of that as a second, louder answer, and on a row of eight tints they make the
+ * whole row look selected.
+ */
+
+/*
+ * The tap highlight.
+ *
+ * Mobile browsers paint a translucent block over anything tapped, and it is gone only
+ * after the finger lifts. On a control that is picked by pressing it, that block is the
+ * one piece of feedback the player gets, and it does not match anything else here.
+ */
+button,
+a,
+label,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
+ * The focus ring.
+ *
+ * Kept for the keyboard and dropped for the mouse. `:focus-visible` is what tells the
+ * two apart, but a plain `outline: none` would take it from the keyboard as well, so
+ * the ring comes back for anything focused by keyboard and stays away for a click.
+ */
+button,
+a,
+label,
+input,
+select,
+textarea {
+  outline: none;
+}
+
+button:focus-visible,
+a:focus-visible,
+label:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: var(--Border-Width-Default) solid var(--Color-Border-Focus);
+  outline-offset: var(--Space-Xs);
+}

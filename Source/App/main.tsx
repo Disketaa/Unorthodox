@@ -3,6 +3,7 @@ import { App } from './App';
 import { setLogLevel } from '@/Core';
 import { isDebugEnabled } from '@/Network/Diagnostics';
 import "@/Design/Tokens/Tokens.css";
+import "@/Design/Reset.css";
 
 /**
  * Debug logging is opt-in via ?debug, so the noisy connection tracing stays out
