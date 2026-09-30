@@ -1,12 +1,22 @@
 import { Transport } from './Transport';
 import { isHostMessage, HostMessage } from './Protocol';
 import * as Game from '@/Game';
-import { createLogger } from '@/Core';
+import { createLogger, measureClockOffset } from '@/Core';
 
 const log = createLogger('ClientSession');
 
 /** How often a join is re-sent while waiting for the host to become reachable. */
 export const JoinRetryIntervalMs = 2_000;
+
+/**
+ * How often the client asks the host where the game is.
+ *
+ * A client that was suspended, backgrounded or offline misses the state
+ * messages sent on phase changes, so it asks again on a timer. It also makes
+ * the countdown correct after the client wakes up, because the state carries the
+ * host's phase start time rather than the moment the client received it.
+ */
+export const SyncIntervalMs = 5_000;
 
 /**
  * Manages the client side of the game state and communication.
@@ -20,6 +30,10 @@ export class ClientSession {
   private pendingJoin: { type: 'Join'; name: string } | null = null;
   /** Retries the buffered join until the host assigns us an id. */
   private joinRetry: ReturnType<typeof setInterval> | null = null;
+  /** Asks the host for the current state, so a gap does not desync the client. */
+  private syncTimer: ReturnType<typeof setInterval> | null = null;
+  /** Skew between the host's clock and this device's, in milliseconds. */
+  private clockOffsetMs = 0;
 
   /** Subscribe to state changes so the UI can re-render. */
   onUpdate(listener: () => void): void {
@@ -95,12 +109,28 @@ export class ClientSession {
     // The host addresses us by the peer the transport sees, so there is no id
     // for us to declare here. The host assigns our game player id on join.
     this.transport.start(roomCode, playerName, false);
+    // A suspended client misses state updates, so it keeps asking where the game is.
+    this.syncTimer = setInterval(() => this.requestSync(), SyncIntervalMs);
+  }
+
+  /** Ask the host to resend the current state and phase start time. */
+  requestSync(): void {
+    if (this.playerId === null) {
+      // Not in the room yet; the join retry covers this case.
+      return;
+    }
+    log('debug', 'asking the host for a state sync');
+    this.transport.sendToHost({ type: 'Sync' });
   }
 
   /** Stop the client session */
   stop(): void {
     log('info', 'stopping client session');
     this.stopJoinRetries();
+    if (this.syncTimer !== null) {
+      clearInterval(this.syncTimer);
+      this.syncTimer = null;
+    }
     this.transport.stop();
     this.state = undefined;
     this.playerId = null;
@@ -113,7 +143,10 @@ export class ClientSession {
     switch (message.type) {
       case 'State':
         this.state = message.state;
-        log('debug', 'state updated to', message.state.phase);
+        // Remember how far the host's clock is from ours, so the phase start
+        // time in the state can be read locally.
+        this.clockOffsetMs = measureClockOffset(message.hostNow, Date.now());
+        log('debug', 'state updated to', message.state.phase, 'offset', this.clockOffsetMs);
         this.updateListener?.();
         break;
       case 'SetPlayerId':
@@ -159,6 +192,11 @@ export class ClientSession {
   /** Get the current public state */
   getState(): Game.PublicState | undefined {
     return this.state;
+  }
+
+  /** Skew between the host's clock and this device's, for counting phases down. */
+  getClockOffsetMs(): number {
+    return this.clockOffsetMs;
   }
 
   /** Get the player ID assigned by the host */

@@ -35,8 +35,26 @@ export function toPayload(message: unknown): JsonValue | undefined {
   return undefined;
 }
 
-/** Read a `type` tag off a decoded message without casting it. */
-export function readTag(message: JsonValue): string | undefined {
+/**
+ * Prepare a message for the wire, returning undefined when it cannot be sent.
+ *
+ * Trystero only carries structured-clone/JSON payloads. Rejecting anything else
+ * here means a bad message is dropped once, with a reason, instead of failing
+ * deep inside the library.
+ */
+export function preparePayload(
+  message: unknown,
+  context: string,
+  onDrop: (reason: string, message: unknown) => void,
+): JsonValue | undefined {
+  const payload = toPayload(message);
+  if (payload === undefined) {
+    onDrop(`${context}: unserialisable payload, dropping`, message);
+  }
+  return payload;
+}
+
+/** Read a `type` tag off a decoded message without casting it. */export function readTag(message: JsonValue): string | undefined {
   if (typeof message !== 'object' || message === null || Array.isArray(message)) {
     return undefined;
   }

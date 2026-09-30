@@ -52,7 +52,7 @@ export function useGameSession(
   }, [session]);
 
   const publicState = session.getPublicState();
-  const phase = useSessionPhase(publicState);
+  const phase = useSessionPhase(publicState, session.getClockOffsetMs());
   const topic = readTopic(publicState);
   const actions = useGameActions(
     session,

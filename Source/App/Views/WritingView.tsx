@@ -6,7 +6,11 @@ import { PhaseViewProps } from './LobbyView';
 /** Writing: topic, timer and the answer draft, which is local UI state. */
 export function WritingView({ view }: PhaseViewProps) {
   const [draft, setDraft] = useState('');
-  const remainingMs = useCountdown(view.durationMs, view.phaseStartedAt);
+  const remainingMs = useCountdown(
+    view.durationMs,
+    view.phaseStartedAt,
+    view.clockOffsetMs,
+  );
   const topic = view.publicState?.phase === 'Writing' ? view.publicState.topic : '';
 
   return (

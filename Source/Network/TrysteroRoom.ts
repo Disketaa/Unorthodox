@@ -1,6 +1,6 @@
-import { readRole, readTag } from './Payload';
+import { readRole, readTag, RelayUrls } from './Payload';
 import { createLogger } from '@/Core';
-import type { JsonValue, MessageAction } from 'trystero';
+import { joinRoom, type JsonValue, type MessageAction } from 'trystero';
 
 const log = createLogger('TrysteroRoom');
 
@@ -153,7 +153,47 @@ function wirePeers(
  *
  * Every peer announces its role to the whole room on every peer join, so the
  * handshake does not depend on which side arrived first.
+ *
+ * Both protocol directions are created on every peer, because a trystero action
+ * is a topic: a peer only receives messages on a channel it created itself.
+ * Creating just the sending direction leaves the far end unsubscribed, so its
+ * messages are dropped without a trace.
  */
+export function openRoom(options: {
+  appId: string;
+  roomCode: string;
+  isHost: boolean;
+  handlers: RoomHandlers;
+}): OpenRoom {
+  const room = joinRoom(
+    {
+      appId: options.appId,
+      // The library's default relays are frequently unreachable, so several
+      // well-known nostr relays are configured instead.
+      relayConfig: { urls: RelayUrls, redundancy: 3, warnOnRelayFailure: false },
+    },
+    options.roomCode,
+  );
+  const hostToClient = room.makeAction(HostToClientAction);
+  const clientToHost = room.makeAction(ClientToHostAction);
+  const hostPeer = wireRoom(
+    room,
+    { hostToClient, clientToHost, hello: room.makeAction(HelloAction) },
+    options.isHost,
+    options.handlers,
+  );
+  return { room, hostToClient, clientToHost, hostPeer };
+}
+
+/** What a joined room hands back to the transport. */
+export interface OpenRoom {
+  room: ReturnType<typeof joinRoom>;
+  hostToClient: MessageAction<JsonValue>;
+  clientToHost: MessageAction<JsonValue>;
+  hostPeer: HostPeerState;
+}
+
+/** Wire the wiring only, for tests that drive the room without a library room. */
 export function wireRoom(
   room: RoomPeers,
   actions: RoomActions,

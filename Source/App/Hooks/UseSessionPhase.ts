@@ -1,24 +1,23 @@
 import { useRef } from 'preact/hooks';
-import { PlayerId } from '@/Core';
+import { PlayerId, hostTimeToLocal } from '@/Core';
 import { PublicState } from '@/Game';
 
 export interface SessionPhase {
   phase: 'Connecting' | 'Lobby' | 'Writing' | 'Reviewing' | 'Scores' | 'Final';
   durationMs: number;
+  /**
+   * When the phase started, on this device's clock.
+   *
+   * The host's own start time is used, converted through the measured clock
+   * offset. Counting from the moment the message arrived would restart the
+   * countdown for a client that joined late or was suspended and caught up.
+   */
   phaseStartedAt: number;
+  /** Skew between the host's clock and this device's. */
+  clockOffsetMs: number;
   playerNames: ReadonlyMap<PlayerId, string>;
   playerCount: number;
   submittedCount: number;
-}
-
-interface PhaseClock {
-  key: string;
-  at: number;
-}
-
-/** Phase changes are detected by content, so a re-render never restarts a timer. */
-function readClock(clock: PhaseClock, key: string): PhaseClock {
-  return clock.key === key ? clock : { key, at: performance.now() };
 }
 
 /** Names only reach the public state in the Lobby, so remember them once seen. */
@@ -36,21 +35,26 @@ function readDurationMs(publicState: PublicState | undefined): number {
   return publicState !== undefined && 'durationMs' in publicState ? publicState.durationMs : 0;
 }
 
-/** Read the current phase, and remember when its message arrived. */
-export function useSessionPhase(publicState: PublicState | undefined): SessionPhase {
+/** The host's start time of the current phase, or 0 for untimed phases. */
+function readStartedAt(publicState: PublicState | undefined): number {
+  return publicState !== undefined && 'startedAt' in publicState ? publicState.startedAt : 0;
+}
+
+/** Read the current phase, the host's clock, and the names seen so far. */
+export function useSessionPhase(
+  publicState: PublicState | undefined,
+  clockOffsetMs: number,
+): SessionPhase {
   const namesRef = useRef(new Map<PlayerId, string>());
-  const clockRef = useRef<PhaseClock>({ key: '', at: 0 });
+  const offsetRef = useRef(clockOffsetMs);
+  offsetRef.current = clockOffsetMs;
   rememberNames(namesRef.current, publicState);
 
-  const phase = publicState?.phase ?? 'Connecting';
-  const durationMs = readDurationMs(publicState);
-  const clock = readClock(clockRef.current, `${phase}:${durationMs}`);
-  clockRef.current = clock;
-
   return {
-    phase,
-    durationMs,
-    phaseStartedAt: clock.at,
+    phase: publicState?.phase ?? 'Connecting',
+    durationMs: readDurationMs(publicState),
+    phaseStartedAt: hostTimeToLocal(readStartedAt(publicState), clockOffsetMs),
+    clockOffsetMs,
     playerNames: namesRef.current,
     playerCount: namesRef.current.size,
     submittedCount: publicState?.phase === 'Writing' ? publicState.submittedCount : 0,

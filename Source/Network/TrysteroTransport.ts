@@ -1,15 +1,7 @@
 import { Transport } from './Transport';
-import { describeMessage, RelayUrls, toPayload } from './Payload';
+import { describeMessage, preparePayload } from './Payload';
 import { startDiagnostics } from './Diagnostics';
-import {
-  wireRoom,
-  HelloAction,
-  HostRole,
-  PlayerRole,
-  HostToClientAction,
-  ClientToHostAction,
-  type RoomHandlers,
-} from './TrysteroRoom';
+import { openRoom, HostRole, PlayerRole, type RoomHandlers } from './TrysteroRoom';
 import { createLogger } from '@/Core';
 import { joinRoom, selfId, type JsonValue, type MessageAction } from 'trystero';
 
@@ -53,39 +45,21 @@ export class TrysteroTransport implements Transport {
   start(roomCode: string, _playerName: string, isHost: boolean): void {
     this.roomId = roomCode;
     this.isHost = isHost;
-    // Create or join the room. The library's default relays are frequently
-    // unreachable, so several well-known nostr relays are configured instead.
-    const room = joinRoom(
-      {
-        appId: this.appId,
-        relayConfig: { urls: RelayUrls, redundancy: 3, warnOnRelayFailure: false },
-      },
-      this.roomId,
-    );
-    this.room = room;
+    const opened = openRoom({
+      appId: this.appId,
+      roomCode: this.roomId,
+      isHost,
+      handlers: this.roomHandlers(),
+    });
+    this.room = opened.room;
+    this.hostToClientAction = opened.hostToClient;
+    this.clientToHostAction = opened.clientToHost;
+    this.hostPeer = opened.hostPeer;
     log(
       'info',
-      `joining room "${this.roomId}" as ${isHost ? HostRole : PlayerRole}, selfId ${this.peerId}`,
+      `joined room "${this.roomId}" as ${isHost ? HostRole : PlayerRole}, selfId ${this.peerId}`,
     );
-
-    // Both directions are created on every peer, because a trystero action is a
-    // topic: a peer only receives messages on a channel it has created itself.
-    // Creating just the sending direction leaves the far end unsubscribed, so
-    // its messages are dropped without a trace.
-    this.hostToClientAction = room.makeAction(HostToClientAction);
-    this.clientToHostAction = room.makeAction(ClientToHostAction);
-
-    this.hostPeer = wireRoom(
-      room,
-      {
-        hostToClient: this.hostToClientAction,
-        clientToHost: this.clientToHostAction,
-        hello: room.makeAction(HelloAction),
-      },
-      isHost,
-      this.roomHandlers(),
-    );
-    this.stopDiagnostics = startDiagnostics(() => room.getPeers());
+    this.stopDiagnostics = startDiagnostics(() => opened.room.getPeers());
   }
 
   /** Adapters from the mutable callback fields to the room's handler shape. */
@@ -127,12 +101,8 @@ export class TrysteroTransport implements Transport {
   }
 
   /** Convert a message for the wire, logging why it cannot be sent. */
-  private prepare(message: unknown, context: string): JsonValue | undefined {
-    const payload = toPayload(message);
-    if (payload === undefined) {
-      log('warn', `${context}: unserialisable payload, dropping`, message);
-    }
-    return payload;
+  private prepare(message: unknown): JsonValue | undefined {
+    return preparePayload(message, 'send', (reason, dropped) => log('warn', reason, dropped));
   }
 
   sendToHost(message: unknown): void {
@@ -150,26 +120,22 @@ export class TrysteroTransport implements Transport {
       }
       return;
     }
-    const payload = this.prepare(message, 'sendToHost');
+    const payload = this.prepare(message);
     if (payload === undefined) return;
     log('debug', 'sending to host', describeMessage(message));
     this.clientToHostAction.send(payload, { target: this.hostPeerId });
   }
 
   /**
-   * Reply to a peer using its transport-level address.
-   *
-   * The host must answer a `Join` to the peer id the message actually arrived
-   * from. A game player id is not usable here: the client invents its own
-   * temporary id before it has one, and the host is addressed as `host` in
-   * game state but by its trystero selfId on the wire.
+   * Reply to a peer using its transport-level address, which is never the game
+   * player id: that one is assigned by the host and stays off the wire.
    */
   sendToPeer(peerId: string, message: unknown): void {
     if (!this.isHost || !this.hostToClientAction) {
       log('warn', 'sendToPeer called on a client, ignoring');
       return;
     }
-    const payload = this.prepare(message, 'sendToPeer');
+    const payload = this.prepare(message);
     if (payload === undefined) return;
     log('debug', 'sending', describeMessage(message), 'to peer', peerId);
     this.hostToClientAction.send(payload, { target: peerId });
@@ -183,9 +149,8 @@ export class TrysteroTransport implements Transport {
       log('warn', 'broadcast called on a client, ignoring');
       return;
     }
-    const payload = this.prepare(message, 'broadcast');
+    const payload = this.prepare(message);
     if (payload === undefined) return;
-    // Send the message to all peers (hostToClient action without target sends to all)
     log('debug', 'broadcasting', describeMessage(message));
     this.hostToClientAction.send(payload);
   }

@@ -8,13 +8,23 @@ import * as Game from '@/Game';
 export type ClientMessage =
   | { type: 'Join'; name: string }
   | { type: 'SubmitAnswer'; text: string; playerId: PlayerId }
-  | { type: 'RejectGroup'; groupId: number; playerId: PlayerId };
+  | { type: 'RejectGroup'; groupId: number; playerId: PlayerId }
+  | { type: 'Sync' };
 
 /**
  * Messages sent from the host to clients.
  */
 export type HostMessage =
-  | { type: 'State'; state: Game.PublicState }
+  | {
+      type: 'State';
+      state: Game.PublicState;
+      /**
+       * The host's clock when this was sent. A client uses it to work out the
+       * offset between the two clocks, so it can read the phase start time in
+       * state and know how much of the phase has already elapsed.
+       */
+      hostNow: number;
+    }
   | { type: 'SetPlayerId'; playerId: PlayerId };
 
 /** Narrow an unknown value to an indexable record so its fields can be checked. */
@@ -40,6 +50,9 @@ export function isClientMessage(value: unknown): value is ClientMessage {
       return typeof record.text === 'string' && typeof record.playerId === 'string';
     case 'RejectGroup':
       return typeof record.groupId === 'number' && typeof record.playerId === 'string';
+    case 'Sync':
+      // A returning client asks the host to resend the current state.
+      return true;
     default:
       return false;
   }

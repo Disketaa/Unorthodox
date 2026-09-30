@@ -20,6 +20,8 @@ function createHostSession(roomCode: string, playerName: string): Session {
     role: 'Host',
     getPublicState,
     getPlayerId: () => HostPlayerId,
+    // The host is the clock source, so it has no skew to correct for.
+    getClockOffsetMs: () => 0,
     onUpdate: (listener) => hostSession.onUpdate(listener),
     onHostLeave: () => {},
     join: () => {},
@@ -42,6 +44,7 @@ function createPlayerSession(roomCode: string, playerName: string): Session {
     role: 'Player',
     getPublicState: () => clientSession.getState(),
     getPlayerId: () => clientSession.getPlayerId(),
+    getClockOffsetMs: () => clientSession.getClockOffsetMs(),
     onUpdate: (listener) => clientSession.onUpdate(listener),
     onHostLeave: (listener) => clientSession.onHostLeave(listener),
     join: () => {},

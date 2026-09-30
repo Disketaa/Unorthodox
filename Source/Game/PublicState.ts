@@ -12,6 +12,12 @@ export type PublicWritingState = {
   phase: 'Writing';
   topic: string;
   durationMs: number;
+  /**
+   * When the host started this phase, on the host's clock. Clients must count
+   * down from this rather than from when they received the message, otherwise a
+   * client that was away when the phase began shows the full time again.
+   */
+  startedAt: number;
   submittedCount: number; // number of answers submitted so far
 };
 
@@ -19,12 +25,14 @@ export type PublicReviewingState = {
   phase: 'Reviewing';
   topic: string;
   durationMs: number;
+  startedAt: number;
   groups: { groupId: number; text: string; playerCount: number }[];
 };
 
 export type PublicScoresState = {
   phase: 'Scores';
   durationMs: number;
+  startedAt: number;
   scores: { id: PlayerId; score: number }[];
 };
 
@@ -86,6 +94,7 @@ function toPublicWritingState(state: HostState): PublicWritingState {
     phase: 'Writing',
     topic: state.topic,
     durationMs: state.durationMs,
+    startedAt: state.startedAt,
     submittedCount: state.answers.size,
   };
 }
@@ -108,6 +117,7 @@ function toPublicReviewingState(state: HostState): PublicReviewingState {
     phase: 'Reviewing',
     topic: state.topic,
     durationMs: state.durationMs,
+    startedAt: state.startedAt,
     groups,
   };
 }
@@ -123,6 +133,7 @@ function toPublicScoresState(state: HostState): PublicScoresState {
   return {
     phase: 'Scores',
     durationMs: state.durationMs,
+    startedAt: state.startedAt,
     scores: scoresArray,
   };
 }

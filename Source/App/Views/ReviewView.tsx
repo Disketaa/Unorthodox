@@ -4,7 +4,11 @@ import { PhaseViewProps } from './LobbyView';
 
 /** Reviewing: grouped answers with a reject vote per group. */
 export function ReviewView({ view }: PhaseViewProps) {
-  const remainingMs = useCountdown(view.durationMs, view.phaseStartedAt);
+  const remainingMs = useCountdown(
+    view.durationMs,
+    view.phaseStartedAt,
+    view.clockOffsetMs,
+  );
   const state = view.publicState?.phase === 'Reviewing' ? view.publicState : undefined;
   const groups: ReviewGroup[] =
     state?.groups.map((group) => ({

@@ -5,7 +5,11 @@ import { PhaseViewProps } from './LobbyView';
 
 /** Scores for the finished round. */
 export function ScoresView({ view }: PhaseViewProps) {
-  const remainingMs = useCountdown(view.durationMs, view.phaseStartedAt);
+  const remainingMs = useCountdown(
+    view.durationMs,
+    view.phaseStartedAt,
+    view.clockOffsetMs,
+  );
   const state = view.publicState?.phase === 'Scores' ? view.publicState : undefined;
 
   return (
