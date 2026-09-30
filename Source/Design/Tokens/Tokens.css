@@ -138,15 +138,19 @@ body {
   --Duration-Slow: 400ms;
 
   /*
-   * How long the pop takes, and how far it squashes.
+   * How long the pop takes, how far it squashes, and how far apart two
+   * appearances in a row wait.
    *
    * One duration and one squash for every reaction, whether a character is
    * arriving or reacting to being chosen, so the two are unmistakably the same
    * movement. Over-tall rather than over-wide, the way something squashed springs
-   * back vertically.
+   * back vertically. The stagger is small enough that the last character in a row
+   * has not finished before the first is well underway, and large enough that
+   * the row reads as a wave rather than a flash.
    */
   --Duration-Pop: 380ms;
-  --Pop-Squash: 125%;
+  --Pop-Squash: 110%;
+  --Pop-Stagger: 20ms;
 
   --Easing-Standard: cubic-bezier(0.2, 0, 0, 1);
   --Easing-Decelerate: cubic-bezier(0, 0, 0.2, 1);

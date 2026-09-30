@@ -1,18 +1,16 @@
 /*
  * The pop.
  *
- * One mechanism for every character reaction: growing in when it first appears,
- * and squashing when it is chosen. Both squash from over-tall down to true, which
- * is the squash-and-stretch a cartoonist draws, and both run through the same
- * `steps()` so they read as held drawn frames rather than a tween.
+ * One movement for every character reaction: a squash from over-tall down to
+ * true, run through `steps()` so it reads as held drawn frames rather than a
+ * tween. A character turns up, changes tint and gets chosen, and all three are
+ * the same pop; only when it happens differs.
  *
- * The two variants differ only in whether the character starts from nothing. An
- * `Appear` has no width at all on its first frame and grows out of one point; an
- * `Effort` keeps its width and only squashes, because it is reacting to a choice
- * rather than turning up. Same squash, different reason.
+ * Nothing is scaled away, so the character is never briefly invisible, which is
+ * what a grow-from-nothing reveal looked like in a roster of small characters.
  *
  * The tilt and the offset come from the caller as custom properties, so each
- * character arrives from its own place. They are optional: without them the pop is
+ * character reacts from its own place. They are optional: without them the pop is
  * a plain squash, which is the right thing for a UI that has not asked for
  * character.
  */
@@ -20,43 +18,23 @@
   display: block;
   width: 100%;
   height: 100%;
-}
-
-/*
- * The step count and keyword travel as one finished `steps()` call in a custom
- * property, because the build strips a `var()` used *inside* the function and
- * would leave an invalid timing function that silently cancels the animation.
- */
-.Appear {
-  animation: PopAppear var(--Duration-Pop) var(--Pop-Timing, steps(7, jump-none)) both;
-}
-
-.Effort {
-  animation: PopEffort var(--Duration-Pop) var(--Pop-Timing, steps(7, jump-none)) both;
-}
-
-@keyframes PopAppear {
   /*
-   * Zero width is what makes this a pop rather than a slide: the character is
-   * genuinely not there, and its whole shape grows out of one point instead of
-   * travelling across the screen. It is over-tall on the way, the way something
-   * squashed springs back.
+   * The step count and keyword travel as one finished `steps()` call in a custom
+   * property, because the build strips a `var()` used *inside* the function and
+   * would leave an invalid timing function that silently cancels the animation.
    */
-  from {
-    scale: 0 var(--Pop-Squash);
-    rotate: var(--Pop-Tilt, 0deg);
-    translate: var(--Pop-OffsetX, 0px) var(--Pop-OffsetY, 0px);
-  }
-
-  to {
-    scale: 1 1;
-    rotate: 0deg;
-    translate: 0 0;
-  }
+  animation: PopSquash var(--Duration-Pop) var(--Pop-Timing, steps(7, jump-none)) both;
+  /*
+   * A row of characters reacting at once reads as one thing switching on. Waiting
+   * in turn makes it read as a wave crossing the row instead. The delay is in
+   * place before the animation starts, which is why the index is set from a ref
+   * callback rather than an effect.
+   */
+  animation-delay: calc(var(--Pop-Stagger, 20ms) * var(--Pop-Index, 0));
 }
 
-@keyframes PopEffort {
-  /* The same squash, without the growth, because nothing is arriving. */
+@keyframes PopSquash {
+  /* Over-tall on the way, the way something squashed springs back. */
   from {
     scale: 1 var(--Pop-Squash);
     rotate: var(--Pop-Tilt, 0deg);
@@ -71,13 +49,12 @@
 }
 
 /*
- * The pop starts collapsed, so cancelling the animation alone would leave the
- * child at zero width and therefore invisible. The finished state has to be
- * stated rather than assumed.
+ * The pop starts squashed, so cancelling the animation alone would leave the
+ * child in its from-state. The finished state has to be stated rather than
+ * assumed.
  */
 @media (prefers-reduced-motion: reduce) {
-  .Appear,
-  .Effort {
+  .Root {
     animation: none;
     scale: 1 1;
     rotate: 0deg;

@@ -27,16 +27,17 @@ export function CharacterGallery() {
         <Character character="Character1" color="Mint" size="Large" />
       </Stack>
 
-      <Text variant="Body">Still, and the selected one</Text>
+      <Text variant="Body">Still, reacting, and placed in a row</Text>
       <Stack direction="Horizontal" gap="Sm" align="End">
         <Character character="Character1" color="Mint" moving={false} />
-        <Character character="Character1" color="Mint" selected />
-        <Character character="Character1" color="Mint" moving={false} selected />
+        <Character character="Character1" color="Mint" pulse={1} />
+        <Character character="Character2" color="Mint" pulse={1} moving={false} />
       </Stack>
 
       <Text variant="Body">
-        Every character pops in on mount and again on a tint change, and the
-        chosen one pops when it is picked, so this row re-pops on reload.
+        Every character pops the same way: on mount, on a tint change, and on a
+        change of character. A reacting character pops each time `pulse` changes,
+        and a row ripples in turn rather than all at once.
       </Text>
     </Stack>
   );

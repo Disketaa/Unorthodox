@@ -16,7 +16,7 @@ export function FinalScreen({ scores, isHost, onPlayAgain }: FinalScreenProps) {
       <Text variant="Title">{Strings.final.headline}</Text>
       <Card variant="Elevated">
         <Stack gap="Sm">
-          {scores.map((entry) => (
+          {scores.map((entry, index) => (
             <ScoreRow
               key={entry.playerName}
               playerName={entry.playerName}
@@ -24,6 +24,7 @@ export function FinalScreen({ scores, isHost, onPlayAgain }: FinalScreenProps) {
               color={entry.color}
               score={entry.score}
               rank={entry.rank}
+              index={index}
             />
           ))}
         </Stack>

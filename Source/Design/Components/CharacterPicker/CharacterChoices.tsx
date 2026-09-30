@@ -43,6 +43,10 @@ export interface CharacterChoiceProps {
   color: CharacterColor;
   label: string;
   selected: boolean;
+  /** How many times this character has been picked, so repeats pop again. */
+  pulse?: number;
+  /** Its place in the grid, so the row ripples rather than firing at once. */
+  index?: number;
   onPick: (character: CharacterId, color: CharacterColor) => void;
 }
 
@@ -57,11 +61,13 @@ export function CharacterChoice({
   color,
   label,
   selected,
+  pulse,
+  index,
   onPick,
 }: CharacterChoiceProps) {
   return (
     <Choice label={label} selected={selected} onSelect={() => onPick(id, color)}>
-      <Character character={id} color={color} size="Fill" selected={selected} />
+      <Character character={id} color={color} size="Fill" pulse={pulse} index={index} />
     </Choice>
   );
 }

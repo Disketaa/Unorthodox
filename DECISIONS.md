@@ -67,50 +67,47 @@ drawings are square on a 512 viewBox, so that keeps them round at any width with
 query. The tint row is `auto-fill` with a floor of a comfortable target, so the discs wrap on
 a phone and spread on a wide screen rather than all eight squeezing onto one row.
 
-## 2026-09-30 — one `Pop` primitive, one squash, for every character reaction
-A character reacts to three things: it turns up, it changes tint, and it is chosen. Those were
-three mechanisms, written as three pieces of the Character component: an idle sway of its own, a
-reveal that swept an edge across it, and a `selected` scale on a layer between them. They are now
-two things, a `Pop` primitive in `Design/Primitives` for every reaction, and the idle sway, which
-is continuous rather than a reaction and stays where it is.
+## 2026-09-30 — one pop, keyed on everything, rippling across a row
+A character reacts to three things: it turns up, it changes tint, it is chosen. All three run one
+`Pop`, keyed on the character, its tint and a pulse count, and all three are the same movement.
+There are no variants, and getting there is the lesson: it went through two nested pops, then two
+variants of one pop, and both were worse than having none.
 
-`Pop` has two variants that differ only in whether the character starts from zero width. Both
-squash from `--Pop-Squash` down to true over `--Duration-Pop`, so arriving and being chosen are
-unmistakably the same movement: `Appear` grows out of a point, `Effort` only squashes, because it
-is reacting to a choice rather than turning up. `Character` composes two of them, the outer keyed
-on whether it is chosen and the inner on its tint, so a tint change does not also replay the
-chosen pop. They are separate elements because two animations on one element overwrite each other,
-and the individual `scale`, `rotate` and `translate` properties compose with the idle `transform`
-on the ancestor, so all three can play at once.
+The two nested pops were wrong because remounting the outer one always recreates the inner, so
+changing tint also replayed the reaction. The two variants fixed that but needed the variant to be
+chosen from the previous look, because recomputing it every render changed the pop's key, and since
+the roster re-renders whenever anyone joins, every player popped whenever anyone else did. That
+needed a ref holding the previous trigger, and it was the most complex thing in the component for
+no visible gain. One pop has none of that: the key is the trigger, and the trigger is everything
+that should make it play.
 
-Getting there took three attempts at arriving. The first revealed with a hard edge sweeping left
-to right, which read as a slide: the character travelled rather than arrived. The second grew from
-nothing but varied its overshoot per character, which read as nine separate animations rather than
-one movement repeated. What works is one fixed squash, with the randomness moved to where each
-character arrives from, so the mechanism is identical and the arrivals differ.
+A variant that grew from zero width looked fine in the picker and was wrong in the roster, where a
+row of small characters flashed to nothing on every change and read as a rendering fault. So the
+pop only ever squashes the height. There is now no `scale: 0` anywhere in it, which is worth
+knowing before anyone adds one back for effect.
 
-The squash and the duration belong to the primitive, so every reaction is the same movement. What
-a character contributes is only what makes it differ from its neighbours: where it comes from and
-how it is cocked when it gets there, passed as `--Pop-*` custom properties and picked up by
-inheritance. The vertical offset is negative by construction rather than by luck, so characters
-drop into place instead of surfacing. The idle sway rolls six values the same way, and the two
-together are what make a row read as a crowd: a shared duration and amplitude would make nine
-characters look like one item on a conveyor.
+Reaction is a count rather than a flag. A flag also changes when a character is *deselected*, so
+the character that lost the choice popped as though it had been picked; a count that only goes up
+reacts on every click, repeats included, and leaves deselection alone. The picker keeps that count
+per character, so a click raises only the character clicked.
 
-Two things to know before changing this. A `var()` cannot be used *inside* the `steps()` function:
-the build strips the wrapper and leaves `steps(Steps)`, an invalid timing function that silently
-cancels the animation with no error at all. The step count and keyword therefore travel as one
-finished `steps()` call in a custom property, which does survive. And cancelling the animation
-under `prefers-reduced-motion` is not enough on its own: the pop starts collapsed, so the finished
-`scale`, `rotate` and `translate` have to be stated explicitly or the character stays invisible.
+A row ripples: the pop waits `--Pop-Stagger` per position via `--Pop-Index`, which `PlayerChip`,
+`ScoreRow` and the picker grid all pass. The index is set from a ref callback rather than an
+effect, and that is the whole ripple. An effect runs after the first paint, by which point the
+animation has already begun, and a custom property changed mid-animation is too late to affect the
+delay it was supposed to set, so every character animated at once with no wait. A ref callback runs
+during the commit, before the browser has painted anything, so the delay is in place before the
+animation exists.
 
 `Character.test.tsx` covers the mechanism rather than the pixels, since a pop that stopped
-replaying would look like a working app that had quietly stopped reacting. It checks that each
-element is rebuilt when the thing it reacts to changes, that a tint change leaves the chosen pop
-alone, and that the vertical offset stays negative across repeated mounts. Those values are
-written from an effect, so a test has to wrap the render in `act` to flush it. The scoreboard
-passes `moving={false}`, because those rows re-order as scores land and a sway on top of that
-movement is noise.
+replaying would look like a working app that had quietly stopped reacting. It checks that the
+element is rebuilt when the trigger changes, that five re-renders in a row leave the same element
+in place, and that the vertical offset stays negative across repeated mounts. Those values are
+written from an effect, so a test has to wrap the render in `act` to flush it. What the pop
+animates is left to the stylesheet and its own comment, since the test runner rewrites plain CSS
+imports to an empty module and reading the raw file out of a test is not worth the fight. The
+scoreboard passes `moving={false}`, because those rows re-order as scores land and a sway on top of
+that movement is noise.
 ## 2026-09-30 — phase transitions and round scoring split out of the session and the actions
 `HostSession` and `Game/GameActions.ts` passed the 150-line limit once the roster grew. The
 rules about when a phase may end now live in `Network/HostPhases.ts`, and the rejection rule

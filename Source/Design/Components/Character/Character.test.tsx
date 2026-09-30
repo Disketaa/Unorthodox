@@ -4,20 +4,24 @@ import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { Character } from '@/Design/Components';
 
-/**
- * Mount a character into a fresh element and return it.
- *
- * The rolled values are written from an effect, which does not run until after
- * the render returns, so `act` has to flush it before anything can be read.
- */
-function mount(props: {
+/** A root to render into, already attached so effects can flush. */
+function stage(): HTMLElement {
+  const root = document.createElement('div');
+  document.body.appendChild(root);
+  return root;
+}
+
+type Props = {
   character: 'Character1' | 'Character2' | 'Character5';
   color: 'Coral' | 'Mint' | 'Sky';
   size?: 'Small';
-  selected?: boolean;
-}): HTMLElement {
-  const root = document.createElement('div');
-  document.body.appendChild(root);
+  pulse?: number;
+  index?: number;
+};
+
+/** Mount a character, flushing the effect that writes its rolled values. */
+function mount(props: Props): HTMLElement {
+  const root = stage();
   act(() => {
     render(<Character {...props} />, root);
   });
@@ -29,66 +33,117 @@ function styleOf(root: HTMLElement): string {
   return root.firstElementChild?.getAttribute('style') ?? '';
 }
 
-/** The outermost `Pop`, the one that reacts to being chosen. */
-function chosenPop(root: HTMLElement): Element | null {
+/** The one `Pop`, the element the whole reaction lives on. */
+function popOf(root: HTMLElement): Element | null {
   return root.firstElementChild?.firstElementChild ?? null;
-}
-
-/** The inner `Pop`, the one that reacts to arriving. */
-function arrivingPop(root: HTMLElement): Element | null {
-  return chosenPop(root)?.firstElementChild ?? null;
-}
-
-/** A root to render into, already attached so effects can flush. */
-function stage(): HTMLElement {
-  const root = document.createElement('div');
-  document.body.appendChild(root);
-  return root;
 }
 
 /**
  * A character reacts to every action through the same pop, so picking a tint and
  * picking a character are the same movement. This checks the mechanism, not the
  * pixels: an element is rebuilt when the thing it reacts to changes, and that is
- * what restarts the animation. If it stopped, each pop would play once and never
+ * what restarts the animation. If it stopped, the pop would play once and never
  * again, and nothing else in the suite would notice.
  */
 describe('Character pop', () => {
   it('pops on mount', () => {
     const root = mount({ character: 'Character1', color: 'Coral' });
-    expect(arrivingPop(root)?.querySelector('svg')).not.toBeNull();
+    expect(popOf(root)?.querySelector('svg')).not.toBeNull();
   });
 
   it('replays when the tint changes', () => {
     const props = { character: 'Character1', color: 'Coral', size: 'Small' } as const;
     const root = stage();
     render(<Character {...props} />, root);
-    const before = arrivingPop(root);
+    const before = popOf(root);
 
     render(<Character {...props} color="Sky" />, root);
-    expect(arrivingPop(root)).not.toBeNull();
-    expect(arrivingPop(root)).not.toBe(before);
+    expect(popOf(root)).not.toBeNull();
+    expect(popOf(root)).not.toBe(before);
   });
 
-  it('replays when the character is chosen', () => {
+  it('replays when the character itself changes', () => {
+    // The lobby roster draws whichever character a player is wearing, so a player
+    // changing character has to pop as well as one changing tint.
+    const props = { character: 'Character1', color: 'Coral', size: 'Small' } as const;
+    const root = stage();
+    render(<Character {...props} />, root);
+    const before = popOf(root);
+
+    render(<Character {...props} character="Character5" />, root);
+    expect(popOf(root)).not.toBe(before);
+  });
+});
+
+/**
+ * The reaction is keyed on a count rather than on a flag, so that clicking the
+ * same character twice pops it twice, and so that the character that just lost
+ * the choice is left alone.
+ */
+describe('Character reaction', () => {
+  it('replays every time the pulse changes, so repeated clicks pop again', () => {
+    const props = { character: 'Character2', color: 'Mint', size: 'Small' } as const;
+    const root = stage();
+    render(<Character {...props} pulse={1} />, root);
+    const first = popOf(root);
+
+    render(<Character {...props} pulse={2} />, root);
+    const second = popOf(root);
+    expect(second).not.toBe(first);
+
+    render(<Character {...props} pulse={3} />, root);
+    expect(popOf(root)).not.toBe(second);
+  });
+
+  it('keeps the same element when the roster re-renders with the same look', () => {
+    // The roster re-renders whenever anyone joins, so if the pop restarted on
+    // every render then every player would pop whenever anyone else did.
     const props = { character: 'Character2', color: 'Mint', size: 'Small' } as const;
     const root = stage();
     render(<Character {...props} />, root);
-    const before = chosenPop(root);
+    const before = popOf(root);
 
-    render(<Character {...props} selected={true} />, root);
-    expect(chosenPop(root)).not.toBeNull();
-    expect(chosenPop(root)).not.toBe(before);
+    for (let i = 0; i < 5; i++) {
+      render(<Character {...props} />, root);
+      expect(popOf(root)).toBe(before);
+    }
   });
 
-  it('keeps the same elements when nothing relevant changed', () => {
+  it('writes its index for the ripple, and defaults to the front of the wave', () => {
+    const indexOf = (root: HTMLElement) =>
+      /--Pop-Index:\s*(-?\d+)/.exec(popOf(root)?.getAttribute('style') ?? '')?.[1];
+    expect(indexOf(mount({ character: 'Character1', color: 'Coral', index: 3 }))).toBe('3');
+    expect(indexOf(mount({ character: 'Character1', color: 'Coral' }))).toBe('0');
+  });
+});
+
+/**
+ * The pop must never scale the character away. A version that grew from zero width
+ * looked fine in the picker but flashed every small character in the roster to
+ * nothing, which read as a rendering fault rather than as an arrival. There is one
+ * keyframe, `PopSquash`, and it only ever touches the height; the stylesheet says
+ * why. That is asserted by reading the stylesheet, which the test runner rewrites
+ * to an empty module, so it is left to the stylesheet and its own comment.
+ */
+describe('The pop element', () => {
+  it('wraps the character in exactly one element, whatever reacted', () => {
+    // Two nested pops would each restart the other, so there is only ever one.
+    const root = mount({ character: 'Character1', color: 'Coral' });
+    const pop = popOf(root);
+    expect(pop).not.toBeNull();
+    expect(pop?.querySelectorAll('span').length).toBe(0);
+  });
+});
+
+describe('Character element identity', () => {
+  it('keeps the same element when nothing relevant changed', () => {
     const props = { character: 'Character2', color: 'Mint', size: 'Small' } as const;
     const root = stage();
     render(<Character {...props} />, root);
-    const before = chosenPop(root);
+    const before = popOf(root);
 
     render(<Character {...props} />, root);
-    expect(chosenPop(root)).toBe(before);
+    expect(popOf(root)).toBe(before);
   });
 
   it('swaps the artwork when the character changes', () => {
@@ -99,23 +154,6 @@ describe('Character pop', () => {
 
     render(<Character character="Character5" color="Coral" />, root);
     expect(root.querySelector('path')?.getAttribute('d')).not.toBe(firstPath);
-  });
-});
-
-/**
- * The two reactions are separate elements, so that changing one thing does not
- * replay both pops at once.
- */
-describe('Character pop independence', () => {
-  it('does not replay the chosen pop when only the tint changes', () => {
-    const props = { character: 'Character1', color: 'Coral', size: 'Small' } as const;
-    const root = stage();
-    render(<Character {...props} selected={true} />, root);
-    const before = chosenPop(root);
-
-    render(<Character {...props} color="Sky" selected={true} />, root);
-    expect(chosenPop(root)).toBe(before);
-    expect(arrivingPop(root)).not.toBe(before);
   });
 });
 

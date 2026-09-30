@@ -29,6 +29,7 @@ function Roster({ players }: { players: readonly PublicPlayer[] }) {
           name={player.name}
           character={player.look.character}
           color={player.look.color}
+          index={index}
           isHost={index === 0}
         />
       ))}

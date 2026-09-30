@@ -25,7 +25,7 @@ export function ScoresScreen({
       <Timer remainingMs={remainingMs} totalMs={totalMs} />
       <Card variant="Elevated">
         <Stack gap="Sm">
-          {scores.map((entry) => (
+          {scores.map((entry, index) => (
             <ScoreRow
               key={entry.playerName}
               playerName={entry.playerName}
@@ -33,6 +33,7 @@ export function ScoresScreen({
               color={entry.color}
               score={entry.score}
               rank={entry.rank}
+              index={index}
             />
           ))}
         </Stack>

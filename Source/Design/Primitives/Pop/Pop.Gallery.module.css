@@ -6,3 +6,7 @@
   background: var(--Color-Character-Sky);
   border-radius: var(--Radius-Md);
 }
+
+.Other {
+  background: var(--Color-Character-Coral);
+}

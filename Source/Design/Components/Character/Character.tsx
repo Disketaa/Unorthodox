@@ -15,8 +15,20 @@ export interface CharacterProps {
    * odd one out; off for rows that are changing anyway.
    */
   moving?: boolean;
-  /** Draws it as the chosen one, which also squashes it. */
-  selected?: boolean;
+  /**
+   * Plays the reaction squash. Change the value to react again, so clicking the
+   * same character twice plays the pop twice.
+   *
+   * Deliberately not a boolean. A boolean would also change when a character is
+   * *un*chosen, and the character that lost the choice would pop as though it had
+   * been picked. Holding a per-character count that only ever goes up means the
+   * character you chose reacts, and only it.
+   */
+  pulse?: number;
+  /**
+   * Its place in a row, so a row of reactions ripples rather than firing at once.
+   */
+  index?: number;
 }
 
 /**
@@ -35,7 +47,8 @@ export function Character({
   color,
   size = 'Medium',
   moving = true,
-  selected = false,
+  pulse,
+  index,
 }: CharacterProps) {
   const Art = artFor(character);
   const motionRef = useCharacterMotion();
@@ -51,16 +64,12 @@ export function Character({
   return (
     <span class={classes} ref={motionRef}>
       {/*
-        * Two pops, one mechanism. The outer reacts to being chosen, the inner
-        * to arriving: a new character, or one wearing a new tint. They are
-        * separate elements so their squashes compose instead of overwriting one
-        * another, and each is keyed on the thing it reacts to, so a change to the
-        * other does not replay it.
+        * One pop, keyed on everything that should make it play: a new character,
+        * a new tint, or a new pulse. Turning up, changing and being chosen are
+        * the same movement, so there is one of them rather than one per reason.
        */}
-      <Pop trigger={selected ? 'chosen' : 'unchosen'} variant="Effort">
-        <Pop trigger={color} variant="Appear">
-          <Art />
-        </Pop>
+      <Pop trigger={`${character}-${color}-${pulse}`} index={index}>
+        <Art />
       </Pop>
     </span>
   );
