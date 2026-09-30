@@ -60,6 +60,7 @@ export const Strings = {
       Violet: 'Фиалка',
       Rose: 'Роза',
       Sand: 'Песок',
+      Lemon: 'Лимон',
     },
     /** Names one character in the row and says what clicking it does. */
     pickCharacter: (name: string) => `${name}, выбрать персонажа`,

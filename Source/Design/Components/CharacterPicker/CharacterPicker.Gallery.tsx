@@ -4,7 +4,7 @@ import { Stack, Text } from '@/Design/Primitives';
 /**
  * Placeholder labels, since the design system cannot read the real ones.
  *
- * Written out rather than generated, so that adding a tenth character or a ninth
+ * Written out rather than generated, so that adding a tenth character or a tenth
  * tint fails the build here and points at this file, instead of rendering an
  * unlabelled button in the gallery.
  */
@@ -29,6 +29,7 @@ const labels = {
     Violet: 'Tint Violet',
     Rose: 'Tint Rose',
     Sand: 'Tint Sand',
+    Lemon: 'Tint Lemon',
   },
   pickCharacter: (name: string) => `Pick ${name}`,
 };
@@ -37,7 +38,7 @@ export function CharacterPickerGallery() {
   return (
     <Stack direction="Vertical" gap="Md">
       <Text variant="Body">
-        CharacterPicker. Scroll the row, pick a character.
+        CharacterPicker. The character above, the cast and the palette below.
       </Text>
       <CharacterPicker
         character="Character3"

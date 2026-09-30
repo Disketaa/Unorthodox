@@ -165,3 +165,22 @@ covered by `MotionSample.test.ts`.
 The lobby's hint under the heading ("ћожно мен€ть, пока игра не началась") was removed along with
 `Strings.lobby.characterHint`. The picker says what it does by being a strip of the cast, and the
 hint repeated what the room code and the Start button already imply.
+
+## 2026-09-30 Ч the picker is three rows, and there is no carousel
+The scrolling strip is gone. It needed a drag to reveal most of the cast, it needed a hold before
+the drag would even register, and it put the character and the tint in the same horizontal space so
+neither read as the decision it was. What is there now is the chosen character large at the top,
+the whole cast under it, and the whole palette under that. The two rows are the same shape: nine
+equal square tracks each, lining up column for column, so they read as one kind of control and a
+choice can be found by counting. Seven files went with the strip (`CharacterStrip`, `MotionSample`
+and its test, `UseCenterCharacter`, `UseDragScroll`, `UseHoldGesture`, `UseMomentum`), along with
+the two `--Opacity-*` tokens and `--Size-Character-Strip`, which only the strip used. The new
+`--Size-Character-Preview` sets how big the drawing at the top is.
+
+## 2026-09-30 Ч a ninth tint, Lemon
+The palette ran red, orange, green, blue, purple, pink and brown, and Amber is orange enough that
+nothing in it was plainly yellow. `--Color-Character-Lemon` is the gap, and it is the darkest of the
+set on purpose: mid-tone so the black ink stays readable on top, and deep enough to hold the same
+weight against the paper as the others. Nine tints for nine characters is what lets the two rows be
+the same shape, and `Core/Characters.test.ts` holds that equality so the next tenth character or
+tint does not quietly break the layout.

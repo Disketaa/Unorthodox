@@ -12,10 +12,10 @@ export interface ColorChoiceProps {
 /**
  * One tint, as a button.
  *
- * The drawing it holds is a plain disc: the character beside it is the thing being
- * chosen, and repeating that artwork eight more times made the row heavy and
- * harder to scan than a tint needs to be. The button carries the name, so the
- * choice is announced properly and the disc only has to show which colour it is.
+ * The drawing it holds is a plain disc: the row above already shows every character
+ * at full size, so repeating that artwork nine more times would make the palette
+ * heavier than the choice needs. The button carries the name, so the choice is
+ * announced properly and the disc only has to show which colour it is.
  */
 export function ColorChoice({
   name,
@@ -24,7 +24,7 @@ export function ColorChoice({
   onPick,
 }: ColorChoiceProps) {
   const classes = selected
-    ? `${styles.Choice} ${styles.Selected}`
+    ? `${styles.Choice} ${styles.Chosen}`
     : styles.Choice;
 
   return (

@@ -214,6 +214,13 @@ body {
   --Color-Character-Violet: #8a7ae0;
   --Color-Character-Rose: #e0559a;
   --Color-Character-Sand: #b08656;
+  /*
+   * Lemon fills the one gap the rest leave: the palette runs red, orange, green,
+   * blue, purple, pink and brown, and Amber is orange enough that nothing in it is
+   * plainly yellow. It is the darkest of the set on purpose, so it holds the same
+   * weight as the others and the black ink still reads on top.
+   */
+  --Color-Character-Lemon: #c4a92e;
   /* The linework stays black on every tint, so the face reads the same. */
   --Color-Character-Ink: #000000;
 
@@ -248,13 +255,6 @@ body {
   --Size-Character-Small: 28px;
   --Size-Character-Medium: 44px;
   --Size-Character-Large: 96px;
-  /* One cell of the picker strip: the chosen character and a few neighbours. */
-  --Size-Character-Strip: 120px;
-  /* How many cells the strip window is worth. Not a whole number of cells, so the
-     neighbours at the edges are cut off and the row reads as continuing. */
-  --Character-Strip-Visible: 3.5;
-
-  /* Opacity, for content that is present but stepped back. */
-  --Opacity-Full: 1;
-  --Opacity-Muted: 0.35;
+  /* The chosen character in the picker, above the rows of choices. */
+  --Size-Character-Preview: 160px;
 }

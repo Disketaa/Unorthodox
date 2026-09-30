@@ -1,7 +1,8 @@
 import { CharacterColor, CharacterId, CharacterColors } from '@/Core';
 import { useState } from 'preact/hooks';
-import { CharacterStrip } from './CharacterStrip';
+import { Character } from '../Character';
 import { ColorChoice } from './CharacterChoices';
+import { CharacterRow } from './CharacterRow';
 import styles from './CharacterPicker.module.css';
 
 /** Display names for the choices, supplied by the caller so all text lives in Strings. */
@@ -20,11 +21,13 @@ export interface CharacterPickerProps {
 }
 
 /**
- * One character, and the tints it can wear.
+ * Three rows: the character as it will be seen, the whole cast, the whole palette.
  *
- * The cast is a single scrolling row with the chosen character in the middle,
- * rather than one large preview with a button to step through: the row shows what
- * stepping would give, and picking any character moves it to the middle.
+ * The big drawing is there to answer "what will the room see" at a glance, and the
+ * two rows under it are the two decisions, kept the same shape so neither reads as
+ * part of the other. A single scrolling strip was the earlier shape: it hid most of
+ * the cast, needed a drag to reveal it, and made the character and the tint compete
+ * for the same horizontal space.
  */
 export function CharacterPicker({
   character,
@@ -45,7 +48,8 @@ export function CharacterPicker({
 
   return (
     <div class={styles.Root}>
-      <CharacterStrip
+      <Preview character={character} color={color} pulse={pulse} />
+      <CharacterRow
         character={character}
         color={color}
         labels={labels.character}
@@ -53,7 +57,7 @@ export function CharacterPicker({
         pulse={pulse}
         onPick={pick}
       />
-      <ColorGrid
+      <ColorRow
         character={character}
         color={color}
         labels={labels}
@@ -63,15 +67,35 @@ export function CharacterPicker({
   );
 }
 
-interface ColorGridProps {
+interface PreviewProps {
+  character: CharacterId;
+  color: CharacterColor;
+  pulse: number;
+}
+
+/** The chosen character, large and wearing the chosen tint. */
+function Preview({ character, color, pulse }: PreviewProps) {
+  return (
+    <div class={styles.Preview}>
+      <Character
+        character={character}
+        color={color}
+        size="Fill"
+        pulse={pulse}
+      />
+    </div>
+  );
+}
+
+interface ColorRowProps {
   character: CharacterId;
   color: CharacterColor;
   labels: CharacterPickerLabels;
   onPick: (character: CharacterId, color: CharacterColor) => void;
 }
 
-/** The tints, a row of discs under the characters. */
-function ColorGrid({ character, color, labels, onPick }: ColorGridProps) {
+/** The whole palette, one disc each, the chosen one marked. */
+function ColorRow({ character, color, labels, onPick }: ColorRowProps) {
   return (
     <div class={styles.Colors} role="group">
       {CharacterColors.map((name) => (

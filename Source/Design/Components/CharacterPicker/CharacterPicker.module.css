@@ -1,122 +1,58 @@
 /*
- * The picker.
+ * The picker: one character, the whole cast, the whole palette.
  *
- * A scrolling row of every character with the chosen one in the middle, and the
- * tints as a row of small discs underneath. One large preview beside a two-column
- * block of swatches was the earlier shape: it hid the rest of the cast, and it
- * gave every tint a cell as big as the character it tints.
+ * Three stacked rows rather than one scrolling strip. A strip had to be dragged to
+ * reveal most of the cast, and it put the character and the tint in the same
+ * horizontal space, so neither read as the decision it was. Here the big drawing
+ * answers "what will the room see" and the two rows under it are the two choices,
+ * side by side and equal.
  */
 .Root {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: var(--Space-Md);
 }
 
 /*
- * The scrolling row of characters.
+ * The large drawing.
  *
- * The width is capped rather than free, so the row is a window onto the cast
- * instead of the whole cast at once: the chosen character sits in the middle with
- * a neighbour or two either side, which is enough to see that stepping is
- * possible and enough room for the drawings to be read. The cap is deliberately
- * not a whole number of cells, so the neighbours are cut off at the edge and the
- * row reads as something that continues rather than as a fixed set.
- *
- * There is no blank space past the ends of the row. The scroller's own limits do
- * the clamping: at either end the row simply stops, and the first or last
- * character sits against the edge instead of in the middle. Padding at the ends
- * would let the row keep travelling into empty space so that every character could
- * reach the centre, which looks like the row has more to show than it does.
+ * A share of the picker width rather than a fixed size, with `aspect-ratio` keeping
+ * it square: the drawing is `Fill`, so it is the box that decides the scale and the
+ * same rule fits a narrow phone and a wide card.
  */
-.Characters {
-  display: flex;
-  align-items: center;
-  gap: var(--Space-Sm);
+.Preview {
+  align-self: center;
   width: 100%;
-  max-width: calc(var(--Character-Strip-Visible) * var(--Size-Character-Strip));
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  /*
-   * Vertical panning is left to the page, horizontal panning is left to the drag
-   * hook. Without this the browser scrolls the row itself on a finger and the
-   * hold never gets a chance to be felt.
-   */
-  touch-action: pan-y;
-}
-
-.Characters::-webkit-scrollbar {
-  display: none;
-}
-
-/* The row while it is being dragged, so it reads as held rather than scrolling. */
-.CharactersDragging {
-  cursor: grabbing;
-  scroll-snap-type: none;
-}
-
-/*
- * One character in the row.
- *
- * Every cell is the same size, so stepping through the row moves by a constant
- * distance rather than by whatever each drawing happens to measure, and each one
- * snaps to the middle rather than stopping wherever the drag was released. At the
- * ends of the row the middle is out of reach, so the snap lands on the edge
- * instead, which is what clamps the row there.
- */
-.Character {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  width: var(--Size-Character-Strip);
-  padding: var(--Space-Xs);
-  background: none;
-  border: none;
-  border-radius: var(--Radius-Md);
-  cursor: pointer;
-  opacity: var(--Opacity-Muted);
-  scroll-snap-align: center;
-  transition: opacity var(--Duration-Fast) var(--Easing-Standard);
-}
-
-/* The chosen character, at full strength and on the surface the rest sit behind. */
-.CharacterChosen {
+  max-width: var(--Size-Character-Preview);
+  padding: var(--Space-Sm);
   background: var(--Color-Surface-Default);
   border: var(--Border-Width-Default) solid var(--Color-Border-Default);
-  opacity: var(--Opacity-Full);
-}
-
-.Character:hover {
-  opacity: var(--Opacity-Full);
-}
-
-.Character:focus-visible {
-  outline: var(--Border-Width-Default) solid var(--Color-Border-Focus);
-  outline-offset: var(--Space-Xs);
+  border-radius: var(--Radius-Md);
 }
 
 /*
- * One row of eight discs, spanning the picker.
+ * The two rows of choices.
  *
- * `align-items` on `.Root` centres the character, so the row needs an explicit
- * full width to reach both edges. Eight equal tracks share that width, so the
- * discs are as wide as the picker allows and never leave a gap in the middle; the
- * square shape comes from `aspect-ratio` rather than a fixed height.
+ * Both are grids of equal square tracks filling the width, so the cast and the
+ * palette line up column for column and the two rows are the same shape. That is
+ * what makes them read as the same kind of control: nine of one thing, nine of the
+ * other. `minmax(0, ...)` keeps a track from refusing to shrink under its contents,
+ * which is what pushes padding off a narrow screen.
  */
+.Characters,
 .Colors {
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: var(--Space-Sm);
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: var(--Space-Xs);
   width: 100%;
 }
 
 /*
- * The button around a disc.
+ * One cell in either row.
  *
- * It fills its share of the row and takes its height from that width, so the hit
- * area is exactly the drawn circle and stays square at any picker width.
+ * Square by `aspect-ratio`, so the nine cells fill the width evenly and a disc
+ * inside one stays round rather than stretching to a wider cell.
  */
 .Choice {
   display: flex;
@@ -128,7 +64,7 @@
   min-width: 0;
   background: var(--Color-Surface-Default);
   border: var(--Border-Width-Default) solid var(--Color-Border-Default);
-  border-radius: var(--Radius-Full);
+  border-radius: var(--Radius-Md);
   cursor: pointer;
   transition: border-color var(--Duration-Fast) var(--Easing-Standard);
 }
@@ -142,8 +78,12 @@
   outline-offset: var(--Space-Xs);
 }
 
-/* The current choice, marked by the outline the buttons share. */
-.Selected {
+/*
+ * The current choice in either row, marked the same way in both: the action colour
+ * on the border, since the two rows have to be told apart at a glance but read as
+ * one kind of control.
+ */
+.Chosen {
   border-color: var(--Color-Action-Primary-Background);
   background: var(--Color-Action-Ghost-Hover);
 }

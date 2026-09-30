@@ -28,6 +28,7 @@ export const CharacterColors = [
   'Violet',
   'Rose',
   'Sand',
+  'Lemon',
 ] as const;
 
 export type CharacterColor = (typeof CharacterColors)[number];
