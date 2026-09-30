@@ -2,7 +2,7 @@ import { useEffect, useRef } from "preact/hooks";
 import styles from "./PaperBackground.module.css";
 
 /** How often the texture jumps to a new offset. */
-const ShiftIntervalMs = 1_000;
+const ShiftIntervalMs = 300;
 
 /** Largest offset in either direction, in pixels. Matches the CSS overscan. */
 const MaxShiftPx = 60;

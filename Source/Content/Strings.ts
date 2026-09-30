@@ -19,7 +19,7 @@ export const Strings = {
     namePlaceholder: 'Имя',
     roomPlaceholder: 'Код комнаты',
     nameError: 'Введите имя',
-    roomError: 'Код комнаты — 4 буквы',
+    roomError: 'Код комнаты — 4 цифры',
     joinButton: 'Войти',
     createButton: 'Создать комнату',
   },

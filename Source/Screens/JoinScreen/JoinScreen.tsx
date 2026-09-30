@@ -1,8 +1,8 @@
 import { Stack, Text } from '@/Design/Primitives';
 import { Button, Card } from '@/Design/Components';
 import { Strings } from '@/Content';
-import { GameConfig } from '@/Game';
 import { JoinFields } from './JoinFields';
+import { useJoinForm } from './UseJoinForm';
 
 export interface JoinScreenProps {
   name: string;
@@ -22,8 +22,7 @@ export function JoinScreen({
   onJoin,
   onCreate,
 }: JoinScreenProps) {
-  const nameMissing = name.trim().length === 0;
-  const codeValid = roomCode.length === GameConfig.limits.roomCodeLength;
+  const { errors, submitJoin, submitCreate } = useJoinForm(name, roomCode);
 
   return (
     <Stack gap="Lg" align="Stretch">
@@ -33,18 +32,14 @@ export function JoinScreen({
           <JoinFields
             name={name}
             roomCode={roomCode}
+            showErrors={errors.showErrors}
             onNameChange={onNameChange}
             onRoomCodeChange={onRoomCodeChange}
           />
-          <Button
-            variant="Primary"
-            size="Large"
-            disabled={nameMissing || !codeValid}
-            onClick={onJoin}
-          >
+          <Button variant="Primary" size="Large" onClick={() => submitJoin(onJoin)}>
             {Strings.join.joinButton}
           </Button>
-          <Button variant="Secondary" size="Medium" disabled={nameMissing} onClick={onCreate}>
+          <Button variant="Secondary" size="Medium" onClick={() => submitCreate(onCreate)}>
             {Strings.join.createButton}
           </Button>
         </Stack>

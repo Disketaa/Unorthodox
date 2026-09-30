@@ -2,9 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { createRoomCode, isValidRoomCode, normalizeRoomCode } from './RoomCode';
 import { GameConfig } from '@/Game';
 
-/** Letters that look like Latin ones and must not appear in a code. */
-const lookalikes = 'АВЕКМНОРСТУХ';
-
 describe('Room codes', () => {
   it('generates a code of the configured length', () => {
     const code = createRoomCode();
@@ -12,48 +9,35 @@ describe('Room codes', () => {
     expect(isValidRoomCode(code)).toBe(true);
   });
 
-  it('uses Cyrillic letters only', () => {
+  it('uses digits only', () => {
     for (let attempt = 0; attempt < 200; attempt++) {
-      for (const letter of createRoomCode()) {
-        expect(letter).toMatch(/[А-ЯЁ]/);
-      }
-    }
-  });
-
-  it('avoids letters that look like Latin ones', () => {
-    for (let attempt = 0; attempt < 200; attempt++) {
-      for (const letter of createRoomCode()) {
-        expect(lookalikes).not.toContain(letter);
-      }
+      expect(createRoomCode()).toMatch(/^\d+$/);
     }
   });
 
   it('is driven by the supplied randomness', () => {
-    expect(createRoomCode(() => 0)).toBe('ББББ');
+    expect(createRoomCode(() => 0)).toBe('0000');
+    expect(createRoomCode(() => 0.999999)).toBe('9999');
   });
 
   it('rejects codes of the wrong length', () => {
-    expect(isValidRoomCode('БГД')).toBe(false);
-    expect(isValidRoomCode('БГДЖЗ')).toBe(false);
-    expect(isValidRoomCode('БГДЖ')).toBe(true);
+    expect(isValidRoomCode('123')).toBe(false);
+    expect(isValidRoomCode('12345')).toBe(false);
+    expect(isValidRoomCode('1234')).toBe(true);
   });
 });
 
 describe('Typed room codes', () => {
-  it('normalises a typed code to uppercase Cyrillic', () => {
-    expect(normalizeRoomCode('бгд')).toBe('БГД');
-    expect(normalizeRoomCode('БГДЖ')).toBe('БГДЖ');
-  });
-
-  it('drops letters that are not in the alphabet', () => {
-    // Latin lookalikes, digits and excluded letters are all removed.
-    expect(normalizeRoomCode('Б1Г')).toBe('БГ');
-    expect(normalizeRoomCode('AБBГ')).toBe('БГ');
-    expect(normalizeRoomCode('БЪГЬЫ')).toBe('БГ');
+  it('keeps digits and drops everything else', () => {
+    expect(normalizeRoomCode('1234')).toBe('1234');
+    // A phone keyboard may send letters or punctuation into the field.
+    expect(normalizeRoomCode('a1b2c3')).toBe('123');
+    expect(normalizeRoomCode('1-2 3!4')).toBe('1234');
+    expect(normalizeRoomCode('БГДЖ')).toBe('');
   });
 
   it('caps the code at the configured length', () => {
-    const long = normalizeRoomCode('БГДЖЗИЙЛ');
+    const long = normalizeRoomCode('123456789');
     expect(long).toHaveLength(GameConfig.limits.roomCodeLength);
   });
 });

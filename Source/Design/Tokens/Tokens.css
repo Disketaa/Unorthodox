@@ -3,8 +3,8 @@
  * font CDN, so the game does not depend on a third party being reachable.
  */
 @font-face {
-  font-family: 'BlobSpongeyLowercase';
-  src: url('../Fonts/BlobSpongeyLowercase.ttf') format('truetype');
+  font-family: 'BlobSpongey';
+  src: url('../Fonts/BlobSpongey.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -32,9 +32,18 @@ body {
 
 /**
  * The app is designed for a phone. On a wider screen the content is centred in a
- * narrow column rather than stretched, so line lengths stay readable.
+ * narrow column rather than stretched, so line lengths stay readable, and it sits
+ * in the middle of the viewport so the entry screen is not pinned to the top.
+ *
+ * `align-items: center` with `min-height` rather than `justify-content`, so a
+ * screen taller than the viewport still starts at the top and scrolls instead of
+ * being pushed off the top edge.
  */
 #root {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100dvh;
   max-width: var(--Layout-ContentMaxWidth);
   margin: 0 auto;
   padding: var(--Layout-ContentPadding);
@@ -117,7 +126,7 @@ body {
   --FontSize-4xl: 56px;
 
   --FontFamily-Body: 'Inter', system-ui, sans-serif;
-  --FontFamily-Display: 'BlobSpongeyLowercase', 'Fredoka', cursive;
+  --FontFamily-Display: 'BlobSpongey', 'Fredoka', cursive;
 
   --Duration-Fast: 150ms;
   --Duration-Normal: 250ms;
@@ -141,14 +150,15 @@ body {
    * readable; the opacity only sets how deep the tint goes.
    */
   --Overlay-BlendMode: multiply;
-  --Overlay-Opacity: 0.66;
+  --Overlay-Opacity: 0.3;
   /* How far the texture may move before an edge would show, in pixels. */
   --Overlay-ShiftMax: 60px;
 
   --Color-Text-Default: #212121;
   --Color-Text-Muted: #757575;
   /* The game title, a deep blue rather than the near-black of body text. */
-  --Color-Text-Display: #1B4F9C;
+  /* The game title, matching the create-room button so the two read as a pair. */
+  --Color-Text-Display: var(--Color-Action-Secondary-Background);
   --Color-Text-Inverse: #FFFFFF;
   --Color-Text-Link: #FF9800;
 

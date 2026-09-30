@@ -7,8 +7,12 @@
   padding: var(--Layout-ContentPadding);
 }
 
+/*
+ * The paper texture already gives the page depth, so the elevated variant is
+ * separated by a hairline rather than a shadow that would fight with it.
+ */
 .VariantElevated {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--Color-Border-Default);
 }
 
 .VariantOutlined {

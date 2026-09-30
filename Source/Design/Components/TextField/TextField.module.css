@@ -46,6 +46,26 @@
   padding: var(--Space-Sm) 0;
 }
 
+/* The input plus its error message, so the message can appear without the
+   surrounding layout having to reserve room for it. */
+.Field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--Space-Xs);
+  width: 100%;
+  min-width: 0;
+}
+
+.Error {
+  border-color: var(--Color-Border-Error);
+}
+
+.ErrorText {
+  font-size: var(--FontSize-Caption);
+  color: var(--Color-Border-Error);
+  padding-left: var(--Space-Sm);
+}
+
 .VariantUnderline:focus-visible {
   outline: none;
   border-bottom-color: var(--Color-Border-Focus);

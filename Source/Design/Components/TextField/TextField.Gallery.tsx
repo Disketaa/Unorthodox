@@ -21,6 +21,21 @@ export function TextFieldGallery() {
         placeholder="Underline input"
         onChange={setValue}
       />
+      <TextField
+        variant="Filled"
+        value={value}
+        placeholder="With an error"
+        error
+        errorText="Показывает, что поле пустое"
+        onChange={setValue}
+      />
+      <TextField
+        variant="Filled"
+        value="1234"
+        placeholder="Numeric"
+        inputMode="numeric"
+        onChange={setValue}
+      />
     </Stack>
   );
 }

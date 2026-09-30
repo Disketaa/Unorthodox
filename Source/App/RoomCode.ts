@@ -1,13 +1,13 @@
 import { GameConfig } from '@/Game';
 
 /**
- * Room codes are written in Cyrillic.
+ * Room codes are four digits.
  *
- * Letters that look like Latin ones (А, В, Е, К, М, Н, О, Р, С, Т, У, Х) are
- * left out, so a code read out loud over the phone cannot be misheard. Ъ, Ы and
- * Ь are left out too, because they are awkward to pronounce.
+ * Digits are easier to read out loud and to type on a phone keyboard than
+ * letters, and there is nothing to confuse with each other the way letters such
+ * as O and 0 are.
  */
-const roomAlphabet = 'БГДЖЗИЙЛПФЦЧШЩЭЮЯ';
+const roomAlphabet = '0123456789';
 
 /** Uppercase a typed code and drop everything that is not a room letter. */export function normalizeRoomCode(value: string): string {
   const upper = value.toUpperCase();
