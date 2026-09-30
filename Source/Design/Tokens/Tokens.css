@@ -133,6 +133,14 @@ body {
   --Color-Surface-Active: #EEEEEE;
   --Color-Surface-Inverse: #212121;
 
+  /*
+   * The paper texture sits over the interface and multiplies into it, so it
+   * darkens the surfaces instead of washing them out, and stays faint rather
+   * than becoming a grey haze.
+   */
+  --Overlay-BlendMode: multiply;
+  --Overlay-Opacity: 0.18;
+
   --Color-Text-Default: #212121;
   --Color-Text-Muted: #757575;
   --Color-Text-Inverse: #FFFFFF;

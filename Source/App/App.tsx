@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'preact/hooks';
+import { ComponentChildren } from 'preact';
 import { GalleryPage } from '@/Dev/ComponentGallery/GalleryPage';
 import { JoinScreen } from '@/Screens';
+import { PaperBackground } from '@/Design/Overlays';
 import { createRoomCode, normalizeRoomCode } from './RoomCode';
 import { parseRoute, roomPath, Route } from './Routes';
 import { GameRoom } from './GameRoom';
@@ -44,6 +46,16 @@ function useHashRoute(): Route {
   return parseRoute(hash);
 }
 
+/** The screens that sit on top of the paper background. */
+function WithBackground(children: ComponentChildren) {
+  return (
+    <>
+      <PaperBackground />
+      {children}
+    </>
+  );
+}
+
 export function App() {
   const route = useHashRoute();
   const [name, setName] = useState(loadName);
@@ -64,20 +76,25 @@ export function App() {
   if (route.kind === 'Gallery') {
     return <GalleryPage />;
   }
-
   const nameMissing = name.trim().length === 0;
   if (route.kind === 'Room' && !nameMissing) {
-    return <GameRoom roomCode={route.roomCode} role={route.role} name={name.trim()} />;
+    return (
+      <WithBackground>
+        <GameRoom roomCode={route.roomCode} role={route.role} name={name.trim()} />
+      </WithBackground>
+    );
   }
 
   return (
-    <JoinScreen
-      name={name}
-      roomCode={roomCode}
-      onNameChange={onNameChange}
-      onRoomCodeChange={onRoomCodeChange}
-      onJoin={onJoin}
-      onCreate={onCreate}
-    />
+    <WithBackground>
+      <JoinScreen
+        name={name}
+        roomCode={roomCode}
+        onNameChange={onNameChange}
+        onRoomCodeChange={onRoomCodeChange}
+        onJoin={onJoin}
+        onCreate={onCreate}
+      />
+    </WithBackground>
   );
 }
