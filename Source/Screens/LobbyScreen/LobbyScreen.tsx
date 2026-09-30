@@ -28,7 +28,11 @@ export function LobbyScreen({ roomCode, players, isHost, onStart }: LobbyScreenP
       {roomFull && <Banner variant="Error">{Strings.lobby.roomFull}</Banner>}
       {isHost ? (
         <>
-          {!enoughPlayers && <Banner variant="Info">{Strings.lobby.notEnoughPlayers}</Banner>}
+          {!enoughPlayers && (
+            <Banner variant="Info">
+              {Strings.lobby.notEnoughPlayers(GameConfig.limits.minPlayers)}
+            </Banner>
+          )}
           <Button
             variant="Primary"
             size="Large"

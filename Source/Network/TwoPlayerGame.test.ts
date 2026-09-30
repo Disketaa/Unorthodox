@@ -1,0 +1,102 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { InMemoryTransport } from './InMemoryTransport';
+import { ClientSession } from './ClientSession';
+import { HostSession } from './HostSession';
+import { GameConfig } from '@/Game';
+
+const roomCode = 'ABCD';
+
+type Fixture = {
+  hostSession: HostSession;
+  clientSession: ClientSession;
+};
+
+/** Start a room with one host and one client, which is the new minimum. */
+function startTwoPlayerRoom(): Fixture {
+  const hostSession = new HostSession(new InMemoryTransport());
+  hostSession.start(roomCode, 'Host');
+  const clientSession = new ClientSession(new InMemoryTransport());
+  clientSession.start(roomCode, 'Ann');
+  clientSession.join('Ann');
+  return { hostSession, clientSession };
+}
+
+describe('Two player game', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  it('allows a minimum of two players', () => {
+    expect(GameConfig.limits.minPlayers).toBe(2);
+  });
+
+  it('counts the host as a player, so a solo room is one short', () => {
+    const { hostSession } = startTwoPlayerRoom();
+    const state = hostSession.getState();
+    expect(state !== undefined && 'players' in state ? state.players.size : -1).toBe(2);
+  });
+});
+
+describe('Two player round', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  it('plays a full round with just two players', () => {
+    const { hostSession, clientSession } = startTwoPlayerRoom();
+    expect(clientSession.getPlayerId()).not.toBeNull();
+
+    hostSession.startGame('A topic', 60_000);
+    clientSession.submitAnswer('Something blue');
+    hostSession.submitOwnAnswer('Something green');
+
+    // The host only leaves the writing phase once everyone has answered.
+    hostSession.endReviewing(90_000);
+    expect(hostSession.getState()?.phase).toBe('Reviewing');
+
+    // Two distinct answers make two groups, and a review can end.
+    hostSession.endReviewing(15_000);
+    expect(hostSession.getState()?.phase).toBe('Scores');
+  });
+});
+
+describe('Two player scoring', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  it('scores a pair higher than a solo answer', () => {
+    const { hostSession, clientSession } = startTwoPlayerRoom();
+    hostSession.startGame('A topic', 60_000);
+    // Matching answers put both players in one group of two.
+    clientSession.submitAnswer('The same thing');
+    hostSession.submitOwnAnswer('the same thing!');
+    hostSession.endReviewing(90_000);
+    hostSession.endReviewing(15_000);
+
+    const state = hostSession.getState();
+    const scores = state !== undefined && 'scores' in state ? state.scores : new Map();
+    expect(scores.size).toBe(2);
+    for (const score of scores.values()) {
+      expect(score).toBe(GameConfig.scoring.pairPoints);
+    }
+  });
+});

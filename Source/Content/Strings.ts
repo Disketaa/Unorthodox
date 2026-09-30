@@ -30,7 +30,8 @@ export const Strings = {
     shareHint: 'Отправьте код комнаты друзьям',
     startButton: 'Начать игру',
     waitingForHost: 'Ждём, пока хост начнёт игру',
-    notEnoughPlayers: 'Нужно минимум 3 игрока',
+    /** Built from the limit, so the hint cannot drift from the actual rule. */
+    notEnoughPlayers: (min: number) => `Нужно минимум ${min} игрока`,
     roomFull: 'Комната заполнена',
   },
   writing: {

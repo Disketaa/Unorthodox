@@ -18,7 +18,7 @@ export const GameConfig = {
     nameMaxLength: 16,
     answerMaxLength: 80,
     roomCodeLength: 4,
-    minPlayers: 3,
+    minPlayers: 2,
     maxPlayers: 10,
   },
 };
