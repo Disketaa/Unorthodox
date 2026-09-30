@@ -137,6 +137,13 @@ body {
   --Duration-Normal: 250ms;
   --Duration-Slow: 400ms;
 
+  /*
+   * How long a character takes to be revealed when it first appears or changes
+   * tint. Short on purpose: it plays whenever a player picks a new colour, and a
+   * reveal that takes half a second turns a quick choice into a wait.
+   */
+  --Duration-Character-Reveal: 380ms;
+
   --Easing-Standard: cubic-bezier(0.2, 0, 0, 1);
   --Easing-Decelerate: cubic-bezier(0, 0, 0.2, 1);
   --Easing-Accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);

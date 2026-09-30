@@ -67,6 +67,25 @@ drawings are square on a 512 viewBox, so that keeps them round at any width with
 query. The tint row is `auto-fill` with a floor of a comfortable target, so the discs wrap on
 a phone and spread on a wide screen rather than all eight squeezing onto one row.
 
+## 2026-09-30 — a character reveals as a flipbook, and again on every tint change
+A character used to just be there, which made a first render and a colour change look identical
+to a repaint. It now reveals with a hard edge sweeping left to right in nine held steps, the way
+a page turns in a flipbook, rather than fading in. A fade reads as software loading; a stepped
+edge reads as something drawn for this frame, which is the same trick the idle sway uses.
+
+The sweep is `clip-path`, not `width`, so nothing reflows while it plays, and it animates
+`clip-path` and `opacity` only. The selection lift is a `transform` on the layer above, so the
+two never overwrite one another and both can be true at once.
+
+The revealed element is keyed on the tint, so changing colour remounts it and the browser
+replays the animation. The key is on that inner element rather than on the character root, so
+the rolled idle motion keeps its values and does not visibly restart underneath the reveal.
+`Character.test.tsx` covers this: if the key stopped remounting, the reveal would play once and
+never again, and nothing else in the suite would notice.
+
+Reduced motion has to set the finished state explicitly, not just `animation: none`, or the
+character stays clipped at `inset(0 100% 0 0)` and is never seen at all.
+
 ## 2026-09-30 — characters sway side to side, rolled per instance, almost imperceptibly
 Each character is given a resting lean, a swing width, a tempo, a step count, a jump keyword
 and a place in its cycle, all rolled once when it mounts and written onto its node as custom

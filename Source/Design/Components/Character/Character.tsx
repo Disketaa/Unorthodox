@@ -51,7 +51,16 @@ export function Character({
   return (
     <span class={classes} ref={motionRef}>
       <span class={styles.Layer}>
-        <Art />
+        {/*
+          * Keyed on the tint, so changing colour remounts this element and the
+          * reveal plays again: a character switching colour is a new drawing
+          * arriving, and the player picked it. The key is on this inner element
+          * rather than the outer one so the idle motion keeps its rolled values
+          * and does not visibly restart underneath the reveal.
+         */}
+        <span class={`${styles.Reveal} ${styles.Appearing}`} key={color}>
+          <Art />
+        </span>
       </span>
     </span>
   );

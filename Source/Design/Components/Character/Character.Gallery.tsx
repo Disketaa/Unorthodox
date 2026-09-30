@@ -33,6 +33,11 @@ export function CharacterGallery() {
         <Character character="Character1" color="Mint" selected />
         <Character character="Character1" color="Mint" moving={false} selected />
       </Stack>
+
+      <Text variant="Body">
+        The reveal plays on mount and again on every tint change, so the row
+        above re-reveals whenever the gallery reloads.
+      </Text>
     </Stack>
   );
 }

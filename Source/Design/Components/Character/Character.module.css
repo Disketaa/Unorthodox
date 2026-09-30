@@ -108,6 +108,43 @@
  * the picker has nine characters on screen, and anything bolder makes the choice
  * shout rather than register.
  */
+/*
+ * Appearing.
+ *
+ * A character is revealed the way a page is turned in a flipbook: a hard edge
+ * sweeps across it in a handful of held steps, rather than fading in. A fade
+ * reads as software loading; a stepped edge reads as something drawn for this
+ * frame, which is the same trick the idle sway uses.
+ *
+ * The edge travels left to right, because that is the direction the eye reads
+ * and the direction a page is turned. It is `clip-path` rather than `width` so
+ * nothing reflows while it plays, and it composes with the `scale` below instead
+ * of replacing it, so the reveal and the selection lift can both be true at
+ * once.
+ */
+.Appearing {
+  animation: CharacterReveal var(--Duration-Character-Reveal) steps(9, jump-none) both;
+}
+
+@keyframes CharacterReveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+/*
+ * The chosen character sits a little larger and stands up straight, so picking
+ * one is felt as well as seen. It eases rather than snaps, and the rest of the
+ * grid is left exactly as it was. The lift is small to match the idle motion:
+ * the picker has nine characters on screen, and anything bolder makes the choice
+ * shout rather than register.
+ */
 .Selected {
   --Character-Motion-Scale: 1.05;
   --Character-Motion-Tilt: 0deg;
@@ -131,6 +168,14 @@
     animation: none;
     transform: rotate(var(--Character-Motion-Tilt, 0deg));
   }
+
+  /* The reveal is a wipe, so reduced motion has to be shown the finished state
+     explicitly or the character stays clipped. */
+  .Appearing {
+    animation: none;
+    clip-path: none;
+    opacity: 1;
+  }
 }
 
 .SizeFill {
@@ -139,7 +184,11 @@
   aspect-ratio: 1;
 }
 
-/* The scale and bob are on separate layers, so neither resets the other. */
+/*
+ * The lift and the sway are on separate elements, so neither resets the other,
+ * and the reveal is a third thing again: it animates `clip-path` and `opacity`
+ * only, leaving the scale here to transition on its own.
+ */
 .Layer {
   position: relative;
   display: block;
@@ -147,6 +196,13 @@
   height: 100%;
   transform: scale(var(--Character-Motion-Scale, 1));
   transition: transform var(--Duration-Normal) var(--Easing-Spring);
+}
+
+/* The element the reveal clips, sized to the character. */
+.Reveal {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /*
