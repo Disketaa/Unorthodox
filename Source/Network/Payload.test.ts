@@ -32,6 +32,33 @@ describe('Transport payload handling', () => {
   });
 });
 
+describe('Host addressing', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  it('answers a join to the peer it arrived from, not a self-declared id', () => {
+    const clientSession = new ClientSession(new InMemoryTransport());
+    clientSession.start(roomCode, 'Ann');
+    const hostSession = new HostSession(new InMemoryTransport());
+    hostSession.start(roomCode, 'Host');
+
+    // The client never declares a temporary id, so the host has to answer using
+    // the transport address the message actually came from.
+    clientSession.join('Ann');
+    vi.advanceTimersByTime(RetryInterval * 3);
+
+    expect(clientSession.getPlayerId()).toBe('p1');
+    expect(playerCount(hostSession)).toBe(2);
+  });
+});
+
 describe('Client join retry', () => {
   beforeEach(() => {
     vi.useFakeTimers();

@@ -15,10 +15,9 @@ export class ClientSession {
   private state: Game.PublicState | undefined = undefined;
   private transport: Transport;
   private playerId: string | null = null; // We'll set this when we receive a SetPlayerId message from the host
-  private temporaryClientId: string; // Temporary client ID used until we get the real one from the host
   private updateListener: (() => void) | undefined = undefined;
   /** Join message held back until the transport can address the host. */
-  private pendingJoin: { type: 'Join'; name: string; temporaryClientId: string } | null = null;
+  private pendingJoin: { type: 'Join'; name: string } | null = null;
   /** Retries the buffered join until the host assigns us an id. */
   private joinRetry: ReturnType<typeof setInterval> | null = null;
 
@@ -66,9 +65,6 @@ export class ClientSession {
 
   constructor(transport: Transport) {
     this.transport = transport;
-    // Generate a temporary client ID
-    this.temporaryClientId =
-      Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
     // Set up incoming message handler
     this.transport.onMessage((message, fromHost) => {
@@ -88,10 +84,9 @@ export class ClientSession {
 
   /** Start the client session with a room code and player name */
   start(roomCode: string, playerName: string): void {
-    // Set our temporary client ID on the transport so that the host can send messages to us using this ID
-    this.transport.setPlayerId(this.temporaryClientId);
+    // The host addresses us by the peer the transport sees, so there is no id
+    // for us to declare here. The host assigns our game player id on join.
     this.transport.start(roomCode, playerName, false);
-    // We don't know our playerId yet; the host will assign it via SetPlayerId message
   }
 
   /** Stop the client session */
@@ -120,9 +115,6 @@ export class ClientSession {
         this.stopJoinRetries();
         this.pendingJoin = null;
         this.updateListener?.();
-        // Re-key the transport from the temporary id to the real player id, so the
-        // host can address us by the id it now knows us by.
-        this.transport.setPlayerId(message.playerId);
         break;
     }
   }
@@ -130,7 +122,7 @@ export class ClientSession {
   /** Send a join message to the host */
   join(playerName: string): void {
     log('info', 'joining as', playerName);
-    this.pendingJoin = { type: 'Join', name: playerName, temporaryClientId: this.temporaryClientId };
+    this.pendingJoin = { type: 'Join', name: playerName };
     this.transport.sendToHost(this.pendingJoin);
     // The first attempt may land before the host is reachable, so keep trying.
     this.startJoinRetries();

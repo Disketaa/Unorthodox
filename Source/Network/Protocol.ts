@@ -6,7 +6,7 @@ import * as Game from '@/Game';
  * `groupId` is the numeric index assigned by the grouping algorithm.
  */
 export type ClientMessage =
-  | { type: 'Join'; name: string; temporaryClientId: string }
+  | { type: 'Join'; name: string }
   | { type: 'SubmitAnswer'; text: string; playerId: PlayerId }
   | { type: 'RejectGroup'; groupId: number; playerId: PlayerId };
 
@@ -35,7 +35,7 @@ export function isClientMessage(value: unknown): value is ClientMessage {
   }
   switch (record.type) {
     case 'Join':
-      return typeof record.name === 'string' && typeof record.temporaryClientId === 'string';
+      return typeof record.name === 'string';
     case 'SubmitAnswer':
       return typeof record.text === 'string' && typeof record.playerId === 'string';
     case 'RejectGroup':

@@ -24,8 +24,8 @@ export class HostSession {
     this.transport = transport;
 
     // Set up incoming message handler
-    this.transport.onMessage((message, fromHost) => {
-      log('debug', 'onMessage', message, 'fromHost:', fromHost);
+    this.transport.onMessage((message, fromHost, peerId) => {
+      log('debug', 'onMessage', message, 'from peer:', peerId);
       // We only expect messages from clients (fromHost should be false)
       if (fromHost) {
         // Ignore messages from host (shouldn't happen in a correct setup)
@@ -36,7 +36,7 @@ export class HostSession {
         log('warn', 'ignoring unrecognised client message');
         return;
       }
-      this.handleClientMessage(message);
+      this.handleClientMessage(message, peerId);
     });
   }
 
@@ -71,8 +71,8 @@ export class HostSession {
     this.updateListener = undefined;
   }
 
-  /** Handle a message from a client */
-  private handleClientMessage(message: ClientMessage): void {
+  /** Handle a message from a client, addressed by the peer it arrived from. */
+  private handleClientMessage(message: ClientMessage, peerId: string): void {
     if (!this.state) {
       return;
     }
@@ -82,9 +82,11 @@ export class HostSession {
         const playerId: PlayerId = `p${this.nextPlayerId++}`;
         this.playerIds.add(playerId);
         action = { type: 'JOIN', playerId, name: message.name };
-        // Address the client by the temporary id it gave us until it learns its real one.
-        log('info', 'assigning playerId', playerId, 'to', message.temporaryClientId);
-        this.transport.sendToPlayer(message.temporaryClientId, { type: 'SetPlayerId', playerId });
+        // Answer the peer the message actually came from, which is the only
+        // address the transport can use. The client invents a temporary id
+        // before it has a player id, so that id is not routable.
+        log('info', 'assigning playerId', playerId, 'to peer', peerId);
+        this.transport.sendToPeer(peerId, { type: 'SetPlayerId', playerId });
         break;
       }
       case 'SubmitAnswer':

@@ -1,69 +1,74 @@
 import { Transport } from './Transport';
 
+/** Counter behind the generated peer addresses, so tests get unique addresses. */
+let nextPeerAddress = 0;
+
 /**
  * In-memory transport for testing without network.
  * All peers share the same transport instance via a static broker.
  */
 export class InMemoryTransport implements Transport {
-  /** Static map of all peers by playerId */
-  private static peersById = new Map<string, {
+  /** Static map of all peers by their transport-level address */
+  private static peersByPeer = new Map<string, {
     transport: InMemoryTransport;
     isHost: boolean;
-    receive: (message: unknown, fromHost: boolean) => void;
+    receive: (message: unknown, fromHost: boolean, peerId: string) => void;
   }>();
 
   /** Drop every registered peer, so tests do not leak into one another. */
   static resetPeers(): void {
-    InMemoryTransport.peersById.clear();
+    InMemoryTransport.peersByPeer.clear();
   }
 
-  /** Player ID of this peer, set via setPlayerId() */
+  /** This peer's transport-level address, assigned when it joins. */
+  private peerAddress: string | null = null;
+  /** The game player id, which the host assigns and is not routable. */
   private playerId: string | null = null;
   /** Whether this peer is the host, set in start() */
   private isHost: boolean = false;
 
   /** Callbacks for incoming messages and peer leave */
-  private onMessageCallback: ((message: unknown, fromHost: boolean) => void) | null = null;
+  private onMessageCallback: ((message: unknown, fromHost: boolean, peerId: string) => void) | null =
+    null;
   private onPeerLeaveCallback: ((playerId: string) => void) | null = null;
 
   /** Callback for receiving messages from the broker */
-  private receiveCallback: (message: unknown, fromHost: boolean) => void;
+  private receiveCallback: (message: unknown, fromHost: boolean, peerId: string) => void;
 
   constructor() {
-    this.receiveCallback = (message, fromHost) => {
+    this.receiveCallback = (message, fromHost, peerId) => {
       if (this.onMessageCallback) {
-        this.onMessageCallback(message, fromHost);
+        this.onMessageCallback(message, fromHost, peerId);
       }
     };
   }
 
   start(_roomCode: string, _playerName: string, isHost: boolean): void {
     this.isHost = isHost;
-    // We don't generate a playerId here; it will be set later via setPlayerId
+    // The real transport learns its own peer id from the library, so this fake
+    // mints one on join to stand in for it.
+    this.peerAddress = `peer-${nextPeerAddress++}`;
+    InMemoryTransport.peersByPeer.set(this.peerAddress, {
+      transport: this,
+      isHost,
+      receive: this.receiveCallback,
+    });
   }
 
   stop(): void {
-    if (this.playerId) {
-      InMemoryTransport.peersById.delete(this.playerId);
-      this.playerId = null;
+    if (this.peerAddress !== null) {
+      InMemoryTransport.peersByPeer.delete(this.peerAddress);
+      this.peerAddress = null;
     }
+    this.playerId = null;
     this.isHost = false;
     this.onMessageCallback = null;
     this.onPeerLeaveCallback = null;
   }
 
   setPlayerId(playerId: string): void {
-    // If we already had a playerId, remove the old entry
-    if (this.playerId) {
-      InMemoryTransport.peersById.delete(this.playerId);
-    }
+    // The game player id is bookkeeping only; it is not a routable address.
     this.playerId = playerId;
-    // Register this peer in the static broker
-    InMemoryTransport.peersById.set(this.playerId, {
-      transport: this,
-      isHost: this.isHost,
-      receive: this.receiveCallback
-    });
   }
 
   getPlayerId(): string | null {
@@ -76,29 +81,31 @@ export class InMemoryTransport implements Transport {
       return;
     }
     // Find the host peer
-    const peers = Array.from(InMemoryTransport.peersById.values());
-    const hostEntry = peers.find(
+    const hostEntry = Array.from(InMemoryTransport.peersByPeer.values()).find(
       entry => entry.isHost
     );
     if (hostEntry) {
       // Deliver the message to the host's receive callback (fromHost = false)
-      hostEntry.receive(message, false);
+      hostEntry.receive(message, false, this.address());
       return;
     }
     // No host is reachable yet, so the message is dropped and the caller's
     // retry is expected to resend it once a host appears.
   }
 
-  sendToPlayer(playerId: string, message: unknown): void {
+  /** This peer's transport-level address, which is what a host replies to. */
+  private address(): string {
+    return this.peerAddress ?? '';
+  }
+
+  sendToPeer(peerId: string, message: unknown): void {
     // Only the host should call this
     if (!this.isHost) {
       return;
     }
-    const targetEntry = InMemoryTransport.peersById.get(playerId);
-    if (targetEntry) {
-      // Deliver the message to the target peer's receive callback (fromHost = true)
-      targetEntry.receive(message, true);
-    }
+    // Reply to whichever peer registered under this transport address.
+    const entry = InMemoryTransport.peersByPeer.get(peerId);
+    entry?.receive(message, true, peerId);
   }
 
   broadcast(message: unknown): void {
@@ -107,14 +114,14 @@ export class InMemoryTransport implements Transport {
       return;
     }
     // Send to all clients (peers that are not host)
-    for (const [, entry] of InMemoryTransport.peersById) {
+    for (const [, entry] of InMemoryTransport.peersByPeer) {
       if (!entry.isHost) {
-        entry.receive(message, true);
+        entry.receive(message, true, this.address());
       }
     }
   }
 
-  onMessage(callback: (message: unknown, fromHost: boolean) => void): void {
+  onMessage(callback: (message: unknown, fromHost: boolean, peerId: string) => void): void {
     this.onMessageCallback = callback;
   }
 
@@ -131,7 +138,7 @@ export class InMemoryTransport implements Transport {
     if (playerId !== null) {
       this.stop();
       // Notify all other peers about this peer leaving
-      for (const [, entry] of InMemoryTransport.peersById) {
+      for (const [, entry] of InMemoryTransport.peersByPeer) {
         if (entry.transport.onPeerLeaveCallback) {
           entry.transport.onPeerLeaveCallback(playerId);
         }

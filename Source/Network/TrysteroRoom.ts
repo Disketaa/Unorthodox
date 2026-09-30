@@ -13,8 +13,11 @@ export const PlayerRole = 'Player';
 
 /** Callbacks the room wiring reports back through. */
 export interface RoomHandlers {
-  /** A protocol message arrived, tagged with the direction it came from. */
-  onMessage: (message: JsonValue, fromHost: boolean) => void;
+  /**
+   * A protocol message arrived, tagged with the direction it came from and the
+   * sender's transport-level peer id.
+   */
+  onMessage: (message: JsonValue, fromHost: boolean, peerId: string) => void;
   /** A peer left; clients only receive this for the host. */
   onPeerLeave: (peerId: string) => void;
 }
@@ -85,16 +88,16 @@ function wireHello(hello: MessageAction<JsonValue>, hostPeer: HostPeerState, isH
 /** Wire the directional protocol actions. */
 function wireActions(actions: RoomActions, handlers: RoomHandlers, isHost: boolean): void {
   if (actions.hostToClient) {
-    actions.hostToClient.onMessage = (message: JsonValue) => {
+    actions.hostToClient.onMessage = (message: JsonValue, context) => {
       // Only the host sends on this action, so anything arriving is from the host.
-      handlers.onMessage(message, true);
+      handlers.onMessage(message, true, context.peerId);
     };
   }
   if (isHost) {
     return;
   }
-  actions.clientToHost.onMessage = (message: JsonValue) => {
-    handlers.onMessage(message, false);
+  actions.clientToHost.onMessage = (message: JsonValue, context) => {
+    handlers.onMessage(message, false, context.peerId);
   };
 }
 

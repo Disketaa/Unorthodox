@@ -118,19 +118,16 @@ function checkNextRound(round: Fixture): void {
 }
 
 describe('InMemoryTransport integration test (host + 3 clients)', function() {
-  let fixture: Fixture;
-
   beforeEach(() => {
-    fixture = joinLobby();
+    InMemoryTransport.resetPeers();
   });
 
   afterEach(() => {
-    fixture.hostSession.stop();
-    fixture.clientSessions.forEach(session => session.stop());
+    InMemoryTransport.resetPeers();
   });
 
-  it('replaces each temporary client id with a real player id', function() {
-    checkPlayerIdsAssigned(fixture);
+  it('assigns each joining client a unique player id', function() {
+    checkPlayerIdsAssigned(joinLobby());
   });
 
   it('should start game and set writing state', function() {

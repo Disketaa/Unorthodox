@@ -25,7 +25,8 @@ export class TrysteroTransport implements Transport {
   private clientToHostAction: MessageAction<JsonValue> | null = null;
 
   // Callbacks for incoming messages and peer leave
-  private onMessageCallback: ((message: unknown, fromHost: boolean) => void) | null = null;
+  private onMessageCallback: ((message: unknown, fromHost: boolean, peerId: string) => void) | null =
+    null;
   private onPeerLeaveCallback: ((playerId: string) => void) | null = null;
 
   // Access to the host peerId discovered by the room wiring
@@ -79,7 +80,7 @@ export class TrysteroTransport implements Transport {
   /** Adapters from the mutable callback fields to the room's handler shape. */
   private roomHandlers(): RoomHandlers {
     return {
-      onMessage: (message, fromHost) => this.onMessageCallback?.(message, fromHost),
+      onMessage: (message, fromHost, peerId) => this.onMessageCallback?.(message, fromHost, peerId),
       onPeerLeave: (peerId) => this.onPeerLeaveCallback?.(peerId),
     };
   }
@@ -145,17 +146,23 @@ export class TrysteroTransport implements Transport {
     this.clientToHostAction.send(payload, { target: this.hostPeerId });
   }
 
-  sendToPlayer(playerId: string, message: unknown): void {
-    // Only the host should call this
+  /**
+   * Reply to a peer using its transport-level address.
+   *
+   * The host must answer a `Join` to the peer id the message actually arrived
+   * from. A game player id is not usable here: the client invents its own
+   * temporary id before it has one, and the host is addressed as `host` in
+   * game state but by its trystero selfId on the wire.
+   */
+  sendToPeer(peerId: string, message: unknown): void {
     if (!this.isHost || !this.hostToClientAction) {
-      log('warn', 'sendToPlayer called on a client, ignoring');
+      log('warn', 'sendToPeer called on a client, ignoring');
       return;
     }
-    const payload = this.prepare(message, 'sendToPlayer');
+    const payload = this.prepare(message, 'sendToPeer');
     if (payload === undefined) return;
-    // Send the message to the specific player using the hostToClient action
-    log('debug', 'sending', describeMessage(message), 'to player', playerId);
-    this.hostToClientAction.send(payload, { target: playerId });
+    log('debug', 'sending', describeMessage(message), 'to peer', peerId);
+    this.hostToClientAction.send(payload, { target: peerId });
   }
 
   broadcast(message: unknown): void {
@@ -171,7 +178,7 @@ export class TrysteroTransport implements Transport {
     this.hostToClientAction.send(payload);
   }
 
-  onMessage(callback: (message: unknown, fromHost: boolean) => void): void {
+  onMessage(callback: (message: unknown, fromHost: boolean, peerId: string) => void): void {
     this.onMessageCallback = callback;
   }
 
