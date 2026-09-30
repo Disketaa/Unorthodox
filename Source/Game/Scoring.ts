@@ -7,7 +7,7 @@ import { GameConfig } from './GameConfig';
  * @param config Game configuration
  * @returns Points per player in the group
  */
-export function pointsForGroupSize(size: number, config: GameConfig): number {
+export function pointsForGroupSize(size: number, config: typeof GameConfig): number {
   if (size === 1) {
     return config.scoring.uniquePoints;
   }
@@ -26,7 +26,7 @@ export function pointsForGroupSize(size: number, config: GameConfig): number {
  */
 export function calculateRoundScores(
   groups: { playerIds: string[]; isRejected: boolean }[],
-  config: GameConfig
+  config: typeof GameConfig
 ): Map<string, number> {
   const scores = new Map<string, number>();
 

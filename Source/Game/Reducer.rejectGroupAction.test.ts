@@ -22,7 +22,7 @@ describe('reducer REJECT_GROUP action', () => {
       expect(state.groupRejections.size).toBe(1);
       const rejectionSet = state.groupRejections.get(0);
       expect(rejectionSet).toBeInstanceOf(Set);
-      expect(rejectionSet.has('p1')).toBe(true);
+      expect(rejectionSet?.has('p1')).toBe(true);
     }
   });
 });

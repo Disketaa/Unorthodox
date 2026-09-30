@@ -23,7 +23,8 @@
   },
   "homepage": "https://github.com/Disketaa/Unorthodox#readme",
   "dependencies": {
-    "preact": "^10.29.8"
+    "preact": "^10.29.8",
+    "trystero": "^0.25.4"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

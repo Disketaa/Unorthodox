@@ -1,6 +1,6 @@
 import { HostState } from './GameState';
 import { groupAnswers } from './Grouping';
-import { PlayerId } from '@/Core';
+import { PlayerId, assertNever } from '@/Core';
 
 // Define the public state that is sent to clients
 export type PublicLobbyState = {
@@ -30,7 +30,8 @@ export type PublicScoresState = {
 
 export type PublicFinalState = {
   phase: 'Final';
-  cumulativeScores: { id: PlayerId; score: number }[];
+  durationMs: number;
+  scores: { id: PlayerId; score: number }[];
 };
 
 export type PublicState =
@@ -59,7 +60,7 @@ export function toPublicState(hostState: HostState): PublicState {
       return toPublicFinalState(hostState);
     default:
       // The exhaustive switch ensures we never reach here.
-      throw new Error(`Unknown state phase: ${hostState.phase}`);
+      return assertNever(hostState);
   }
 }
 

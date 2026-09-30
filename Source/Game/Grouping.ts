@@ -1,4 +1,5 @@
 import { normalizeAnswer } from './Normalization';
+import { PlayerId } from '@/Core';
 
 // Typical Russian endings to strip (ordered by length descending for longest match first)
 const russianEndings = [
