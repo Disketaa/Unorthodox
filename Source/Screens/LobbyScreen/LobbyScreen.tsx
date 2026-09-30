@@ -1,6 +1,5 @@
-import { Stack, Text } from '@/Design/Primitives';
+import { Stack } from '@/Design/Primitives';
 import {
-  Card,
   CharacterPicker,
   PlayerChip,
   RoomCodeBadge,
@@ -8,6 +7,7 @@ import {
 import { CharacterColor, CharacterId } from '@/Core';
 import { Strings } from '@/Content';
 import { GameConfig, PublicPlayer } from '@/Game';
+import { LobbyCategory } from './LobbyCategory';
 import { LobbyStart } from './LobbyStart';
 
 export interface LobbyScreenProps {
@@ -58,21 +58,18 @@ function LookPicker({
   onPick: (character: CharacterId, color: CharacterColor) => void;
 }) {
   return (
-    <Card variant="Elevated">
-      <Stack gap="Sm" align="Stretch">
-        <Text variant="Title">{Strings.lobby.characterHeading}</Text>
-        <CharacterPicker
-          character={ownLook.character}
-          color={ownLook.color}
-          labels={{
-            character: Strings.characters.names,
-            color: Strings.characters.colors,
-            pickCharacter: Strings.characters.pickCharacter,
-          }}
-          onPick={onPick}
-        />
-      </Stack>
-    </Card>
+    <LobbyCategory title={Strings.lobby.characterHeading}>
+      <CharacterPicker
+        character={ownLook.character}
+        color={ownLook.color}
+        labels={{
+          character: Strings.characters.names,
+          color: Strings.characters.colors,
+          pickCharacter: Strings.characters.pickCharacter,
+        }}
+        onPick={onPick}
+      />
+    </LobbyCategory>
   );
 }
 
@@ -90,18 +87,21 @@ export function LobbyScreen({
 
   return (
     <Stack gap="Lg" align="Stretch">
-      <RoomCodeBadge code={roomCode} />
-      <Text variant="Body">{Strings.lobby.shareHint}</Text>
-      <Roster players={players} />
+      <LobbyCategory
+        title={Strings.lobby.category}
+        subtitle={<RoomCodeBadge code={roomCode} />}
+      >
+        <Roster players={players} />
+        <LobbyStart
+          enoughPlayers={enoughPlayers}
+          roomFull={roomFull}
+          isHost={isHost}
+          onStart={onStart}
+        />
+      </LobbyCategory>
       {ownLook !== undefined && (
         <LookPicker ownLook={ownLook} onPick={onPickLook} />
       )}
-      <LobbyStart
-        enoughPlayers={enoughPlayers}
-        roomFull={roomFull}
-        isHost={isHost}
-        onStart={onStart}
-      />
     </Stack>
   );
 }

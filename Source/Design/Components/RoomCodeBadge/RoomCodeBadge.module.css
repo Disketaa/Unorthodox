@@ -1,12 +1,30 @@
+/*
+ * The code reads as the line under a section's title, so it is a step below the
+ * title in the body face and the action colour, rather than a pill: a filled badge
+ * of the display face would pull the eye away from the group it belongs to.
+ *
+ * The weight is the body's Bold, because the code is the one thing a player has to
+ * read off someone else's screen, and the smallest space step is cancelled so the
+ * line sits against the title instead of under it.
+ */
 .Root {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--Space-Sm) var(--Space-Md);
-  background: var(--Color-Action-Secondary-Background);
-  color: var(--Color-Action-Secondary-Text);
-  border-radius: var(--Radius-Badge);
-  font-family: var(--FontFamily-Display);
-  font-size: var(--FontSize-Lg);
+  align-items: baseline;
+  gap: var(--Space-Xs);
+  margin-top: calc(var(--Space-Xs) * -1);
+  color: var(--Color-Action-Primary-Background);
+  font-family: var(--FontFamily-Body);
+  font-size: var(--FontSize-H3);
+  font-weight: 600;
+  line-height: 1.2;
   letter-spacing: 0.1em;
+}
+
+/*
+ * The hash marks the code without being part of it, so it is the text colour: black
+ * beside orange puts the mark and the code apart, where more orange would just
+ * read as one longer word.
+ */
+.Prefix {
+  color: var(--Color-Text-Default);
 }

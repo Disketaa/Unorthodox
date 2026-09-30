@@ -6,9 +6,10 @@ export function RoomCodeBadgeGallery() {
   return (
     <Stack direction="Vertical" gap="Md">
       <Text variant="Body">RoomCodeBadge</Text>
-      <RoomCodeBadge code="ABCD" />
-      <RoomCodeBadge code="TEAM" />
-      <RoomCodeBadge code="GAME" />
+      <Stack direction="Vertical" gap="Xs">
+        <Text variant="Title">Лобби</Text>
+        <RoomCodeBadge code="ABCD" />
+      </Stack>
     </Stack>
   );
 }

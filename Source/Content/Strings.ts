@@ -25,7 +25,7 @@ export const Strings = {
   },
   lobby: {
     headline: 'Ждём игроков',
-    shareHint: 'Отправьте код комнаты друзьям',
+    category: 'Лобби',
     startButton: 'Начать игру',
     waitingForHost: 'Ждём, пока хост начнёт игру',
     /** Built from the limit, so the hint cannot drift from the actual rule. */
