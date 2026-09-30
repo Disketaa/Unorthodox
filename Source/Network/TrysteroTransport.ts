@@ -1,15 +1,10 @@
 import { Transport } from './Transport';
-import { readHostPeerId, toPayload } from './Payload';
+import { describeMessage, RelayUrls, toPayload } from './Payload';
+import { wireRoom, type RoomHandlers } from './TrysteroRoom';
+import { createLogger } from '@/Core';
 import { joinRoom, selfId, type JsonValue, type MessageAction } from 'trystero';
 
-/** Signaling relays used for matchmaking, tried in order until one connects. */
-const RelayUrls = [
-  'wss://relay.damus.io',
-  'wss://nos.lol',
-  'wss://nostr.wine',
-  'wss://nostr.mom',
-  'wss://relay.snort.social',
-];
+const log = createLogger('TrysteroTransport');
 
 /**
  * Trystero transport implementation.
@@ -33,8 +28,13 @@ export class TrysteroTransport implements Transport {
   private onPeerLeaveCallback: ((playerId: string) => void) | null = null;
   private onHostReadyCallback: (() => void) | null = null;
 
-  // Store the host's peerId (known to clients)
-  private hostPeerId: string | null = null;
+  // Access to the host peerId discovered by the room wiring
+  private hostPeer: { get: () => string | null; clear: () => void } | null = null;
+
+  /** The host's trystero peerId, known to clients once it has announced itself. */
+  private get hostPeerId(): string | null {
+    return this.hostPeer?.get() ?? null;
+  }
 
   start(roomCode: string, _playerName: string, isHost: boolean): void {
     this.roomId = roomCode;
@@ -50,76 +50,32 @@ export class TrysteroTransport implements Transport {
       this.roomId,
     );
     this.room = room;
+    log('info', `joining room ${this.roomId} as ${isHost ? 'host' : 'client'} via relays`);
 
-    // Set up room event listeners
-    this.setupRoomListeners(room);
-
-    // Create actions based on whether we are host or client
-    if (this.isHost) {
-      this.hostToClientAction = room.makeAction('hostToClient');
-      this.setupHostToClientAction();
+    // Only the direction this peer sends on is created, so a client never
+    // listens for its own broadcasts and vice versa.
+    const send = room.makeAction(isHost ? 'hostToClient' : 'clientToHost');
+    if (isHost) {
+      this.hostToClientAction = send;
     } else {
-      this.clientToHostAction = room.makeAction('clientToHost');
-      this.setupClientToHostAction();
+      this.clientToHostAction = send;
     }
 
-    // If we are the host, we need to announce our peerId to any clients that join later
-    // We'll do that in the onPeerJoin listener
+    this.hostPeer = wireRoom(
+      room,
+      { hostToClient: this.hostToClientAction, clientToHost: send },
+      isHost,
+      this.peerId,
+      this.roomHandlers(),
+    );
   }
 
-  private setupRoomListeners(room: ReturnType<typeof joinRoom>): void {
-    // Listen for peers joining
-    room.onPeerJoin = (peerId) => {
-      // If we are the host, send our trystero peerId to the new peer, so the
-      // client knows whom to address on the wire.
-      if (this.isHost) {
-        this.hostToClientAction?.send({ type: 'HostPeerId', peerId: this.peerId }, { target: peerId });
-      }
-    };
-
-    // Listen for peers leaving
-    room.onPeerLeave = (peerId) => {
-      if (this.isHost) {
-        // The host only cares about clients leaving.
-        this.onPeerLeaveCallback?.(peerId);
-        return;
-      }
-      // A client only cares about the host leaving, and it learns the host's
-      // peerId from the announcement above.
-      if (peerId === this.hostPeerId) {
-        this.hostPeerId = null;
-        this.onPeerLeaveCallback?.(peerId);
-      }
-    };
-  }
-
-  private setupHostToClientAction(): void {
-    if (!this.hostToClientAction) return;
-    this.hostToClientAction.onMessage = (message: JsonValue) => {
-      // Only the host sends on this action, so anything arriving is from the host.
-      if (this.onMessageCallback) {
-        this.onMessageCallback(message, true);
-      }
-    };
-  }
-
-  private setupClientToHostAction(): void {
-    if (!this.clientToHostAction) return;
-    this.clientToHostAction.onMessage = (message: JsonValue) => {
-      // The host announces its peerId on join; that is internal plumbing, not a
-      // protocol message, so it is consumed here rather than propagated.
-      const peerId = readHostPeerId(message);
-      if (peerId !== undefined) {
-        const wasUnknown = this.hostPeerId === null;
-        this.hostPeerId = peerId;
-        if (wasUnknown) {
-          this.onHostReadyCallback?.();
-        }
-        return;
-      }
-      if (this.onMessageCallback) {
-        this.onMessageCallback(message, false);
-      }
+  /** Adapters from the mutable callback fields to the room's handler shape. */
+  private roomHandlers(): RoomHandlers {
+    return {
+      onMessage: (message, fromHost) => this.onMessageCallback?.(message, fromHost),
+      onPeerLeave: (peerId) => this.onPeerLeaveCallback?.(peerId),
+      onHostReady: () => this.onHostReadyCallback?.(),
     };
   }
 
@@ -134,7 +90,8 @@ export class TrysteroTransport implements Transport {
     this.onPeerLeaveCallback = null;
     this.onHostReadyCallback = null;
     this.playerId = null;
-    this.hostPeerId = null;
+    this.hostPeer?.clear();
+    this.hostPeer = null;
   }
 
   setPlayerId(playerId: string): void {
@@ -145,42 +102,60 @@ export class TrysteroTransport implements Transport {
     return this.playerId;
   }
 
-  sendToHost(message: unknown): void {
-    // Only clients should call this
-    if (this.isHost || !this.clientToHostAction || !this.hostPeerId) {
-      return;
-    }
+  /** Convert a message for the wire, logging why it cannot be sent. */
+  private prepare(message: unknown, context: string): JsonValue | undefined {
     const payload = toPayload(message);
     if (payload === undefined) {
+      log('warn', `${context}: unserialisable payload, dropping`, message);
+    }
+    return payload;
+  }
+
+  sendToHost(message: unknown): void {
+    // Only clients should call this
+    if (this.isHost) {
+      log('warn', 'sendToHost called on the host, ignoring');
       return;
     }
+    if (!this.clientToHostAction) {
+      log('warn', 'sendToHost before the room was joined, ignoring');
+      return;
+    }
+    if (!this.hostPeerId) {
+      // The host has not introduced itself yet, so the message cannot be routed.
+      log('warn', 'sendToHost before the host peerId is known, dropping', describeMessage(message));
+      return;
+    }
+    const payload = this.prepare(message, 'sendToHost');
+    if (payload === undefined) return;
     // Send the message to the host using the clientToHost action, targeting the host's peerId
+    log('debug', 'sending to host', describeMessage(message));
     this.clientToHostAction.send(payload, { target: this.hostPeerId });
   }
 
   sendToPlayer(playerId: string, message: unknown): void {
     // Only the host should call this
     if (!this.isHost || !this.hostToClientAction) {
+      log('warn', 'sendToPlayer called on a client, ignoring');
       return;
     }
-    const payload = toPayload(message);
-    if (payload === undefined) {
-      return;
-    }
+    const payload = this.prepare(message, 'sendToPlayer');
+    if (payload === undefined) return;
     // Send the message to the specific player using the hostToClient action
+    log('debug', 'sending', describeMessage(message), 'to player', playerId);
     this.hostToClientAction.send(payload, { target: playerId });
   }
 
   broadcast(message: unknown): void {
     // Only the host should call this
     if (!this.isHost || !this.hostToClientAction) {
+      log('warn', 'broadcast called on a client, ignoring');
       return;
     }
-    const payload = toPayload(message);
-    if (payload === undefined) {
-      return;
-    }
+    const payload = this.prepare(message, 'broadcast');
+    if (payload === undefined) return;
     // Send the message to all peers (hostToClient action without target sends to all)
+    log('debug', 'broadcasting', describeMessage(message));
     this.hostToClientAction.send(payload);
   }
 

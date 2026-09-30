@@ -27,7 +27,7 @@ export class ClientSession {
     this.transport.onPeerLeave(() => listener());
   }
 
-  /** Flush the buffered join once the transport can address the host. */
+  /** Called when the transport can address the host, to flush a buffered join. */
   private flushPendingJoin(): void {
     if (!this.pendingJoin) {
       return;
