@@ -61,7 +61,6 @@ function LookPicker({
     <Card variant="Elevated">
       <Stack gap="Sm" align="Stretch">
         <Text variant="Title">{Strings.lobby.characterHeading}</Text>
-        <Text variant="Caption">{Strings.lobby.characterHint}</Text>
         <CharacterPicker
           character={ownLook.character}
           color={ownLook.color}

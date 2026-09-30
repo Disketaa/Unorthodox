@@ -91,8 +91,7 @@ function beginGesture(
   gesture.state.current = idleDrag();
   gesture.state.current.originX = event.clientX;
   gesture.state.current.originScroll = element.scrollLeft;
-  gesture.state.current.lastX = event.clientX;
-  gesture.state.current.lastAt = event.timeStamp;
+  gesture.state.current.speed.reset(event.clientX, event.timeStamp);
   listenForGesture(gesture, detach);
   gesture.timer.current = window.setTimeout(() => {
     gesture.state.current.held = true;

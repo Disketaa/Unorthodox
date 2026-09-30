@@ -32,7 +32,6 @@ export const Strings = {
     notEnoughPlayers: (min: number) => `Нужно минимум ${min} игрока`,
     roomFull: 'Комната заполнена',
     characterHeading: 'Персонаж',
-    characterHint: 'Можно менять, пока игра не началась',
   },
   /**
    * Names for the character picker.

@@ -151,3 +151,17 @@ look is the one the host has confirmed rather than the one that was clicked, bec
 a returning player's character and may already have refused a replacement, and the next reload should
 not offer a face nobody in the room has. The host remains the authority; this only changes the
 starting point.
+
+Two things about the gesture were wrong and only showed up when it was actually used. A sharp
+flick is usually over before `HoldMs` has passed, so it cancelled the hold and then did nothing at
+all; movement now also starts the drag when the pointer is already moving faster than
+`FlickSpeed`, since a flick has made its intent clear before it is quick. And the speed used to
+throw the row was measured between the last two pointermove events, which browsers coalesce, so
+the faster the flick the more likely the gap and the slower it read. `SpeedTracker` now measures
+from the most recent gap long enough to divide by, and `UseMomentum` decays per unit of time rather
+than per frame, so the coast lasts the same length on a 120Hz screen as on a 60Hz one. Both are
+covered by `MotionSample.test.ts`.
+
+The lobby's hint under the heading ("Можно менять, пока игра не началась") was removed along with
+`Strings.lobby.characterHint`. The picker says what it does by being a strip of the cast, and the
+hint repeated what the room code and the Start button already imply.
