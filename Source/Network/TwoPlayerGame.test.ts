@@ -6,8 +6,8 @@ import { PlayerLook } from '@/Core';
 import { GameConfig } from '@/Game';
 
 const roomCode = 'ABCD';
-const hostLook: PlayerLook = { character: 'Character1', color: 'Coral' };
-const clientLook: PlayerLook = { character: 'Character5', color: 'Sky' };
+const hostLook: PlayerLook = { character: 'Butterfly', color: 'Coral' };
+const clientLook: PlayerLook = { character: 'Ghost', color: 'Sky' };
 
 type Fixture = {
   hostSession: HostSession;

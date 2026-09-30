@@ -6,7 +6,7 @@ describe('reducer START_GAME action', () => {
   test('transitions to Writing', () => {
     let state: HostState = {
       phase: 'Lobby',
-      players: new Map([['p1', { name: 'Alice', look: { character: 'Character1', color: 'Coral' } }]]),
+      players: new Map([['p1', { name: 'Alice', look: { character: 'Butterfly', color: 'Coral' } }]]),
       cumulativeScores: new Map(),
     };
     state = reducer(state, { type: 'START_GAME', topic: 'Test', durationMs: 60000, startedAt: 1000 });

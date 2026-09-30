@@ -5,10 +5,10 @@ import { HostSession, HostPlayerId } from './HostSession';
 import { PlayerLook } from '@/Core';
 
 const roomCode = 'ABCD';
-const hostLook: PlayerLook = { character: 'Character1', color: 'Coral' };
-const clientLook: PlayerLook = { character: 'Character5', color: 'Sky' };
+const hostLook: PlayerLook = { character: 'Butterfly', color: 'Coral' };
+const clientLook: PlayerLook = { character: 'Ghost', color: 'Sky' };
 /** What a client rolls when it comes back, having forgotten nothing on purpose. */
-const freshLook: PlayerLook = { character: 'Character9', color: 'Violet' };
+const freshLook: PlayerLook = { character: 'Star', color: 'Violet' };
 
 /** A host with one client named Ann already at the table. */
 function roomWithAnn() {

@@ -5,7 +5,7 @@ import { HostSession } from './HostSession';
 import { toPayload, readTag, readRole } from './Payload';
 import { PlayerLook } from '@/Core';
 
-const look: PlayerLook = { character: 'Character1', color: 'Coral' };
+const look: PlayerLook = { character: 'Butterfly', color: 'Coral' };
 
 const roomCode = 'ABCD';
 const RetryInterval = JoinRetryIntervalMs;

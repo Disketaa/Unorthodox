@@ -184,3 +184,18 @@ set on purpose: mid-tone so the black ink stays readable on top, and deep enough
 weight against the paper as the others. Nine tints for nine characters is what lets the two rows be
 the same shape, and `Core/Characters.test.ts` holds that equality so the next tenth character or
 tint does not quietly break the layout.
+
+## 2026-09-30 — eight characters, named, in two rows of four
+Character4 is gone and Lemon with it. The cast is now Butterfly, Explosion, Daisy, Ghost, Mask,
+Hat, Heart and Star, and the ids were renamed to match the drawings rather than left as
+`Character1`…`Character9` with a hole in it: an id is shared vocabulary between Core, the
+network and the design system, and `Ghost` says what the thing is at every one of those. The art
+files are named the same way. The palette is back to eight tints, which is what lets both rows of
+the picker be a full four by four with no trailing gap; `Core/Characters.test.ts` holds that, so a
+ninth character or tint now fails rather than leaving an empty cell.
+
+The chosen character at the top of the picker lost its border and its surface: it is a preview of
+one drawing, not a control, and the frame around it was a box the player could try to press. The
+tint swatches are squares rather than discs, and the disc's own outline is now a `Circle` variant
+rather than part of the base, because a circle with a border inside a bordered square read as two
+frames around one swatch. Only the button is an outline now.

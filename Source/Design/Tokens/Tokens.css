@@ -214,13 +214,6 @@ body {
   --Color-Character-Violet: #8a7ae0;
   --Color-Character-Rose: #e0559a;
   --Color-Character-Sand: #b08656;
-  /*
-   * Lemon fills the one gap the rest leave: the palette runs red, orange, green,
-   * blue, purple, pink and brown, and Amber is orange enough that nothing in it is
-   * plainly yellow. It is the darkest of the set on purpose, so it holds the same
-   * weight as the others and the black ink still reads on top.
-   */
-  --Color-Character-Lemon: #c4a92e;
   /* The linework stays black on every tint, so the face reads the same. */
   --Color-Character-Ink: #000000;
 

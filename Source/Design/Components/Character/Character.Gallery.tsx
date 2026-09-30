@@ -16,22 +16,22 @@ export function CharacterGallery() {
       <Text variant="Body">One character in every tint</Text>
       <Stack direction="Horizontal" gap="Sm">
         {CharacterColors.map((color) => (
-          <Character key={color} character="Character3" color={color} />
+          <Character key={color} character="Daisy" color={color} />
         ))}
       </Stack>
 
       <Text variant="Body">Sizes</Text>
       <Stack direction="Horizontal" gap="Sm" align="End">
-        <Character character="Character1" color="Mint" size="Small" />
-        <Character character="Character1" color="Mint" size="Medium" />
-        <Character character="Character1" color="Mint" size="Large" />
+        <Character character="Butterfly" color="Mint" size="Small" />
+        <Character character="Butterfly" color="Mint" size="Medium" />
+        <Character character="Butterfly" color="Mint" size="Large" />
       </Stack>
 
       <Text variant="Body">Still, reacting, and placed in a row</Text>
       <Stack direction="Horizontal" gap="Sm" align="End">
-        <Character character="Character1" color="Mint" moving={false} />
-        <Character character="Character1" color="Mint" pulse={1} />
-        <Character character="Character2" color="Mint" pulse={1} moving={false} />
+        <Character character="Butterfly" color="Mint" moving={false} />
+        <Character character="Butterfly" color="Mint" pulse={1} />
+        <Character character="Explosion" color="Mint" pulse={1} moving={false} />
       </Stack>
 
       <Text variant="Body">

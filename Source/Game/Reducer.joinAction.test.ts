@@ -3,8 +3,8 @@ import { PlayerLook } from '@/Core';
 import { reducer } from './Reducer';
 import { HostState } from './GameState';
 
-const look: PlayerLook = { character: 'Character1', color: 'Coral' };
-const otherLook: PlayerLook = { character: 'Character5', color: 'Sky' };
+const look: PlayerLook = { character: 'Butterfly', color: 'Coral' };
+const otherLook: PlayerLook = { character: 'Ghost', color: 'Sky' };
 
 describe('reducer JOIN action', () => {
   test('adds player', () => {

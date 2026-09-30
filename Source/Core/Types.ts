@@ -1,10 +1,8 @@
-
 export type PlayerId = string;
 export type GroupId = string;
 
 export type Result<T> =
-  | { success: true; value: T }
-  | { success: false; error: string };
+  { success: true; value: T } | { success: false; error: string };
 
 export function assertNever(x: never): never {
   throw new Error(`Unexpected value: ${x}`);
@@ -30,4 +28,3 @@ export interface Strings {
 
 // We'll also define the Topics type as an array of strings.
 export type Topics = Topic[];
-

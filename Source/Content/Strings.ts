@@ -41,15 +41,14 @@ export const Strings = {
    */
   characters: {
     names: {
-      Character1: 'Кругляш',
-      Character2: 'Зигзаг',
-      Character3: 'Птенец',
-      Character4: 'Кукуруза',
-      Character5: 'Капля',
-      Character6: 'Пирамидка',
-      Character7: 'Волчок',
-      Character8: 'Скорлупа',
-      Character9: 'Флажок',
+      Butterfly: 'Бабочка',
+      Explosion: 'Взрыв',
+      Daisy: 'Ромашка',
+      Ghost: 'Призрак',
+      Mask: 'Маска',
+      Hat: 'Шляпа',
+      Heart: 'Сердце',
+      Star: 'Звезда',
     },
     colors: {
       Coral: 'Коралл',
@@ -60,7 +59,6 @@ export const Strings = {
       Violet: 'Фиалка',
       Rose: 'Роза',
       Sand: 'Песок',
-      Lemon: 'Лимон',
     },
     /** Names one character in the row and says what clicking it does. */
     pickCharacter: (name: string) => `${name}, выбрать персонажа`,

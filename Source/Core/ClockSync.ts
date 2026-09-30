@@ -15,11 +15,17 @@ export interface ClockSync {
 }
 
 /** Measure the skew from a freshly received host timestamp. */
-export function measureClockOffset(hostNow: number, receivedAt: number): number {
+export function measureClockOffset(
+  hostNow: number,
+  receivedAt: number
+): number {
   return receivedAt - hostNow;
 }
 
 /** Convert a host timestamp into the equivalent local one. */
-export function hostTimeToLocal(hostTimestamp: number, offsetMs: number): number {
+export function hostTimeToLocal(
+  hostTimestamp: number,
+  offsetMs: number
+): number {
   return hostTimestamp + offsetMs;
 }

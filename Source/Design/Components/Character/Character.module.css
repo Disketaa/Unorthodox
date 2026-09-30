@@ -163,7 +163,3 @@
 .Sand {
   --Character-Tint: var(--Color-Character-Sand);
 }
-
-.Lemon {
-  --Character-Tint: var(--Color-Character-Lemon);
-}

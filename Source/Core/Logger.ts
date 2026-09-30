@@ -1,4 +1,4 @@
-export type LogLevel = "debug" | "info" | "warn" | "error";
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 /** Sink that actually emits a log record. Replaceable so tests can capture output. */
 export type LogWriter = (
@@ -25,16 +25,16 @@ function consoleWriter(
   const prefix = `[${scope}]`;
   /* eslint-disable no-console */
   switch (level) {
-    case "debug":
+    case 'debug':
       console.debug(prefix, message, ...args);
       break;
-    case "info":
+    case 'info':
       console.info(prefix, message, ...args);
       break;
-    case "warn":
+    case 'warn':
       console.warn(prefix, message, ...args);
       break;
-    case "error":
+    case 'error':
       console.error(prefix, message, ...args);
       break;
   }
@@ -42,7 +42,7 @@ function consoleWriter(
 }
 
 let writer: LogWriter = consoleWriter;
-let threshold: LogLevel = "info";
+let threshold: LogLevel = 'info';
 
 /** Replace the log sink (used by tests to capture records). */
 export function setLogWriter(next: LogWriter): void {

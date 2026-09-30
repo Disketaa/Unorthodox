@@ -6,15 +6,14 @@
  * how a character is drawn, only which ones exist.
  */
 export const CharacterIds = [
-  'Character1',
-  'Character2',
-  'Character3',
-  'Character4',
-  'Character5',
-  'Character6',
-  'Character7',
-  'Character8',
-  'Character9',
+  'Butterfly',
+  'Explosion',
+  'Daisy',
+  'Ghost',
+  'Mask',
+  'Hat',
+  'Heart',
+  'Star',
 ] as const;
 
 export type CharacterId = (typeof CharacterIds)[number];
@@ -28,7 +27,6 @@ export const CharacterColors = [
   'Violet',
   'Rose',
   'Sand',
-  'Lemon',
 ] as const;
 
 export type CharacterColor = (typeof CharacterColors)[number];
@@ -59,7 +57,10 @@ export function isCharacterId(value: unknown): value is CharacterId {
 }
 
 export function isCharacterColor(value: unknown): value is CharacterColor {
-  return typeof value === 'string' && CharacterColors.some((color) => color === value);
+  return (
+    typeof value === 'string' &&
+    CharacterColors.some((color) => color === value)
+  );
 }
 
 /** Type guard for a look arriving from the network. */

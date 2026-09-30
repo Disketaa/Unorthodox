@@ -8,11 +8,17 @@ import {
 
 describe('the cast and the palette', () => {
   /**
-   * The picker lays the cast and the palette out as two rows of the same shape, so
-   * a ninth tint and nine characters is what keeps the two rows the same control.
+   * The picker lays the cast and the palette out as two rows of the same shape, four
+   * to a row, so an equal count is what keeps the two grids the same control rather
+   * than one of them trailing an empty cell.
    */
   it('has as many tints as there are characters', () => {
     expect(CharacterColors.length).toBe(CharacterIds.length);
+  });
+
+  it('fills both rows of four the picker lays out', () => {
+    expect(CharacterIds.length % 4).toBe(0);
+    expect(CharacterColors.length % 4).toBe(0);
   });
 
   it('has no duplicate tints', () => {
@@ -27,11 +33,11 @@ describe('the cast and the palette', () => {
     CharacterColors.forEach((color) =>
       expect(isCharacterColor(color)).toBe(true)
     );
-    expect(isCharacterColor('Lemonade')).toBe(false);
+    expect(isCharacterColor('Crimson')).toBe(false);
   });
 
   it('recognises every character it lists, and nothing else', () => {
     CharacterIds.forEach((id) => expect(isCharacterId(id)).toBe(true));
-    expect(isCharacterId('Character0')).toBe(false);
+    expect(isCharacterId('Squirrel')).toBe(false);
   });
 });

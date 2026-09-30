@@ -8,8 +8,8 @@ import { PublicState } from '@/Game';
 const roomCode = 'ABCD';
 const hostName = 'Host';
 const clientNames = ['Alice', 'Bob', 'Charlie'];
-const hostLook: PlayerLook = { character: 'Character1', color: 'Coral' };
-const clientLook: PlayerLook = { character: 'Character5', color: 'Sky' };
+const hostLook: PlayerLook = { character: 'Butterfly', color: 'Coral' };
+const clientLook: PlayerLook = { character: 'Ghost', color: 'Sky' };
 // Distinct enough that the fuzzy grouper keeps them in separate groups.
 const answers = ['Answer One', 'Answer Two', 'Answer Three', 'Answer Four'];
 // A solo answer is a unique group, worth GameConfig.scoring.uniquePoints.

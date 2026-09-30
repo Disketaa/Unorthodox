@@ -2,8 +2,8 @@ import { describe, test, expect } from 'vitest';
 import { toPublicState } from './PublicState';
 import { HostState } from './GameState';
 
-const look = { character: 'Character1', color: 'Coral' } as const;
-const otherLook = { character: 'Character7', color: 'Violet' } as const;
+const look = { character: 'Butterfly', color: 'Coral' } as const;
+const otherLook = { character: 'Hat', color: 'Violet' } as const;
 
 describe('toPublicState Lobby state', () => {
   test('converts correctly', () => {

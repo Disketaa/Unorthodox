@@ -1,7 +1,7 @@
 import styles from "./Characters.module.css";
 
 /** The artwork, drawn inline so the body can take a tint from CSS. */
-export function Character1() {
+export function Butterfly() {
   return (
     <svg viewBox="0 0 512 512" class={styles.Canvas} aria-hidden="true">
       <path class={styles.Body} d="m140.61 281.89c0 0-113.45-63.43-85.8-147.02 27.66-83.59 151.7-9.85 194.55 19.12 0 0 95.09-129.09 183.86-87.22 58.31 27.51 18.35 148.68-45.8 196.91 0 0 109.72 83.9 60.82 154.91-48.91 71.01-155.22 3.77-177.77-42.54 0 0-47.5 101.48-134.18 73.24-58.94-19.21-42.54-116.4 4.32-167.4z" />

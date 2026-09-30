@@ -6,8 +6,8 @@ import { PlayerLook } from '@/Core';
 import { toPublicState } from '@/Game';
 
 const roomCode = 'ABCD';
-const hostLook: PlayerLook = { character: 'Character1', color: 'Coral' };
-const clientLook: PlayerLook = { character: 'Character5', color: 'Sky' };
+const hostLook: PlayerLook = { character: 'Butterfly', color: 'Coral' };
+const clientLook: PlayerLook = { character: 'Ghost', color: 'Sky' };
 
 /** Join a room with a host and one client, both on the in-memory transport. */
 function joinRoom() {

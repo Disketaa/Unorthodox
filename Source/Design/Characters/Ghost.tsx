@@ -1,7 +1,7 @@
 import styles from "./Characters.module.css";
 
 /** The artwork, drawn inline so the body can take a tint from CSS. */
-export function Character5() {
+export function Ghost() {
   return (
     <svg viewBox="0 0 512 512" class={styles.Canvas} aria-hidden="true">
       <path class={styles.Body} d="m24.44 368.93c-11.54-19.75-11.83-44.12-1.84-64.69 28.91-59.48 124.86-234.92 260.04-255.86 163.11-25.26 214.22 167.05 213.89 315.5-0.33 148.45-117.35 107.26-122.46 44.15 0 0-30.46 68.91-78.81 49.92-48.34-19-36.81-78.94-36.81-78.94 0 0-14.7 72.54-77.62 63.22-50.06-7.42-53.69-80.11-53.69-80.11 0 0-30.35 50.69-73.56 32.46-14.05-5.93-23.19-15.47-29.14-25.65z" />

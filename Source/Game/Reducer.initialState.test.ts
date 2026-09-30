@@ -2,7 +2,7 @@ import { describe, test, expect } from 'vitest';
 import { PlayerLook } from '@/Core';
 import { reducer } from './Reducer';
 
-const look: PlayerLook = { character: 'Character1', color: 'Coral' };
+const look: PlayerLook = { character: 'Butterfly', color: 'Coral' };
 
 describe('reducer initial state', () => {
   test('is lobby with no players', () => {

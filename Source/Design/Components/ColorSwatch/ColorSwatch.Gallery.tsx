@@ -1,15 +1,21 @@
-import { ColorSwatch } from "./ColorSwatch";
-import { CharacterColors } from "@/Core";
-import { Stack } from "@/Design/Primitives";
-import { Text } from "@/Design/Primitives";
+import { ColorSwatch } from './ColorSwatch';
+import { CharacterColors } from '@/Core';
+import { Stack, Text } from '@/Design/Primitives';
 
 export function ColorSwatchGallery() {
   return (
     <Stack direction="Vertical" gap="Md">
-      <Text variant="Body">Every tint</Text>
+      <Text variant="Body">Every tint, as a disc</Text>
       <Stack direction="Horizontal" gap="Sm">
         {CharacterColors.map((color) => (
           <ColorSwatch key={color} color={color} />
+        ))}
+      </Stack>
+
+      <Text variant="Body">Every tint, squared</Text>
+      <Stack direction="Horizontal" gap="Sm">
+        {CharacterColors.map((color) => (
+          <ColorSwatch key={color} color={color} shape="Square" />
         ))}
       </Stack>
 

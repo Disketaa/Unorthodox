@@ -1,21 +1,42 @@
 /*
- * A tint shown as a plain disc.
+ * A tint shown as a plain block of colour.
  *
- * The character grid already shows every drawing at full size, so repeating
- * that artwork eight more times for the tints makes the row heavy and harder to
- * scan than the choice requires. A disc carries the same information in a shape
- * whose meaning is already "a colour", and the chosen tint is still seen on the
- * character itself. The colour comes from the same `--Character-Tint` custom
+ * The cast above already shows every drawing at full size, so repeating that
+ * artwork eight more times for the tints makes the row heavy and harder to scan
+ * than the choice requires. A block of colour carries the same information in a
+ * shape whose meaning is already "a colour", and the chosen tint is still seen on
+ * the character above. The colour comes from the same `--Character-Tint` custom
  * property the characters use, so a new tint is one token and one class, as
  * everywhere else.
  */
 .Swatch {
   display: block;
   flex: none;
-  border-radius: var(--Radius-Full);
   background-color: var(--Character-Tint);
-  /* Keeps a pale tint from disappearing into the button behind it. */
-  box-shadow: inset 0 0 0 var(--Border-Width-Default) var(--Color-Border-Default);
+}
+
+/*
+ * Round, for a disc on its own.
+ *
+ * The button behind it already has a border, and a disc with a border of its own
+ * inside a bordered square reads as two frames around one thing. The border comes
+ * off the disc so the button is the only outline in the cell.
+ */
+.Circle {
+  border-radius: var(--Radius-Full);
+  box-shadow: inset 0 0 0 var(--Border-Width-Default)
+    var(--Color-Border-Default);
+}
+
+/*
+ * Square, for a cell that is already square.
+ *
+ * A circle inside a square button looked like a token in a frame rather than a
+ * swatch, and the corner radius of the button was fighting the disc for the shape
+ * of the cell. Matching the button's radius makes the tint fill it.
+ */
+.Square {
+  border-radius: var(--Radius-Md);
 }
 
 .SizeSmall {
@@ -36,10 +57,10 @@
 /*
  * Sized by whatever contains it, for the picker.
  *
- * The tint cells are a share of the row, so the disc has to be square for the
- * radius to read as a circle. Deriving the height from the width with
- * `aspect-ratio` keeps it round in a cell of any shape, rather than stretching
- * to fill one that is wider than it is tall.
+ * The tint cells are a share of the row, so the swatch has to be square for the
+ * radius to read. Deriving the height from the width with `aspect-ratio` keeps it
+ * the right shape in a cell of any proportion, rather than stretching to fill one
+ * that is wider than it is tall.
  */
 .SizeFill {
   width: 100%;
@@ -77,8 +98,4 @@
 
 .Sand {
   --Character-Tint: var(--Color-Character-Sand);
-}
-
-.Lemon {
-  --Character-Tint: var(--Color-Character-Lemon);
 }
