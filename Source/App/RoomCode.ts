@@ -1,10 +1,15 @@
 import { GameConfig } from '@/Game';
 
-/** Room codes skip lookalike letters so they are easy to read out loud. */
-const roomAlphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+/**
+ * Room codes are written in Cyrillic.
+ *
+ * Letters that look like Latin ones (А, В, Е, К, М, Н, О, Р, С, Т, У, Х) are
+ * left out, so a code read out loud over the phone cannot be misheard. Ъ, Ы and
+ * Ь are left out too, because they are awkward to pronounce.
+ */
+const roomAlphabet = 'БГДЖЗИЙЛПФЦЧШЩЭЮЯ';
 
-/** Uppercase a typed code and drop everything that is not a room letter. */
-export function normalizeRoomCode(value: string): string {
+/** Uppercase a typed code and drop everything that is not a room letter. */export function normalizeRoomCode(value: string): string {
   const upper = value.toUpperCase();
   let result = '';
   for (const character of upper) {

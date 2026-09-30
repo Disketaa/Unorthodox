@@ -10,6 +10,26 @@
   font-display: swap;
 }
 
+/**
+ * Base styles.
+ *
+ * The body font is set here rather than per component, so anything that does
+ * not name a font of its own still renders in the game's typeface instead of
+ * the browser's default serif.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--FontFamily-Body);
+  color: var(--Color-Text-Default);
+  -webkit-font-smoothing: antialiased;
+}
+
 :root {
   --Color-Orange-50: #FFF3E0;
   --Color-Orange-100: #FFE0B2;
