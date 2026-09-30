@@ -65,13 +65,25 @@
   transition: border-color var(--Duration-Fast) var(--Easing-Standard);
 }
 
+/*
+ * A darker grey than the resting border, rather than the focus colour or the action
+ * orange: under the cursor is neither of the two states the border otherwise means,
+ * and both of those belong to a cell that is chosen or focused.
+ */
 .Choice:hover {
-  border-color: var(--Color-Border-Focus);
+  border-color: var(--Color-Text-Muted);
 }
 
+/*
+ * The focus ring lives on the cell's own border rather than on an outline, so the
+ * focused cell never shows two borders, one inside the other. The border is always
+ * there and only its colour changes, which is what `TextField` does for the same
+ * reason: an outline offset from a bordered control reads as a second frame around
+ * it, and on a row of eight cells it makes the whole row look selected.
+ */
 .Choice:focus-visible {
-  outline: var(--Border-Width-Default) solid var(--Color-Border-Focus);
-  outline-offset: var(--Space-Xs);
+  outline: none;
+  border-color: var(--Color-Border-Focus);
 }
 
 /*

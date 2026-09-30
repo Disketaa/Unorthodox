@@ -219,7 +219,12 @@ body {
 
   --Color-Border-Default: #e0e0e0;
   --Border-Width-Default: 2px;
-  --Color-Border-Focus: #ff9800;
+  /*
+   * The teal of the secondary action rather than the action orange, so a focused
+   * control is never mistaken for a chosen one: the two states sit side by side in
+   * the picker, and the same orange on both would tell them apart by nothing.
+   */
+  --Color-Border-Focus: var(--Color-Action-Secondary-Background);
   --Color-Border-Error: #e91e63;
 
   --Color-Feedback-Success: #8bc34a;

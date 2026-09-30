@@ -16,15 +16,11 @@
   color: var(--Color-Text-Muted);
 }
 
-.Root:focus-visible {
-  outline: 2px solid var(--Color-Border-Focus);
-  outline-offset: 2px;
-}
-
 /*
- * The focus ring lives on a transparent border rather than an outline, so the
- * field does not show two rings at once. The border is always present and only
- * its colour changes, which also keeps the field from resizing on focus.
+ * The focus ring lives on the field's own border rather than on an outline, so the
+ * field does not show two rings at once. The border is always present and only its
+ * colour changes, which also keeps the field from resizing on focus. Both variants
+ * have a border to colour, so neither needs an outline of its own.
  */
 .VariantFilled {
   background: var(--Color-Surface-Hover);
