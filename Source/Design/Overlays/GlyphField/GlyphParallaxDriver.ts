@@ -1,13 +1,14 @@
 /**
  * How quickly the field catches up with the target, per 60th of a second.
  *
- * Low on purpose and applied as a frame-rate independent smoothing, so the
- * field never arrives: it eases toward the pointer for a beat after the pointer
- * has stopped. Under a tenth is roughly a third of a second of follow-through,
- * which is what makes the movement read as weight rather than as a value being
- * written.
+ * Very low on purpose, and applied as a frame-rate independent smoothing, so the
+ * field never arrives. A fiftieth is roughly a second and a half of
+ * follow-through: the marks keep drifting towards where the pointer was for a
+ * moment after it has stopped, which is what makes the movement read as weight
+ * rather than as a value being written. Anything quicker tracks the pointer and
+ * stops looking like the field is being moved at all.
  */
-const CatchUp = 0.05;
+const CatchUp = 0.015;
 
 /**
  * How many pixels the field may travel from its resting place at the extreme
@@ -17,7 +18,7 @@ const CatchUp = 0.05;
  * text: enough for the marks to answer the pointer if you watch for them, small
  * enough that nothing in the margins appears to be attached to the cursor.
  */
-const ShiftMaxPx = 28;
+const ShiftMaxPx = 60;
 
 /**
  * How much page scroll counts as the field having spread all the way, in pixels.
@@ -36,7 +37,7 @@ const ScrollRangePx = 600;
  * opens the centre up instead of filling it. A field that leaned inward on every
  * scroll was the thing that made the middle cramped on a long page.
  */
-const SpreadMaxPx = 34;
+const SpreadMaxPx = 70;
 
 /** Where the field is heading, in pixels, on each axis. */
 export interface GlyphTarget {
