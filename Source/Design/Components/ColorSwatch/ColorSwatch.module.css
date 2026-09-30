@@ -32,11 +32,18 @@
  * Square, for a cell that is already square.
  *
  * A circle inside a square button looked like a token in a frame rather than a
- * swatch, and the corner radius of the button was fighting the disc for the shape
- * of the cell. Matching the button's radius makes the tint fill it.
+ * swatch, and the corner radius of the button was fighting the disc for the shape of
+ * the cell. Matching the button's radius makes the tint fill it.
+ *
+ * The negative margin is the other half of that. A border insets the content box, so
+ * a swatch filling the content box stops a border's width short of the frame and a
+ * strip of the surface shows between the colour and the border all the way round.
+ * Pulling it out by that same width puts the colour right up against the inside of
+ * the frame, and the shared radius is what lets the corners meet.
  */
 .Square {
   border-radius: var(--Radius-Md);
+  margin: calc(-1 * var(--Border-Width-Default));
 }
 
 .SizeSmall {
