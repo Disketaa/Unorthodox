@@ -1,5 +1,6 @@
 import { CharacterColor, CharacterId } from '@/Core';
 import { Character } from '../Character';
+import { ColorSwatch } from '../ColorSwatch';
 import styles from './CharacterPicker.module.css';
 
 /** A selectable choice, wrapping a drawing in a button. */
@@ -58,23 +59,22 @@ export function CharacterChoice({
 
 export interface ColorChoiceProps {
   name: CharacterColor;
-  character: CharacterId;
   label: string;
   selected: boolean;
-  onPick: (character: CharacterId, color: CharacterColor) => void;
+  /** Reports the tint alone; the character is already fixed by the grid. */
+  onPick: (color: CharacterColor) => void;
 }
 
-/** One tint in the row, previewed on the character currently worn. */
-export function ColorChoice({
-  name,
-  character,
-  label,
-  selected,
-  onPick,
-}: ColorChoiceProps) {
+/**
+ * One tint in the row, as a disc.
+ *
+ * The character argument is not needed here: a disc shows the colour on its own,
+ * and the character currently worn is already shown in full above.
+ */
+export function ColorChoice({ name, label, selected, onPick }: ColorChoiceProps) {
   return (
-    <Choice label={label} selected={selected} onSelect={() => onPick(character, name)}>
-      <Character character={character} color={name} size="Small" />
+    <Choice label={label} selected={selected} onSelect={() => onPick(name)}>
+      <ColorSwatch color={name} />
     </Choice>
   );
 }

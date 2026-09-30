@@ -30,6 +30,10 @@ export function CharacterPicker({
   labels,
   onPick,
 }: CharacterPickerProps) {
+  // Picking a tint keeps the character, so the two rows are independent choices
+  // over one look rather than two halves that must be picked together.
+  const onPickColor = (chosen: CharacterColor) => onPick(character, chosen);
+
   return (
     <div class={styles.Root}>
       <div class={styles.Characters} role="group">
@@ -49,10 +53,9 @@ export function CharacterPicker({
           <ColorChoice
             key={name}
             name={name}
-            character={character}
             label={labels.color[name]}
             selected={name === color}
-            onPick={onPick}
+            onPick={onPickColor}
           />
         ))}
       </div>

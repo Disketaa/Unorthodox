@@ -9,4 +9,5 @@ export * from "./VoteButton";
 export * from "./ScoreRow";
 export * from "./Banner";
 export * from "./Character";
+export * from "./ColorSwatch";
 export * from "./CharacterPicker";

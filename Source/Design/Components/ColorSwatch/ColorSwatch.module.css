@@ -1,0 +1,66 @@
+/*
+ * A tint shown as a plain disc.
+ *
+ * The character grid already shows every drawing at full size, so repeating
+ * that artwork eight more times for the tints makes the row heavy and harder to
+ * scan than the choice requires. A disc carries the same information in a shape
+ * whose meaning is already "a colour", and the chosen tint is still seen on the
+ * character itself. The colour comes from the same `--Character-Tint` custom
+ * property the characters use, so a new tint is one token and one class, as
+ * everywhere else.
+ */
+.Swatch {
+  display: block;
+  flex: none;
+  border-radius: var(--Radius-Full);
+  background-color: var(--Character-Tint);
+  /* Keeps a pale tint from disappearing into the button behind it. */
+  box-shadow: inset 0 0 0 var(--Border-Width-Default) var(--Color-Border-Default);
+}
+
+.SizeSmall {
+  width: var(--Size-Character-Small);
+  height: var(--Size-Character-Small);
+}
+
+.SizeMedium {
+  width: var(--Size-Character-Medium);
+  height: var(--Size-Character-Medium);
+}
+
+.SizeLarge {
+  width: var(--Size-Character-Large);
+  height: var(--Size-Character-Large);
+}
+
+.Coral {
+  --Character-Tint: var(--Color-Character-Coral);
+}
+
+.Amber {
+  --Character-Tint: var(--Color-Character-Amber);
+}
+
+.Lime {
+  --Character-Tint: var(--Color-Character-Lime);
+}
+
+.Mint {
+  --Character-Tint: var(--Color-Character-Mint);
+}
+
+.Sky {
+  --Character-Tint: var(--Color-Character-Sky);
+}
+
+.Violet {
+  --Character-Tint: var(--Color-Character-Violet);
+}
+
+.Rose {
+  --Character-Tint: var(--Color-Character-Rose);
+}
+
+.Sand {
+  --Character-Tint: var(--Color-Character-Sand);
+}

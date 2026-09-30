@@ -61,3 +61,12 @@ import. `Design` may not import `Content`, so the picker's display names arrive 
 rules about when a phase may end now live in `Network/HostPhases.ts`, and the rejection rule
 and totals arithmetic in `Game/RoundScoring.ts`. This is a move, not a change: the same
 transitions are still the only things that can trigger each other.
+
+## 2026-09-30 — the tint row shows discs, not the artwork again
+The character grid already draws all nine at full size, so repeating that artwork eight more
+times for the tints made the row heavy and harder to scan than the choice needs. `ColorSwatch`
+renders the tint as a plain disc instead, reading the same `--Character-Tint` custom property
+the characters use, so the palette still lives in one place. Picking a tint now reports the
+tint alone rather than a character-and-tint pair, because the character is already fixed by
+the grid above; the character is still shown wearing the chosen tint, so the result of the
+choice is visible.
