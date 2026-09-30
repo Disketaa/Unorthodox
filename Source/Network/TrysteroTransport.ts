@@ -176,7 +176,9 @@ export class TrysteroTransport implements Transport {
   }
 
   broadcast(message: unknown): void {
-    // Only the host should call this
+    // A broadcast before the room exists has nowhere to go, which happens when
+    // the host seeds its own lobby entry. Expected, not a fault.
+    if (this.room === null) return log('debug', 'broadcast before the room was opened, skipping');
     if (!this.isHost || !this.hostToClientAction) {
       log('warn', 'broadcast called on a client, ignoring');
       return;

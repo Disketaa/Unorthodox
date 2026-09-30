@@ -5,12 +5,19 @@ import { createRoomCode, normalizeRoomCode } from './RoomCode';
 import { parseRoute, roomPath, Route } from './Routes';
 import { GameRoom } from './GameRoom';
 
-/** Player name is kept in localStorage so that a reload inside a room rejoins under the same name. */
+/**
+ * The player name is kept in sessionStorage, which is scoped to one tab.
+ *
+ * It has to survive a reload, otherwise reloading inside a room shows the join
+ * screen with a live room link and the next keystroke joins the game under a
+ * one-character name. localStorage would survive reloads too, but it is shared
+ * by every tab of the browser, so two tabs would enter as the same player.
+ */
 const NameStorageKey = 'unorthodox.playerName';
 
 function loadName(): string {
   try {
-    return localStorage.getItem(NameStorageKey) ?? '';
+    return sessionStorage.getItem(NameStorageKey) ?? '';
   } catch {
     return '';
   }
@@ -18,7 +25,7 @@ function loadName(): string {
 
 function saveName(value: string): void {
   try {
-    localStorage.setItem(NameStorageKey, value);
+    sessionStorage.setItem(NameStorageKey, value);
   } catch {
     // Storage may be unavailable in private mode; the name then lasts for the tab only.
   }
