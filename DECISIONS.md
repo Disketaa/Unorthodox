@@ -67,71 +67,50 @@ drawings are square on a 512 viewBox, so that keeps them round at any width with
 query. The tint row is `auto-fill` with a floor of a comfortable target, so the discs wrap on
 a phone and spread on a wide screen rather than all eight squeezing onto one row.
 
-## 2026-09-30 — a character pops in, from its own place, rather than being revealed
-The first attempt revealed a character with a hard edge sweeping across it, which read as a
-slide: the character travelled rather than arrived. It now starts as a tall sliver with no width
-at all, over-tall by a random 15% to 40%, cocked over by a random few degrees, and a few pixels
-off where it belongs, then opens out to full width while settling to its real height. That is
-the squash-and-stretch a cartoonist draws, and it reads as a character turning up.
+## 2026-09-30 — one `Pop` primitive, one squash, for every character reaction
+A character reacts to three things: it turns up, it changes tint, and it is chosen. Those were
+three mechanisms, written as three pieces of the Character component: an idle sway of its own, a
+reveal that swept an edge across it, and a `selected` scale on a layer between them. They are now
+two things, a `Pop` primitive in `Design/Primitives` for every reaction, and the idle sway, which
+is continuous rather than a reaction and stays where it is.
 
-The vertical offset is negative by construction rather than by luck, so characters always arrive
-from above and drop into place; from below would read as surfacing. A row of them arrives from
-slightly different places, angles and overshoots, which is what stops it looking like one
-animation played nine times.
+`Pop` has two variants that differ only in whether the character starts from zero width. Both
+squash from `--Pop-Squash` down to true over `--Duration-Pop`, so arriving and being chosen are
+unmistakably the same movement: `Appear` grows out of a point, `Effort` only squashes, because it
+is reacting to a choice rather than turning up. `Character` composes two of them, the outer keyed
+on whether it is chosen and the inner on its tint, so a tint change does not also replay the
+chosen pop. They are separate elements because two animations on one element overwrite each other,
+and the individual `scale`, `rotate` and `translate` properties compose with the idle `transform`
+on the ancestor, so all three can play at once.
 
-The pop animates the individual `scale`, `rotate` and `translate` properties, which compose with
-each other and with the `transform` on the layer above, so the reveal and the selection lift
-never replace one another. Reduced motion states the finished `scale`, `rotate` and `translate`
-explicitly, because cancelling the animation alone would leave every character at zero width and
-therefore invisible.
+Getting there took three attempts at arriving. The first revealed with a hard edge sweeping left
+to right, which read as a slide: the character travelled rather than arrived. The second grew from
+nothing but varied its overshoot per character, which read as nine separate animations rather than
+one movement repeated. What works is one fixed squash, with the randomness moved to where each
+character arrives from, so the mechanism is identical and the arrivals differ.
 
-`Character.test.tsx` covers the rolled values, not just their presence: that the start height is
-over 100%, and that the vertical offset is negative across repeated mounts. Note that these are
-written from an effect, so a test has to wrap the render in `act` to flush it.
+The squash and the duration belong to the primitive, so every reaction is the same movement. What
+a character contributes is only what makes it differ from its neighbours: where it comes from and
+how it is cocked when it gets there, passed as `--Pop-*` custom properties and picked up by
+inheritance. The vertical offset is negative by construction rather than by luck, so characters
+drop into place instead of surfacing. The idle sway rolls six values the same way, and the two
+together are what make a row read as a crowd: a shared duration and amplitude would make nine
+characters look like one item on a conveyor.
 
-## 2026-09-30 — a character reveals as a flipbook, and again on every tint change
-A character used to just be there, which made a first render and a colour change look identical
-to a repaint. It now reveals with a hard edge sweeping left to right in nine held steps, the way
-a page turns in a flipbook, rather than fading in. A fade reads as software loading; a stepped
-edge reads as something drawn for this frame, which is the same trick the idle sway uses.
+Two things to know before changing this. A `var()` cannot be used *inside* the `steps()` function:
+the build strips the wrapper and leaves `steps(Steps)`, an invalid timing function that silently
+cancels the animation with no error at all. The step count and keyword therefore travel as one
+finished `steps()` call in a custom property, which does survive. And cancelling the animation
+under `prefers-reduced-motion` is not enough on its own: the pop starts collapsed, so the finished
+`scale`, `rotate` and `translate` have to be stated explicitly or the character stays invisible.
 
-The sweep is `clip-path`, not `width`, so nothing reflows while it plays, and it animates
-`clip-path` and `opacity` only. The selection lift is a `transform` on the layer above, so the
-two never overwrite one another and both can be true at once.
-
-The revealed element is keyed on the tint, so changing colour remounts it and the browser
-replays the animation. The key is on that inner element rather than on the character root, so
-the rolled idle motion keeps its values and does not visibly restart underneath the reveal.
-`Character.test.tsx` covers this: if the key stopped remounting, the reveal would play once and
-never again, and nothing else in the suite would notice.
-
-Reduced motion has to set the finished state explicitly, not just `animation: none`, or the
-character stays clipped at `inset(0 100% 0 0)` and is never seen at all.
-
-## 2026-09-30 — characters sway side to side, rolled per instance, almost imperceptibly
-Each character is given a resting lean, a swing width, a tempo, a step count, a jump keyword
-and a place in its cycle, all rolled once when it mounts and written onto its node as custom
-properties, the way the paper overlay sets its own drift. Six values rather than one is the
-whole point: a shared duration and amplitude makes a row of characters look like one item on
-a conveyor, and it is the disagreement between them that reads as a crowd.
-
-The movement is a slow lateral sway with a lean, not a hop. A character that bounces draws
-the eye, and a picker holding nine of them becomes busy rather than alive, so the vertical
-travel is a single pixel and the swing carries everything. The amplitudes are deliberately at
-the edge of being noticeable: they are there if you watch for them, and invisible if you are
-reading the room code. Getting there took three passes, the first two of which were visibly
-too big.
-
-The chosen character lifts by 5% and stands straight, eased. The scale is on its own layer
-beneath the animation, so the two transforms cannot reset one another.
-
-Two things worth knowing if this is changed later. A `var()` cannot be used *inside* the
-`steps()` function: the build strips the wrapper and leaves `steps(Steps)`, an invalid timing
-function that silently cancels the animation with no error. The step count and keyword
-therefore travel as one finished `steps()` call in a custom property, which does survive. And
-the scoreboard passes `moving={false}`, because those rows re-order as scores land and a sway
-on top of that movement is noise.
-
+`Character.test.tsx` covers the mechanism rather than the pixels, since a pop that stopped
+replaying would look like a working app that had quietly stopped reacting. It checks that each
+element is rebuilt when the thing it reacts to changes, that a tint change leaves the chosen pop
+alone, and that the vertical offset stays negative across repeated mounts. Those values are
+written from an effect, so a test has to wrap the render in `act` to flush it. The scoreboard
+passes `moving={false}`, because those rows re-order as scores land and a sway on top of that
+movement is noise.
 ## 2026-09-30 — phase transitions and round scoring split out of the session and the actions
 `HostSession` and `Game/GameActions.ts` passed the 150-line limit once the roster grew. The
 rules about when a phase may end now live in `Network/HostPhases.ts`, and the rejection rule

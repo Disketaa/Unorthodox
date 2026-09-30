@@ -1,0 +1,86 @@
+/*
+ * The pop.
+ *
+ * One mechanism for every character reaction: growing in when it first appears,
+ * and squashing when it is chosen. Both squash from over-tall down to true, which
+ * is the squash-and-stretch a cartoonist draws, and both run through the same
+ * `steps()` so they read as held drawn frames rather than a tween.
+ *
+ * The two variants differ only in whether the character starts from nothing. An
+ * `Appear` has no width at all on its first frame and grows out of one point; an
+ * `Effort` keeps its width and only squashes, because it is reacting to a choice
+ * rather than turning up. Same squash, different reason.
+ *
+ * The tilt and the offset come from the caller as custom properties, so each
+ * character arrives from its own place. They are optional: without them the pop is
+ * a plain squash, which is the right thing for a UI that has not asked for
+ * character.
+ */
+.Root {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/*
+ * The step count and keyword travel as one finished `steps()` call in a custom
+ * property, because the build strips a `var()` used *inside* the function and
+ * would leave an invalid timing function that silently cancels the animation.
+ */
+.Appear {
+  animation: PopAppear var(--Duration-Pop) var(--Pop-Timing, steps(7, jump-none)) both;
+}
+
+.Effort {
+  animation: PopEffort var(--Duration-Pop) var(--Pop-Timing, steps(7, jump-none)) both;
+}
+
+@keyframes PopAppear {
+  /*
+   * Zero width is what makes this a pop rather than a slide: the character is
+   * genuinely not there, and its whole shape grows out of one point instead of
+   * travelling across the screen. It is over-tall on the way, the way something
+   * squashed springs back.
+   */
+  from {
+    scale: 0 var(--Pop-Squash);
+    rotate: var(--Pop-Tilt, 0deg);
+    translate: var(--Pop-OffsetX, 0px) var(--Pop-OffsetY, 0px);
+  }
+
+  to {
+    scale: 1 1;
+    rotate: 0deg;
+    translate: 0 0;
+  }
+}
+
+@keyframes PopEffort {
+  /* The same squash, without the growth, because nothing is arriving. */
+  from {
+    scale: 1 var(--Pop-Squash);
+    rotate: var(--Pop-Tilt, 0deg);
+    translate: var(--Pop-OffsetX, 0px) var(--Pop-OffsetY, 0px);
+  }
+
+  to {
+    scale: 1 1;
+    rotate: 0deg;
+    translate: 0 0;
+  }
+}
+
+/*
+ * The pop starts collapsed, so cancelling the animation alone would leave the
+ * child at zero width and therefore invisible. The finished state has to be
+ * stated rather than assumed.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .Appear,
+  .Effort {
+    animation: none;
+    scale: 1 1;
+    rotate: 0deg;
+    translate: 0 0;
+  }
+}

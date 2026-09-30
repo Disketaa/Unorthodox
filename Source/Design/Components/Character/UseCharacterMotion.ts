@@ -15,12 +15,11 @@ export interface CharacterMotion {
   steps: number;
   timing: string;
   offset: number;
-  revealHeight: number;
-  revealTilt: number;
-  revealOffsetX: number;
-  revealOffsetY: number;
-  revealSteps: number;
-  revealTiming: string;
+  popTilt: number;
+  popOffsetX: number;
+  popOffsetY: number;
+  popSteps: number;
+  popTiming: string;
 }
 
 /** The resting lean, in degrees either way. */
@@ -65,16 +64,8 @@ const MaxSteps = 3;
  */
 const TimingChoices = ['jump-none', 'jump-start', 'jump-end', 'jump-both'] as const;
 
-/**
- * How tall a character stands on its first frame, as a percentage of its real
- * height. It starts over-tall and settles, the way something squashed springs
- * back, and the overshoot is rolled so a row of them do not all spring the same.
- */
-const MinRevealHeight = 115;
-const MaxRevealHeight = 140;
-
 /** The angle it is cocked over at on its first frame, in degrees. */
-const MaxRevealTiltDeg = 5;
+const MaxPopTiltDeg = 5;
 
 /**
  * How far off its resting place it appears, in pixels. This is the "arrives from
@@ -82,11 +73,11 @@ const MaxRevealTiltDeg = 5;
  * like a system animation, and a pop from slightly different places and angles
  * looks like nine characters turning up.
  */
-const MaxRevealOffsetPx = 7;
+const MaxPopOffsetPx = 7;
 
-/** Steps in the reveal. Few, so each held shape is a real frame of the flipbook. */
-const MinRevealSteps = 5;
-const MaxRevealSteps = 8;
+/** Steps in the pop. Few, so each held shape is a real frame of the flipbook. */
+const MinPopSteps = 5;
+const MaxPopSteps = 8;
 
 /** A number anywhere in a range. */
 function rollBetween(min: number, max: number): number {
@@ -113,14 +104,13 @@ function rollMotion(): CharacterMotion {
     steps: rollStepsBetween(MinSteps, MaxSteps),
     timing: rollTiming(),
     offset: Math.random(),
-    revealHeight: rollBetween(MinRevealHeight, MaxRevealHeight),
-    revealTilt: (Math.random() * 2 - 1) * MaxRevealTiltDeg,
-    revealOffsetX: (Math.random() * 2 - 1) * MaxRevealOffsetPx,
+    popTilt: (Math.random() * 2 - 1) * MaxPopTiltDeg,
+    popOffsetX: (Math.random() * 2 - 1) * MaxPopOffsetPx,
     // Always from slightly above: a character dropping into place from overhead
     // reads as arriving, where from below reads as surfacing.
-    revealOffsetY: -Math.random() * MaxRevealOffsetPx,
-    revealSteps: rollStepsBetween(MinRevealSteps, MaxRevealSteps),
-    revealTiming: rollTiming(),
+    popOffsetY: -Math.random() * MaxPopOffsetPx,
+    popSteps: rollStepsBetween(MinPopSteps, MaxPopSteps),
+    popTiming: rollTiming(),
   };
 }
 
@@ -136,14 +126,19 @@ function idleProperties(motion: CharacterMotion): [string, string][] {
   ];
 }
 
-/** The reveal values, as finished CSS values. */
-function revealProperties(motion: CharacterMotion): [string, string][] {
+/**
+ * The pop's values, for the `Pop` primitive to read.
+ *
+ * Only the parts that make one character differ from another: where it comes
+ * from and how it is cocked when it gets there. The squash itself and the
+ * duration belong to the primitive, so every reaction is the same movement.
+ */
+function popProperties(motion: CharacterMotion): [string, string][] {
   return [
-    ['--Character-Reveal-Height', `${motion.revealHeight.toFixed(0)}%`],
-    ['--Character-Reveal-Tilt', `${motion.revealTilt.toFixed(2)}deg`],
-    ['--Character-Reveal-OffsetX', `${motion.revealOffsetX.toFixed(2)}px`],
-    ['--Character-Reveal-OffsetY', `${motion.revealOffsetY.toFixed(2)}px`],
-    ['--Character-Reveal-Timing', `steps(${motion.revealSteps}, ${motion.revealTiming})`],
+    ['--Pop-Tilt', `${motion.popTilt.toFixed(2)}deg`],
+    ['--Pop-OffsetX', `${motion.popOffsetX.toFixed(2)}px`],
+    ['--Pop-OffsetY', `${motion.popOffsetY.toFixed(2)}px`],
+    ['--Pop-Timing', `steps(${motion.popSteps}, ${motion.popTiming})`],
   ];
 }
 
@@ -157,6 +152,10 @@ function revealProperties(motion: CharacterMotion): [string, string][] {
  * stylesheet still decides what they mean. The timings are passed as whole
  * `steps()` calls because the build strips a `var()` used *inside* the function,
  * which would leave an invalid timing function and silently cancel the animation.
+ *
+ * The `Pop` values sit on this same node, so the primitive below picks them up by
+ * inheritance. That is what lets one mechanism serve every reaction while each
+ * character still brings its own.
  */
 export function useCharacterMotion(): { current: HTMLSpanElement | null } {
   const ref = useRef<HTMLSpanElement>(null);
@@ -167,7 +166,7 @@ export function useCharacterMotion(): { current: HTMLSpanElement | null } {
     if (node === null) {
       return;
     }
-    for (const [name, value] of [...idleProperties(motion), ...revealProperties(motion)]) {
+    for (const [name, value] of [...idleProperties(motion), ...popProperties(motion)]) {
       node.style.setProperty(name, value);
     }
   }, [motion]);

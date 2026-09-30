@@ -1,0 +1,8 @@
+/* A plain filled shape, so the gallery shows the pop on something with no art. */
+.Mark {
+  display: block;
+  width: 64px;
+  height: 64px;
+  background: var(--Color-Character-Sky);
+  border-radius: var(--Radius-Md);
+}

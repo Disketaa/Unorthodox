@@ -35,8 +35,8 @@ export function CharacterGallery() {
       </Stack>
 
       <Text variant="Body">
-        The reveal plays on mount and again on every tint change, so the row
-        above re-reveals whenever the gallery reloads.
+        Every character pops in on mount and again on a tint change, and the
+        chosen one pops when it is picked, so this row re-pops on reload.
       </Text>
     </Stack>
   );

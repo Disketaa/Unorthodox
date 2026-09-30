@@ -1,4 +1,5 @@
 import { CharacterColor, CharacterId } from '@/Core';
+import { Pop } from '@/Design/Primitives';
 import { artFor } from '../../Characters';
 import { useCharacterMotion } from './UseCharacterMotion';
 import styles from './Character.module.css';
@@ -14,7 +15,7 @@ export interface CharacterProps {
    * odd one out; off for rows that are changing anyway.
    */
   moving?: boolean;
-  /** Draws it as the chosen one: a little larger, and standing straight. */
+  /** Draws it as the chosen one, which also squashes it. */
   selected?: boolean;
 }
 
@@ -43,25 +44,24 @@ export function Character({
     styles[`Size${size}`],
     styles[color],
     moving ? styles.Moving : styles.Still,
-    selected && styles.Selected,
   ]
     .filter(Boolean)
     .join(' ');
 
   return (
     <span class={classes} ref={motionRef}>
-      <span class={styles.Layer}>
-        {/*
-          * Keyed on the tint, so changing colour remounts this element and the
-          * reveal plays again: a character switching colour is a new drawing
-          * arriving, and the player picked it. The key is on this inner element
-          * rather than the outer one so the idle motion keeps its rolled values
-          * and does not visibly restart underneath the reveal.
-         */}
-        <span class={`${styles.Reveal} ${styles.Appearing}`} key={color}>
+      {/*
+        * Two pops, one mechanism. The outer reacts to being chosen, the inner
+        * to arriving: a new character, or one wearing a new tint. They are
+        * separate elements so their squashes compose instead of overwriting one
+        * another, and each is keyed on the thing it reacts to, so a change to the
+        * other does not replay it.
+       */}
+      <Pop trigger={selected ? 'chosen' : 'unchosen'} variant="Effort">
+        <Pop trigger={color} variant="Appear">
           <Art />
-        </span>
-      </span>
+        </Pop>
+      </Pop>
     </span>
   );
 }

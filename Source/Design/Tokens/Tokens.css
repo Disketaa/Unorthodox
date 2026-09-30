@@ -138,11 +138,15 @@ body {
   --Duration-Slow: 400ms;
 
   /*
-   * How long a character takes to be revealed when it first appears or changes
-   * tint. Short on purpose: it plays whenever a player picks a new colour, and a
-   * reveal that takes half a second turns a quick choice into a wait.
+   * How long the pop takes, and how far it squashes.
+   *
+   * One duration and one squash for every reaction, whether a character is
+   * arriving or reacting to being chosen, so the two are unmistakably the same
+   * movement. Over-tall rather than over-wide, the way something squashed springs
+   * back vertically.
    */
-  --Duration-Character-Reveal: 380ms;
+  --Duration-Pop: 380ms;
+  --Pop-Squash: 125%;
 
   --Easing-Standard: cubic-bezier(0.2, 0, 0, 1);
   --Easing-Decelerate: cubic-bezier(0, 0, 0.2, 1);
