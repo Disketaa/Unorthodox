@@ -67,6 +67,28 @@ drawings are square on a 512 viewBox, so that keeps them round at any width with
 query. The tint row is `auto-fill` with a floor of a comfortable target, so the discs wrap on
 a phone and spread on a wide screen rather than all eight squeezing onto one row.
 
+## 2026-09-30 — a character pops in, from its own place, rather than being revealed
+The first attempt revealed a character with a hard edge sweeping across it, which read as a
+slide: the character travelled rather than arrived. It now starts as a tall sliver with no width
+at all, over-tall by a random 15% to 40%, cocked over by a random few degrees, and a few pixels
+off where it belongs, then opens out to full width while settling to its real height. That is
+the squash-and-stretch a cartoonist draws, and it reads as a character turning up.
+
+The vertical offset is negative by construction rather than by luck, so characters always arrive
+from above and drop into place; from below would read as surfacing. A row of them arrives from
+slightly different places, angles and overshoots, which is what stops it looking like one
+animation played nine times.
+
+The pop animates the individual `scale`, `rotate` and `translate` properties, which compose with
+each other and with the `transform` on the layer above, so the reveal and the selection lift
+never replace one another. Reduced motion states the finished `scale`, `rotate` and `translate`
+explicitly, because cancelling the animation alone would leave every character at zero width and
+therefore invisible.
+
+`Character.test.tsx` covers the rolled values, not just their presence: that the start height is
+over 100%, and that the vertical offset is negative across repeated mounts. Note that these are
+written from an effect, so a test has to wrap the render in `act` to flush it.
+
 ## 2026-09-30 — a character reveals as a flipbook, and again on every tint change
 A character used to just be there, which made a first render and a colour change look identical
 to a repaint. It now reveals with a hard edge sweeping left to right in nine held steps, the way

@@ -15,6 +15,12 @@ export interface CharacterMotion {
   steps: number;
   timing: string;
   offset: number;
+  revealHeight: number;
+  revealTilt: number;
+  revealOffsetX: number;
+  revealOffsetY: number;
+  revealSteps: number;
+  revealTiming: string;
 }
 
 /** The resting lean, in degrees either way. */
@@ -59,23 +65,86 @@ const MaxSteps = 3;
  */
 const TimingChoices = ['jump-none', 'jump-start', 'jump-end', 'jump-both'] as const;
 
-/** A whole number in a range, as a fraction of the range. */
+/**
+ * How tall a character stands on its first frame, as a percentage of its real
+ * height. It starts over-tall and settles, the way something squashed springs
+ * back, and the overshoot is rolled so a row of them do not all spring the same.
+ */
+const MinRevealHeight = 115;
+const MaxRevealHeight = 140;
+
+/** The angle it is cocked over at on its first frame, in degrees. */
+const MaxRevealTiltDeg = 5;
+
+/**
+ * How far off its resting place it appears, in pixels. This is the "arrives from
+ * its own direction" part: a pop from exactly the same point every time looks
+ * like a system animation, and a pop from slightly different places and angles
+ * looks like nine characters turning up.
+ */
+const MaxRevealOffsetPx = 7;
+
+/** Steps in the reveal. Few, so each held shape is a real frame of the flipbook. */
+const MinRevealSteps = 5;
+const MaxRevealSteps = 8;
+
+/** A number anywhere in a range. */
 function rollBetween(min: number, max: number): number {
   return min + Math.random() * (max - min);
 }
 
+/** A whole number in a range. */
+function rollStepsBetween(min: number, max: number): number {
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+/** One of the stepped timings, at random. */
+function rollTiming(): string {
+  return TimingChoices[Math.floor(Math.random() * TimingChoices.length)] ?? 'jump-none';
+}
+
 /** One instance's motion, rolled fresh. */
 function rollMotion(): CharacterMotion {
-  const stepSpan = MaxSteps - MinSteps + 1;
   return {
     tilt: (Math.random() * 2 - 1) * MaxTiltDeg,
     range: rollBetween(MaxRangePx / 3, MaxRangePx),
     sway: (Math.random() * 2 - 1) * MaxSwayPx,
     duration: rollBetween(MinDurationS, MaxDurationS),
-    steps: MinSteps + Math.floor(Math.random() * stepSpan),
-    timing: TimingChoices[Math.floor(Math.random() * TimingChoices.length)] ?? 'jump-none',
+    steps: rollStepsBetween(MinSteps, MaxSteps),
+    timing: rollTiming(),
     offset: Math.random(),
+    revealHeight: rollBetween(MinRevealHeight, MaxRevealHeight),
+    revealTilt: (Math.random() * 2 - 1) * MaxRevealTiltDeg,
+    revealOffsetX: (Math.random() * 2 - 1) * MaxRevealOffsetPx,
+    // Always from slightly above: a character dropping into place from overhead
+    // reads as arriving, where from below reads as surfacing.
+    revealOffsetY: -Math.random() * MaxRevealOffsetPx,
+    revealSteps: rollStepsBetween(MinRevealSteps, MaxRevealSteps),
+    revealTiming: rollTiming(),
   };
+}
+
+/** The idle values, as finished CSS values. */
+function idleProperties(motion: CharacterMotion): [string, string][] {
+  return [
+    ['--Character-Motion-Tilt', `${motion.tilt.toFixed(2)}deg`],
+    ['--Character-Motion-Range', `${motion.range.toFixed(2)}px`],
+    ['--Character-Motion-Sway', `${motion.sway.toFixed(2)}px`],
+    ['--Character-Motion-Duration', `${motion.duration.toFixed(2)}s`],
+    ['--Character-Motion-Timing', `steps(${motion.steps}, ${motion.timing})`],
+    ['--Character-Motion-Offset', motion.offset.toFixed(3)],
+  ];
+}
+
+/** The reveal values, as finished CSS values. */
+function revealProperties(motion: CharacterMotion): [string, string][] {
+  return [
+    ['--Character-Reveal-Height', `${motion.revealHeight.toFixed(0)}%`],
+    ['--Character-Reveal-Tilt', `${motion.revealTilt.toFixed(2)}deg`],
+    ['--Character-Reveal-OffsetX', `${motion.revealOffsetX.toFixed(2)}px`],
+    ['--Character-Reveal-OffsetY', `${motion.revealOffsetY.toFixed(2)}px`],
+    ['--Character-Reveal-Timing', `steps(${motion.revealSteps}, ${motion.revealTiming})`],
+  ];
 }
 
 /**
@@ -85,8 +154,8 @@ function rollMotion(): CharacterMotion {
  * The values change once per character and cannot be known in CSS, and a style
  * prop is not allowed, so they are set on the node the way the paper overlay sets
  * its own drift. Expressed as finished values rather than numbers, so the
- * stylesheet still decides what they mean. The timing is passed as a whole
- * `steps()` call because the build strips a `var()` used *inside* the function,
+ * stylesheet still decides what they mean. The timings are passed as whole
+ * `steps()` calls because the build strips a `var()` used *inside* the function,
  * which would leave an invalid timing function and silently cancel the animation.
  */
 export function useCharacterMotion(): { current: HTMLSpanElement | null } {
@@ -98,13 +167,9 @@ export function useCharacterMotion(): { current: HTMLSpanElement | null } {
     if (node === null) {
       return;
     }
-    const style = node.style;
-    style.setProperty('--Character-Motion-Tilt', `${motion.tilt.toFixed(2)}deg`);
-    style.setProperty('--Character-Motion-Range', `${motion.range.toFixed(2)}px`);
-    style.setProperty('--Character-Motion-Sway', `${motion.sway.toFixed(2)}px`);
-    style.setProperty('--Character-Motion-Duration', `${motion.duration.toFixed(2)}s`);
-    style.setProperty('--Character-Motion-Timing', `steps(${motion.steps}, ${motion.timing})`);
-    style.setProperty('--Character-Motion-Offset', motion.offset.toFixed(3));
+    for (const [name, value] of [...idleProperties(motion), ...revealProperties(motion)]) {
+      node.style.setProperty(name, value);
+    }
   }, [motion]);
 
   return ref;

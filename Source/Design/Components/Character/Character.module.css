@@ -111,30 +111,41 @@
 /*
  * Appearing.
  *
- * A character is revealed the way a page is turned in a flipbook: a hard edge
- * sweeps across it in a handful of held steps, rather than fading in. A fade
- * reads as software loading; a stepped edge reads as something drawn for this
- * frame, which is the same trick the idle sway uses.
+ * A character is not slid or faded into place; it pops. It starts as a tall
+ * sliver, no width at all, and at a random spot a little off from where it
+ * belongs, then opens out to its full width while settling back to its real
+ * height. That is the squash-and-stretch a cartoonist draws, and it reads as a
+ * character arriving rather than as an element being rendered.
  *
- * The edge travels left to right, because that is the direction the eye reads
- * and the direction a page is turned. It is `clip-path` rather than `width` so
- * nothing reflows while it plays, and it composes with the `scale` below instead
- * of replacing it, so the reveal and the selection lift can both be true at
- * once.
+ * The steps are what keep it drawn. A smooth pop is a tween; snapping through a
+ * handful of held shapes is a flipbook, the same trick the idle sway uses.
+ *
+ * It animates `scale`, `rotate` and `translate`, which compose with each other
+ * and with the `transform` on the layer above, so the reveal and the selection
+ * lift can both be true at once and neither replaces the other.
  */
 .Appearing {
-  animation: CharacterReveal var(--Duration-Character-Reveal) steps(9, jump-none) both;
+  animation: CharacterReveal var(--Duration-Character-Reveal)
+    var(--Character-Reveal-Timing, steps(7, jump-none)) both;
 }
 
 @keyframes CharacterReveal {
+  /*
+   * Zero width is why this is a pop and not a slide: the character is genuinely
+   * not there, and its whole shape grows out of one point rather than travelling
+   * across the screen. It overshoots in height on the way, the way something
+   * squashed springs back.
+   */
   from {
-    clip-path: inset(0 100% 0 0);
-    opacity: 0;
+    scale: 125 var(--Character-Reveal-Height, 125%);
+    rotate: var(--Character-Reveal-Tilt, 0deg);
+    translate: var(--Character-Reveal-OffsetX, 0px) var(--Character-Reveal-OffsetY, 0px);
   }
 
   to {
-    clip-path: inset(0 0 0 0);
-    opacity: 1;
+    scale: 1 1;
+    rotate: 0deg;
+    translate: 0 0;
   }
 }
 
@@ -169,12 +180,13 @@
     transform: rotate(var(--Character-Motion-Tilt, 0deg));
   }
 
-  /* The reveal is a wipe, so reduced motion has to be shown the finished state
-     explicitly or the character stays clipped. */
+  /* The reveal starts collapsed to nothing, so cancelling the animation alone
+     would leave every character invisible. The finished state has to be stated. */
   .Appearing {
     animation: none;
-    clip-path: none;
-    opacity: 1;
+    scale: 1 1;
+    rotate: 0deg;
+    translate: 0 0;
   }
 }
 

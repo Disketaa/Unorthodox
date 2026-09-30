@@ -1,7 +1,32 @@
 // @vitest-environment happy-dom
 import { describe, it, expect } from 'vitest';
 import { render } from 'preact';
+import { act } from 'preact/test-utils';
 import { Character } from '@/Design/Components';
+
+/**
+ * Mount a character into a fresh element and return it.
+ *
+ * The rolled values are written from an effect, which does not run until after
+ * the render returns, so `act` has to flush it before anything can be read.
+ */
+function mount(props: {
+  character: 'Character1' | 'Character2' | 'Character5';
+  color: 'Coral' | 'Mint' | 'Sky';
+  size?: 'Small';
+}): HTMLElement {
+  const root = document.createElement('div');
+  document.body.appendChild(root);
+  act(() => {
+    render(<Character {...props} />, root);
+  });
+  return root;
+}
+
+/** The custom properties a mounted character carries on its root. */
+function styleOf(root: HTMLElement): string {
+  return root.firstElementChild?.getAttribute('style') ?? '';
+}
 
 /**
  * The reveal plays when a character mounts and again when the tint changes, so
@@ -14,10 +39,7 @@ import { Character } from '@/Design/Components';
  */
 describe('Character reveal', () => {
   it('reveals on mount', () => {
-    const root = document.createElement('div');
-    document.body.appendChild(root);
-    render(<Character character="Character1" color="Coral" />, root);
-
+    const root = mount({ character: 'Character1', color: 'Coral' });
     const revealed = root.querySelector('[class*="Appearing"]');
     expect(revealed).not.toBeNull();
     expect(revealed?.querySelector('svg')).not.toBeNull();
@@ -59,5 +81,39 @@ describe('Character reveal', () => {
 
     render(<Character character="Character5" color="Coral" />, root);
     expect(root.querySelector('path')?.getAttribute('d')).not.toBe(firstPath);
+  });
+});
+
+/**
+ * The pop runs entirely off values rolled per character, so these are what make
+ * a row of characters feel like nine people arriving rather than one animation
+ * played nine times.
+ */
+describe('Character reveal values', () => {
+  it('writes the values the pop is driven by', () => {
+    const style = styleOf(mount({ character: 'Character1', color: 'Coral' }));
+    // An over-tall start that settles, a cocked angle, an offset it arrives
+    // from, and a stepped timing.
+    expect(style).toMatch(/--Character-Reveal-Height:\s*\d+%/);
+    expect(style).toMatch(/--Character-Reveal-Tilt:\s*-?[\d.]+deg/);
+    expect(style).toMatch(/--Character-Reveal-OffsetX:\s*-?[\d.]+px/);
+    expect(style).toMatch(/--Character-Reveal-Timing:\s*steps\(\d+, jump-/);
+  });
+
+  it('starts over-tall, so the pop springs back rather than growing', () => {
+    const style = styleOf(mount({ character: 'Character1', color: 'Coral' }));
+    const height = /--Character-Reveal-Height:\s*([\d.]+)%/.exec(style)?.[1];
+    expect(Number(height)).toBeGreaterThan(100);
+  });
+
+  it('always arrives from above, so a character reads as dropping into place', () => {
+    // The vertical offset is negative by construction, not by luck, so a row of
+    // characters never surfaces upward from below.
+    for (let i = 0; i < 8; i++) {
+      const style = styleOf(mount({ character: 'Character1', color: 'Coral' }));
+      const y = /--Character-Reveal-OffsetY:\s*(-?[\d.]+)px/.exec(style)?.[1];
+      expect(y).toBeDefined();
+      expect(Number(y)).toBeLessThan(0);
+    }
   });
 });
