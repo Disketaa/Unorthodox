@@ -12,7 +12,7 @@ export interface FinalScreenProps {
 /** Final ranking. */
 export function FinalScreen({ scores, isHost, onPlayAgain }: FinalScreenProps) {
   return (
-    <Stack gap="Lg" padding="Lg" align="Stretch">
+    <Stack gap="Lg" align="Stretch">
       <Text variant="Title">{Strings.final.headline}</Text>
       <Card variant="Elevated">
         <Stack gap="Sm">

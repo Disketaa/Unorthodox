@@ -1,4 +1,4 @@
-import { Stack, Text } from '@/Design/Primitives';
+import { Stack } from '@/Design/Primitives';
 import { TextField, Banner } from '@/Design/Components';
 import { Strings } from '@/Content';
 import { GameConfig } from '@/Game';
@@ -22,7 +22,6 @@ export function JoinFields({
 
   return (
     <Stack gap="Md">
-      <Text variant="Body">{Strings.join.headline}</Text>
       <TextField
         value={name}
         placeholder={Strings.join.namePlaceholder}

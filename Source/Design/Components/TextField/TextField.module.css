@@ -17,15 +17,22 @@
   outline-offset: 2px;
 }
 
+/*
+ * The focus ring lives on a transparent border rather than an outline, so the
+ * field does not show two rings at once. The border is always present and only
+ * its colour changes, which also keeps the field from resizing on focus.
+ */
 .VariantFilled {
   background: var(--Color-Surface-Hover);
+  border: 2px solid transparent;
   border-radius: var(--Radius-Input);
   padding: var(--Space-Sm) var(--Space-Md);
 }
 
 .VariantFilled:focus-visible {
+  outline: none;
   background: var(--Color-Surface-Default);
-  border: 2px solid var(--Color-Border-Focus);
+  border-color: var(--Color-Border-Focus);
 }
 
 .VariantUnderline {
@@ -36,5 +43,6 @@
 }
 
 .VariantUnderline:focus-visible {
+  outline: none;
   border-bottom-color: var(--Color-Border-Focus);
 }

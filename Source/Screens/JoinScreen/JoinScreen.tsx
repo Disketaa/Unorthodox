@@ -26,9 +26,8 @@ export function JoinScreen({
   const codeValid = roomCode.length === GameConfig.limits.roomCodeLength;
 
   return (
-    <Stack gap="Lg" padding="Lg" align="Stretch">
+    <Stack gap="Lg" align="Stretch">
       <Text variant="Title">{Strings.app.title}</Text>
-      <Text variant="Caption">{Strings.join.hint}</Text>
       <Card variant="Elevated">
         <Stack gap="Md">
           <JoinFields

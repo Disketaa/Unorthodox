@@ -17,7 +17,7 @@ export function LobbyScreen({ roomCode, players, isHost, onStart }: LobbyScreenP
   const roomFull = players.length >= GameConfig.limits.maxPlayers;
 
   return (
-    <Stack gap="Lg" padding="Lg" align="Stretch">
+    <Stack gap="Lg" align="Stretch">
       <RoomCodeBadge code={roomCode} />
       <Text variant="Body">{Strings.lobby.shareHint}</Text>
       <Stack gap="Sm">

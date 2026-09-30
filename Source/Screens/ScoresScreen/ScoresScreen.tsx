@@ -20,7 +20,7 @@ export function ScoresScreen({
   onNext,
 }: ScoresScreenProps) {
   return (
-    <Stack gap="Lg" padding="Lg" align="Stretch">
+    <Stack gap="Lg" align="Stretch">
       <Text variant="Title">{Strings.scores.headline}</Text>
       <Timer remainingMs={remainingMs} totalMs={totalMs} />
       <Card variant="Elevated">

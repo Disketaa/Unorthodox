@@ -20,7 +20,7 @@ export interface ReviewScreenProps {
 /** Reviewing phase: all answers at once, duplicates grouped, everyone can reject. */
 export function ReviewScreen({ topic, remainingMs, totalMs, groups, onReject }: ReviewScreenProps) {
   return (
-    <Stack gap="Lg" padding="Lg" align="Stretch">
+    <Stack gap="Lg" align="Stretch">
       <Timer remainingMs={remainingMs} totalMs={totalMs} />
       <Text variant="Caption">{Strings.reviewing.topicLabel}</Text>
       <Text variant="Title">{topic}</Text>

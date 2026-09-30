@@ -3,7 +3,7 @@
  */
 export const Strings = {
   app: {
-    title: 'Unorthodox',
+    title: 'Нестандартненько',
     galleryLink: 'Галерея компонентов',
   },
   common: {
@@ -16,14 +16,12 @@ export const Strings = {
     back: 'Назад',
   },
   join: {
-    headline: 'Как называемся?',
     namePlaceholder: 'Имя',
     roomPlaceholder: 'Код комнаты',
     nameError: 'Введите имя',
     roomError: 'Код комнаты — 4 буквы',
     joinButton: 'Войти',
     createButton: 'Создать комнату',
-    hint: 'Код из 4 букв присылает тот, кто создал комнату',
   },
   lobby: {
     headline: 'Ждём игроков',

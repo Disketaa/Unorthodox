@@ -30,6 +30,16 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/**
+ * The app is designed for a phone. On a wider screen the content is centred in a
+ * narrow column rather than stretched, so line lengths stay readable.
+ */
+#root {
+  max-width: var(--Layout-ContentMaxWidth);
+  margin: 0 auto;
+  padding: var(--Layout-ContentPadding);
+}
+
 :root {
   --Color-Orange-50: #FFF3E0;
   --Color-Orange-100: #FFE0B2;
@@ -103,6 +113,7 @@ body {
   --FontSize-Lg: 20px;
   --FontSize-Xl: 24px;
   --FontSize-Xxl: 32px;
+  --FontSize-3xl: 44px;
 
   --FontFamily-Body: 'Inter', system-ui, sans-serif;
   --FontFamily-Display: 'BlobSpongeyLowercase', 'Fredoka', cursive;
@@ -132,10 +143,11 @@ body {
   --Color-Action-Primary-Hover: #FB8C00;
   --Color-Action-Primary-Active: #F57C00;
 
-  --Color-Action-Secondary-Background: #E0F7FA;
-  --Color-Action-Secondary-Text: #0097A7;
-  --Color-Action-Secondary-Hover: #B2EBF2;
-  --Color-Action-Secondary-Active: #80DEEA;
+  /* A deeper teal than the room-code badge, so the two do not read as siblings. */
+  --Color-Action-Secondary-Background: #00838F;
+  --Color-Action-Secondary-Text: #FFFFFF;
+  --Color-Action-Secondary-Hover: #006064;
+  --Color-Action-Secondary-Active: #005662;
 
   --Color-Action-Ghost-Text: #FF9800;
   --Color-Action-Ghost-Hover: #FFF3E0;
@@ -155,10 +167,14 @@ body {
   --Radius-Input: var(--Radius-Sm);
   --Radius-Badge: var(--Radius-Full);
 
-  --FontSize-H1: var(--FontSize-Xxl);
+  --FontSize-H1: var(--FontSize-3xl);
   --FontSize-H2: var(--FontSize-Xl);
   --FontSize-H3: var(--FontSize-Lg);
   --FontSize-Body: var(--FontSize-Md);
   --FontSize-Caption: var(--FontSize-Sm);
   --FontSize-Mono: var(--FontSize-Sm);
+
+  /* Layout */
+  --Layout-ContentMaxWidth: 480px;
+  --Layout-ContentPadding: var(--Space-Md);
 }

@@ -30,7 +30,7 @@ export function WritingScreen({
   const timeUp = remainingMs <= 0;
 
   return (
-    <Stack gap="Lg" padding="Lg" align="Stretch">
+    <Stack gap="Lg" align="Stretch">
       <Timer remainingMs={remainingMs} totalMs={totalMs} />
       <Text variant="Caption">{Strings.writing.topicLabel}</Text>
       <Text variant="Title">{topic}</Text>

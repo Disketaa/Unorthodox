@@ -3,6 +3,8 @@
   color: var(--Color-Text-Default);
   border-radius: var(--Radius-Card);
   overflow: hidden;
+  /* Content sits inside the card, so the card pads it on every side. */
+  padding: var(--Layout-ContentPadding);
 }
 
 .VariantElevated {
