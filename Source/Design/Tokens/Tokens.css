@@ -1,3 +1,15 @@
+/**
+ * The display face, used for titles. It is bundled from source rather than a
+ * font CDN, so the game does not depend on a third party being reachable.
+ */
+@font-face {
+  font-family: 'BlobSpongeyLowercase';
+  src: url('../Fonts/BlobSpongeyLowercase.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --Color-Orange-50: #FFF3E0;
   --Color-Orange-100: #FFE0B2;
@@ -73,7 +85,7 @@
   --FontSize-Xxl: 32px;
 
   --FontFamily-Body: 'Inter', system-ui, sans-serif;
-  --FontFamily-Display: 'Fredoka', cursive;
+  --FontFamily-Display: 'BlobSpongeyLowercase', 'Fredoka', cursive;
 
   --Duration-Fast: 150ms;
   --Duration-Normal: 250ms;
