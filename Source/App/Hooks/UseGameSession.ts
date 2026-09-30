@@ -5,6 +5,14 @@ import { Session, SessionRole } from '../Session';
 import { useSessionPhase, SessionPhase } from './UseSessionPhase';
 import { useGameActions } from './UseGameActions';
 import { useHostPhaseTimer } from './UseHostPhaseTimer';
+import {
+  emptyMarks,
+  hasSubmittedIn,
+  markRejected,
+  markSubmitted,
+  rejectedIn,
+  type RoundMarks,
+} from './RoundMarks';
 
 export interface GameSessionView extends SessionPhase {
   role: SessionRole;
@@ -21,8 +29,9 @@ export interface GameSessionView extends SessionPhase {
   playAgain: () => void;
 }
 
-function addVote(voted: ReadonlySet<number>, groupId: number): ReadonlySet<number> {
-  return new Set([...voted, groupId]);
+/** Read the topic of the phase in view, which identifies the round. */
+function readTopic(publicState: PublicState | undefined): string | null {
+  return publicState !== undefined && 'topic' in publicState ? publicState.topic : null;
 }
 
 /** Join a room and expose one uniform view of the game for the screens. */
@@ -33,8 +42,7 @@ export function useGameSession(
 ): GameSessionView {
   const [session] = useState<Session>(() => createSession(role, roomCode, playerName));
   const [, setVersion] = useState(0);
-  const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [rejectedGroupIds, setRejectedGroupIds] = useState<ReadonlySet<number>>(() => new Set());
+  const [marks, setMarks] = useState<RoundMarks>(emptyMarks);
   const [hostLeft, setHostLeft] = useState(false);
 
   useEffect(() => {
@@ -45,8 +53,11 @@ export function useGameSession(
 
   const publicState = session.getPublicState();
   const phase = useSessionPhase(publicState);
-  const actions = useGameActions(session, () => setHasSubmitted(true), (groupId) =>
-    setRejectedGroupIds((voted) => addVote(voted, groupId)),
+  const topic = readTopic(publicState);
+  const actions = useGameActions(
+    session,
+    () => setMarks((current) => markSubmitted(current, topic)),
+    (groupId) => setMarks((current) => markRejected(current, topic, groupId)),
   );
 
   useHostPhaseTimer(session, role === 'Host', phase, actions.nextRound);
@@ -58,8 +69,9 @@ export function useGameSession(
     isHost: role === 'Host',
     roomCode,
     publicState,
-    hasSubmitted,
-    rejectedGroupIds,
+    // Both marks only count while the phase still shows the round they were made in.
+    hasSubmitted: hasSubmittedIn(marks, topic),
+    rejectedGroupIds: rejectedIn(marks, topic),
     hostLeft,
   };
 }
