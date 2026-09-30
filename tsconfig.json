@@ -20,7 +20,7 @@
     },
     "jsx": "preserve",
     "jsxImportSource": "preact",
-    "types": ["vite/client"],
+    "types": ["vite/client", "vitest"],
     "ignoreDeprecations": "6.0"
   },
   "include": ["Source"],

@@ -285,7 +285,7 @@ if (!player) return err("PlayerNotFound");
 # WORK ORDER
 Work in stages. Stop at end of each stage and wait for "Next" command. Do not start next stage yourself.
 - **Stage 0. Scaffold:** Vite + TS strict + Preact, alias `@/`, ESLint (naming, module boundaries), Prettier, Vitest, workflow `.github/workflows/deploy.yml` for GitHub Pages (`base` = `'/<REPO>/'`, source = GitHub Actions), `DECISIONS.md`.
-- **Stage 1. Design system:** `Tokens.json` + CSS generator, Primitives, Components with `Gallery` files, `#/Gallery` page. Verified in gallery, no game logic yet.
+- **Stage 1. Design system:** `Tokens.json`, Primitives, Components with `Gallery` files, `#/Gallery` page. Verified in gallery, no game logic yet.
 - **Stage 2. Game:** types, `GameConfig`, normalization, grouping, scoring, phase reducer, `toPublicState`, tests.
 - **Stage 3. Network:** `Transport`, `InMemoryTransport`, `Protocol` with guards, `HostSession`, `ClientSession`, integration test "host + 3 clients" on `InMemoryTransport`, then `TrysteroTransport`.
 - **Stage 4. Screens and assembly:** Screens, `useGameSession`, `useCountdown`, hash routing, `Strings`, `Topics` (30 topics to start).
