@@ -233,3 +233,44 @@ Each glyph band is `--Glyph-BandWidth` (15%) of the viewport from its outer edge
 leftover space beside the content column. The band is therefore the same shape and density on a phone
 and on a desktop instead of spreading thinner the wider the screen gets, and the middle seventy per
 cent is free for the game. Below 50rem the two bands would meet, so the field steps aside.
+
+## 2026-09-30 - a room that would not connect, in four separate causes
+Players on two different networks sat on "connecting to the room" forever. Four things were wrong
+at once, and only the last of them was the actual blocker.
+
+Trystero's default ICE servers are `stun.l.google.com` and `stun1.l.google.com`, which a Russian
+network cannot reach without a VPN. Two peers behind different NATs need a server-reflexive
+candidate from a STUN server that answers, so ICE never leaves `checking`, no peer is ever
+connected, and no message is ever exchanged. `Network/Signaling.ts` now passes an explicit
+`rtcConfig.iceServers`: `stun.cloudflare.com` and `stun.miwifi.com`, replacing the defaults rather
+than extending them, because trystero spreads `rtcConfig` after its own list and so a supplied
+`iceServers` overrides it outright.
+
+No TURN server is hardcoded. Public ones are rate limited or shut down without warning, so a dead
+one would be worse than none: the room would fail slowly and only on the networks that need it. A
+deploy supplies `VITE_TURN_URL`, `VITE_TURN_USERNAME` and `VITE_TURN_CREDENTIAL`, and all three
+must be present or none are used, since a TURN entry missing its credentials fails in a way that
+reads as a network fault.
+
+`Network/Diagnostics.ts` reported every relay as `absent` forever. It looked for a `socket` field
+on each socket-table entry, but trystero's `getRelaySockets()` maps a relay URL straight to its
+live `WebSocket`. Every entry therefore read as undefined, so a fully working relay and a dead
+one printed the same word, and the log claimed there was no signaling at all while some of it was
+up. The diagnostics also now name each relay once when it opens, when it cannot be reached, and
+when trystero has retired it: the library gives a relay up permanently once its reconnect backoff
+runs out, roughly two minutes after a transient failure, which is why the page kept waiting on a
+relay that was never coming back.
+
+`ClientSession` logged "host is reachable, sending the join now" on every retry whether or not a
+host existed, because the retry timer called the same flush as the handshake callback and the
+flush never checked. The transport then dropped the send. Every one of those lines meant the
+opposite of what it said. `Transport` now exposes `isHostAddressable()`, and a join that cannot go
+out says it is being held back.
+
+The relay list keeps `relay.damus.io` and `nostr.wine` even though both refused a WebSocket
+handshake from the network this was measured on, because they work elsewhere and three live relays
+is the floor worth keeping. The `redundancy: 3` that used to sit next to them was removed: trystero
+applies redundancy only when it chooses relays from its own defaults and ignores it entirely once
+`urls` is supplied, so it had never done anything.
+
+A mark's centre is placed thirty to seventy per cent of a band width beyond the screen edge, so marks lean out`of the screen rather than sitting inside the band. Since a mark is far wider than a band, this is what`keeps the middle clear: density falls off inward on its own, with no fade and no clipping.

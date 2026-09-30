@@ -1,4 +1,5 @@
-import { readRole, readTag, RelayUrls } from './Payload';
+import { readRole, readTag } from './Payload';
+import { roomConfig } from './Signaling';
 import { createLogger } from '@/Core';
 import { joinRoom, type JsonValue, type MessageAction } from 'trystero';
 
@@ -165,15 +166,7 @@ export function openRoom(options: {
   isHost: boolean;
   handlers: RoomHandlers;
 }): OpenRoom {
-  const room = joinRoom(
-    {
-      appId: options.appId,
-      // The library's default relays are frequently unreachable, so several
-      // well-known nostr relays are configured instead.
-      relayConfig: { urls: RelayUrls, redundancy: 3, warnOnRelayFailure: false },
-    },
-    options.roomCode,
-  );
+  const room = joinRoom(roomConfig(options.appId), options.roomCode);
   const hostToClient = room.makeAction(HostToClientAction);
   const clientToHost = room.makeAction(ClientToHostAction);
   const hostPeer = wireRoom(

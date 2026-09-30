@@ -145,6 +145,13 @@ export class InMemoryTransport implements Transport {
     this.onHostReadyCallback = callback;
   }
 
+  isHostAddressable(): boolean {
+    if (this.isHost) {
+      return false;
+    }
+    return Array.from(InMemoryTransport.peersByPeer.values()).some(entry => entry.isHost);
+  }
+
   /**
    * Call this to simulate a peer leaving.
    * This should be called by the test when they want to disconnect a peer.

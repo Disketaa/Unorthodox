@@ -25,13 +25,20 @@ export function isDebugEnabled(): boolean {
   );
 }
 
-/** Reads the relay socket table from the installed trystero nostr strategy. */
+/**
+ * Read the relay socket table from the installed trystero nostr strategy.
+ *
+ * The table maps a relay URL to the live `WebSocket` for it, so an entry is the
+ * socket itself and not a wrapper around one. An entry that is missing means the
+ * relay has not been dialled yet, or has been dropped by trystero for good.
+ */
 function relayStates(): Record<string, string> {
   const states: Record<string, string> = {};
   const table = getRelaySockets();
   if (typeof table !== 'object' || table === null) {
     return states;
-  }  for (const [url, entry] of Object.entries(table)) {
+  }
+  for (const [url, entry] of Object.entries(table)) {
     states[url] = socketState(readSocket(entry));
   }
   return states;
@@ -39,11 +46,7 @@ function relayStates(): Record<string, string> {
 
 /** Read a readyState off a socket table entry without casting it. */
 function readSocket(entry: unknown): WebSocket | undefined {
-  if (typeof entry !== 'object' || entry === null) {
-    return undefined;
-  }
-  const socket = Reflect.get(entry, 'socket');
-  return socket instanceof WebSocket ? socket : undefined;
+  return entry instanceof WebSocket ? entry : undefined;
 }
 
 /** WebSocket readyState as a readable label. */
@@ -62,9 +65,36 @@ function peerStates(getPeers: () => Record<string, RTCPeerConnection>): Record<s
   return states;
 }
 
+/**
+ * Last state reported for each relay, so a change is logged once instead of on
+ * every tick. Trystero retires a relay permanently once its reconnect backoff
+ * runs out, so a relay going from open to closed never comes back in this
+ * session and is worth saying out loud.
+ */
+const lastRelayState = new Map<string, string>();
+
+/** Log a relay transition the first time it is seen. */
+function reportRelayChanges(states: Record<string, string>): void {
+  for (const [url, state] of Object.entries(states)) {
+    if (lastRelayState.get(url) === state) {
+      continue;
+    }
+    lastRelayState.set(url, state);
+    if (state === 'closed') {
+      log('warn', `relay ${url} closed and will not be retried until reload`);
+    } else if (state === 'open') {
+      log('info', `relay ${url} is open`);
+    } else if (state === 'failed') {
+      log('warn', `relay ${url} could not be reached`);
+    }
+  }
+}
+
 function snapshot(label: string, getPeers: () => Record<string, RTCPeerConnection>): void {
+  const relays = relayStates();
   const peers = peerStates(getPeers);
-  log('info', `[${label}] relays`, relayStates(), 'peers', peers);
+  log('info', `[${label}] relays`, relays, 'peers', peers);
+  reportRelayChanges(relays);
   const peerIds = Object.keys(peers);
   if (peerIds.length === 0) {
     log('info', `[${label}] no peers discovered yet`);

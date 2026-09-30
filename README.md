@@ -25,3 +25,9 @@ Edit the `--Color-*` / `--Space-*` scales there and the whole UI updates; no com
 ## Deploy
 Push to `main`; the `Deploy to GitHub Pages` workflow builds and publishes to Pages.
 Set Settings → Pages → Source to **GitHub Actions** once, if it is not already.
+
+## Connecting across networks
+Peers meet over nostr relays and connect directly, with no server of ours. Relays and STUN servers
+live in `Source/Network/Signaling.ts`. On a symmetric NAT, or where STUN is blocked, set
+`VITE_TURN_URL`, `VITE_TURN_USERNAME` and `VITE_TURN_CREDENTIAL` to a TURN server you control;
+all three are required or none are used. The browser console reports each relay and peer state.
