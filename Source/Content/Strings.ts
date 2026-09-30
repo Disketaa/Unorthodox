@@ -62,6 +62,8 @@ export const Strings = {
       Rose: 'Роза',
       Sand: 'Песок',
     },
+    /** Names one character in the row and says what clicking it does. */
+    pickCharacter: (name: string) => `${name}, выбрать персонажа`,
   },
   writing: {
     topicLabel: 'Тема',
@@ -69,13 +71,15 @@ export const Strings = {
     submitButton: 'Ответить',
     submitted: 'Ответ принят',
     waitForOthers: 'Ждём остальных',
-    submittedCount: (count: number, total: number) => `Ответили: ${count} из ${total}`,
+    submittedCount: (count: number, total: number) =>
+      `Ответили: ${count} из ${total}`,
     timeUp: 'Время вышло',
   },
   reviewing: {
     topicLabel: 'Тема',
     rejectHint: 'Нажмите, если ответ не подходит',
-    answersCount: (count: number) => (count > 1 ? `${count} одинаковых` : 'уникальный ответ'),
+    answersCount: (count: number) =>
+      count > 1 ? `${count} одинаковых` : 'уникальный ответ',
     notVoted: 'Ответ не подходит',
     voted: 'Голос учтён',
   },

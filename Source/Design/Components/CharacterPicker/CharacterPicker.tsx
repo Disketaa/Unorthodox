@@ -1,12 +1,15 @@
-import { CharacterColor, CharacterId, CharacterColors, CharacterIds } from '@/Core';
+import { CharacterColor, CharacterId, CharacterColors } from '@/Core';
 import { useState } from 'preact/hooks';
-import { CharacterChoice, ColorChoice } from './CharacterChoices';
+import { CharacterStrip } from './CharacterStrip';
+import { ColorChoice } from './CharacterChoices';
 import styles from './CharacterPicker.module.css';
 
 /** Display names for the choices, supplied by the caller so all text lives in Strings. */
 export interface CharacterPickerLabels {
   character: Readonly<Record<CharacterId, string>>;
   color: Readonly<Record<CharacterColor, string>>;
+  /** Names one character in the row and says what clicking it does. */
+  pickCharacter: (name: string) => string;
 }
 
 export interface CharacterPickerProps {
@@ -17,13 +20,11 @@ export interface CharacterPickerProps {
 }
 
 /**
- * The grid of characters and the row of tints, shown in the lobby until play
- * starts.
+ * One character, and the tints it can wear.
  *
- * Tints are discs rather than the artwork again, since the grid above already
- * shows every drawing at full size. Every choice is a real button carrying its
- * own name and pressed state, so the whole picker works from the keyboard and
- * announces properly.
+ * The cast is a single scrolling row with the chosen character in the middle,
+ * rather than one large preview with a button to step through: the row shows what
+ * stepping would give, and picking any character moves it to the middle.
  */
 export function CharacterPicker({
   character,
@@ -32,89 +33,45 @@ export function CharacterPicker({
   onPick,
 }: CharacterPickerProps) {
   /**
-   * How many times each character has been picked, so the chosen one pops on
-   * every click, including repeats.
-   *
-   * A count per character rather than one shared counter: a shared counter would
-   * pop all nine at once, and a plain "is selected" flag would also pop the
-   * character that was just deselected, which never asked for anything.
+   * Bumped on every change so the character pops, so that changing a tint pops it
+   * exactly once and stepping through the cast pops each one as it arrives.
    */
-  const [picks, setPicks] = useState<Map<CharacterId, number>>(() => new Map());
+  const [pulse, setPulse] = useState(0);
 
-  /**
-   * Choosing a character pops that one. It is keyed on the pick count rather than
-   * on whether the character is currently chosen, so that clicking the same
-   * character twice pops it twice, and so that the character that just *lost* the
-   * choice is left alone: it never asked for anything.
-   */
-  const pickCharacter = (chosen: CharacterId, chosenColor: CharacterColor) => {
-    setPicks((previous) => new Map(previous).set(chosen, (previous.get(chosen) ?? 0) + 1));
-    onPick(chosen, chosenColor);
+  const pick = (next: CharacterId) => {
+    setPulse((previous) => previous + 1);
+    onPick(next, color);
   };
-
-  /**
-   * Picking a tint keeps the character. The character in the grid is already
-   * keyed on its colour, so it pops from the arrival rather than needing a pulse
-   * of its own here.
-   */
-  const pickColor = (chosen: CharacterColor) => onPick(character, chosen);
 
   return (
     <div class={styles.Root}>
-      <CharacterGrid
+      <CharacterStrip
+        character={character}
+        color={color}
+        labels={labels.character}
+        describe={labels.pickCharacter}
+        pulse={pulse}
+        onPick={pick}
+      />
+      <ColorGrid
+        character={character}
         color={color}
         labels={labels}
-        picks={picks}
-        character={character}
-        onPick={pickCharacter}
+        onPick={onPick}
       />
-      <ColorRow color={color} labels={labels} onPick={pickColor} />
     </div>
   );
 }
 
-interface CharacterGridProps {
+interface ColorGridProps {
   character: CharacterId;
   color: CharacterColor;
   labels: CharacterPickerLabels;
-  picks: ReadonlyMap<CharacterId, number>;
   onPick: (character: CharacterId, color: CharacterColor) => void;
 }
 
-/** The nine drawings, in the order they are drawn, each waiting its turn. */
-function CharacterGrid({
-  character,
-  color,
-  labels,
-  picks,
-  onPick,
-}: CharacterGridProps) {
-  return (
-    <div class={styles.Characters} role="group">
-      {CharacterIds.map((id, index) => (
-        <CharacterChoice
-          key={id}
-          id={id}
-          color={color}
-          label={labels.character[id]}
-          selected={id === character}
-          pulse={picks.get(id)}
-          index={index}
-          onPick={onPick}
-        />
-      ))}
-    </div>
-  );
-}
-
-interface ColorRowProps {
-  color: CharacterColor;
-  labels: CharacterPickerLabels;
-  onPick: (color: CharacterColor) => void;
-}
-
-/** The tints, as discs, each labelled by name. */
-function ColorRow({ color, labels, onPick }: ColorRowProps) {
+/** The tints, a row of discs under the characters. */
+function ColorGrid({ character, color, labels, onPick }: ColorGridProps) {
   return (
     <div class={styles.Colors} role="group">
       {CharacterColors.map((name) => (
@@ -123,7 +80,7 @@ function ColorRow({ color, labels, onPick }: ColorRowProps) {
           name={name}
           label={labels.color[name]}
           selected={name === color}
-          onPick={onPick}
+          onPick={(chosen) => onPick(character, chosen)}
         />
       ))}
     </div>

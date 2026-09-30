@@ -1,5 +1,10 @@
 import { Stack, Text } from '@/Design/Primitives';
-import { CharacterPicker, PlayerChip, RoomCodeBadge } from '@/Design/Components';
+import {
+  Card,
+  CharacterPicker,
+  PlayerChip,
+  RoomCodeBadge,
+} from '@/Design/Components';
 import { CharacterColor, CharacterId } from '@/Core';
 import { Strings } from '@/Content';
 import { GameConfig, PublicPlayer } from '@/Game';
@@ -40,8 +45,10 @@ function Roster({ players }: { players: readonly PublicPlayer[] }) {
 /**
  * The picker for this player's own character.
  *
- * Hidden until the host has said which character it kept for us, so the picker
- * never shows a character that the rest of the room is not seeing.
+ * In a card, so the whole editing area reads as one thing against the roster
+ * above and the start button below. Hidden until the host has said which
+ * character it kept for us, so the picker never shows a character that the rest
+ * of the room is not seeing.
  */
 function LookPicker({
   ownLook,
@@ -51,19 +58,22 @@ function LookPicker({
   onPick: (character: CharacterId, color: CharacterColor) => void;
 }) {
   return (
-    <Stack gap="Sm" align="Stretch">
-      <Text variant="Title">{Strings.lobby.characterHeading}</Text>
-      <Text variant="Caption">{Strings.lobby.characterHint}</Text>
-      <CharacterPicker
-        character={ownLook.character}
-        color={ownLook.color}
-        labels={{
-          character: Strings.characters.names,
-          color: Strings.characters.colors,
-        }}
-        onPick={onPick}
-      />
-    </Stack>
+    <Card variant="Elevated">
+      <Stack gap="Sm" align="Stretch">
+        <Text variant="Title">{Strings.lobby.characterHeading}</Text>
+        <Text variant="Caption">{Strings.lobby.characterHint}</Text>
+        <CharacterPicker
+          character={ownLook.character}
+          color={ownLook.color}
+          labels={{
+            character: Strings.characters.names,
+            color: Strings.characters.colors,
+            pickCharacter: Strings.characters.pickCharacter,
+          }}
+          onPick={onPick}
+        />
+      </Stack>
+    </Card>
   );
 }
 
@@ -84,7 +94,9 @@ export function LobbyScreen({
       <RoomCodeBadge code={roomCode} />
       <Text variant="Body">{Strings.lobby.shareHint}</Text>
       <Roster players={players} />
-      {ownLook !== undefined && <LookPicker ownLook={ownLook} onPick={onPickLook} />}
+      {ownLook !== undefined && (
+        <LookPicker ownLook={ownLook} onPick={onPickLook} />
+      )}
       <LobbyStart
         enoughPlayers={enoughPlayers}
         roomFull={roomFull}

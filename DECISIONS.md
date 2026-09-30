@@ -122,3 +122,32 @@ the characters use, so the palette still lives in one place. Picking a tint now 
 tint alone rather than a character-and-tint pair, because the character is already fixed by
 the grid above; the character is still shown wearing the chosen tint, so the result of the
 choice is visible.
+
+## 2026-09-30 — the picker strip is a window of characters you can hold and flick
+The cast became one scrolling row with the chosen character in the middle and the rest muted,
+instead of one large preview beside a swatch block. The row is capped at `--Character-Strip-Visible`
+cells, deliberately not a whole number, so the neighbours at the edges are cut off and it reads
+as continuing rather than as a fixed set of three. Two new tokens carry the size: `--Size-Character-Strip`
+for the cell and `--Character-Strip-Visible` for the window.
+
+The row follows the pointer only after the pointer has rested on it for `HoldMs` in `UseHoldGesture.ts`,
+and moving before that cancels the hold. Without the hold the drag steals ordinary taps and finger
+swipes, which on a phone are the natural way to use a carousel. On release the row keeps travelling
+at the speed it had and slows out (`UseMomentum`), and the cells' scroll-snap catches it and pulls
+it onto a character: the throw decides how far, the snap decides where it lands.
+
+Two things the gesture got wrong the first time, both found by using it. Pointer capture on
+pointerdown retargets the click that ends the gesture to the capturing element, so the character
+buttons could never be pressed at all; the move and release listeners live on the window instead.
+And blank space at each end of the row, added so the first and last character could reach the
+centre, meant the row kept travelling into empty space; without it the scroller's own limits clamp
+the ends and those two characters sit against the edge.
+
+## 2026-09-30 — the character you were last wearing survives a reload
+`App` rolled a random look once per page load, so every reload reshuffled the face. `LookStorage`
+keeps the look in `sessionStorage`, the same place and for the same reason as the player name: a
+per-tab store means two players sharing a device do not come back as the same character. The saved
+look is the one the host has confirmed rather than the one that was clicked, because the host keeps
+a returning player's character and may already have refused a replacement, and the next reload should
+not offer a face nobody in the room has. The host remains the authority; this only changes the
+starting point.

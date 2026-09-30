@@ -5,6 +5,7 @@ import { GalleryPage } from '@/Dev/ComponentGallery/GalleryPage';
 import { JoinScreen } from '@/Screens';
 import { PaperBackground } from '@/Design/Overlays';
 import { createRoomCode, normalizeRoomCode } from './RoomCode';
+import { loadLook } from './LookStorage';
 import { parseRoute, roomPath, Route } from './Routes';
 import { GameRoom } from './GameRoom';
 
@@ -65,11 +66,11 @@ export function App() {
   const route = useHashRoute();
   const [name, setName] = useState(loadName);
   const [roomCode, setRoomCode] = useState('');
-  // Rolled once per page load, so everyone arrives with a different face. The
-  // host is what keeps it: a player who leaves and comes back is given the
+  // The last character this tab wore, or a fresh roll on a first visit. The host
+  // is what really keeps it: a player who leaves and comes back is given the
   // character it already had for them, not a new roll. Changing it later is the
   // lobby's job, so the host can refuse once the game has started.
-  const [look] = useState<PlayerLook>(() => randomLook(Math.random));
+  const [look] = useState<PlayerLook>(() => loadLook() ?? randomLook(Math.random));
 
   const onNameChange = (value: string) => {
     setName(value);

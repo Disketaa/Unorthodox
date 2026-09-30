@@ -248,4 +248,13 @@ body {
   --Size-Character-Small: 28px;
   --Size-Character-Medium: 44px;
   --Size-Character-Large: 96px;
+  /* One cell of the picker strip: the chosen character and a few neighbours. */
+  --Size-Character-Strip: 120px;
+  /* How many cells the strip window is worth. Not a whole number of cells, so the
+     neighbours at the edges are cut off and the row reads as continuing. */
+  --Character-Strip-Visible: 3.5;
+
+  /* Opacity, for content that is present but stepped back. */
+  --Opacity-Full: 1;
+  --Opacity-Muted: 0.35;
 }

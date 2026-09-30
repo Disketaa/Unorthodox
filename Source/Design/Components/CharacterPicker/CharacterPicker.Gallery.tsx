@@ -1,6 +1,5 @@
-import { CharacterPicker, CharacterPickerLabels } from './CharacterPicker';
-import { Stack } from '@/Design/Primitives';
-import { Text } from '@/Design/Primitives';
+import { CharacterPicker } from './CharacterPicker';
+import { Stack, Text } from '@/Design/Primitives';
 
 /**
  * Placeholder labels, since the design system cannot read the real ones.
@@ -9,7 +8,7 @@ import { Text } from '@/Design/Primitives';
  * tint fails the build here and points at this file, instead of rendering an
  * unlabelled button in the gallery.
  */
-const labels: CharacterPickerLabels = {
+const labels = {
   character: {
     Character1: 'Character 1',
     Character2: 'Character 2',
@@ -31,12 +30,15 @@ const labels: CharacterPickerLabels = {
     Rose: 'Tint Rose',
     Sand: 'Tint Sand',
   },
+  pickCharacter: (name: string) => `Pick ${name}`,
 };
 
 export function CharacterPickerGallery() {
   return (
     <Stack direction="Vertical" gap="Md">
-      <Text variant="Body">CharacterPicker</Text>
+      <Text variant="Body">
+        CharacterPicker. Scroll the row, pick a character.
+      </Text>
       <CharacterPicker
         character="Character3"
         color="Sky"

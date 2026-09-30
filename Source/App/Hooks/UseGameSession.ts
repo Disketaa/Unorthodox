@@ -6,6 +6,7 @@ import { Session, SessionRole } from '../Session';
 import { useSessionPhase, SessionPhase } from './UseSessionPhase';
 import { useGameActions } from './UseGameActions';
 import { useHostPhaseTimer } from './UseHostPhaseTimer';
+import { useRememberLook } from './UseRememberLook';
 import {
   emptyMarks,
   hasSubmittedIn,
@@ -40,6 +41,38 @@ export interface GameSessionView extends SessionPhase {
   playAgain: () => void;
 }
 
+/**
+ * This player's own character, once the host has said which one it kept.
+ *
+ * Nothing before the host has answered: a player with no id yet is not in the
+ * roster, so there is no character that the rest of the room is seeing yet.
+ */
+function ownLookFor(
+  playerId: PlayerId | null,
+  looks: ReadonlyMap<PlayerId, PlayerLook>,
+): PlayerLook | undefined {
+  return playerId === null ? undefined : looks.get(playerId);
+}
+
+/**
+ * Keep the component rendering when the session has news.
+ *
+ * The session is a plain object with no state of its own, so a re-render is what
+ * makes a new public state visible. The cleanup stops the session, so a route
+ * change tears the transport down rather than leaving it listening.
+ */
+function useSessionUpdates(
+  session: Session,
+  setVersion: (update: (version: number) => number) => void,
+  setHostLeft: (value: boolean) => void,
+): void {
+  useEffect(() => {
+    session.onUpdate(() => setVersion((version) => version + 1));
+    session.onHostLeave(() => setHostLeft(true));
+    return () => session.stop();
+  }, [session]);
+}
+
 /** Read the topic of the phase in view, which identifies the round. */
 function readTopic(publicState: PublicState | undefined): string | null {
   return publicState !== undefined && 'topic' in publicState ? publicState.topic : null;
@@ -50,18 +83,13 @@ export function useGameSession(
   roomCode: string,
   role: SessionRole,
   playerName: string,
-  look: PlayerLook,
+  look: PlayerLook
 ): GameSessionView {
   const [session] = useState<Session>(() => createSession(role, roomCode, playerName, look));
   const [, setVersion] = useState(0);
   const [marks, setMarks] = useState<RoundMarks>(emptyMarks);
   const [hostLeft, setHostLeft] = useState(false);
-
-  useEffect(() => {
-    session.onUpdate(() => setVersion((version) => version + 1));
-    session.onHostLeave(() => setHostLeft(true));
-    return () => session.stop();
-  }, [session]);
+  useSessionUpdates(session, setVersion, setHostLeft);
 
   const publicState = session.getPublicState();
   const phase = useSessionPhase(publicState, session.getClockOffsetMs());
@@ -75,6 +103,8 @@ export function useGameSession(
   useHostPhaseTimer(session, role === 'Host', phase, actions.nextRound);
 
   const playerId = session.getPlayerId();
+  const ownLook = ownLookFor(playerId, phase.playerLooks);
+  useRememberLook(ownLook);
 
   return {
     ...phase,
@@ -88,6 +118,6 @@ export function useGameSession(
     hasSubmitted: hasSubmittedIn(marks, topic),
     rejectedGroupIds: rejectedIn(marks, topic),
     hostLeft,
-    ownLook: playerId === null ? undefined : phase.playerLooks.get(playerId),
+    ownLook,
   };
 }

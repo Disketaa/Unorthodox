@@ -1,68 +1,142 @@
 /*
- * The picker's layout.
+ * The picker.
  *
- * The grid is a share of the screen, and the characters inside it are sized by
- * the cell rather than in pixels, so the panel keeps its padding on a narrow
- * phone instead of overflowing it. The tints are a row of discs that wraps, so
- * eight of them fit however much room there is.
+ * A scrolling row of every character with the chosen one in the middle, and the
+ * tints as a row of small discs underneath. One large preview beside a two-column
+ * block of swatches was the earlier shape: it hid the rest of the cast, and it
+ * gave every tint a cell as big as the character it tints.
  */
 .Root {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--Space-Md);
-  /* Without this a flex or grid child can refuse to shrink below its content. */
-  min-width: 0;
 }
 
+/*
+ * The scrolling row of characters.
+ *
+ * The width is capped rather than free, so the row is a window onto the cast
+ * instead of the whole cast at once: the chosen character sits in the middle with
+ * a neighbour or two either side, which is enough to see that stepping is
+ * possible and enough room for the drawings to be read. The cap is deliberately
+ * not a whole number of cells, so the neighbours are cut off at the edge and the
+ * row reads as something that continues rather than as a fixed set.
+ *
+ * There is no blank space past the ends of the row. The scroller's own limits do
+ * the clamping: at either end the row simply stops, and the first or last
+ * character sits against the edge instead of in the middle. Padding at the ends
+ * would let the row keep travelling into empty space so that every character could
+ * reach the centre, which looks like the row has more to show than it does.
+ */
 .Characters {
-  display: grid;
-  /*
-   * `minmax(0, 1fr)` rather than `1fr`: a bare `1fr` floor is `min-content`, so
-   * the column refuses to shrink under the drawing and pushes the padding out
-   * of the page on a small screen. Allowing zero is what makes it fluid.
-   */
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  align-items: center;
   gap: var(--Space-Sm);
+  width: 100%;
+  max-width: calc(var(--Character-Strip-Visible) * var(--Size-Character-Strip));
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  /*
+   * Vertical panning is left to the page, horizontal panning is left to the drag
+   * hook. Without this the browser scrolls the row itself on a finger and the
+   * hold never gets a chance to be felt.
+   */
+  touch-action: pan-y;
 }
 
+.Characters::-webkit-scrollbar {
+  display: none;
+}
+
+/* The row while it is being dragged, so it reads as held rather than scrolling. */
+.CharactersDragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+}
+
+/*
+ * One character in the row.
+ *
+ * Every cell is the same size, so stepping through the row moves by a constant
+ * distance rather than by whatever each drawing happens to measure, and each one
+ * snaps to the middle rather than stopping wherever the drag was released. At the
+ * ends of the row the middle is out of reach, so the snap lands on the edge
+ * instead, which is what clamps the row there.
+ */
+.Character {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--Size-Character-Strip);
+  padding: var(--Space-Xs);
+  background: none;
+  border: none;
+  border-radius: var(--Radius-Md);
+  cursor: pointer;
+  opacity: var(--Opacity-Muted);
+  scroll-snap-align: center;
+  transition: opacity var(--Duration-Fast) var(--Easing-Standard);
+}
+
+/* The chosen character, at full strength and on the surface the rest sit behind. */
+.CharacterChosen {
+  background: var(--Color-Surface-Default);
+  border: var(--Border-Width-Default) solid var(--Color-Border-Default);
+  opacity: var(--Opacity-Full);
+}
+
+.Character:hover {
+  opacity: var(--Opacity-Full);
+}
+
+.Character:focus-visible {
+  outline: var(--Border-Width-Default) solid var(--Color-Border-Focus);
+  outline-offset: var(--Space-Xs);
+}
+
+/*
+ * One row of eight discs, spanning the picker.
+ *
+ * `align-items` on `.Root` centres the character, so the row needs an explicit
+ * full width to reach both edges. Eight equal tracks share that width, so the
+ * discs are as wide as the picker allows and never leave a gap in the middle; the
+ * square shape comes from `aspect-ratio` rather than a fixed height.
+ */
 .Colors {
   display: grid;
-  /*
-   * `auto-fill` with a floor the size of a comfortable target, rather than a
-   * fixed count, so the tints wrap into rows on a narrow screen and spread out
-   * on a wide one. A smaller floor would squeeze all eight onto one row on a
-   * phone, leaving discs too small to tell apart.
-   */
-  grid-template-columns: repeat(auto-fill, minmax(var(--Size-Character-Medium), 1fr));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: var(--Space-Sm);
+  width: 100%;
 }
 
+/*
+ * The button around a disc.
+ *
+ * It fills its share of the row and takes its height from that width, so the hit
+ * area is exactly the drawn circle and stays square at any picker width.
+ */
 .Choice {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--Space-Sm);
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
   min-width: 0;
   background: var(--Color-Surface-Default);
   border: var(--Border-Width-Default) solid var(--Color-Border-Default);
-  border-radius: var(--Radius-Md);
+  border-radius: var(--Radius-Full);
   cursor: pointer;
   transition: border-color var(--Duration-Fast) var(--Easing-Standard);
-}
-
-/*
- * Tighter padding for the discs, which are solid colour and need none of the
- * breathing room the drawings do. It buys a disc that is big enough to read.
- */
-.ChoiceCompact {
-  padding: var(--Space-Xs);
 }
 
 .Choice:hover {
   border-color: var(--Color-Border-Focus);
 }
 
-/* Keyboard focus, described by the same token as hover so the two agree. */
 .Choice:focus-visible {
   outline: var(--Border-Width-Default) solid var(--Color-Border-Focus);
   outline-offset: var(--Space-Xs);
