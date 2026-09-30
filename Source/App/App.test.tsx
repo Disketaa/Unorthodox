@@ -21,14 +21,16 @@ describe('App smoke test', () => {
     expect(root.querySelector('input[type="text"]')).not.toBeNull();
   });
 
-  it('renders the paper background video', () => {
+  it('renders the paper background texture, hidden from assistive tech', () => {
     const root = document.createElement('div');
     document.body.appendChild(root);
 
     render(<App />, root);
 
-    const video = root.querySelector('video');
-    expect(video).not.toBeNull();
-    expect(video?.getAttribute('loop')).not.toBeNull();
+    const layer = root.querySelector('[aria-hidden="true"]');
+    expect(layer).not.toBeNull();
+    // The texture is a plain tiled background, not a video, so the component
+    // moves it by setting a custom property rather than playing anything.
+    expect(root.querySelector('video')).toBeNull();
   });
 });

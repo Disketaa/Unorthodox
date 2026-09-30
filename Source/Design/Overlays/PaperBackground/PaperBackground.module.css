@@ -1,9 +1,9 @@
 /*
  * A full-viewport layer above the interface, blended into it.
  *
- * `mix-blend-mode` on the video lets it tint whatever is underneath, so cards,
- * buttons and text all sit on the same moving paper texture instead of the
- * texture being hidden behind them.
+ * `mix-blend-mode` lets the texture tint whatever is underneath, so cards,
+ * buttons and text all sit on the same paper rather than the paper being hidden
+ * behind them.
  *
  * `pointer-events: none` is essential: the layer covers everything, so without
  * it no button in the app would be clickable.
@@ -18,8 +18,14 @@
   opacity: var(--Overlay-Opacity);
 }
 
-.Video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.Texture {
+  /*
+   * Oversized so that shifting it never exposes an edge. The texture tiles, so
+   * the area beyond the viewport is filled with the same pattern.
+   */
+  position: absolute;
+  inset: calc(-1 * var(--Overlay-ShiftMax));
+  background-image: url("../Paper.jpg");
+  background-repeat: repeat;
+  transform: translate3d(var(--Overlay-TextureX, 0px), var(--Overlay-TextureY, 0px), 0);
 }
