@@ -3,7 +3,7 @@ import { ComponentChildren } from 'preact';
 import { PlayerLook, randomLook } from '@/Core';
 import { GalleryPage } from '@/Dev/ComponentGallery/GalleryPage';
 import { JoinScreen } from '@/Screens';
-import { PaperBackground } from '@/Design/Overlays';
+import { GlyphField, PaperBackground } from '@/Design/Overlays';
 import { createRoomCode, normalizeRoomCode } from './RoomCode';
 import { loadLook } from './LookStorage';
 import { parseRoute, roomPath, Route } from './Routes';
@@ -56,6 +56,7 @@ interface WithBackgroundProps {
 function WithBackground({ children }: WithBackgroundProps) {
   return (
     <>
+      <GlyphField />
       <PaperBackground />
       {children}
     </>

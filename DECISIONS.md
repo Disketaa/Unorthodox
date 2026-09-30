@@ -1,6 +1,6 @@
-# DECISIONS
+﻿# DECISIONS
 
-## 2026-09-30 — happy-dom as a dev dependency for the app smoke test
+## 2026-09-30 вЂ” happy-dom as a dev dependency for the app smoke test
 `vitest` runs in a node environment by default, so nothing rendered the app itself. A
 blank page passes every unit test, because the logic modules are tested in isolation.
 `happy-dom` provides a DOM for `Source/App/App.test.tsx`, which renders `<App />` once and
@@ -10,7 +10,7 @@ lost its children, leaving only the sibling background on the page. The same cod
 when the children are taken from a props object, which is the convention used everywhere
 else in the codebase. dev-only, not shipped to the browser.
 
-## 2026-09-30 — the paper overlay shifts a CSS custom property, set from the ref
+## 2026-09-30 вЂ” the paper overlay shifts a CSS custom property, set from the ref
 `design.md` forbids inline styles, but a value that changes every second cannot be a
 static class. `PaperBackground` writes `--Overlay-TextureX` / `--Overlay-TextureY` onto
 its own node through a ref, and the stylesheet consumes them in a `transform`. The
@@ -22,7 +22,7 @@ A looping 138 MB ProRes clip was replaced with a 185 KB seamless JPEG. The image
 enough not to compress, costs one request instead of decoding a video every second, and
 the same look comes from moving it by hand.
 
-## 2026-09-30 — the character art is inlined as components, not used as image files
+## 2026-09-30 вЂ” the character art is inlined as components, not used as image files
 The nine drawings arrived as SVGs with a coloured body and black linework. Tinting needs the
 body to be a fill rather than baked pixels, so each drawing is now a Preact component in
 `Source/Design/Characters/` whose body paths read `var(--Character-Tint)`. The alternative
@@ -31,7 +31,7 @@ black linework on top of the tint, so that needed a second ink-only copy of ever
 file per character with a plain `fill` is smaller, has no `Ink/` folder, and needs no extra
 CSS per character.
 
-## 2026-09-30 — the host remembers who each name is, so a returning player keeps their character
+## 2026-09-30 вЂ” the host remembers who each name is, so a returning player keeps their character
 A player closes the tab and comes back to the lobby, and the character must still be theirs.
 Nothing may be stored in the browser, and `sessionStorage` dies with the tab anyway, so the
 name is the only handle that survives: the host keeps `name -> playerId` in `HostRoster` and
@@ -42,7 +42,7 @@ scores, and a reload no longer adds a duplicate to the roster. The trade-off is 
 people who pick the same name are treated as one player, which is accepted for a party game
 that has no accounts.
 
-## 2026-09-30 — the character picker lives in the lobby, and is frozen once play starts
+## 2026-09-30 вЂ” the character picker lives in the lobby, and is frozen once play starts
 Picking a character needs to be changeable while people are still arriving, so the picker is
 part of `LobbyScreen` rather than the join screen. `SET_LOOK` is ignored by the reducer
 outside the Lobby phase, which freezes everyone's face for the game: a player cannot swap
@@ -50,13 +50,13 @@ characters mid-round, and the scoreboards stay meaningful. The picker is hidden 
 host has told the client which character it kept, so it never shows a character the rest of
 the room is not seeing.
 
-## 2026-09-30 — the character catalogue lives in Core, and its labels travel as a prop
+## 2026-09-30 вЂ” the character catalogue lives in Core, and its labels travel as a prop
 `CharacterId`, `CharacterColor` and `PlayerLook` are in `Core` because `Design` renders them,
 `Game` stores them and `Network` carries them, and `Core` is the only layer all three may
 import. `Design` may not import `Content`, so the picker's display names arrive as a
 `labels` prop rather than being read from `Strings` directly.
 
-## 2026-09-30 — the picker sizes its characters from the cell, not from a token
+## 2026-09-30 вЂ” the picker sizes its characters from the cell, not from a token
 The character grid was three columns of a fixed 96px, so on a narrow phone three drawings
 overflowed the column and pushed the panel's padding off the page. Two things were wrong
 together: the grid used a bare `1fr`, whose floor is `min-content`, so a column cannot shrink
@@ -67,7 +67,7 @@ drawings are square on a 512 viewBox, so that keeps them round at any width with
 query. The tint row is `auto-fill` with a floor of a comfortable target, so the discs wrap on
 a phone and spread on a wide screen rather than all eight squeezing onto one row.
 
-## 2026-09-30 — one pop, keyed on everything, rippling across a row
+## 2026-09-30 вЂ” one pop, keyed on everything, rippling across a row
 A character reacts to three things: it turns up, it changes tint, it is chosen. All three run one
 `Pop`, keyed on the character, its tint and a pulse count, and all three are the same movement.
 There are no variants, and getting there is the lesson: it went through two nested pops, then two
@@ -108,13 +108,13 @@ animates is left to the stylesheet and its own comment, since the test runner re
 imports to an empty module and reading the raw file out of a test is not worth the fight. The
 scoreboard passes `moving={false}`, because those rows re-order as scores land and a sway on top of
 that movement is noise.
-## 2026-09-30 — phase transitions and round scoring split out of the session and the actions
+## 2026-09-30 вЂ” phase transitions and round scoring split out of the session and the actions
 `HostSession` and `Game/GameActions.ts` passed the 150-line limit once the roster grew. The
 rules about when a phase may end now live in `Network/HostPhases.ts`, and the rejection rule
 and totals arithmetic in `Game/RoundScoring.ts`. This is a move, not a change: the same
 transitions are still the only things that can trigger each other.
 
-## 2026-09-30 — the tint row shows discs, not the artwork again
+## 2026-09-30 вЂ” the tint row shows discs, not the artwork again
 The character grid already draws all nine at full size, so repeating that artwork eight more
 times for the tints made the row heavy and harder to scan than the choice needs. `ColorSwatch`
 renders the tint as a plain disc instead, reading the same `--Character-Tint` custom property
@@ -123,7 +123,7 @@ tint alone rather than a character-and-tint pair, because the character is alrea
 the grid above; the character is still shown wearing the chosen tint, so the result of the
 choice is visible.
 
-## 2026-09-30 � the picker strip is a window of characters you can hold and flick
+## 2026-09-30 — the picker strip is a window of characters you can hold and flick
 The cast became one scrolling row with the chosen character in the middle and the rest muted,
 instead of one large preview beside a swatch block. The row is capped at `--Character-Strip-Visible`
 cells, deliberately not a whole number, so the neighbours at the edges are cut off and it reads
@@ -143,7 +143,7 @@ And blank space at each end of the row, added so the first and last character co
 centre, meant the row kept travelling into empty space; without it the scroller's own limits clamp
 the ends and those two characters sit against the edge.
 
-## 2026-09-30 � the character you were last wearing survives a reload
+## 2026-09-30 — the character you were last wearing survives a reload
 `App` rolled a random look once per page load, so every reload reshuffled the face. `LookStorage`
 keeps the look in `sessionStorage`, the same place and for the same reason as the player name: a
 per-tab store means two players sharing a device do not come back as the same character. The saved
@@ -162,11 +162,11 @@ from the most recent gap long enough to divide by, and `UseMomentum` decays per 
 than per frame, so the coast lasts the same length on a 120Hz screen as on a 60Hz one. Both are
 covered by `MotionSample.test.ts`.
 
-The lobby's hint under the heading ("����� ������, ���� ���� �� ��������") was removed along with
+The lobby's hint under the heading ("Можно менять, пока игра не началась") was removed along with
 `Strings.lobby.characterHint`. The picker says what it does by being a strip of the cast, and the
 hint repeated what the room code and the Start button already imply.
 
-## 2026-09-30 � the picker is three rows, and there is no carousel
+## 2026-09-30 — the picker is three rows, and there is no carousel
 The scrolling strip is gone. It needed a drag to reveal most of the cast, it needed a hold before
 the drag would even register, and it put the character and the tint in the same horizontal space so
 neither read as the decision it was. What is there now is the chosen character large at the top,
@@ -177,7 +177,7 @@ and its test, `UseCenterCharacter`, `UseDragScroll`, `UseHoldGesture`, `UseMomen
 the two `--Opacity-*` tokens and `--Size-Character-Strip`, which only the strip used. The new
 `--Size-Character-Preview` sets how big the drawing at the top is.
 
-## 2026-09-30 � a ninth tint, Lemon
+## 2026-09-30 — a ninth tint, Lemon
 The palette ran red, orange, green, blue, purple, pink and brown, and Amber is orange enough that
 nothing in it was plainly yellow. `--Color-Character-Lemon` is the gap, and it is the darkest of the
 set on purpose: mid-tone so the black ink stays readable on top, and deep enough to hold the same
@@ -185,10 +185,10 @@ weight against the paper as the others. Nine tints for nine characters is what l
 the same shape, and `Core/Characters.test.ts` holds that equality so the next tenth character or
 tint does not quietly break the layout.
 
-## 2026-09-30 � eight characters, named, in two rows of four
+## 2026-09-30 — eight characters, named, in two rows of four
 Character4 is gone and Lemon with it. The cast is now Butterfly, Explosion, Daisy, Ghost, Mask,
 Hat, Heart and Star, and the ids were renamed to match the drawings rather than left as
-`Character1`�`Character9` with a hole in it: an id is shared vocabulary between Core, the
+`Character1`…`Character9` with a hole in it: an id is shared vocabulary between Core, the
 network and the design system, and `Ghost` says what the thing is at every one of those. The art
 files are named the same way. The palette is back to eight tints, which is what lets both rows of
 the picker be a full four by four with no trailing gap; `Core/Characters.test.ts` holds that, so a
@@ -199,3 +199,37 @@ one drawing, not a control, and the frame around it was a box the player could t
 tint swatches are squares rather than discs, and the disc's own outline is now a `Circle` variant
 rather than part of the base, because a circle with a border inside a bordered square read as two
 frames around one swatch. Only the button is an outline now.
+
+The margin glyph field lives in its own module, `Design/Backgrounds`, not with `Design/Overlays`:`nOverlays/PaperBackground` is a texture blended over the live interface, while the field is a backdrop`nsitting under it, and keeping them apart is what makes that stacking order obvious. The field's`nparallax is a single shared custom property multiplied by each mark's own depth in the stylesheet, so`nthere is no per-mark JavaScript, and both bands are exactly the width the content column leaves`nover, which keeps the centre clear by construction rather than by a margin.
+
+The field's parallax is smoothed in one `requestAnimationFrame` loop (`GlyphParallaxDriver.ts`) rather`non discrete writes per event, easing toward the target by real elapsed time with the delta clamped, so the`nfield follows the pointer with weight instead of snapping to it. Events only move the target.`nMarks are now several times the base size token and a band holds eight of them rather than"fourteen;"the bands clip the overflow, so a mark reads as wallpaper seen through the screen margin.
+
+The glyph field is an overlay after all, and `Design/Backgrounds` is gone: it sits above the
+interface and below the paper texture (z-index 2 and 3), so the marks multiply under the same
+paper as everything else rather than sitting behind the page. Its marks are symbols only, no
+letters, because letters at that size read as words and the centre column has to stay free of
+text. They are laid out in even slots with jitter rather than scattered, so the bands are filled
+without holes while still looking laid out by hand.
+
+The field's parallax is deliberately faint: 28px of pointer travel and an eighth of the page
+scroll, so marks answer the pointer rather than follow it. Opacity has two axes, a token ceiling and
+a per-mark share of it, because tone alone left a band reading as one flat value.
+
+Marks are drawn at one of three fixed pixel sizes (`--Glyph-Size-Small/Medium/Large`) rather
+at a random multiple of a base token, so a mark is exactly as big on every screen and at every zoom
+level and the field does not scale with the window.
+
+A mark's size is divided by `--Glyph-Zoom`, read each frame as device pixel ratio against the
+ratio the field started at, times the visual viewport's pinch scale. The size tokens are
+therefore the size a mark appears at on screen, and it holds that size at any browser or pinch zoom.
+
+Marks are anchored to the outer edge of their band and mirrored for the right one, rather than
+scattered across the whole band: a mark is much wider than a band, so what decides whether it
+reaches the text is which side its ink falls on. Bands now hold 22 marks.
+
+The field compensates for pinch zoom only, not for browser zoom. Browser zoom is not readable from a`page, so inferring it from the device pixel ratio at load made the field depend on`the zoom the page happened to open at, and the same URL looked different per device.`nPinch is reported by the visual viewport and is the same everywhere.
+
+Each glyph band is `--Glyph-BandWidth` (15%) of the viewport from its outer edge, rather than the
+leftover space beside the content column. The band is therefore the same shape and density on a phone
+and on a desktop instead of spreading thinner the wider the screen gets, and the middle seventy per
+cent is free for the game. Below 50rem the two bands would meet, so the field steps aside.

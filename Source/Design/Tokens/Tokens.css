@@ -174,6 +174,47 @@ body {
   /* How far the texture may move before an edge would show, in pixels. */
   --Overlay-ShiftMax: 60px;
 
+  /*
+   * The margin field.
+   *
+   * Marks are drawn in the display face at a size multiplier of this one, so
+   * the whole field scales from a single line here. The tones are neutral greys
+   * well above the text contrast: they are meant to be read as texture, not as
+   * words, so anything darker would compete with the game itself.
+   */
+  --Glyph-Size-Small: 540px;
+  --Glyph-Size-Medium: 840px;
+  --Glyph-Size-Large: 1260px;
+  --Glyph-Tone-Light: var(--Color-Neutral-200);
+  --Glyph-Tone-Mid: var(--Color-Neutral-300);
+  --Glyph-Tone-Deep: var(--Color-Neutral-400);
+  --Glyph-Opacity: 0.55;
+  /*
+   * How far a mark drifts as it loops, as a share of its own size. Small,
+   * because a mark is now huge: a share that read as a nudge at text size is a
+   * screen's worth of travel here, and the loop would read as the field
+   * rearranging rather than as breathing.
+   */
+  --Glyph-Drift: 7%;
+  /* Pulled past both edges, so the drift never shows an edge of the band. */
+  --Glyph-Overscan: 120px;
+  /*
+   * How much of the screen one band's worth of marks covers, counted from the
+   * outer edge inward.
+   *
+   * A share of the viewport rather than the leftover space beside the content
+   * column, and it grows as the viewport narrows: fifteen per cent on a desktop,
+   * thirty on a phone. A fixed share would leave a phone with two thin bands and
+   * a wide empty middle, and the field would be nearly invisible on the device
+   * most players actually use. Growing the share keeps the marks crowding the
+   * edges of whatever screen they are on, so the same arrangement reads the same
+   * way at every size, and the density along each edge stays constant.
+   *
+   * The three numbers are that arrangement: the low and high ends, and the line
+   * between them.
+   */
+  --Glyph-BandWidth: clamp(15%, calc(35.8% - 1.44vw), 30%);
+
   --Color-Text-Default: #212121;
   --Color-Text-Muted: #757575;
   /* The game title, a deep blue rather than the near-black of body text. */
