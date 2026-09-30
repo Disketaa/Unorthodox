@@ -7,6 +7,10 @@ const log = createLogger('TrysteroRoom');
 /** The action every peer announces its role on once a connection exists. */
 export const HelloAction = 'hello';
 
+/** Protocol channels, both created by every peer so each end is subscribed. */
+export const HostToClientAction = 'hostToClient';
+export const ClientToHostAction = 'clientToHost';
+
 /** Role names exchanged in the hello message. */
 export const HostRole = 'Host';
 export const PlayerRole = 'Player';
@@ -27,10 +31,10 @@ export interface RoomHandlers {
   onHostReady: () => void;
 }
 
-/** The two message actions a room can hold, one per direction. */
+/** The two protocol channels, plus the role announcement channel. */
 export interface RoomActions {
   hostToClient: MessageAction<JsonValue> | null;
-  clientToHost: MessageAction<JsonValue>;
+  clientToHost: MessageAction<JsonValue> | null;
   /** Carries role announcements in both directions. */
   hello: MessageAction<JsonValue>;
 }
@@ -90,19 +94,21 @@ function wireHello(hello: MessageAction<JsonValue>, hostPeer: HostPeerState, isH
   };
 }
 
-/** Wire the directional protocol actions. */
+/**
+ * Wire the directional protocol actions.
+ *
+ * Every peer creates both channels, but only listens to the one carrying traffic
+ * in its own direction: the host reads what clients send, the client reads what
+ * the host sends. Listening to both would feed a peer its own messages back.
+ */
 function wireActions(actions: RoomActions, handlers: RoomHandlers, isHost: boolean): void {
-  if (actions.hostToClient) {
-    actions.hostToClient.onMessage = (message: JsonValue, context) => {
-      // Only the host sends on this action, so anything arriving is from the host.
-      handlers.onMessage(message, true, context.peerId);
-    };
-  }
-  if (isHost) {
+  const inbound = isHost ? actions.clientToHost : actions.hostToClient;
+  if (!inbound) {
     return;
   }
-  actions.clientToHost.onMessage = (message: JsonValue, context) => {
-    handlers.onMessage(message, false, context.peerId);
+  inbound.onMessage = (message: JsonValue, context) => {
+    // Anything on the inbound channel came from the other side by construction.
+    handlers.onMessage(message, !isHost, context.peerId);
   };
 }
 

@@ -1,7 +1,15 @@
 import { Transport } from './Transport';
 import { describeMessage, RelayUrls, toPayload } from './Payload';
 import { startDiagnostics } from './Diagnostics';
-import { wireRoom, HelloAction, HostRole, PlayerRole, type RoomHandlers } from './TrysteroRoom';
+import {
+  wireRoom,
+  HelloAction,
+  HostRole,
+  PlayerRole,
+  HostToClientAction,
+  ClientToHostAction,
+  type RoomHandlers,
+} from './TrysteroRoom';
 import { createLogger } from '@/Core';
 import { joinRoom, selfId, type JsonValue, type MessageAction } from 'trystero';
 
@@ -60,18 +68,20 @@ export class TrysteroTransport implements Transport {
       `joining room "${this.roomId}" as ${isHost ? HostRole : PlayerRole}, selfId ${this.peerId}`,
     );
 
-    // Only the direction this peer sends on is created, so a client never
-    // listens for its own broadcasts and vice versa.
-    const send = room.makeAction(isHost ? 'hostToClient' : 'clientToHost');
-    if (isHost) {
-      this.hostToClientAction = send;
-    } else {
-      this.clientToHostAction = send;
-    }
+    // Both directions are created on every peer, because a trystero action is a
+    // topic: a peer only receives messages on a channel it has created itself.
+    // Creating just the sending direction leaves the far end unsubscribed, so
+    // its messages are dropped without a trace.
+    this.hostToClientAction = room.makeAction(HostToClientAction);
+    this.clientToHostAction = room.makeAction(ClientToHostAction);
 
     this.hostPeer = wireRoom(
       room,
-      { hostToClient: this.hostToClientAction, clientToHost: send, hello: room.makeAction(HelloAction) },
+      {
+        hostToClient: this.hostToClientAction,
+        clientToHost: this.clientToHostAction,
+        hello: room.makeAction(HelloAction),
+      },
       isHost,
       this.roomHandlers(),
     );
@@ -87,15 +97,8 @@ export class TrysteroTransport implements Transport {
     };
   }
 
-  stop(): void {
-    if (this.room) {
-      this.room.leave();
-      this.room = null;
-    }
-    this.stopDiagnostics?.();
-    this.stopDiagnostics = null;
-    this.hostToClientAction = null;
-    this.clientToHostAction = null;
+  /** Clear every callback and handle, so a stopped transport holds nothing. */
+  private releaseCallbacks(): void {
     this.onMessageCallback = null;
     this.onPeerLeaveCallback = null;
     this.onHostReadyCallback = null;
@@ -103,6 +106,16 @@ export class TrysteroTransport implements Transport {
     this.warnedNoHost = false;
     this.hostPeer?.clear();
     this.hostPeer = null;
+  }
+
+  stop(): void {
+    void this.room?.leave();
+    this.room = null;
+    this.stopDiagnostics?.();
+    this.stopDiagnostics = null;
+    this.hostToClientAction = null;
+    this.clientToHostAction = null;
+    this.releaseCallbacks();
   }
 
   setPlayerId(playerId: string): void {
@@ -124,12 +137,8 @@ export class TrysteroTransport implements Transport {
 
   sendToHost(message: unknown): void {
     // Only clients should call this
-    if (this.isHost) {
-      log('warn', 'sendToHost called on the host, ignoring');
-      return;
-    }
-    if (!this.clientToHostAction) {
-      log('warn', 'sendToHost before the room was joined, ignoring');
+    if (this.isHost || !this.clientToHostAction) {
+      log('warn', 'sendToHost called on the host or before joining, ignoring');
       return;
     }
     if (!this.hostPeerId) {
@@ -137,14 +146,12 @@ export class TrysteroTransport implements Transport {
       // it is reported once rather than drowning the rest of the log.
       if (!this.warnedNoHost) {
         this.warnedNoHost = true;
-        log('warn', 'sendToHost before the host peerId is known, dropping', describeMessage(message));
-        log('warn', 'this means no peer connection to the host has been established yet');
+        log('warn', 'no peer connection to the host yet, dropping', describeMessage(message));
       }
       return;
     }
     const payload = this.prepare(message, 'sendToHost');
     if (payload === undefined) return;
-    // Send the message to the host using the clientToHost action, targeting the host's peerId
     log('debug', 'sending to host', describeMessage(message));
     this.clientToHostAction.send(payload, { target: this.hostPeerId });
   }
