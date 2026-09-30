@@ -16,7 +16,8 @@ function applyGlyph(node: HTMLSpanElement, glyph: Glyph): void {
     ['--Glyph-Duration', `${glyph.durationS.toFixed(2)}s`],
     ['--Glyph-Delay', `${glyph.delayS.toFixed(2)}s`],
     ['--Glyph-Top', `${glyph.top.toFixed(2)}%`],
-    ['--Glyph-Inward', `${glyph.inward.toFixed(2)}%`],
+    ['--Glyph-Reach', glyph.reach.toFixed(2)],
+    ['--Glyph-Scale', glyph.scale.toFixed(2)],
     ['--Glyph-Fade', glyph.fade.toFixed(2)],
   ];
   for (const [name, value] of properties) {
@@ -53,11 +54,7 @@ export function GlyphColumn({ glyphs, side }: GlyphColumnProps) {
             }
           }}
         >
-          <span
-            class={`${styles.Mark} ${styles[`Size${glyph.size}`]} ${styles[`Tone${glyph.tone}`]}`}
-          >
-            {glyph.char}
-          </span>
+          <span class={`${styles.Mark} ${styles[`Tone${glyph.tone}`]}`}>{glyph.char}</span>
         </span>
       ))}
     </div>

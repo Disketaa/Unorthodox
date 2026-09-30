@@ -19,8 +19,24 @@ const CatchUp = 0.05;
  */
 const ShiftMaxPx = 28;
 
-/** How much of the page scroll the field answers. Well under one: it is a backdrop, not a scene. */
-const ScrollRatio = 0.12;
+/**
+ * How much page scroll counts as the field having spread all the way, in pixels.
+ *
+ * A length rather than a share, because a share of the page grows without limit
+ * and would carry the marks off the screen entirely. Past this much scrolling the
+ * field is as spread as it ever gets and scrolling further does nothing.
+ */
+const ScrollRangePx = 600;
+
+/**
+ * How far the field may spread outwards from its resting place, in pixels.
+ *
+ * Small, and the point of it is the direction: scrolling pushes the marks away
+ * from the middle rather than sliding them across it, so reading down the page
+ * opens the centre up instead of filling it. A field that leaned inward on every
+ * scroll was the thing that made the middle cramped on a long page.
+ */
+const SpreadMaxPx = 34;
 
 /** Where the field is heading, in pixels, on each axis. */
 export interface GlyphTarget {
@@ -39,12 +55,12 @@ function eased(value: number, target: number, deltaS: number): number {
   return value + (target - value) * factor;
 }
 
-/** A whole value's worth of travel on either axis, in pixels. */
-function bound(value: number, half: number): number {
+/** A whole value's worth of travel on an axis, in pixels, and never more than a cap. */
+function bound(value: number, half: number, cap: number = ShiftMaxPx): number {
   if (half <= 0) {
     return 0;
   }
-  return Math.max(-1, Math.min(1, value / half)) * ShiftMaxPx;
+  return Math.max(-1, Math.min(1, value / half)) * cap;
 }
 
 /**
@@ -86,6 +102,7 @@ export function startGlyphParallax(node: HTMLDivElement): GlyphParallaxDriver {
   const target: GlyphTarget = { x: 0, y: 0 };
   let current: GlyphTarget = { x: 0, y: 0 };
   let previous = performance.now();
+  let spread = 0;
   let frame = 0;
 
   const write = () => {
@@ -102,10 +119,21 @@ export function startGlyphParallax(node: HTMLDivElement): GlyphParallaxDriver {
     previous = now;
     const halfWidth = window.innerWidth / 2;
     const halfHeight = window.innerHeight / 2;
+    /*
+     * The pointer moves the field as one piece, bounded on both axes.
+     *
+     * Scrolling does not move it at all along those axes. It writes a separate
+     * spread value instead, which the two bands read in opposite directions, so
+     * scrolling pushes the left band further left and the right band further
+     * right. That is the whole behaviour: reading down the page opens the middle
+     * up rather than carrying the marks across it.
+     */
     current = {
       x: eased(current.x, bound(target.x, halfWidth), deltaS),
-      y: eased(current.y, bound(target.y, halfHeight) - window.scrollY * ScrollRatio, deltaS),
+      y: eased(current.y, bound(target.y, halfHeight), deltaS),
     };
+    spread = eased(spread, bound(window.scrollY, ScrollRangePx, SpreadMaxPx), deltaS);
+    node.style.setProperty('--Glyph-Spread', `${spread.toFixed(2)}px`);
     write();
   };
 

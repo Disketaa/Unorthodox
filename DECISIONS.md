@@ -274,3 +274,17 @@ applies redundancy only when it chooses relays from its own defaults and ignores
 `urls` is supplied, so it had never done anything.
 
 A mark's centre is placed thirty to seventy per cent of a band width beyond the screen edge, so marks lean out`of the screen rather than sitting inside the band. Since a mark is far wider than a band, this is what`keeps the middle clear: density falls off inward on its own, with no fade and no clipping.
+
+A mark's placement off the screen edge is a share of `--Glyph-EdgeReach`, which shrinks as the
+screen narrows while the band width grows. The two cancel: a desktop mark is placed near the edge
+and reaches into the wide margin, a phone mark is placed further off screen and only its edge
+comes in, so the middle stays clear where there is least room for it.
+
+The field has no viewport-dependent sizing left. The band is a fixed 15% of the screen on each`side, a mark is a fixed 26vw wide, and a mark's placement off the edge is a share of its own`width rather than of the band. One size for every mark, since rolling a size per mark read as a mixture`rather than a pattern; the variety is position, tone, rotation and weight.
+
+Scroll leans the field by a bounded amount (600px of scroll is the full lean) rather than by a share of`the page, so scrolling cannot walk the marks into the middle of the screen. The band stays put at fifteen per cent on each side.
+
+Scrolling writes a spread value rather than moving the field along the pointer axes. The two bands read`it in opposite directions, so scrolling pushes each one further from the middle and reading down the`page opens the centre up instead of filling it. Capped at 34px over 600px of scroll.
+
+Marks are rolled between two size tokens (13vw and 26vw) rather than all at one width, weighted low so the
+small ones fill the corners and gaps. A mark's width is worked out once on its wrapper as a custom`property, because the mark and the rule positioning it are both in widths of the mark and must not`disagree about its size.

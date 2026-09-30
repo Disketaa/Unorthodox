@@ -182,9 +182,6 @@ body {
    * well above the text contrast: they are meant to be read as texture, not as
    * words, so anything darker would compete with the game itself.
    */
-  --Glyph-Size-Small: 540px;
-  --Glyph-Size-Medium: 840px;
-  --Glyph-Size-Large: 1260px;
   --Glyph-Tone-Light: var(--Color-Neutral-200);
   --Glyph-Tone-Mid: var(--Color-Neutral-300);
   --Glyph-Tone-Deep: var(--Color-Neutral-400);
@@ -200,20 +197,33 @@ body {
   --Glyph-Overscan: 120px;
   /*
    * How much of the screen one band's worth of marks covers, counted from the
-   * outer edge inward.
-   *
-   * A share of the viewport rather than the leftover space beside the content
-   * column, and it grows as the viewport narrows: fifteen per cent on a desktop,
-   * thirty on a phone. A fixed share would leave a phone with two thin bands and
-   * a wide empty middle, and the field would be nearly invisible on the device
-   * most players actually use. Growing the share keeps the marks crowding the
-   * edges of whatever screen they are on, so the same arrangement reads the same
-   * way at every size, and the density along each edge stays constant.
-   *
-   * The three numbers are that arrangement: the low and high ends, and the line
-   * between them.
+   * outer edge inward. Fifteen per cent, at every screen size: the field is a
+   * fixed part of the layout rather than something that adapts, so the same
+   * arrangement reads the same way on a phone and on a desktop, and the middle
+   * seventy per cent is always the game's.
    */
-  --Glyph-BandWidth: clamp(15%, calc(35.8% - 1.44vw), 30%);
+  --Glyph-BandWidth: 15%;
+  /*
+   * How wide one mark may be, as a share of the viewport: the smallest and the
+   * largest, with every mark rolled from between them.
+   *
+   * A share of the screen, so a mark is the same width relative to the band it
+   * hangs in whatever the screen is. The range is wide at the bottom and narrow
+   * at the top on purpose: a small mark reads as a mark in the corner of the
+   * margin, and a large one reads as a shape the margin is cut out of, and the
+   * margin needs both. The largest is only just wider than the band, so a large
+   * mark spans the band without reaching the text.
+   */
+  --Glyph-MarkWidthMin: 13vw;
+  --Glyph-MarkWidthMax: 26vw;
+
+  /*
+   * How far past the screen edge a mark's centre may sit, as a share of its own
+   * width. One here means a mark's rolled share is read directly as that fraction
+   * of its width, which is the plain reading; lower values scale the whole range
+   * down and pull the field back off the edge.
+   */
+  --Glyph-EdgeReach: 1;
 
   --Color-Text-Default: #212121;
   --Color-Text-Muted: #757575;

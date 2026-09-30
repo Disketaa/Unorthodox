@@ -13,47 +13,30 @@ const SlotsPerColumn = 22;
 
 export type GlyphTone = 'Light' | 'Mid' | 'Deep';
 
-/**
- * The three absolute sizes a mark is drawn at.
- *
- * Named rather than rolled, because a mark is a fixed size rather than a
- * multiple of one: its size is a length in `Tokens.css` that the same on every
- * screen and at every zoom level, so nothing in the field grows with the page
- * or shrinks away from it.
- */
-export type GlyphSize = 'Small' | 'Medium' | 'Large';
-
 export interface Glyph {
   char: string;
-  size: GlyphSize;
+  /** Where in the range of mark widths this one falls, as a plain share. */
+  scale: number;
   rotation: number;
   depth: number;
   durationS: number;
   delayS: number;
   top: number;
-  /**
-   * How far in from the band's outer edge this mark starts, as a share of the
-   * band's width. The stylesheet anchors it to the left edge or the right edge
-   * of the band, which is what lets one number serve both sides.
-   */
-  inward: number;
+  /** How far past the screen edge this mark's centre sits, as a share of its width. */
+  reach: number;
   tone: GlyphTone;
   /** This mark's share of the opacity token, so no two sit at the same depth. */
   fade: number;
 }
 
 /**
- * Which of the three sizes a mark is drawn at, weighted so the band is mostly
- * the smaller two and the large one is what stops it reading as a pattern.
+ * How a mark's width is placed in the range between the two size tokens.
+ *
+ * Weighted low, because the small end is what the corners and the gaps between
+ * marks need, and a band of large marks alone reads as a solid shape rather than
+ * as marks.
  */
-const Sizes: readonly GlyphSize[] = [
-  'Small',
-  'Small',
-  'Small',
-  'Medium',
-  'Medium',
-  'Large',
-];
+const ScaleChoices = [0, 0, 0.25, 0.25, 0.5, 0.75, 1];
 
 const RotationDeg = 24;
 const DurationMinS = 16;
@@ -77,22 +60,19 @@ const JitterPercent = 22;
  * crowd at different distances.
  */
 const FadeMin = 0.35;
-const FadeMax = 1.25;
+const FadeMax = 0.85;
 
 /**
- * How far a mark's centre may sit from the screen edge, as a share of the band's
- * width. Negative, so the centres are off the edge of the screen and every mark
- * leans out of it rather than in.
+ * How far past the screen edge a mark's centre may sit, as a share of its own
+ * width and scaled by `--Glyph-EdgeReach`.
  *
- * Measured from the edge rather than across the band, and deliberately past it,
- * because a mark is far wider than a band: a centre placed on the edge would put
- * half the mark over the middle, and a centre placed inside the band would put
- * all of it there. Anchoring the centres beyond the edge is what makes the outer
- * fifteen per cent the dense part and the middle clear, with the marks thinning
- * as they travel inward on their own.
+ * A share of the mark's own width rather than a length, so a mark is placed the
+ * same way relative to itself on every screen. The whole range sits inside the
+ * mark's own width, so no mark is pushed off the screen far enough to leave the
+ * outermost part of the margin bare.
  */
-const InwardMaxPercent = -30;
-const InwardMinPercent = -70;
+const ReachMinShare = 0.1;
+const ReachMaxShare = 0.45;
 
 /**
  * Which edge of the screen a band hangs from.
@@ -133,16 +113,16 @@ function slotTop(slot: number): number {
 export function rollGlyph(slot: number): Glyph {
   const char = Symbols[Math.floor(Math.random() * Symbols.length)] ?? '#';
   const tone = Tones[Math.floor(Math.random() * Tones.length)] ?? 'Light';
-  const size = Sizes[Math.floor(Math.random() * Sizes.length)] ?? 'Medium';
+  const scale = ScaleChoices[Math.floor(Math.random() * ScaleChoices.length)] ?? 0.5;
   return {
     char,
-    size,
+    scale,
     rotation: fixedBetween(-RotationDeg, RotationDeg),
     depth: fixedBetween(0.2, 1),
     durationS: fixedBetween(DurationMinS, DurationMaxS),
     delayS: fixedBetween(-DurationMaxS, 0),
     top: Number(slotTop(slot).toFixed(2)),
-    inward: fixedBetween(InwardMinPercent, InwardMaxPercent),
+    reach: fixedBetween(ReachMinShare, ReachMaxShare),
     tone,
     fade: fixedBetween(FadeMin, FadeMax),
   };
