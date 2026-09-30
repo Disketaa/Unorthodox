@@ -46,8 +46,12 @@ function useHashRoute(): Route {
   return parseRoute(hash);
 }
 
+interface WithBackgroundProps {
+  children?: ComponentChildren;
+}
+
 /** The screens that sit on top of the paper background. */
-function WithBackground(children: ComponentChildren) {
+function WithBackground({ children }: WithBackgroundProps) {
   return (
     <>
       <PaperBackground />
