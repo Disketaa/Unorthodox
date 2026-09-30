@@ -1,7 +1,7 @@
 import { ComponentChildren } from "preact";
 import styles from "./Text.module.css";
 
-export type TextVariant = "Title" | "Body" | "Caption" | "Mono";
+export type TextVariant = "Title" | "Display" | "Body" | "Caption" | "Mono";
 export type TextFontWeight = "Normal" | "Medium" | "Bold";
 
 export interface TextProps {

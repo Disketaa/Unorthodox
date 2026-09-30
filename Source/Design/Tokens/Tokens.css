@@ -114,6 +114,7 @@ body {
   --FontSize-Xl: 24px;
   --FontSize-Xxl: 32px;
   --FontSize-3xl: 44px;
+  --FontSize-4xl: 56px;
 
   --FontFamily-Body: 'Inter', system-ui, sans-serif;
   --FontFamily-Display: 'BlobSpongeyLowercase', 'Fredoka', cursive;
@@ -140,10 +141,12 @@ body {
    * readable; the opacity only sets how deep the tint goes.
    */
   --Overlay-BlendMode: multiply;
-  --Overlay-Opacity: 0.35;
+  --Overlay-Opacity: 0.66;
 
   --Color-Text-Default: #212121;
   --Color-Text-Muted: #757575;
+  /* The game title, tinted with the primary action colour instead of near-black. */
+  --Color-Text-Display: #C77700;
   --Color-Text-Inverse: #FFFFFF;
   --Color-Text-Link: #FF9800;
 
@@ -182,6 +185,7 @@ body {
   --FontSize-Body: var(--FontSize-Md);
   --FontSize-Caption: var(--FontSize-Sm);
   --FontSize-Mono: var(--FontSize-Sm);
+  --FontSize-Display: var(--FontSize-4xl);
 
   /* Layout */
   --Layout-ContentMaxWidth: 480px;

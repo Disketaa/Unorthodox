@@ -9,6 +9,28 @@
   line-height: 1.2;
 }
 
+/*
+ * The game title. Kept separate from Title because it is larger, centred and
+ * tinted, none of which suits an in-game topic or a screen heading.
+ *
+ * The size is clamped to the viewport: the name is a single long word with no
+ * break opportunities, so a fixed size overflows a narrow phone instead of
+ * wrapping.
+ */
+.VariantDisplay {
+  font-family: var(--FontFamily-Display);
+  font-size: clamp(var(--FontSize-Xl), 9vw, var(--FontSize-Display));
+  line-height: 1.1;
+  color: var(--Color-Text-Display);
+  text-align: center;
+  overflow-wrap: break-word;
+  /* Break at a syllable rather than mid-word, which needs lang="ru" on <html>. */
+  hyphens: auto;
+  /* A flex item defaults to min-width:auto, which stops a long word from
+     shrinking and pushes the whole layout wider than the screen. */
+  min-width: 0;
+}
+
 .VariantBody {
   font-size: var(--FontSize-Body);
   line-height: 1.5;

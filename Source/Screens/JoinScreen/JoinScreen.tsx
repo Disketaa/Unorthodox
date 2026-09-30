@@ -27,7 +27,7 @@ export function JoinScreen({
 
   return (
     <Stack gap="Lg" align="Stretch">
-      <Text variant="Title">{Strings.app.title}</Text>
+      <Text variant="Display">{Strings.app.title}</Text>
       <Card variant="Elevated">
         <Stack gap="Md">
           <JoinFields
