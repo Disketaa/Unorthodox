@@ -136,10 +136,11 @@ body {
   /*
    * The paper texture sits over the interface and multiplies into it, so it
    * darkens the surfaces instead of washing them out, and stays faint rather
-   * than becoming a grey haze.
+   * than becoming a grey haze. Multiply keeps relative contrast, so text stays
+   * readable; the opacity only sets how deep the tint goes.
    */
   --Overlay-BlendMode: multiply;
-  --Overlay-Opacity: 0.18;
+  --Overlay-Opacity: 0.35;
 
   --Color-Text-Default: #212121;
   --Color-Text-Muted: #757575;
