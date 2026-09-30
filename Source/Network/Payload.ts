@@ -35,17 +35,20 @@ export function toPayload(message: unknown): JsonValue | undefined {
   return undefined;
 }
 
-/**
- * Read the host's peerId out of the internal `HostPeerId` announcement.
- * Returns undefined for any other message.
- */
-export function readHostPeerId(message: JsonValue): string | undefined {
+/** Read a `type` tag off a decoded message without casting it. */
+export function readTag(message: JsonValue): string | undefined {
   if (typeof message !== 'object' || message === null || Array.isArray(message)) {
     return undefined;
   }
-  const record: Record<string, unknown> = { ...message };
-  if (record.type !== 'HostPeerId') {
+  const type = Reflect.get(message, 'type');
+  return typeof type === 'string' ? type : undefined;
+}
+
+/** Read a `role` field off a decoded message without casting it. */
+export function readRole(message: JsonValue): string | undefined {
+  if (typeof message !== 'object' || message === null || Array.isArray(message)) {
     return undefined;
   }
-  return typeof record.peerId === 'string' ? record.peerId : undefined;
+  const role = Reflect.get(message, 'role');
+  return typeof role === 'string' ? role : undefined;
 }

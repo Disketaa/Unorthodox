@@ -1,14 +1,15 @@
 import { render } from 'preact';
 import { App } from './App';
 import { setLogLevel } from '@/Core';
+import { isDebugEnabled } from '@/Network/Diagnostics';
 import "@/Design/Tokens/Tokens.css";
 
 /**
- * Debug logging is opt-in via ?debug in the URL, so the noisy connection
- * tracing stays out of the way during normal play but is one keystroke away
- * when a join fails to connect.
+ * Debug logging is opt-in via ?debug, so the noisy connection tracing stays out
+ * of the way during normal play. The flag is read from the query string, from
+ * the hash and from localStorage, so it works wherever the ?debug ended up.
  */
-if (new URLSearchParams(window.location.search).has('debug')) {
+if (isDebugEnabled()) {
   setLogLevel('debug');
 }
 

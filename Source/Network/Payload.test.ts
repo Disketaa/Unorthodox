@@ -2,10 +2,16 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { InMemoryTransport } from './InMemoryTransport';
 import { ClientSession, JoinRetryIntervalMs } from './ClientSession';
 import { HostSession } from './HostSession';
-import { toPayload, readHostPeerId } from './Payload';
+import { toPayload, readTag, readRole } from './Payload';
 
 const roomCode = 'ABCD';
 const RetryInterval = JoinRetryIntervalMs;
+
+/** Number of players in the lobby, read without depending on the phase union. */
+function playerCount(hostSession: HostSession): number {
+  const state = hostSession.getState();
+  return state !== undefined && 'players' in state ? state.players.size : -1;
+}
 
 describe('Transport payload handling', () => {
   it('keeps JSON-shaped messages and drops anything else', () => {
@@ -16,10 +22,13 @@ describe('Transport payload handling', () => {
     expect(toPayload(() => undefined)).toBeUndefined();
   });
 
-  it('reads the host peer id out of the announcement only', () => {
-    expect(readHostPeerId({ type: 'HostPeerId', peerId: 'abc' })).toBe('abc');
-    expect(readHostPeerId({ type: 'Join', name: 'Ann' })).toBeUndefined();
-    expect(readHostPeerId('not an object')).toBeUndefined();
+  it('reads tags and roles off a message without casting', () => {
+    expect(readTag({ type: 'hello', role: 'Host' })).toBe('hello');
+    expect(readRole({ type: 'hello', role: 'Host' })).toBe('Host');
+    expect(readTag({ type: 'Join', name: 'Ann' })).toBe('Join');
+    expect(readRole({ type: 'Join', name: 'Ann' })).toBeUndefined();
+    expect(readTag('not an object')).toBeUndefined();
+    expect(readRole(null)).toBeUndefined();
   });
 });
 
@@ -47,7 +56,7 @@ describe('Client join retry', () => {
     vi.advanceTimersByTime(RetryInterval * 3);
 
     expect(clientSession.getPlayerId()).not.toBeNull();
-    expect(hostSession.getState()?.players.size).toBe(2);
+    expect(playerCount(hostSession)).toBe(2);
   });
 });
 
@@ -74,7 +83,7 @@ describe('Client join retry termination', () => {
 
     // No further retries, so the host does not accumulate duplicate players.
     vi.advanceTimersByTime(RetryInterval * 10);
-    expect(hostSession.getState()?.players.size).toBe(2);
+    expect(playerCount(hostSession)).toBe(2);
     expect(assigned).toBe(clientSession.getPlayerId());
   });
 
@@ -89,6 +98,6 @@ describe('Client join retry termination', () => {
     vi.advanceTimersByTime(RetryInterval * 5);
 
     expect(clientSession.getPlayerId()).toBeNull();
-    expect(hostSession.getState()?.players.size).toBe(1);
+    expect(playerCount(hostSession)).toBe(1);
   });
 });

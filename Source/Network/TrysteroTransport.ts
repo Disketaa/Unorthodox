@@ -1,6 +1,7 @@
 import { Transport } from './Transport';
 import { describeMessage, RelayUrls, toPayload } from './Payload';
-import { wireRoom, type RoomHandlers } from './TrysteroRoom';
+import { startDiagnostics } from './Diagnostics';
+import { wireRoom, HelloAction, HostRole, PlayerRole, type RoomHandlers } from './TrysteroRoom';
 import { createLogger } from '@/Core';
 import { joinRoom, selfId, type JsonValue, type MessageAction } from 'trystero';
 
@@ -29,8 +30,10 @@ export class TrysteroTransport implements Transport {
 
   // Access to the host peerId discovered by the room wiring
   private hostPeer: { get: () => string | null; clear: () => void } | null = null;
-  /** Cancels the pending host-lookup retries when the session stops. */
-  private disposeRoom: (() => void) | null = null;
+  /** Stops the periodic connection logging. */
+  private stopDiagnostics: (() => void) | null = null;
+  /** Ensures the unrouteable-send warning is only written once. */
+  private warnedNoHost = false;
 
   /** The host's trystero peerId, known to clients once it has announced itself. */
   private get hostPeerId(): string | null {
@@ -40,7 +43,6 @@ export class TrysteroTransport implements Transport {
   start(roomCode: string, _playerName: string, isHost: boolean): void {
     this.roomId = roomCode;
     this.isHost = isHost;
-
     // Create or join the room. The library's default relays are frequently
     // unreachable, so several well-known nostr relays are configured instead.
     const room = joinRoom(
@@ -51,7 +53,10 @@ export class TrysteroTransport implements Transport {
       this.roomId,
     );
     this.room = room;
-    log('info', `joining room ${this.roomId} as ${isHost ? 'host' : 'client'} via relays`);
+    log(
+      'info',
+      `joining room "${this.roomId}" as ${isHost ? HostRole : PlayerRole}, selfId ${this.peerId}`,
+    );
 
     // Only the direction this peer sends on is created, so a client never
     // listens for its own broadcasts and vice versa.
@@ -62,15 +67,13 @@ export class TrysteroTransport implements Transport {
       this.clientToHostAction = send;
     }
 
-    const wired = wireRoom(
+    this.hostPeer = wireRoom(
       room,
-      { hostToClient: this.hostToClientAction, clientToHost: send },
+      { hostToClient: this.hostToClientAction, clientToHost: send, hello: room.makeAction(HelloAction) },
       isHost,
-      this.peerId,
       this.roomHandlers(),
     );
-    this.hostPeer = wired.hostPeer;
-    this.disposeRoom = wired.dispose;
+    this.stopDiagnostics = startDiagnostics(() => room.getPeers());
   }
 
   /** Adapters from the mutable callback fields to the room's handler shape. */
@@ -86,13 +89,14 @@ export class TrysteroTransport implements Transport {
       this.room.leave();
       this.room = null;
     }
-    this.disposeRoom?.();
-    this.disposeRoom = null;
+    this.stopDiagnostics?.();
+    this.stopDiagnostics = null;
     this.hostToClientAction = null;
     this.clientToHostAction = null;
     this.onMessageCallback = null;
     this.onPeerLeaveCallback = null;
     this.playerId = null;
+    this.warnedNoHost = false;
     this.hostPeer?.clear();
     this.hostPeer = null;
   }
@@ -125,8 +129,13 @@ export class TrysteroTransport implements Transport {
       return;
     }
     if (!this.hostPeerId) {
-      // The host has not introduced itself yet, so the message cannot be routed.
-      log('warn', 'sendToHost before the host peerId is known, dropping', describeMessage(message));
+      // The host has not identified itself yet. This repeats on every retry, so
+      // it is reported once rather than drowning the rest of the log.
+      if (!this.warnedNoHost) {
+        this.warnedNoHost = true;
+        log('warn', 'sendToHost before the host peerId is known, dropping', describeMessage(message));
+        log('warn', 'this means no peer connection to the host has been established yet');
+      }
       return;
     }
     const payload = this.prepare(message, 'sendToHost');
