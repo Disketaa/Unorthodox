@@ -12,6 +12,11 @@ export class InMemoryTransport implements Transport {
     receive: (message: unknown, fromHost: boolean) => void;
   }>();
 
+  /** Drop every registered peer, so tests do not leak into one another. */
+  static resetPeers(): void {
+    InMemoryTransport.peersById.clear();
+  }
+
   /** Player ID of this peer, set via setPlayerId() */
   private playerId: string | null = null;
   /** Whether this peer is the host, set in start() */
@@ -20,7 +25,6 @@ export class InMemoryTransport implements Transport {
   /** Callbacks for incoming messages and peer leave */
   private onMessageCallback: ((message: unknown, fromHost: boolean) => void) | null = null;
   private onPeerLeaveCallback: ((playerId: string) => void) | null = null;
-  private onHostReadyCallback: (() => void) | null = null;
 
   /** Callback for receiving messages from the broker */
   private receiveCallback: (message: unknown, fromHost: boolean) => void;
@@ -81,8 +85,8 @@ export class InMemoryTransport implements Transport {
       hostEntry.receive(message, false);
       return;
     }
-    // No host is reachable, so the caller should retry once one appears.
-    this.onHostReadyCallback?.();
+    // No host is reachable yet, so the message is dropped and the caller's
+    // retry is expected to resend it once a host appears.
   }
 
   sendToPlayer(playerId: string, message: unknown): void {
@@ -116,10 +120,6 @@ export class InMemoryTransport implements Transport {
 
   onPeerLeave(callback: (playerId: string) => void): void {
     this.onPeerLeaveCallback = callback;
-  }
-
-  onHostReady(callback: () => void): void {
-    this.onHostReadyCallback = callback;
   }
 
   /**

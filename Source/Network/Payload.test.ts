@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { InMemoryTransport } from './InMemoryTransport';
-import { ClientSession } from './ClientSession';
+import { ClientSession, JoinRetryIntervalMs } from './ClientSession';
 import { HostSession } from './HostSession';
 import { toPayload, readHostPeerId } from './Payload';
 
 const roomCode = 'ABCD';
+const RetryInterval = JoinRetryIntervalMs;
 
 describe('Transport payload handling', () => {
   it('keeps JSON-shaped messages and drops anything else', () => {
@@ -22,20 +23,72 @@ describe('Transport payload handling', () => {
   });
 });
 
-describe('Client join buffering', () => {
-  it('retries the buffered join once a host is reachable', () => {
+describe('Client join retry', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  it('joins once the host appears after the client', () => {
     const clientSession = new ClientSession(new InMemoryTransport());
     clientSession.start(roomCode, 'Ann');
-    // No host exists yet, so the join cannot be delivered and stays buffered.
+    // No host exists yet, so the join is dropped by the transport.
     clientSession.join('Ann');
     expect(clientSession.getPlayerId()).toBeNull();
 
     const hostSession = new HostSession(new InMemoryTransport());
     hostSession.start(roomCode, 'Host');
+    // The host cannot announce itself to a peer that joined before it, so the
+    // client keeps retrying the buffered join until one lands.
+    vi.advanceTimersByTime(RetryInterval * 3);
 
-    // The next send flushes the buffered join, which reaches the new host.
-    clientSession.join('Ann');
     expect(clientSession.getPlayerId()).not.toBeNull();
     expect(hostSession.getState()?.players.size).toBe(2);
+  });
+});
+
+describe('Client join retry termination', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  it('stops retrying once the host has answered', () => {
+    const clientSession = new ClientSession(new InMemoryTransport());
+    clientSession.start(roomCode, 'Ann');
+    clientSession.join('Ann');
+
+    const hostSession = new HostSession(new InMemoryTransport());
+    hostSession.start(roomCode, 'Host');
+    vi.advanceTimersByTime(RetryInterval * 3);
+    const assigned = clientSession.getPlayerId();
+    expect(assigned).not.toBeNull();
+
+    // No further retries, so the host does not accumulate duplicate players.
+    vi.advanceTimersByTime(RetryInterval * 10);
+    expect(hostSession.getState()?.players.size).toBe(2);
+    expect(assigned).toBe(clientSession.getPlayerId());
+  });
+
+  it('does not retry after the session is stopped', () => {
+    const clientSession = new ClientSession(new InMemoryTransport());
+    clientSession.start(roomCode, 'Ann');
+    clientSession.join('Ann');
+    clientSession.stop();
+
+    const hostSession = new HostSession(new InMemoryTransport());
+    hostSession.start(roomCode, 'Host');
+    vi.advanceTimersByTime(RetryInterval * 5);
+
+    expect(clientSession.getPlayerId()).toBeNull();
+    expect(hostSession.getState()?.players.size).toBe(1);
   });
 });

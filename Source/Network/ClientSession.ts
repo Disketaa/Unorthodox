@@ -5,6 +5,9 @@ import { createLogger } from '@/Core';
 
 const log = createLogger('ClientSession');
 
+/** How often a join is re-sent while waiting for the host to become reachable. */
+export const JoinRetryIntervalMs = 2_000;
+
 /**
  * Manages the client side of the game state and communication.
  */
@@ -16,6 +19,8 @@ export class ClientSession {
   private updateListener: (() => void) | undefined = undefined;
   /** Join message held back until the transport can address the host. */
   private pendingJoin: { type: 'Join'; name: string; temporaryClientId: string } | null = null;
+  /** Retries the buffered join until the host assigns us an id. */
+  private joinRetry: ReturnType<typeof setInterval> | null = null;
 
   /** Subscribe to state changes so the UI can re-render. */
   onUpdate(listener: () => void): void {
@@ -27,15 +32,36 @@ export class ClientSession {
     this.transport.onPeerLeave(() => listener());
   }
 
-  /** Called when the transport can address the host, to flush a buffered join. */
-  private flushPendingJoin(): void {
-    if (!this.pendingJoin) {
+  /**
+   * Keep asking to join until the host answers.
+   *
+   * The host only announces itself to peers that join after it, so a client
+   * that arrives second may have to wait for the host lookup to complete. The
+   * transport drops a send it cannot route, so the join is retried rather than
+   * fired once and lost.
+   */
+  private startJoinRetries(): void {
+    if (this.joinRetry !== null) {
       return;
     }
-    const message = this.pendingJoin;
-    this.pendingJoin = null;
-    log('debug', 'host reachable, sending buffered join');
-    this.transport.sendToHost(message);
+    this.joinRetry = setInterval(() => {
+      if (this.playerId !== null) {
+        this.stopJoinRetries();
+        return;
+      }
+      if (!this.pendingJoin) {
+        return;
+      }
+      log('debug', 'retrying buffered join');
+      this.transport.sendToHost(this.pendingJoin);
+    }, JoinRetryIntervalMs);
+  }
+
+  private stopJoinRetries(): void {
+    if (this.joinRetry !== null) {
+      clearInterval(this.joinRetry);
+      this.joinRetry = null;
+    }
   }
 
   constructor(transport: Transport) {
@@ -43,8 +69,6 @@ export class ClientSession {
     // Generate a temporary client ID
     this.temporaryClientId =
       Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
-    this.transport.onHostReady(() => this.flushPendingJoin());
 
     // Set up incoming message handler
     this.transport.onMessage((message, fromHost) => {
@@ -73,6 +97,7 @@ export class ClientSession {
   /** Stop the client session */
   stop(): void {
     log('info', 'stopping client session');
+    this.stopJoinRetries();
     this.transport.stop();
     this.state = undefined;
     this.playerId = null;
@@ -91,6 +116,9 @@ export class ClientSession {
       case 'SetPlayerId':
         log('info', 'playerId assigned:', message.playerId);
         this.playerId = message.playerId;
+        // The host has answered, so the join no longer needs retrying.
+        this.stopJoinRetries();
+        this.pendingJoin = null;
         this.updateListener?.();
         // Re-key the transport from the temporary id to the real player id, so the
         // host can address us by the id it now knows us by.
@@ -104,6 +132,8 @@ export class ClientSession {
     log('info', 'joining as', playerName);
     this.pendingJoin = { type: 'Join', name: playerName, temporaryClientId: this.temporaryClientId };
     this.transport.sendToHost(this.pendingJoin);
+    // The first attempt may land before the host is reachable, so keep trying.
+    this.startJoinRetries();
   }
 
   /** Send an answer submission to the host */

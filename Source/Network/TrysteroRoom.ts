@@ -10,8 +10,6 @@ export interface RoomHandlers {
   onMessage: (message: JsonValue, fromHost: boolean) => void;
   /** A peer left; clients only receive this for the host. */
   onPeerLeave: (peerId: string) => void;
-  /** The host peerId became known, so buffered messages can be flushed. */
-  onHostReady: () => void;
 }
 
 /** The two message actions a room can hold, one per direction. */
@@ -19,6 +17,16 @@ export interface RoomActions {
   hostToClient: MessageAction<JsonValue> | null;
   clientToHost: MessageAction<JsonValue>;
 }
+
+/** The message a client broadcasts when it does not yet know the host's peerId. */
+export const RequestHostPeerId = 'RequestHostPeerId';
+
+/** The message the host answers with, naming the peerId to address. */
+export const HostPeerIdMessage = 'HostPeerId';
+
+/** How long a client keeps asking for the host before giving up. */
+const HostRequestTimeoutMs = 20_000;
+const HostRequestIntervalMs = 2_000;
 
 /** Holds the host peerId a client has learned, and reports the first time it lands. */
 interface HostPeerState {
@@ -49,6 +57,8 @@ function wireActions(
   actions: RoomActions,
   hostPeer: HostPeerState,
   handlers: RoomHandlers,
+  isHost: boolean,
+  selfPeerId: string,
 ): void {
   if (actions.hostToClient) {
     actions.hostToClient.onMessage = (message: JsonValue) => {
@@ -58,17 +68,59 @@ function wireActions(
   }
 
   actions.clientToHost.onMessage = (message: JsonValue) => {
-    // The host announces its peerId on join; that is internal plumbing, not a
+    // The host names its peerId on join; that is internal plumbing, not a
     // protocol message, so it is consumed here rather than propagated.
-    const peerId = readHostPeerId(message);
-    if (peerId !== undefined) {
-      log('info', 'learned host peerId', peerId);
-      hostPeer.set(peerId);
+    const hostId = readHostPeerId(message);
+    if (hostId !== undefined) {
+      log('info', 'learned host peerId', hostId);
+      hostPeer.set(hostId);
+      return;
+    }
+    if (isRequestForHostPeerId(message)) {
+      log('debug', 'a client is asking who the host is');
+      // Answer every listener, not just the asker, so clients that raced the
+      // handshake do not each have to ask again.
+      actions.hostToClient?.send({ type: HostPeerIdMessage, peerId: selfPeerId });
       return;
     }
     log('debug', 'client received', describeMessage(message), 'from host');
     handlers.onMessage(message, false);
   };
+}
+
+function isRequestForHostPeerId(message: JsonValue): boolean {
+  if (typeof message !== 'object' || message === null || Array.isArray(message)) {
+    return false;
+  }
+  return Reflect.get(message, 'type') === RequestHostPeerId;
+}
+
+/**
+ * Ask the host who it is, repeatedly, until it answers.
+ *
+ * A client that arrives after the host never sees a peer-join event, so the
+ * host has no reason to announce itself first. Broadcasting the question makes
+ * the handshake work in both arrival orders.
+ */
+function requestHostPeerId(
+  actions: RoomActions,
+  hostPeer: HostPeerState,
+  isHost: boolean,
+): () => void {
+  if (isHost || hostPeer.get() !== null) {
+    return () => undefined;
+  }
+  const ask = () => {
+    if (hostPeer.get() !== null) {
+      return;
+    }
+    log('debug', 'asking the room who the host is');
+    actions.clientToHost.send({ type: RequestHostPeerId });
+  };
+  // The first ask can land before the host has connected, so it repeats.
+  const timer = setInterval(ask, HostRequestIntervalMs);
+  setTimeout(() => clearInterval(timer), HostRequestTimeoutMs);
+  return () => clearInterval(timer);
 }
 
 /** Wire peer join and leave for the room. */
@@ -106,8 +158,9 @@ function wirePeers(
 /**
  * Wire up peer lifecycle and message delivery for a joined room.
  *
- * The host announces its trystero peerId to each client as it arrives, so a
- * client learns whom to address before it can send anything.
+ * A client that arrives after the host never sees a peer-join event, so it asks
+ * the room who the host is and retries until it gets an answer. That makes the
+ * handshake work regardless of which side joined first.
  */
 export function wireRoom(
   room: { onPeerJoin?: (peerId: string) => void; onPeerLeave?: (peerId: string) => void },
@@ -115,12 +168,12 @@ export function wireRoom(
   isHost: boolean,
   selfPeerId: string,
   handlers: RoomHandlers,
-): HostPeerState {
+): { hostPeer: HostPeerState; dispose: () => void } {
   const hostPeer = createHostPeerState(() => {
-    log('info', 'host is now addressable, flushing buffered messages');
-    handlers.onHostReady();
+    log('info', 'host is now addressable');
   });
   wirePeers(room, actions, isHost, selfPeerId, hostPeer, handlers);
-  wireActions(actions, hostPeer, handlers);
-  return hostPeer;
+  wireActions(actions, hostPeer, handlers, isHost, selfPeerId);
+  const stopAsking = requestHostPeerId(actions, hostPeer, isHost);
+  return { hostPeer, dispose: stopAsking };
 }

@@ -26,10 +26,11 @@ export class TrysteroTransport implements Transport {
   // Callbacks for incoming messages and peer leave
   private onMessageCallback: ((message: unknown, fromHost: boolean) => void) | null = null;
   private onPeerLeaveCallback: ((playerId: string) => void) | null = null;
-  private onHostReadyCallback: (() => void) | null = null;
 
   // Access to the host peerId discovered by the room wiring
   private hostPeer: { get: () => string | null; clear: () => void } | null = null;
+  /** Cancels the pending host-lookup retries when the session stops. */
+  private disposeRoom: (() => void) | null = null;
 
   /** The host's trystero peerId, known to clients once it has announced itself. */
   private get hostPeerId(): string | null {
@@ -61,13 +62,15 @@ export class TrysteroTransport implements Transport {
       this.clientToHostAction = send;
     }
 
-    this.hostPeer = wireRoom(
+    const wired = wireRoom(
       room,
       { hostToClient: this.hostToClientAction, clientToHost: send },
       isHost,
       this.peerId,
       this.roomHandlers(),
     );
+    this.hostPeer = wired.hostPeer;
+    this.disposeRoom = wired.dispose;
   }
 
   /** Adapters from the mutable callback fields to the room's handler shape. */
@@ -75,7 +78,6 @@ export class TrysteroTransport implements Transport {
     return {
       onMessage: (message, fromHost) => this.onMessageCallback?.(message, fromHost),
       onPeerLeave: (peerId) => this.onPeerLeaveCallback?.(peerId),
-      onHostReady: () => this.onHostReadyCallback?.(),
     };
   }
 
@@ -84,11 +86,12 @@ export class TrysteroTransport implements Transport {
       this.room.leave();
       this.room = null;
     }
+    this.disposeRoom?.();
+    this.disposeRoom = null;
     this.hostToClientAction = null;
     this.clientToHostAction = null;
     this.onMessageCallback = null;
     this.onPeerLeaveCallback = null;
-    this.onHostReadyCallback = null;
     this.playerId = null;
     this.hostPeer?.clear();
     this.hostPeer = null;
@@ -165,9 +168,5 @@ export class TrysteroTransport implements Transport {
 
   onPeerLeave(callback: (playerId: string) => void): void {
     this.onPeerLeaveCallback = callback;
-  }
-
-  onHostReady(callback: () => void): void {
-    this.onHostReadyCallback = callback;
   }
 }
