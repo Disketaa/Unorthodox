@@ -7,8 +7,8 @@ const RelayUrls = [
   'wss://relay.damus.io',
   'wss://nos.lol',
   'wss://nostr.wine',
-  'wss://relay.nostr.band',
   'wss://nostr.mom',
+  'wss://relay.snort.social',
 ];
 
 /**
