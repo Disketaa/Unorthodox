@@ -5,6 +5,8 @@
   padding: var(--Space-Sm) var(--Space-Md);
   background: var(--Color-Surface-Hover);
   border-radius: var(--Radius-Full);
+  /* Keeps the chip the same height whichever character it holds. */
+  min-height: var(--Size-Character-Small);
 }
 
 .Name {

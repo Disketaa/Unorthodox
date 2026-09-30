@@ -1,3 +1,4 @@
+import { PlayerLook } from '@/Core';
 import { PublicState } from '@/Game';
 
 export type SessionRole = 'Host' | 'Player';
@@ -14,7 +15,8 @@ export interface Session {
   getClockOffsetMs(): number;
   onUpdate(listener: () => void): void;
   onHostLeave(listener: () => void): void;
-  join(name: string): void;
+  join(name: string, look: PlayerLook): void;
+  setLook(look: PlayerLook): void;
   submitAnswer(text: string): void;
   rejectGroup(groupId: number): void;
   startGame(topic: string, durationMs: number): void;

@@ -20,6 +20,8 @@ export function FinalScreen({ scores, isHost, onPlayAgain }: FinalScreenProps) {
             <ScoreRow
               key={entry.playerName}
               playerName={entry.playerName}
+              character={entry.character}
+              color={entry.color}
               score={entry.score}
               rank={entry.rank}
             />

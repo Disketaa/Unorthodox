@@ -1,9 +1,15 @@
-import { PlayerId } from '@/Core';
+import { PlayerId, PlayerLook } from '@/Core';
+
+// What the room remembers about one player: who they are and how they look.
+export interface Player {
+  name: string;
+  look: PlayerLook;
+}
 
 // Define the internal host state for each phase
 export type LobbyState = {
   phase: 'Lobby';
-  players: Map<PlayerId, string>; // playerId -> player name
+  players: Map<PlayerId, Player>; // playerId -> player record
   cumulativeScores: Map<PlayerId, number>; // cumulative scores across rounds
 };
 

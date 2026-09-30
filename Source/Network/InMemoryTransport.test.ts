@@ -2,11 +2,14 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { InMemoryTransport } from './InMemoryTransport';
 import { HostSession } from './HostSession';
 import { ClientSession } from './ClientSession';
+import { PlayerLook } from '@/Core';
 import { PublicState } from '@/Game';
 
 const roomCode = 'ABCD';
 const hostName = 'Host';
 const clientNames = ['Alice', 'Bob', 'Charlie'];
+const hostLook: PlayerLook = { character: 'Character1', color: 'Coral' };
+const clientLook: PlayerLook = { character: 'Character5', color: 'Sky' };
 // Distinct enough that the fuzzy grouper keeps them in separate groups.
 const answers = ['Answer One', 'Answer Two', 'Answer Three', 'Answer Four'];
 // A solo answer is a unique group, worth GameConfig.scoring.uniquePoints.
@@ -21,11 +24,11 @@ type Fixture = {
 function joinLobby(): Fixture {
   const hostSession = new HostSession(new InMemoryTransport());
   // The host must register before any client tries to reach it.
-  hostSession.start(roomCode, hostName);
+  hostSession.start(roomCode, hostName, hostLook);
   const clientSessions = clientNames.map(name => {
     const session = new ClientSession(new InMemoryTransport());
     session.start(roomCode, name);
-    session.join(name);
+    session.join(name, clientLook);
     return session;
   });
   return { hostSession, clientSessions };

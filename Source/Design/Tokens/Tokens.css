@@ -182,7 +182,28 @@ body {
   --Color-Action-Ghost-Hover: #fff3e0;
   --Color-Action-Ghost-Active: #ffe0b2;
 
+  /*
+   * Character tints.
+   *
+   * The character art is black ink on a white body, so the body is filled from
+   * this palette instead of carrying a colour of its own. That is what lets one
+   * drawing be worn in any tint. They are mid-tone rather than pastel so the
+   * black ink stays readable on top, and they all hold roughly the same weight
+   * against the paper so no player looks more prominent than another.
+   */
+  --Color-Character-Coral: #ef6a5a;
+  --Color-Character-Amber: #f2a63b;
+  --Color-Character-Lime: #7cb342;
+  --Color-Character-Mint: #26b58a;
+  --Color-Character-Sky: #3d9be9;
+  --Color-Character-Violet: #8a7ae0;
+  --Color-Character-Rose: #e0559a;
+  --Color-Character-Sand: #b08656;
+  /* The linework stays black on every tint, so the face reads the same. */
+  --Color-Character-Ink: #000000;
+
   --Color-Border-Default: #e0e0e0;
+  --Border-Width-Default: 2px;
   --Color-Border-Focus: #ff9800;
   --Color-Border-Error: #e91e63;
 
@@ -207,4 +228,9 @@ body {
   /* Layout */
   --Layout-ContentMaxWidth: 480px;
   --Layout-ContentPadding: var(--Space-Md);
+
+  /* Character sizes, for the roster, the scoreboard and the picker. */
+  --Size-Character-Small: 28px;
+  --Size-Character-Medium: 44px;
+  --Size-Character-Large: 96px;
 }

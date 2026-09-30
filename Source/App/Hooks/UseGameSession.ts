@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { PublicState } from '@/Game';
+import { PlayerId, PlayerLook, CharacterColor, CharacterId } from '@/Core';
 import { createSession } from '../SessionFactory';
 import { Session, SessionRole } from '../Session';
 import { useSessionPhase, SessionPhase } from './UseSessionPhase';
@@ -18,10 +19,20 @@ export interface GameSessionView extends SessionPhase {
   role: SessionRole;
   isHost: boolean;
   roomCode: string;
+  playerId: PlayerId | null;
   publicState: PublicState | undefined;
   hasSubmitted: boolean;
   rejectedGroupIds: ReadonlySet<number>;
   hostLeft: boolean;
+  /**
+   * This player's own character, as the host has it.
+   *
+   * Not the roll made on this device: a player who closes the tab and comes
+   * back is given the character the host kept for them, so the picker shows
+   * what the rest of the room actually sees.
+   */
+  ownLook: PlayerLook | undefined;
+  setLook: (character: CharacterId, color: CharacterColor) => void;
   startGame: () => void;
   submitAnswer: (text: string) => void;
   rejectGroup: (groupId: number) => void;
@@ -39,8 +50,9 @@ export function useGameSession(
   roomCode: string,
   role: SessionRole,
   playerName: string,
+  look: PlayerLook,
 ): GameSessionView {
-  const [session] = useState<Session>(() => createSession(role, roomCode, playerName));
+  const [session] = useState<Session>(() => createSession(role, roomCode, playerName, look));
   const [, setVersion] = useState(0);
   const [marks, setMarks] = useState<RoundMarks>(emptyMarks);
   const [hostLeft, setHostLeft] = useState(false);
@@ -62,16 +74,20 @@ export function useGameSession(
 
   useHostPhaseTimer(session, role === 'Host', phase, actions.nextRound);
 
+  const playerId = session.getPlayerId();
+
   return {
     ...phase,
     ...actions,
     role,
     isHost: role === 'Host',
     roomCode,
+    playerId,
     publicState,
     // Both marks only count while the phase still shows the round they were made in.
     hasSubmitted: hasSubmittedIn(marks, topic),
     rejectedGroupIds: rejectedIn(marks, topic),
     hostLeft,
+    ownLook: playerId === null ? undefined : phase.playerLooks.get(playerId),
   };
 }

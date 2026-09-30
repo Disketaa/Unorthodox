@@ -1,5 +1,5 @@
 import { useRef } from 'preact/hooks';
-import { PlayerId, hostTimeToLocal } from '@/Core';
+import { PlayerId, PlayerLook, hostTimeToLocal } from '@/Core';
 import { PublicState } from '@/Game';
 
 export interface SessionPhase {
@@ -16,17 +16,22 @@ export interface SessionPhase {
   /** Skew between the host's clock and this device's. */
   clockOffsetMs: number;
   playerNames: ReadonlyMap<PlayerId, string>;
+  playerLooks: ReadonlyMap<PlayerId, PlayerLook>;
   playerCount: number;
   submittedCount: number;
 }
 
-/** Names only reach the public state in the Lobby, so remember them once seen. */
-function rememberNames(
-  names: Map<PlayerId, string>,
+/** Names and looks only reach the public state in the Lobby, so remember them once seen. */
+function rememberRoster(
+  players: Map<PlayerId, string>,
+  looks: Map<PlayerId, PlayerLook>,
   publicState: PublicState | undefined,
 ): void {
   if (publicState?.phase === 'Lobby') {
-    publicState.players.forEach((player) => names.set(player.id, player.name));
+    publicState.players.forEach((player) => {
+      players.set(player.id, player.name);
+      looks.set(player.id, player.look);
+    });
   }
 }
 
@@ -40,15 +45,14 @@ function readStartedAt(publicState: PublicState | undefined): number {
   return publicState !== undefined && 'startedAt' in publicState ? publicState.startedAt : 0;
 }
 
-/** Read the current phase, the host's clock, and the names seen so far. */
+/** Read the current phase, the host's clock, and the roster seen so far. */
 export function useSessionPhase(
   publicState: PublicState | undefined,
   clockOffsetMs: number,
 ): SessionPhase {
   const namesRef = useRef(new Map<PlayerId, string>());
-  const offsetRef = useRef(clockOffsetMs);
-  offsetRef.current = clockOffsetMs;
-  rememberNames(namesRef.current, publicState);
+  const looksRef = useRef(new Map<PlayerId, PlayerLook>());
+  rememberRoster(namesRef.current, looksRef.current, publicState);
 
   return {
     phase: publicState?.phase ?? 'Connecting',
@@ -56,6 +60,7 @@ export function useSessionPhase(
     phaseStartedAt: hostTimeToLocal(readStartedAt(publicState), clockOffsetMs),
     clockOffsetMs,
     playerNames: namesRef.current,
+    playerLooks: looksRef.current,
     playerCount: namesRef.current.size,
     submittedCount: publicState?.phase === 'Writing' ? publicState.submittedCount : 0,
   };

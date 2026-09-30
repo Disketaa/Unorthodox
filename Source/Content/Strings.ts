@@ -31,6 +31,37 @@ export const Strings = {
     /** Built from the limit, so the hint cannot drift from the actual rule. */
     notEnoughPlayers: (min: number) => `Нужно минимум ${min} игрока`,
     roomFull: 'Комната заполнена',
+    characterHeading: 'Ваш персонаж',
+    characterHint: 'Можно менять, пока игра не началась',
+  },
+  /**
+   * Names for the character picker.
+   *
+   * The picker is in the design system and cannot read Strings itself, so the
+   * labels travel with it as a prop.
+   */
+  characters: {
+    names: {
+      Character1: 'Кругляш',
+      Character2: 'Зигзаг',
+      Character3: 'Птенец',
+      Character4: 'Кукуруза',
+      Character5: 'Капля',
+      Character6: 'Пирамидка',
+      Character7: 'Волчок',
+      Character8: 'Скорлупа',
+      Character9: 'Флажок',
+    },
+    colors: {
+      Coral: 'Коралл',
+      Amber: 'Янтарь',
+      Lime: 'Лайм',
+      Mint: 'Мята',
+      Sky: 'Небо',
+      Violet: 'Фиалка',
+      Rose: 'Роза',
+      Sand: 'Песок',
+    },
   },
   writing: {
     topicLabel: 'Тема',

@@ -1,0 +1,21 @@
+/*
+ * The character artwork, drawn inline so it can be recoloured.
+ *
+ * Each character is black ink on a filled body. Inlining the paths means the
+ * body takes its colour from `--Character-Tint` here, so one drawing serves
+ * every tint. As a separate image file the body would be baked into the file
+ * and could only be recoloured with a mask, which cannot keep the ink on top.
+ */
+.Canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.Body {
+  fill: var(--Character-Tint, var(--Color-Character-Coral));
+}
+
+.Ink {
+  fill: var(--Color-Character-Ink);
+}

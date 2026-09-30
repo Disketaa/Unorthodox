@@ -2,6 +2,7 @@ import { Banner } from '@/Design/Components';
 import { Stack } from '@/Design/Primitives';
 import { HostLeftScreen } from '@/Screens';
 import { Strings } from '@/Content';
+import { PlayerLook } from '@/Core';
 import { useGameSession } from './Hooks/UseGameSession';
 import { SessionRole } from './Session';
 import { LobbyView } from './Views/LobbyView';
@@ -14,11 +15,13 @@ export interface GameRoomProps {
   roomCode: string;
   role: SessionRole;
   name: string;
+  /** The character rolled on this device when the page loaded. */
+  look: PlayerLook;
 }
 
 /** Pick the screen that matches the current phase. */
-export function GameRoom({ roomCode, role, name }: GameRoomProps) {
-  const view = useGameSession(roomCode, role, name);
+export function GameRoom({ roomCode, role, name, look }: GameRoomProps) {
+  const view = useGameSession(roomCode, role, name, look);
 
   if (view.hostLeft) {
     return <HostLeftScreen />;

@@ -1,0 +1,62 @@
+/*
+ * A character is a tinted body with the linework drawn over it.
+ *
+ * The body takes its colour from `--Character-Tint`, set by the tint classes
+ * below, so one drawing serves every tint. The sizes are the same tokens the
+ * roster and the scoreboard use, so a character is the same size everywhere.
+ */
+.Root {
+  display: inline-block;
+  flex: none;
+}
+
+.SizeSmall {
+  width: var(--Size-Character-Small);
+  height: var(--Size-Character-Small);
+}
+
+.SizeMedium {
+  width: var(--Size-Character-Medium);
+  height: var(--Size-Character-Medium);
+}
+
+.SizeLarge {
+  width: var(--Size-Character-Large);
+  height: var(--Size-Character-Large);
+}
+
+/*
+ * Tints. Each names a palette entry from Tokens.css and nothing else, so a new
+ * tint is one line here and one token in Tokens.css.
+ */
+.Coral {
+  --Character-Tint: var(--Color-Character-Coral);
+}
+
+.Amber {
+  --Character-Tint: var(--Color-Character-Amber);
+}
+
+.Lime {
+  --Character-Tint: var(--Color-Character-Lime);
+}
+
+.Mint {
+  --Character-Tint: var(--Color-Character-Mint);
+}
+
+.Sky {
+  --Character-Tint: var(--Color-Character-Sky);
+}
+
+.Violet {
+  --Character-Tint: var(--Color-Character-Violet);
+}
+
+.Rose {
+  --Character-Tint: var(--Color-Character-Rose);
+}
+
+.Sand {
+  --Character-Tint: var(--Color-Character-Sand);
+}

@@ -1,0 +1,144 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { InMemoryTransport } from './InMemoryTransport';
+import { ClientSession } from './ClientSession';
+import { HostSession, HostPlayerId } from './HostSession';
+import { PlayerLook } from '@/Core';
+
+const roomCode = 'ABCD';
+const hostLook: PlayerLook = { character: 'Character1', color: 'Coral' };
+const clientLook: PlayerLook = { character: 'Character5', color: 'Sky' };
+/** What a client rolls when it comes back, having forgotten nothing on purpose. */
+const freshLook: PlayerLook = { character: 'Character9', color: 'Violet' };
+
+/** A host with one client named Ann already at the table. */
+function roomWithAnn() {
+  const hostSession = new HostSession(new InMemoryTransport());
+  hostSession.start(roomCode, 'Host', hostLook);
+  const clientSession = new ClientSession(new InMemoryTransport());
+  clientSession.start(roomCode, 'Ann');
+  clientSession.join('Ann', clientLook);
+  return { hostSession, clientSession };
+}
+
+/** The look the host is holding for one player. */
+function lookOf(hostSession: HostSession, playerId: string): PlayerLook | undefined {
+  const state = hostSession.getState();
+  return state?.phase === 'Lobby' ? state.players.get(playerId)?.look : undefined;
+}
+
+describe('Player characters', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  it('gives the host the character it started with', () => {
+    const { hostSession } = roomWithAnn();
+    expect(lookOf(hostSession, HostPlayerId)).toEqual(hostLook);
+  });
+
+  it('gives a client the character it joined with', () => {
+    const { hostSession, clientSession } = roomWithAnn();
+    expect(lookOf(hostSession, clientSession.getPlayerId() ?? '')).toEqual(clientLook);
+  });
+
+  it('honours a character change made in the lobby', () => {
+    const { hostSession, clientSession } = roomWithAnn();
+    clientSession.setLook(freshLook);
+    expect(lookOf(hostSession, clientSession.getPlayerId() ?? '')).toEqual(freshLook);
+  });
+
+  it('lets the host change its own character', () => {
+    const { hostSession } = roomWithAnn();
+    hostSession.setOwnLook(freshLook);
+    expect(lookOf(hostSession, HostPlayerId)).toEqual(freshLook);
+  });
+});
+
+describe('A player who closes the tab and comes back', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  /** A new client under Ann's name, as if her tab had been closed and reopened. */
+  function annReturns(look: PlayerLook): ClientSession {
+    const returning = new ClientSession(new InMemoryTransport());
+    returning.start(roomCode, 'Ann');
+    returning.join('Ann', look);
+    vi.advanceTimersByTime(5_000);
+    return returning;
+  }
+
+  it('keeps the character the host already had for them', () => {
+    const { hostSession } = roomWithAnn();
+    // The new client rolls a new character, but the host must ignore that roll
+    // and restore what it had.
+    const returning = annReturns(freshLook);
+
+    expect(returning.getPlayerId()).not.toBeNull();
+    expect(lookOf(hostSession, returning.getPlayerId() ?? '')).toEqual(clientLook);
+  });
+
+  it('keeps a character the player changed before leaving', () => {
+    const { hostSession, clientSession } = roomWithAnn();
+    clientSession.setLook(freshLook);
+    const id = clientSession.getPlayerId();
+
+    // The last choice the player made is the one that survives, not the roll
+    // they happen to arrive with.
+    annReturns(clientLook);
+
+    expect(lookOf(hostSession, id ?? '')).toEqual(freshLook);
+  });
+});
+
+describe('Seat identity in the lobby', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  it('reclaims the same player id, so scores are not reset', () => {
+    const { hostSession, clientSession } = roomWithAnn();
+    const originalId = clientSession.getPlayerId();
+
+    const returning = new ClientSession(new InMemoryTransport());
+    returning.start(roomCode, 'Ann');
+    returning.join('Ann', freshLook);
+    vi.advanceTimersByTime(5_000);
+
+    expect(returning.getPlayerId()).toBe(originalId);
+    // The roster did not grow: the returning player took over the same seat.
+    const state = hostSession.getState();
+    expect(state?.phase === 'Lobby' && state.players.size).toBe(2);
+  });
+
+  it('treats a different name as a different player', () => {
+    const { hostSession } = roomWithAnn();
+
+    const other = new ClientSession(new InMemoryTransport());
+    other.start(roomCode, 'Bob');
+    other.join('Bob', freshLook);
+    vi.advanceTimersByTime(5_000);
+
+    expect(lookOf(hostSession, other.getPlayerId() ?? '')).toEqual(freshLook);
+    const state = hostSession.getState();
+    expect(state?.phase === 'Lobby' && state.players.size).toBe(3);
+  });
+});

@@ -1,11 +1,18 @@
 import { HostState } from './GameState';
 import { groupAnswers } from './Grouping';
-import { PlayerId, assertNever } from '@/Core';
+import { PlayerId, PlayerLook, assertNever } from '@/Core';
+
+// What a client is told about one player.
+export interface PublicPlayer {
+  id: PlayerId;
+  name: string;
+  look: PlayerLook;
+}
 
 // Define the public state that is sent to clients
 export type PublicLobbyState = {
   phase: 'Lobby';
-  players: { id: PlayerId; name: string }[];
+  players: PublicPlayer[];
 };
 
 export type PublicWritingState = {
@@ -76,9 +83,9 @@ function toPublicLobbyState(state: HostState): PublicLobbyState {
   if (state.phase !== 'Lobby') {
     throw new Error('Invalid state for Lobby');
   }
-  const playersArray: { id: PlayerId; name: string }[] = [];
-  state.players.forEach((name, id) => {
-    playersArray.push({ id, name });
+  const playersArray: PublicPlayer[] = [];
+  state.players.forEach((player, id) => {
+    playersArray.push({ id, name: player.name, look: player.look });
   });
   return {
     phase: 'Lobby',

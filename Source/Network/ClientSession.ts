@@ -1,7 +1,7 @@
 import { Transport } from './Transport';
 import { isHostMessage, HostMessage } from './Protocol';
 import * as Game from '@/Game';
-import { createLogger, measureClockOffset } from '@/Core';
+import { PlayerLook, createLogger, measureClockOffset } from '@/Core';
 
 const log = createLogger('ClientSession');
 
@@ -27,7 +27,7 @@ export class ClientSession {
   private playerId: string | null = null; // We'll set this when we receive a SetPlayerId message from the host
   private updateListener: (() => void) | undefined = undefined;
   /** Join message held back until the transport can address the host. */
-  private pendingJoin: { type: 'Join'; name: string } | null = null;
+  private pendingJoin: { type: 'Join'; name: string; look: PlayerLook } | null = null;
   /** Retries the buffered join until the host assigns us an id. */
   private joinRetry: ReturnType<typeof setInterval> | null = null;
   /** Asks the host for the current state, so a gap does not desync the client. */
@@ -161,12 +161,27 @@ export class ClientSession {
   }
 
   /** Send a join message to the host */
-  join(playerName: string): void {
+  join(playerName: string, look: PlayerLook): void {
     log('info', 'joining as', playerName);
-    this.pendingJoin = { type: 'Join', name: playerName };
+    this.pendingJoin = { type: 'Join', name: playerName, look };
     this.transport.sendToHost(this.pendingJoin);
     // The first attempt may land before the host is reachable, so keep trying.
     this.startJoinRetries();
+  }
+
+  /**
+   * Ask the host to change this player's character.
+   *
+   * The look the player picks here is the one they arrived with, until they
+   * change it. The host may refuse: it keeps the character a returning player
+   * already had, and it stops honouring changes once the game starts.
+   */
+  setLook(look: PlayerLook): void {
+    if (this.playerId === null) {
+      log('warn', 'cannot set a look before receiving a playerId');
+      return;
+    }
+    this.transport.sendToHost({ type: 'SetLook', playerId: this.playerId, look });
   }
 
   /** Send an answer submission to the host */

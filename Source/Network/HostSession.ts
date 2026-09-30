@@ -1,7 +1,9 @@
 import { Transport } from './Transport';
 import { isClientMessage, ClientMessage } from './Protocol';
+import { HostRoster, resolveLook } from './HostRoster';
+import { startGame, closeWriting, closeReviewing, nextRound } from './HostPhases';
 import * as Game from '@/Game';
-import { PlayerId, createLogger } from '@/Core';
+import { PlayerId, PlayerLook, createLogger } from '@/Core';
 
 const log = createLogger('HostSession');
 
@@ -14,10 +16,7 @@ export const HostPlayerId: PlayerId = 'host';
 export class HostSession {
   private state: Game.HostState | undefined = undefined;
   private transport: Transport;
-  private nextPlayerId = 1; // Simple counter for generating player IDs
-  // Roster of joined player ids. The game state only carries `players` in the
-  // Lobby phase, so we track it here to know when everyone has answered.
-  private readonly playerIds = new Set<PlayerId>();
+  private readonly roster = new HostRoster();
   private updateListener: (() => void) | undefined = undefined;
 
   constructor(transport: Transport) {
@@ -46,15 +45,15 @@ export class HostSession {
   }
 
   /** Start the host session with a room code and host name */
-  start(roomCode: string, hostName: string): void {
+  start(roomCode: string, hostName: string, look: PlayerLook): void {
     log('info', 'starting host session', roomCode, hostName);
     // The state must exist before the room opens, because a waiting client can
     // answer the moment the host becomes addressable, and messages arriving
     // before the state is ready would be dropped.
     this.state = { phase: 'Lobby', players: new Map(), cumulativeScores: new Map() };
     // The host plays too, under the reserved `host` id.
-    this.playerIds.add(HostPlayerId);
-    this.apply({ type: 'JOIN', playerId: HostPlayerId, name: hostName });
+    this.roster.addHost(HostPlayerId, hostName);
+    this.apply({ type: 'JOIN', playerId: HostPlayerId, name: hostName, look });
     this.transport.setPlayerId(HostPlayerId);
     this.transport.start(roomCode, hostName, true);
   }
@@ -64,8 +63,21 @@ export class HostSession {
     log('info', 'stopping host session');
     this.transport.stop();
     this.state = undefined;
-    this.playerIds.clear();
+    this.roster.clear();
     this.updateListener = undefined;
+  }
+
+  /**
+   * The look already recorded for a returning player.
+   *
+   * Returns undefined only if the player was in the roster but their record was
+   * somehow dropped, in which case the caller falls back to the incoming look.
+   */
+  private knownLook(playerId: PlayerId): PlayerLook | undefined {
+    if (this.state?.phase !== 'Lobby') {
+      return undefined;
+    }
+    return this.state.players.get(playerId)?.look;
   }
 
   /** Handle a message from a client, addressed by the peer it arrived from. */
@@ -73,33 +85,41 @@ export class HostSession {
     if (!this.state) {
       return;
     }
-    let action: Game.GameAction | null = null;
+    if (message.type === 'Sync') {
+      // A client that was away asks for the current state, which carries the
+      // phase start time so it resumes counting from the truth.
+      log('debug', 'resending state to peer', peerId);
+      this.broadcastState();
+      return;
+    }
+    const action = this.toAction(message, peerId);
+    if (action) {
+      this.apply(action);
+    }
+  }
+
+  /** Turn a client message into the game action it stands for. */
+  private toAction(message: ClientMessage, peerId: string): Game.GameAction | undefined {
     switch (message.type) {
       case 'Join': {
-        const playerId: PlayerId = `p${this.nextPlayerId++}`;
-        this.playerIds.add(playerId);
-        action = { type: 'JOIN', playerId, name: message.name };
+        // A player we already know is the same person coming back, so they keep
+        // the seat and the character they had rather than a fresh roll.
+        const playerId = this.roster.claimSeat(message.name);
+        const look = resolveLook(this.knownLook(playerId), message.look);
         // Answer the peer the message came from: the game player id is assigned
         // here and never reaches the wire, so it is not routable.
         log('info', 'assigning playerId', playerId, 'to peer', peerId);
         this.transport.sendToPeer(peerId, { type: 'SetPlayerId', playerId });
-        break;
+        return { type: 'JOIN', playerId, name: message.name, look };
       }
+      case 'SetLook':
+        return { type: 'SET_LOOK', playerId: message.playerId, look: message.look };
       case 'SubmitAnswer':
-        action = { type: 'SUBMIT_ANSWER', playerId: message.playerId, text: message.text };
-        break;
+        return { type: 'SUBMIT_ANSWER', playerId: message.playerId, text: message.text };
       case 'RejectGroup':
-        action = { type: 'REJECT_GROUP', playerId: message.playerId, groupId: message.groupId };
-        break;
-      case 'Sync':
-        // A client that was away asks for the current state, which carries the
-        // phase start time so it resumes counting from the truth.
-        log('debug', 'resending state to peer', peerId);
-        this.broadcastState();
-        return;
-    }
-    if (action) {
-      this.apply(action);
+        return { type: 'REJECT_GROUP', playerId: message.playerId, groupId: message.groupId };
+      default:
+        return undefined;
     }
   }
 
@@ -117,36 +137,7 @@ export class HostSession {
 
   /** Call this to start the game (host presses start button) */
   startGame(topic: string, durationMs: number): void {
-    if (!this.state || this.state.phase !== 'Lobby') {
-      return;
-    }
-    log('info', 'starting game', topic, durationMs);
-    this.apply({
-      type: 'START_GAME',
-      topic,
-      durationMs,
-      startedAt: Date.now(), // Note: we should use performance.now() but for simplicity we use Date.now()
-    });
-  }
-
-  /** Close the writing phase into Reviewing, once everyone has answered. */
-  private closeWriting(durationMs: number): void {
-    if (this.state === undefined || this.state.phase !== 'Writing') {
-      return;
-    }
-    if (this.state.answers.size < this.playerIds.size) {
-      log('debug', 'waiting for answers', this.state.answers.size, 'of', this.playerIds.size);
-      return;
-    }
-    this.apply({ type: 'START_REVIEWING', startedAt: Date.now(), durationMs });
-  }
-
-  /** Close the reviewing phase into Scores. */
-  private closeReviewing(durationMs: number): void {
-    if (this.state === undefined || this.state.phase !== 'Reviewing') {
-      return;
-    }
-    this.apply({ type: 'END_REVIEWING', startedAt: Date.now(), durationMs });
+    this.commit(startGame(this.state, topic, durationMs));
   }
 
   /**
@@ -154,30 +145,26 @@ export class HostSession {
    * Reviewing phase (once reviewing time is up, going to Scores).
    */
   endReviewing(durationMs: number): void {
-    if (this.state?.phase === 'Writing') {
-      this.closeWriting(durationMs);
-      return;
-    }
-    this.closeReviewing(durationMs);
+    const next =
+      this.state?.phase === 'Writing'
+        ? closeWriting(this.state, durationMs, this.roster.count)
+        : closeReviewing(this.state, durationMs);
+    this.commit(next);
   }
 
   /** Call this to go to the next round (after scores screen) */
   nextRound(topic: string, durationMs: number): void {
-    if (!this.state || (this.state.phase !== 'Scores' && this.state.phase !== 'Reviewing')) {
-      return;
-    }
-    log('info', 'starting next round', topic);
-    this.apply({
-      type: 'NEXT_ROUND',
-      topic,
-      durationMs,
-      startedAt: Date.now(),
-    });
+    this.commit(nextRound(this.state, topic, durationMs));
   }
 
   /** Submit the host's own answer, so the host plays the same way as everyone else. */
   submitOwnAnswer(text: string): void {
     this.apply({ type: 'SUBMIT_ANSWER', playerId: HostPlayerId, text });
+  }
+
+  /** The host changing its own character, as the lobby allows until play starts. */
+  setOwnLook(look: PlayerLook): void {
+    this.apply({ type: 'SET_LOOK', playerId: HostPlayerId, look });
   }
 
   /** The host's own rejection vote on an answer group. */
@@ -188,12 +175,19 @@ export class HostSession {
   /** Close the game and show the final ranking. */
   finish(): void {
     this.apply({ type: 'FINAL' });
-  }  /** Reduce an action into the host state and broadcast the result */
-  private apply(action: Game.GameAction): void {
-    log('debug', 'reducing action', action.type);
-    this.state = Game.reducer(this.state, action);
+  }
+
+  /** Take a new state, then tell everyone about it. */
+  private commit(next: Game.HostState): void {
+    this.state = next;
     this.broadcastState();
     this.updateListener?.();
+  }
+
+  /** Reduce an action into the host state and broadcast the result */
+  private apply(action: Game.GameAction): void {
+    log('debug', 'reducing action', action.type);
+    this.commit(Game.reducer(this.state, action));
   }
 
   /** Get the current host state (for debugging) */

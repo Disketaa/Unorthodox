@@ -1,0 +1,46 @@
+/*
+ * The picker's layout.
+ *
+ * The grid is sized in the same tokens the roster and scoreboard use, so a
+ * character is the same size wherever it appears, and the choice buttons are
+ * padded to a comfortable touch target on a phone.
+ */
+.Root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--Space-Md);
+}
+
+.Characters {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--Space-Sm);
+}
+
+.Colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--Space-Sm);
+}
+
+.Choice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--Space-Sm);
+  background: var(--Color-Surface-Default);
+  border: var(--Border-Width-Default) solid var(--Color-Border-Default);
+  border-radius: var(--Radius-Md);
+  cursor: pointer;
+  transition: border-color var(--Duration-Fast) var(--Easing-Standard);
+}
+
+.Choice:hover {
+  border-color: var(--Color-Border-Focus);
+}
+
+/* The current choice, marked by the outline the buttons share. */
+.Selected {
+  border-color: var(--Color-Action-Primary-Background);
+  background: var(--Color-Action-Ghost-Hover);
+}

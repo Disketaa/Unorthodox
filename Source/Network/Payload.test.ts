@@ -3,6 +3,9 @@ import { InMemoryTransport } from './InMemoryTransport';
 import { ClientSession, JoinRetryIntervalMs } from './ClientSession';
 import { HostSession } from './HostSession';
 import { toPayload, readTag, readRole } from './Payload';
+import { PlayerLook } from '@/Core';
+
+const look: PlayerLook = { character: 'Character1', color: 'Coral' };
 
 const roomCode = 'ABCD';
 const RetryInterval = JoinRetryIntervalMs;
@@ -47,11 +50,11 @@ describe('Host addressing', () => {
     const clientSession = new ClientSession(new InMemoryTransport());
     clientSession.start(roomCode, 'Ann');
     const hostSession = new HostSession(new InMemoryTransport());
-    hostSession.start(roomCode, 'Host');
+    hostSession.start(roomCode, 'Host', look);
 
     // The client never declares a temporary id, so the host has to answer using
     // the transport address the message actually came from.
-    clientSession.join('Ann');
+    clientSession.join('Ann', look);
     vi.advanceTimersByTime(RetryInterval * 3);
 
     expect(clientSession.getPlayerId()).toBe('p1');
@@ -61,12 +64,12 @@ describe('Host addressing', () => {
   it('sends the join as soon as the host appears, without waiting for a retry', () => {
     const clientSession = new ClientSession(new InMemoryTransport());
     clientSession.start(roomCode, 'Ann');
-    clientSession.join('Ann');
+    clientSession.join('Ann', look);
     // No host yet, so the join is held back.
     expect(clientSession.getPlayerId()).toBeNull();
 
     const hostSession = new HostSession(new InMemoryTransport());
-    hostSession.start(roomCode, 'Host');
+    hostSession.start(roomCode, 'Host', look);
     // No timer advance: the host being addressable must flush the join at once.
     expect(clientSession.getPlayerId()).toBe('p1');
     expect(playerCount(hostSession)).toBe(2);
@@ -87,11 +90,11 @@ describe('Client join retry', () => {
     const clientSession = new ClientSession(new InMemoryTransport());
     clientSession.start(roomCode, 'Ann');
     // No host exists yet, so the join is dropped by the transport.
-    clientSession.join('Ann');
+    clientSession.join('Ann', look);
     expect(clientSession.getPlayerId()).toBeNull();
 
     const hostSession = new HostSession(new InMemoryTransport());
-    hostSession.start(roomCode, 'Host');
+    hostSession.start(roomCode, 'Host', look);
     // The host cannot announce itself to a peer that joined before it, so the
     // client keeps retrying the buffered join until one lands.
     vi.advanceTimersByTime(RetryInterval * 3);
@@ -114,10 +117,10 @@ describe('Client join retry termination', () => {
   it('stops retrying once the host has answered', () => {
     const clientSession = new ClientSession(new InMemoryTransport());
     clientSession.start(roomCode, 'Ann');
-    clientSession.join('Ann');
+    clientSession.join('Ann', look);
 
     const hostSession = new HostSession(new InMemoryTransport());
-    hostSession.start(roomCode, 'Host');
+    hostSession.start(roomCode, 'Host', look);
     vi.advanceTimersByTime(RetryInterval * 3);
     const assigned = clientSession.getPlayerId();
     expect(assigned).not.toBeNull();
@@ -131,11 +134,11 @@ describe('Client join retry termination', () => {
   it('does not retry after the session is stopped', () => {
     const clientSession = new ClientSession(new InMemoryTransport());
     clientSession.start(roomCode, 'Ann');
-    clientSession.join('Ann');
+    clientSession.join('Ann', look);
     clientSession.stop();
 
     const hostSession = new HostSession(new InMemoryTransport());
-    hostSession.start(roomCode, 'Host');
+    hostSession.start(roomCode, 'Host', look);
     vi.advanceTimersByTime(RetryInterval * 5);
 
     expect(clientSession.getPlayerId()).toBeNull();

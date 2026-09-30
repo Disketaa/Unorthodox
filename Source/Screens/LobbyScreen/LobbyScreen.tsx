@@ -1,18 +1,80 @@
 import { Stack, Text } from '@/Design/Primitives';
-import { Button, PlayerChip, RoomCodeBadge, Banner } from '@/Design/Components';
-import { PlayerId } from '@/Core';
+import { CharacterPicker, PlayerChip, RoomCodeBadge } from '@/Design/Components';
+import { CharacterColor, CharacterId } from '@/Core';
 import { Strings } from '@/Content';
-import { GameConfig } from '@/Game';
+import { GameConfig, PublicPlayer } from '@/Game';
+import { LobbyStart } from './LobbyStart';
 
 export interface LobbyScreenProps {
   roomCode: string;
-  players: readonly { id: PlayerId; name: string }[];
+  players: readonly PublicPlayer[];
+  /** This player's own character, once the host has told us which one it kept. */
+  ownLook: { character: CharacterId; color: CharacterColor } | undefined;
   isHost: boolean;
+  onPickLook: (character: CharacterId, color: CharacterColor) => void;
   onStart: () => void;
 }
 
-/** Waiting room: shows the room code and the roster, plus Start for the host. */
-export function LobbyScreen({ roomCode, players, isHost, onStart }: LobbyScreenProps) {
+/**
+ * The roster, each player drawn as the character the host has them as.
+ *
+ * Kept apart from the screen itself so the screen stays about arranging parts.
+ */
+function Roster({ players }: { players: readonly PublicPlayer[] }) {
+  return (
+    <Stack gap="Sm">
+      {players.map((player, index) => (
+        <PlayerChip
+          key={player.id}
+          name={player.name}
+          character={player.look.character}
+          color={player.look.color}
+          isHost={index === 0}
+        />
+      ))}
+    </Stack>
+  );
+}
+
+/**
+ * The picker for this player's own character.
+ *
+ * Hidden until the host has said which character it kept for us, so the picker
+ * never shows a character that the rest of the room is not seeing.
+ */
+function LookPicker({
+  ownLook,
+  onPick,
+}: {
+  ownLook: { character: CharacterId; color: CharacterColor };
+  onPick: (character: CharacterId, color: CharacterColor) => void;
+}) {
+  return (
+    <Stack gap="Sm" align="Stretch">
+      <Text variant="Title">{Strings.lobby.characterHeading}</Text>
+      <Text variant="Caption">{Strings.lobby.characterHint}</Text>
+      <CharacterPicker
+        character={ownLook.character}
+        color={ownLook.color}
+        labels={{
+          character: Strings.characters.names,
+          color: Strings.characters.colors,
+        }}
+        onPick={onPick}
+      />
+    </Stack>
+  );
+}
+
+/** Waiting room: the room code, the roster, and the character picker. */
+export function LobbyScreen({
+  roomCode,
+  players,
+  ownLook,
+  isHost,
+  onPickLook,
+  onStart,
+}: LobbyScreenProps) {
   const enoughPlayers = players.length >= GameConfig.limits.minPlayers;
   const roomFull = players.length >= GameConfig.limits.maxPlayers;
 
@@ -20,31 +82,14 @@ export function LobbyScreen({ roomCode, players, isHost, onStart }: LobbyScreenP
     <Stack gap="Lg" align="Stretch">
       <RoomCodeBadge code={roomCode} />
       <Text variant="Body">{Strings.lobby.shareHint}</Text>
-      <Stack gap="Sm">
-        {players.map((player, index) => (
-          <PlayerChip key={player.id} name={player.name} isHost={index === 0} />
-        ))}
-      </Stack>
-      {roomFull && <Banner variant="Error">{Strings.lobby.roomFull}</Banner>}
-      {isHost ? (
-        <>
-          {!enoughPlayers && (
-            <Banner variant="Info">
-              {Strings.lobby.notEnoughPlayers(GameConfig.limits.minPlayers)}
-            </Banner>
-          )}
-          <Button
-            variant="Primary"
-            size="Large"
-            disabled={!enoughPlayers || roomFull}
-            onClick={onStart}
-          >
-            {Strings.lobby.startButton}
-          </Button>
-        </>
-      ) : (
-        <Text variant="Caption">{Strings.lobby.waitingForHost}</Text>
-      )}
+      <Roster players={players} />
+      {ownLook !== undefined && <LookPicker ownLook={ownLook} onPick={onPickLook} />}
+      <LobbyStart
+        enoughPlayers={enoughPlayers}
+        roomFull={roomFull}
+        isHost={isHost}
+        onStart={onStart}
+      />
     </Stack>
   );
 }

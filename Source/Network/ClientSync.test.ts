@@ -2,17 +2,20 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { InMemoryTransport } from './InMemoryTransport';
 import { ClientSession, SyncIntervalMs } from './ClientSession';
 import { HostSession } from './HostSession';
+import { PlayerLook } from '@/Core';
 import { toPublicState } from '@/Game';
 
 const roomCode = 'ABCD';
+const hostLook: PlayerLook = { character: 'Character1', color: 'Coral' };
+const clientLook: PlayerLook = { character: 'Character5', color: 'Sky' };
 
 /** Join a room with a host and one client, both on the in-memory transport. */
 function joinRoom() {
   const hostSession = new HostSession(new InMemoryTransport());
-  hostSession.start(roomCode, 'Host');
+  hostSession.start(roomCode, 'Host', hostLook);
   const clientSession = new ClientSession(new InMemoryTransport());
   clientSession.start(roomCode, 'Ann');
-  clientSession.join('Ann');
+  clientSession.join('Ann', clientLook);
   vi.advanceTimersByTime(SyncIntervalMs * 3);
   return { hostSession, clientSession };
 }
@@ -49,7 +52,7 @@ describe('Client state sync', () => {
   it('does not ask the host for a sync before it has joined', () => {
     const clientSession = new ClientSession(new InMemoryTransport());
     clientSession.start(roomCode, 'Ann');
-    clientSession.join('Ann');
+    clientSession.join('Ann', clientLook);
     // No host yet, so a sync attempt would be dropped and must not throw.
     vi.advanceTimersByTime(SyncIntervalMs * 3);
     expect(clientSession.getPlayerId()).toBeNull();
@@ -101,7 +104,7 @@ describe('Client clock sync', () => {
 describe('Public state timing', () => {
   it('exposes the phase start time for every timed phase', () => {
     const hostSession = new HostSession(new InMemoryTransport());
-    hostSession.start(roomCode, 'Host');
+    hostSession.start(roomCode, 'Host', hostLook);
     hostSession.startGame('A topic', 60_000);
 
     const hostState = hostSession.getState();

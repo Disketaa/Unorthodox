@@ -8,7 +8,7 @@ export function FinalView({ view }: PhaseViewProps) {
 
   return (
     <FinalScreen
-      scores={toScoreEntries(state?.scores ?? [], view.playerNames)}
+      scores={toScoreEntries(state?.scores ?? [], view.playerNames, view.playerLooks)}
       isHost={view.isHost}
       onPlayAgain={view.playAgain}
     />

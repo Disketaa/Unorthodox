@@ -5,11 +5,12 @@ import {
   TrysteroTransport,
 } from '@/Network';
 import { toPublicState } from '@/Game';
+import { PlayerLook } from '@/Core';
 import { Session, SessionRole } from './Session';
 
-function createHostSession(roomCode: string, playerName: string): Session {
+function createHostSession(roomCode: string, playerName: string, look: PlayerLook): Session {
   const hostSession = new HostSession(new TrysteroTransport());
-  hostSession.start(roomCode, playerName);
+  hostSession.start(roomCode, playerName, look);
 
   const getPublicState = () => {
     const state = hostSession.getState();
@@ -25,6 +26,7 @@ function createHostSession(roomCode: string, playerName: string): Session {
     onUpdate: (listener) => hostSession.onUpdate(listener),
     onHostLeave: () => {},
     join: () => {},
+    setLook: (look) => hostSession.setOwnLook(look),
     submitAnswer: (text) => hostSession.submitOwnAnswer(text.trim()),
     rejectGroup: (groupId) => hostSession.rejectOwnGroup(groupId),
     startGame: (topic, durationMs) => hostSession.startGame(topic, durationMs),
@@ -35,10 +37,10 @@ function createHostSession(roomCode: string, playerName: string): Session {
   };
 }
 
-function createPlayerSession(roomCode: string, playerName: string): Session {
+function createPlayerSession(roomCode: string, playerName: string, look: PlayerLook): Session {
   const clientSession = new ClientSession(new TrysteroTransport());
   clientSession.start(roomCode, playerName);
-  clientSession.join(playerName.trim());
+  clientSession.join(playerName.trim(), look);
 
   return {
     role: 'Player',
@@ -48,6 +50,7 @@ function createPlayerSession(roomCode: string, playerName: string): Session {
     onUpdate: (listener) => clientSession.onUpdate(listener),
     onHostLeave: (listener) => clientSession.onHostLeave(listener),
     join: () => {},
+    setLook: (look) => clientSession.setLook(look),
     submitAnswer: (text) => clientSession.submitAnswer(text.trim()),
     rejectGroup: (groupId) => clientSession.rejectGroup(groupId),
     startGame: () => {},
@@ -59,8 +62,13 @@ function createPlayerSession(roomCode: string, playerName: string): Session {
 }
 
 /** Build the session for a room. The host owns the game state, a client mirrors it. */
-export function createSession(role: SessionRole, roomCode: string, playerName: string): Session {
+export function createSession(
+  role: SessionRole,
+  roomCode: string,
+  playerName: string,
+  look: PlayerLook,
+): Session {
   return role === 'Host'
-    ? createHostSession(roomCode, playerName)
-    : createPlayerSession(roomCode, playerName);
+    ? createHostSession(roomCode, playerName, look)
+    : createPlayerSession(roomCode, playerName, look);
 }

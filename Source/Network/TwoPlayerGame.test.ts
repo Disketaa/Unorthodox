@@ -2,9 +2,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { InMemoryTransport } from './InMemoryTransport';
 import { ClientSession } from './ClientSession';
 import { HostSession } from './HostSession';
+import { PlayerLook } from '@/Core';
 import { GameConfig } from '@/Game';
 
 const roomCode = 'ABCD';
+const hostLook: PlayerLook = { character: 'Character1', color: 'Coral' };
+const clientLook: PlayerLook = { character: 'Character5', color: 'Sky' };
 
 type Fixture = {
   hostSession: HostSession;
@@ -14,10 +17,10 @@ type Fixture = {
 /** Start a room with one host and one client, which is the new minimum. */
 function startTwoPlayerRoom(): Fixture {
   const hostSession = new HostSession(new InMemoryTransport());
-  hostSession.start(roomCode, 'Host');
+  hostSession.start(roomCode, 'Host', hostLook);
   const clientSession = new ClientSession(new InMemoryTransport());
   clientSession.start(roomCode, 'Ann');
-  clientSession.join('Ann');
+  clientSession.join('Ann', clientLook);
   return { hostSession, clientSession };
 }
 

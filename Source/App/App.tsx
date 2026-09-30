@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { ComponentChildren } from 'preact';
+import { PlayerLook, randomLook } from '@/Core';
 import { GalleryPage } from '@/Dev/ComponentGallery/GalleryPage';
 import { JoinScreen } from '@/Screens';
 import { PaperBackground } from '@/Design/Overlays';
@@ -64,6 +65,11 @@ export function App() {
   const route = useHashRoute();
   const [name, setName] = useState(loadName);
   const [roomCode, setRoomCode] = useState('');
+  // Rolled once per page load, so everyone arrives with a different face. The
+  // host is what keeps it: a player who leaves and comes back is given the
+  // character it already had for them, not a new roll. Changing it later is the
+  // lobby's job, so the host can refuse once the game has started.
+  const [look] = useState<PlayerLook>(() => randomLook(Math.random));
 
   const onNameChange = (value: string) => {
     setName(value);
@@ -84,7 +90,7 @@ export function App() {
   if (route.kind === 'Room' && !nameMissing) {
     return (
       <WithBackground>
-        <GameRoom roomCode={route.roomCode} role={route.role} name={name.trim()} />
+        <GameRoom roomCode={route.roomCode} role={route.role} name={name.trim()} look={look} />
       </WithBackground>
     );
   }

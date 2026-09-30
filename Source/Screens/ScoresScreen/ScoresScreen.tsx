@@ -29,6 +29,8 @@ export function ScoresScreen({
             <ScoreRow
               key={entry.playerName}
               playerName={entry.playerName}
+              character={entry.character}
+              color={entry.color}
               score={entry.score}
               rank={entry.rank}
             />

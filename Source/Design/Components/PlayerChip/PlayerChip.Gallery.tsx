@@ -7,10 +7,10 @@ export function PlayerChipGallery() {
     <Stack direction="Vertical" gap="Md">
       <Text variant="Body">PlayerChip Variants</Text>
       <Stack direction="Horizontal" gap="Sm">
-        <PlayerChip name="Alice" isOnline={true} />
-        <PlayerChip name="Bob" isOnline={false} />
-        <PlayerChip name="Charlie" isHost={true} isOnline={true} />
-        <PlayerChip name="Diana" isHost={true} isOnline={false} />
+        <PlayerChip name="Alice" character="Character1" color="Coral" isOnline={true} />
+        <PlayerChip name="Bob" character="Character5" color="Sky" isOnline={false} />
+        <PlayerChip name="Charlie" character="Character3" color="Mint" isHost={true} isOnline={true} />
+        <PlayerChip name="Diana" character="Character9" color="Violet" isHost={true} isOnline={false} />
       </Stack>
     </Stack>
   );

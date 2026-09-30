@@ -16,7 +16,7 @@ export function ScoresView({ view }: PhaseViewProps) {
     <ScoresScreen
       remainingMs={remainingMs}
       totalMs={view.durationMs}
-      scores={toScoreEntries(state?.scores ?? [], view.playerNames)}
+      scores={toScoreEntries(state?.scores ?? [], view.playerNames, view.playerLooks)}
       isHost={view.isHost}
       onNext={view.nextRound}
     />

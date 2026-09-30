@@ -1,12 +1,11 @@
-import { PlayerId } from '@/Core';
+import { PlayerId, PlayerLook } from '@/Core';
 import { HostState } from './GameState';
-import { GameConfig } from './GameConfig';
-import { groupAnswersWithPlayers } from './Grouping';
-import { calculateRoundScores } from './Scoring';
+import { scoreRound } from './RoundScoring';
 
 // Define the action types
 export type GameAction =
-  | { type: 'JOIN'; playerId: PlayerId; name: string }
+  | { type: 'JOIN'; playerId: PlayerId; name: string; look: PlayerLook }
+  | { type: 'SET_LOOK'; playerId: PlayerId; look: PlayerLook }
   | { type: 'START_GAME'; topic: string; durationMs: number; startedAt: number }
   | { type: 'SUBMIT_ANSWER'; playerId: PlayerId; text: string }
   | { type: 'START_REVIEWING'; startedAt: number; durationMs: number }
@@ -22,7 +21,31 @@ export function handleJoin(state: HostState, action: ActionOf<'JOIN'>): HostStat
     return state;
   }
   const newPlayers = new Map(state.players);
-  newPlayers.set(action.playerId, action.name);
+  newPlayers.set(action.playerId, { name: action.name, look: action.look });
+  return {
+    phase: 'Lobby',
+    players: newPlayers,
+    cumulativeScores: state.cumulativeScores,
+  };
+}
+
+/**
+ * Change how a player looks, which the lobby lets them do until the game starts.
+ *
+ * Once writing begins the look is frozen, so everyone sees the same faces for
+ * the rest of the game and a player cannot swap to a different character
+ * mid-round.
+ */
+export function handleSetLook(state: HostState, action: ActionOf<'SET_LOOK'>): HostState {
+  if (state.phase !== 'Lobby' || !state.players.has(action.playerId)) {
+    return state;
+  }
+  const player = state.players.get(action.playerId);
+  if (player === undefined) {
+    return state;
+  }
+  const newPlayers = new Map(state.players);
+  newPlayers.set(action.playerId, { ...player, look: action.look });
   return {
     phase: 'Lobby',
     players: newPlayers,
@@ -110,31 +133,13 @@ export function handleEndReviewing(
   if (state.phase !== 'Reviewing') {
     return state;
   }
-
-  // A group is rejected when a strict majority of its players rejected it.
-  const groupsForScoring = groupAnswersWithPlayers(state.answers).map(group => {
-    const rejectionSet = state.groupRejections.get(group.groupId) ?? new Set<PlayerId>();
-    return {
-      playerIds: group.playerIds,
-      isRejected: rejectionSet.size > group.playerIds.length / 2,
-    };
-  });
-
-  const roundScores = calculateRoundScores(groupsForScoring, GameConfig);
-
-  // Add this round's scores onto the running totals
-  const newCumulativeScores = new Map(state.cumulativeScores);
-  for (const [playerId, score] of roundScores) {
-    const currentScore = newCumulativeScores.get(playerId) ?? 0;
-    newCumulativeScores.set(playerId, currentScore + score);
-  }
-
+  const { roundScores, cumulativeScores } = scoreRound(state);
   return {
     phase: 'Scores',
     durationMs: action.durationMs,
     startedAt: action.startedAt,
     scores: roundScores,
-    cumulativeScores: newCumulativeScores,
+    cumulativeScores,
   };
 }
 
