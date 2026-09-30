@@ -15,6 +15,12 @@ export interface Transport {
   onMessage(callback: (message: unknown, fromHost: boolean, peerId: string) => void): void;
   /** Set callback for when a peer leaves */
   onPeerLeave(callback: (playerId: string) => void): void;
+  /**
+   * Set callback for when the host first becomes addressable, so a message
+   * held back for lack of a route can be sent straight away rather than on the
+   * next retry. Only clients receive this.
+   */
+  onHostReady(callback: () => void): void;
   /** Start the transport with a room code and player name */
   start(roomCode: string, playerName: string, isHost: boolean): void;
   /** Stop the transport and clean up */

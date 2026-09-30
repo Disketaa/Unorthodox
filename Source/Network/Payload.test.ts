@@ -57,6 +57,20 @@ describe('Host addressing', () => {
     expect(clientSession.getPlayerId()).toBe('p1');
     expect(playerCount(hostSession)).toBe(2);
   });
+
+  it('sends the join as soon as the host appears, without waiting for a retry', () => {
+    const clientSession = new ClientSession(new InMemoryTransport());
+    clientSession.start(roomCode, 'Ann');
+    clientSession.join('Ann');
+    // No host yet, so the join is held back.
+    expect(clientSession.getPlayerId()).toBeNull();
+
+    const hostSession = new HostSession(new InMemoryTransport());
+    hostSession.start(roomCode, 'Host');
+    // No timer advance: the host being addressable must flush the join at once.
+    expect(clientSession.getPlayerId()).toBe('p1');
+    expect(playerCount(hostSession)).toBe(2);
+  });
 });
 
 describe('Client join retry', () => {

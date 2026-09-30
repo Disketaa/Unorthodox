@@ -20,6 +20,11 @@ export interface RoomHandlers {
   onMessage: (message: JsonValue, fromHost: boolean, peerId: string) => void;
   /** A peer left; clients only receive this for the host. */
   onPeerLeave: (peerId: string) => void;
+  /**
+   * The host peerId first became known, so anything held back for lack of a
+   * route can go out immediately.
+   */
+  onHostReady: () => void;
 }
 
 /** The two message actions a room can hold, one per direction. */
@@ -149,7 +154,10 @@ export function wireRoom(
   isHost: boolean,
   handlers: RoomHandlers,
 ): HostPeerState {
-  const hostPeer = createHostPeerState(() => undefined);
+  const hostPeer = createHostPeerState(() => {
+    log('info', 'host is now addressable, flushing anything held back');
+    handlers.onHostReady();
+  });
   wirePeers(room, actions.hello, isHost, hostPeer, handlers);
   wireActions(actions, handlers, isHost);
   wireHello(actions.hello, hostPeer, isHost);

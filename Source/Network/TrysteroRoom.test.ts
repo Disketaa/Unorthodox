@@ -51,11 +51,13 @@ function setup(isHost: boolean) {
     clientToHost: asAction(clientToHost),
     hello: asAction(hello),
   };
+  const hostReadyCalls: string[] = [];
   const hostPeer = wireRoom(room, actions, isHost, {
     onMessage: () => undefined,
     onPeerLeave: () => undefined,
+    onHostReady: () => hostReadyCalls.push('ready'),
   });
-  return { room, hostToClient, clientToHost, hello, hostPeer };
+  return { room, hostToClient, clientToHost, hello, hostPeer, hostReadyCalls };
 }
 
 /** Deliver a message as if it arrived from `peerId`. */

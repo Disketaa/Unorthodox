@@ -31,6 +31,7 @@ export class InMemoryTransport implements Transport {
   private onMessageCallback: ((message: unknown, fromHost: boolean, peerId: string) => void) | null =
     null;
   private onPeerLeaveCallback: ((playerId: string) => void) | null = null;
+  private onHostReadyCallback: (() => void) | null = null;
 
   /** Callback for receiving messages from the broker */
   private receiveCallback: (message: unknown, fromHost: boolean, peerId: string) => void;
@@ -53,6 +54,15 @@ export class InMemoryTransport implements Transport {
       isHost,
       receive: this.receiveCallback,
     });
+    if (isHost) {
+      // A new host makes every waiting client able to send, mirroring the real
+      // transport announcing the host peer id.
+      for (const [, entry] of InMemoryTransport.peersByPeer) {
+        if (!entry.isHost) {
+          entry.transport.onHostReadyCallback?.();
+        }
+      }
+    }
   }
 
   stop(): void {
@@ -127,6 +137,12 @@ export class InMemoryTransport implements Transport {
 
   onPeerLeave(callback: (playerId: string) => void): void {
     this.onPeerLeaveCallback = callback;
+  }
+
+  onHostReady(callback: () => void): void {
+    // The broker has no connection phase, so the host is always addressable
+    // the moment it registers. Tests drive delivery explicitly instead.
+    this.onHostReadyCallback = callback;
   }
 
   /**

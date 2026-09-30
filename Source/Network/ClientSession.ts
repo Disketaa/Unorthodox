@@ -32,13 +32,21 @@ export class ClientSession {
   }
 
   /**
-   * Keep asking to join until the host answers.
+   * Send the buffered join as soon as the host is addressable.
    *
-   * The host only announces itself to peers that join after it, so a client
-   * that arrives second may have to wait for the host lookup to complete. The
-   * transport drops a send it cannot route, so the join is retried rather than
-   * fired once and lost.
+   * Retrying on a timer alone leaves up to one interval of dead air after the
+   * connection completes, which reads as a hang. The timer stays as a backstop
+   * for the case where the host is addressable but the first send is lost.
    */
+  private flushPendingJoin(): void {
+    if (!this.pendingJoin || this.playerId !== null) {
+      return;
+    }
+    log('info', 'host is reachable, sending the join now');
+    this.transport.sendToHost(this.pendingJoin);
+  }
+
+  /** Keep asking to join until the host answers. */
   private startJoinRetries(): void {
     if (this.joinRetry !== null) {
       return;
@@ -48,11 +56,7 @@ export class ClientSession {
         this.stopJoinRetries();
         return;
       }
-      if (!this.pendingJoin) {
-        return;
-      }
-      log('debug', 'retrying buffered join');
-      this.transport.sendToHost(this.pendingJoin);
+      this.flushPendingJoin();
     }, JoinRetryIntervalMs);
   }
 
@@ -65,6 +69,10 @@ export class ClientSession {
 
   constructor(transport: Transport) {
     this.transport = transport;
+
+    // The host is reachable the moment it registers on the in-memory broker,
+    // so the join can go out without waiting for a retry tick.
+    this.transport.onHostReady(() => this.flushPendingJoin());
 
     // Set up incoming message handler
     this.transport.onMessage((message, fromHost) => {

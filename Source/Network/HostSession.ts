@@ -48,10 +48,9 @@ export class HostSession {
   /** Start the host session with a room code and host name */
   start(roomCode: string, hostName: string): void {
     log('info', 'starting host session', roomCode, hostName);
-    this.transport.start(roomCode, hostName, true);
-    // Set the host's playerId (special value)
-    this.transport.setPlayerId(HostPlayerId);
-    // Initialize state to lobby with no players
+    // The state must exist before the room opens, because a client that is
+    // already waiting can answer the moment the host becomes addressable, and
+    // messages arriving before the state is ready would be dropped.
     this.state = {
       phase: 'Lobby',
       players: new Map(),
@@ -60,6 +59,9 @@ export class HostSession {
     // The host plays too, under the reserved `host` id.
     this.playerIds.add(HostPlayerId);
     this.apply({ type: 'JOIN', playerId: HostPlayerId, name: hostName });
+    // Set the host's playerId (special value)
+    this.transport.setPlayerId(HostPlayerId);
+    this.transport.start(roomCode, hostName, true);
   }
 
   /** Stop the host session */

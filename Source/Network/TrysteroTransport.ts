@@ -28,6 +28,7 @@ export class TrysteroTransport implements Transport {
   private onMessageCallback: ((message: unknown, fromHost: boolean, peerId: string) => void) | null =
     null;
   private onPeerLeaveCallback: ((playerId: string) => void) | null = null;
+  private onHostReadyCallback: (() => void) | null = null;
 
   // Access to the host peerId discovered by the room wiring
   private hostPeer: { get: () => string | null; clear: () => void } | null = null;
@@ -82,6 +83,7 @@ export class TrysteroTransport implements Transport {
     return {
       onMessage: (message, fromHost, peerId) => this.onMessageCallback?.(message, fromHost, peerId),
       onPeerLeave: (peerId) => this.onPeerLeaveCallback?.(peerId),
+      onHostReady: () => this.onHostReadyCallback?.(),
     };
   }
 
@@ -96,6 +98,7 @@ export class TrysteroTransport implements Transport {
     this.clientToHostAction = null;
     this.onMessageCallback = null;
     this.onPeerLeaveCallback = null;
+    this.onHostReadyCallback = null;
     this.playerId = null;
     this.warnedNoHost = false;
     this.hostPeer?.clear();
@@ -184,5 +187,9 @@ export class TrysteroTransport implements Transport {
 
   onPeerLeave(callback: (playerId: string) => void): void {
     this.onPeerLeaveCallback = callback;
+  }
+
+  onHostReady(callback: () => void): void {
+    this.onHostReadyCallback = callback;
   }
 }
