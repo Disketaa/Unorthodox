@@ -807,6 +807,37 @@ body.PageFade {
   --Opacity-ThemeCardMark: 0.05;
   --Opacity-ThemeCardMarkHover: 0.1;
   /*
+   * The grain on a theme card: the tile, how big it is drawn, how it blends and how much of
+   * itself it is worth.
+   *
+   * A separate texture from the paper rather than the paper at a smaller size, because the
+   * two are different finishes. The paper is a surface the whole page is printed on; this is
+   * a coat over one panel, and it is the same at any card size — a grain that scaled with
+   * its card would be a different finish on a phone than on a desktop, and a bank of six
+   * would not match.
+   *
+   * Drawn at its own size rather than scaled, which is the other half of this being visible
+   * at all. Scaled down to a hundred-odd pixels the tile is averaged into flat grey before it
+   * is drawn, and a flat grey multiplied over a card is the card: the grain exists in the
+   * original pixel size and is destroyed by any reduction of it.
+   *
+   * `difference`, which inverts the tile against what is under it and so puts the grain in
+   * the darks *and* the lights of the surface. `multiply` — the paper's blend, and the first
+   * thing tried here — can only darken, so over a near-white card it moves the surface a very
+   * little per step and reads as no grain at all. `overlay` and `soft-light` are worse: both
+   * do almost nothing to a backdrop already at the top of their range, which is exactly where
+   * a card's surface is.
+   *
+   * Difference is a violent blend at full strength — it would invert the name's ink as well
+   * as the card — so the opacities are a twentieth rather than the third multiply wanted. At
+   * that the grain is barely a tint and the card is a finish rather than a texture, which is
+   * the whole of what a card behind six other cards should be.
+   */
+  --Texture-ThemeCardNoise: url('../Overlays/Noise.gif');
+  --Blend-ThemeCardNoise: difference;
+  --Opacity-ThemeCardNoise: 0.05;
+  --Opacity-ThemeCardNoiseHover: 0.1;
+  /*
    * How much room a theme name keeps inside its card.
    *
    * A third of the smallest body step, and its own token because this is the only card in

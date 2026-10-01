@@ -54,7 +54,8 @@ const Properties = {
  * because it comes from the card's place in the row and not from either of them.
  *
  * The mark is `aria-hidden`: the theme's name is what is announced, and a number in front of
- * it would be read out as part of the name.
+ * it would be read out as part of the name. The grain is hidden too, for the same reason and
+ * because it carries nothing at all.
  *
  * The wash and the ink are written onto the card's own node rather than passed in, so the
  * theme's colour is the theme's business and not a prop every caller has to remember: a
@@ -94,6 +95,7 @@ export function ThemeCard({ theme, name, index = 1, onPick, moving = true }: The
       <span class={styles.Mark} aria-hidden="true">
         {index}
       </span>
+      <span class={styles.Noise} aria-hidden="true" />
       <span class={styles.Name}>{name}</span>
     </button>
   );

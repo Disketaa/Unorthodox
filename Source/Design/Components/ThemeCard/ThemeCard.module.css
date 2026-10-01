@@ -155,6 +155,59 @@
 }
 
 /*
+ * The grain, laid over the card the way the paper is laid over the page.
+ *
+ * Blended rather than drawn opaquely, which is the whole of it. A noise tile at any opacity
+ * below one is a grey wash unless it is blended, because the tile has grey in its light parts
+ * as well as its dark and an unblended one just fogs the card. Multiply lets the tile's darks
+ * through to the surface and its lights do nothing, which is what makes a pale card look
+ * grained rather than fogged.
+ *
+ * `difference` and not `multiply` or `overlay`, and the card's colour is what decides it. These
+ * cards are near-white, and multiply can only darken — over a pale surface it moves a very
+ * little per step and reads as no grain. Overlay and `soft-light` are worse: both do almost
+ * nothing to a backdrop already at the top of their range, which is exactly where a card's
+ * surface is. Difference inverts the tile against what is under it, so the grain shows in
+ * the darks and the lights of the surface both.
+ *
+ * Difference is a violent blend at full strength — it would invert the name's ink too — so
+ * the opacities beside it are a twentieth rather than something larger.
+ *
+ * No `background-size`, and that is deliberate too. The tile is drawn at its own pixels: any
+ * reduction of it averages the grain into a flat grey before the browser gets to blend
+ * anything, and a flat grey multiplied over a card is the card. The grain exists at the
+ * original size and is destroyed by shrinking it.
+ *
+ * Over the name rather than under it, `z-index` and all: grain in front of ink is what a
+ * printed surface looks like, and a card with clean type on a grained background looks like
+ * a screenshot of a card rather than a card.
+ *
+ * `pointer-events: none` because it covers the whole of the thing being pressed, and an
+ * overlay that eats the pointer would make half the card dead.
+ */
+.Noise {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-image: var(--Texture-ThemeCardNoise);
+  background-repeat: repeat;
+  mix-blend-mode: var(--Blend-ThemeCardNoise);
+  opacity: var(--Opacity-ThemeCardNoise);
+  transition: opacity var(--Duration-Fast) var(--Easing-Standard);
+}
+
+/*
+ * The grain comes up a little under the pointer, on the card's own timing.
+ *
+ * The panel is the thing being looked at, and a finish that does not respond to that reads as
+ * a surface that did not notice. Faintly, because it is a finish and not a highlight.
+ */
+.Root:hover .Noise {
+  opacity: var(--Opacity-ThemeCardNoiseHover);
+}
+
+/*
  * The name on the card, which is the whole content of it.
  *
  * Centred and in the display face rather than the body one: the six cards are a choice

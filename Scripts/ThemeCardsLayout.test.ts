@@ -28,9 +28,10 @@ const Root = /\.Root\s*\{([^}]*)\}/;
 /** One card's slot, which is where the measured turn is applied. */
 const Slot = /\.Slot\s*\{([^}]*)\}/;
 
-/** The card itself, and the mark behind its name. */
+/** The card itself, and what is layered on it. */
 const Card = /\.Root\s*\{([^}]*)\}/;
 const Mark = /\.Mark\s*\{([^}]*)\}/;
+const Noise = /\.Noise\s*\{([^}]*)\}/;
 const Name = /\.Name\s*\{([^}]*)\}/;
 
 describe('the row of theme cards', () => {
@@ -191,6 +192,58 @@ describe('the number behind the name', () => {
     const hover = Number(tokenValue('--Duration-Fast').replace('ms', ''));
     expect(delay).toBeGreaterThan(0);
     expect(delay).toBeLessThan(hover);
+  });
+
+  it('lays grain over the card rather than fogging it', () => {
+    // A noise tile at any opacity below one is a grey wash unless it is blended, because
+    // the tile has grey in its light parts as well as its dark.
+    expect(card.declaration(Noise, 'mix-blend-mode')).toBe('var(--Blend-ThemeCardNoise)');
+    expect(card.declaration(Noise, 'opacity')).toBe('var(--Opacity-ThemeCardNoise)');
+  });
+
+  it('inverts the grain against the card, because a pale surface defeats the softer blends', () => {
+    // The grain was invisible on the card, and no opacity would have fixed it: `overlay` and
+    // `soft-light` do almost nothing to a backdrop already at the top of their range, which is
+    // where a near-white card's surface is, and multiply — the paper's blend — can only darken,
+    // so over a pale surface it moves a very little per step. Difference puts the grain in the
+    // darks and the lights of the surface both.
+    expect(tokenValue('--Blend-ThemeCardNoise')).toBe('difference');
+    expect(tokenValue('--Blend-ThemeCardNoise')).not.toBe(tokenValue('--Overlay-BlendMode'));
+  });
+
+  it('draws the grain at its own pixels, because reducing it destroys it', () => {
+    // Any `background-size` reduction averages the grain into a flat grey before the browser
+    // blends anything, and a flat grey multiplied over a card is the card. The grain exists at
+    // the original size and shrinking it is what made it invisible in the first place.
+    expect(card.declares(Noise, 'background-size')).toBe(false);
+    expect(card.declaration(Noise, 'background-repeat')).toBe('repeat');
+  });
+
+  it('puts the grain over the name, the way a printed surface does', () => {
+    // Clean type on a grained background looks like a screenshot of a card rather than a
+    // card, and it is `pointer-events: none` because it covers the whole of the thing being
+    // pressed — an overlay that ate the pointer would make half the card dead.
+    expect(Number(card.declaration(Noise, 'z-index'))).toBeGreaterThan(
+      Number(card.declaration(Name, 'z-index')),
+    );
+    expect(card.declaration(Noise, 'pointer-events')).toBe('none');
+  });
+
+  it('holds the grain faint, because difference is a violent blend at full strength', () => {
+    // At one it would invert the name's ink as well as the card. A twentieth is barely a
+    // tint: a card behind six other cards is a finish, not a texture.
+    const resting = Number(tokenValue('--Opacity-ThemeCardNoise'));
+    const lifted = Number(tokenValue('--Opacity-ThemeCardNoiseHover'));
+    expect(resting).toBeLessThan(0.1);
+    expect(lifted).toBeGreaterThan(resting);
+    expect(lifted).toBeLessThan(0.2);
+  });
+
+  it('lifts the grain on hover, on the card timing', () => {
+    // The panel is the thing being looked at and a finish that does not respond reads as a
+    // surface that did not notice.
+    expect(card.ruleBody(Noise)).toContain('--Duration-Fast');
+    expect(card.ruleBody(/\.Root:hover\s+\.Noise\s*\{([^}]*)\}/)).not.toContain('transition');
   });
 
   it('is scaled on hover rather than resized, so nothing reflows under the pointer', () => {

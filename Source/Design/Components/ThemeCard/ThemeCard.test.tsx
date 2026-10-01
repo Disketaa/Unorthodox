@@ -30,13 +30,14 @@ describe('one theme card', () => {
     expect(card().button.disabled).toBe(false);
   });
 
-  it('says the theme once to a screen reader, the number not at all', () => {
+  it('says the theme once to a screen reader, the number and the grain not at all', () => {
     // The number is a mark on the panel, not part of its name, and read out as one the theme
-    // would be announced as "one, интернет". The mark is `aria-hidden`, so what the DOM
-    // still holds is not what is read.
+    // would be announced as "one, интернет". The grain carries nothing at all. Both are
+    // `aria-hidden`, so what the DOM still holds is not what is read.
     const { container, mark } = card();
     expect(mark?.getAttribute('aria-hidden')).toBe('true');
-    expect(container.querySelectorAll('[aria-hidden="true"]').length).toBe(1);
+    const hidden = container.querySelectorAll('[aria-hidden="true"]');
+    expect(hidden.length).toBe(2);
     expect(container.textContent).toContain('Интернет');
   });
 
