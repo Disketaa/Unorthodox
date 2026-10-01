@@ -24,5 +24,5 @@ const names: Readonly<Record<ThemeId, string>> = {
 
 export function ThemeCardsGallery() {
   const themes: readonly ThemeId[] = dealThemes(createRandom(7), 6);
-  return <ThemeCards themes={themes} names={names} />;
+  return <ThemeCards themes={themes} names={names} roundsPerTheme={10} pending={4} />;
 }

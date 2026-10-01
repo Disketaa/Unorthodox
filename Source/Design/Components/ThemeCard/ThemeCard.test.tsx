@@ -30,15 +30,17 @@ describe('one theme card', () => {
     expect(card().button.disabled).toBe(false);
   });
 
-  it('says the theme once to a screen reader, the number and the grain not at all', () => {
+  it('carries the number, the grain and the ticks all hidden from a screen reader', () => {
     // The number is a mark on the panel, not part of its name, and read out as one the theme
-    // would be announced as "one, интернет". The grain carries nothing at all. Both are
-    // `aria-hidden`, so what the DOM still holds is not what is read.
+    // would be announced as "one, интернет". The grain carries nothing at all, and ten ticks
+    // read out as a burst of punctuation. All three are `aria-hidden`, so what the DOM still
+    // holds is not what is read — the name is the only thing on the card that is.
     const { container, mark } = card();
     expect(mark?.getAttribute('aria-hidden')).toBe('true');
-    const hidden = container.querySelectorAll('[aria-hidden="true"]');
-    expect(hidden.length).toBe(2);
-    expect(container.textContent).toContain('Интернет');
+    const hidden = [...container.querySelectorAll('[aria-hidden="true"]')];
+    expect(hidden).toHaveLength(3);
+    expect(hidden.map((node) => node.textContent).join('')).toBe('1');
+    expect(container.textContent).toBe('1Интернет');
   });
 
   it('writes its own accent onto itself rather than taking the colour as a prop', () => {

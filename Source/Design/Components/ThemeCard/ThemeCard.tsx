@@ -2,12 +2,29 @@ import { ThemeId, themeAccent } from '@/Core';
 import { useEffect } from 'preact/hooks';
 import { useSwayMotion } from '@/Design/Primitives';
 import { playSound } from '../../Sounds';
+import { RoundMeter } from '../RoundMeter';
 import styles from './ThemeCard.module.css';
 
 export interface ThemeCardProps {
   theme: ThemeId;
   /** The theme's name in this player's language. */
   name: string;
+  /**
+   * How many rounds this theme is played for.
+   *
+   * On the card rather than read from the game rules, because a card is also drawn in the
+   * gallery and by anything that wants one card on its own, and a component that reached
+   * into the game's configuration to count its own ticks would not be usable anywhere else.
+   */
+  rounds?: number;
+  /**
+   * Which tick has not been played yet, counted from one.
+   *
+   * A tick and not the round, because that is what the row draws: everything is coloured and
+   * this one is greyed. Left out it is the last one, which is where a row that empties from
+   * the start wants its eye drawn.
+   */
+  pending?: number;
   /**
    * Where this card sits in the bank, counted from one.
    *
@@ -67,7 +84,15 @@ const Properties = {
  * the characters and the game's name are one movement and not three that happen to agree. A
  * bank of six still cards is a menu; six that shift their weight is a hand being held out.
  */
-export function ThemeCard({ theme, name, index = 1, onPick, moving = true }: ThemeCardProps) {
+export function ThemeCard({
+  theme,
+  name,
+  index = 1,
+  rounds = 10,
+  pending,
+  onPick,
+  moving = true,
+}: ThemeCardProps) {
   const motion = useSwayMotion<HTMLButtonElement>();
 
   useEffect(() => {
@@ -97,6 +122,7 @@ export function ThemeCard({ theme, name, index = 1, onPick, moving = true }: The
       </span>
       <span class={styles.Noise} aria-hidden="true" />
       <span class={styles.Name}>{name}</span>
+      <RoundMeter rounds={rounds} pending={pending} />
     </button>
   );
 }

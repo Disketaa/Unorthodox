@@ -22,12 +22,31 @@
 .Root {
   position: relative;
   overflow: hidden;
+  /*
+   * A column, and this is what puts the ticks under the name rather than beside it.
+   *
+   * The card is the only thing that knows the shape of its own contents, so it is the card
+   * that arranges them: the name takes the room above the ticks and the ticks take what they
+   * need at the bottom. As a row — the default — the name and the row of ticks were two
+   * items side by side, and the row was pushed wherever the name's width happened to end.
+   */
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
   width: 100%;
   height: 100%;
-  padding: 0;
+  /*
+   * The card's own padding, on the card.
+   *
+   * It was zero and the name and the ticks each held their own inset, which was two numbers
+   * saying one thing: a card whose contents were inset by different amounts at the top and
+   * the bottom, and where the ticks' row was the only thing on the card touching its edges.
+   * One inset on the card puts both in the same place — the name's own stays, because it is
+   * the name and it wraps — and the ticks' goes, because they are the thing that was
+   * reaching the frame.
+   */
+  padding: var(--Space-ThemeCardPadding);
   background: var(--Color-Surface-Default);
   color: var(--Color-Text-Default);
   border: var(--Border-Width-Default) solid var(--Color-Border-Default);
@@ -224,17 +243,21 @@
  * than what the room could play; on hover it is the card's own colour answering the pointer,
  * which is a fact about the card rather than about the viewer.
  *
- * No height of its own: the slot around this card sets the shape, and a height here as well
- * would be a second number that could disagree with it on a narrow screen.
+ * `flex: 1` rather than `height: 100%`, because the name is not the whole card any more —
+ * the ticks are at the bottom of it — and a full height would claim the ticks' room and
+ * push them off the bottom edge. It takes what is left above them and centres itself in
+ * that, which is what makes the name sit in the middle of the panel with the ticks beneath
+ * rather than centred on the ticks themselves.
  */
 .Name {
   position: relative;
   z-index: 1;
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 100%;
+  min-height: 0;
   padding: var(--Space-ThemeCardPadding);
   font-family: var(--FontFamily-Display);
   font-size: var(--FontSize-ThemeCard);

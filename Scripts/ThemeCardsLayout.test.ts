@@ -16,11 +16,18 @@ import { turnFor } from '../Source/Design/Components/ThemeCards/CardTurn';
 const sheet = stylesheet('../Source/Design/Components/ThemeCards/ThemeCards.module.css');
 const card = stylesheet('../Source/Design/Components/ThemeCard/ThemeCard.module.css');
 
+const meter = stylesheet('../Source/Design/Components/RoundMeter/RoundMeter.module.css');
+
 const tokens = readFileSync(
   new URL('../Source/Design/Tokens/Tokens.css', import.meta.url),
   'utf8',
 );
 const tokenValue = tokenReader(tokens);
+
+/** The row of round ticks, and one of them. */
+const Meter = /\.Root\s*\{([^}]*)\}/;
+const Mark = /\.Mark\s*\{([^}]*)\}/;
+const Pending = /\.Pending\s*\{([^}]*)\}/;
 
 /** The row, which is where the perspective and the cap live. */
 const Root = /\.Root\s*\{([^}]*)\}/;
@@ -30,7 +37,7 @@ const Slot = /\.Slot\s*\{([^}]*)\}/;
 
 /** The card itself, and what is layered on it. */
 const Card = /\.Root\s*\{([^}]*)\}/;
-const Mark = /\.Mark\s*\{([^}]*)\}/;
+const CardMark = /\.Mark\s*\{([^}]*)\}/;
 const Noise = /\.Noise\s*\{([^}]*)\}/;
 const Name = /\.Name\s*\{([^}]*)\}/;
 
@@ -71,7 +78,7 @@ describe('the row of theme cards', () => {
     // A height as well would be a second number free to disagree with the width, and the
     // six would stop being six matching panels on whichever screen they disagreed.
     expect(sheet.declaration(Slot, 'aspect-ratio')).toBe('var(--Ratio-ThemeCard)');
-    expect(card.declaration(Name, 'height')).toBe('100%');
+    expect(card.declares(Name, 'height')).toBe(false);
   });
 
   it('turns each card about its own centre, which is what closes the row on a point', () => {
@@ -135,18 +142,18 @@ describe('the number behind the name', () => {
   it('is one figure, cut off by the card, and not a second thing written on it', () => {
     // A single number is the panel's substance; a name repeated behind the name competes with
     // it, and the name is what the card is for.
-    expect(card.declaration(Mark, 'position')).toBe('absolute');
-    expect(card.declaration(Mark, 'overflow')).toBe('hidden');
-    expect(card.declaration(Mark, 'font-size')).toBe('var(--FontSize-ThemeCardMark)');
+    expect(card.declaration(CardMark, 'position')).toBe('absolute');
+    expect(card.declaration(CardMark, 'overflow')).toBe('hidden');
+    expect(card.declaration(CardMark, 'font-size')).toBe('var(--FontSize-ThemeCardMark)');
     expect(card.declaration(Name, 'z-index')).toBe('1');
   });
 
   it('sits past the bottom right corner rather than centred in the card', () => {
     // Centred, a figure larger than the card is a figure inside a card; pushed into the
     // corner it is most of a number with two sides of it cut, which is the whole of it.
-    expect(card.declaration(Mark, 'top')).toBe('50%');
-    expect(card.declaration(Mark, 'left')).toBe('50%');
-    expect(card.declaration(Mark, 'translate')).toBe(
+    expect(card.declaration(CardMark, 'top')).toBe('50%');
+    expect(card.declaration(CardMark, 'left')).toBe('50%');
+    expect(card.declaration(CardMark, 'translate')).toBe(
       'var(--Offset-ThemeCardMark)var(--Offset-ThemeCardMark)',
     );
   });
@@ -168,9 +175,9 @@ describe('the number behind the name', () => {
   it('is held back with opacity rather than with a colour of its own', () => {
     // The name is drawn in the same colour and has to stay the stronger of the two, so the
     // mark cannot be a paler version of a hue — it has to be the same hue at less of itself.
-    expect(card.declaration(Mark, 'opacity')).toBe('var(--Opacity-ThemeCardMark)');
-    expect(card.declaration(Mark, 'color')).toBe('inherit');
-    expect(card.ruleBody(Mark)).not.toContain('--Color-');
+    expect(card.declaration(CardMark, 'opacity')).toBe('var(--Opacity-ThemeCardMark)');
+    expect(card.declaration(CardMark, 'color')).toBe('inherit');
+    expect(card.ruleBody(CardMark)).not.toContain('--Color-');
   });
 
   it('stays behind the name at rest, which is what the hover is for', () => {
@@ -186,7 +193,7 @@ describe('the number behind the name', () => {
   it('opens a beat after the name, and on the way out as well', () => {
     // A delay written on the `:hover` rule applies to the change into it and not out of it,
     // so a mark that waited to close would hang on the card after the pointer had gone.
-    expect(card.ruleBody(Mark)).toContain('--Duration-ThemeCardMarkDelay');
+    expect(card.ruleBody(CardMark)).toContain('--Duration-ThemeCardMarkDelay');
     expect(card.ruleBody(/\.Root:hover\s+\.Mark\s*\{([^}]*)\}/)).not.toContain('transition');
     const delay = Number(tokenValue('--Duration-ThemeCardMarkDelay').replace('ms', ''));
     const hover = Number(tokenValue('--Duration-Fast').replace('ms', ''));
@@ -250,13 +257,94 @@ describe('the number behind the name', () => {
     expect(card.declaration(/\.Root:hover\s+\.Mark\s*\{([^}]*)\}/, 'transform')).toBe(
       'scale(var(--Scale-ThemeCardHover))',
     );
-    expect(card.declaration(Mark, 'transform')).toBe('scale(1)');
+    expect(card.declaration(CardMark, 'transform')).toBe('scale(1)');
   });
 
   it('opens with the name by one ratio, or the panel is one image changing size', () => {
     expect(card.declaration(/\.Root:hover\s+\.Name\s*\{([^}]*)\}/, 'font-size')).toBe(
       'calc(var(--FontSize-ThemeCard)*var(--Scale-ThemeCardHover))',
     );
+  });
+});
+
+describe('the round ticks along the bottom of a card', () => {
+  it('sits on the bottom edge, so six cards in a bank line their ticks up', () => {
+    // `margin-top: auto` rather than the row following the name: the name is centred by the
+    // card's own flex, so a row placed after it would sit wherever the name happened to end.
+    // The card is a column with the name taking the room above, so the row lands at the
+    // bottom on its own. Auto margins as well would fight the name's `flex: 1` over the same
+    // free space, and stretching across the card would put the padding back into the
+    // centring and undo it.
+    expect(meter.declares(Meter, 'margin-top')).toBe(false);
+    expect(meter.declares(Meter, 'width')).toBe(false);
+    expect(card.declaration(Card, 'flex-direction')).toBe('column');
+    expect(card.declaration(Name, 'flex')).toBe('11auto');
+  });
+
+  it('insets the card once, rather than the name and the ticks each holding their own', () => {
+    // Two numbers saying one thing put the card's contents in by different amounts at the top
+    // and the bottom, and left the ticks' row as the only thing on the card touching its
+    // edges. One inset on the card puts both in the same place.
+    expect(card.declaration(Card, 'padding')).toBe('var(--Space-ThemeCardPadding)');
+    expect(meter.declares(Meter, 'padding')).toBe(false);
+  });
+
+  it('centres the row rather than letting the card padding push it aside', () => {
+    // The leftover width does not divide evenly between two cards of the same width — a name
+    // wrapping to two lines on one card and not the next leaves that card's row off to one
+    // side, and a bank of six with rows at different places is not a bank.
+    expect(meter.declaration(Meter, 'justify-content')).toBe('center');
+  });
+
+  it('draws every tick in the theme accent, and greys one by opacity', () => {
+    // All ten are the theme's own colour because the row is one thing the card is saying —
+    // this theme, this many rounds — and the single greyed tick is what is left to play. The
+    // greying is opacity rather than a paler colour so the pending tick is still that accent;
+    // a row where one mark is a different hue shows two kinds of thing.
+    expect(meter.declaration(Mark, 'background')).toBe('var(--ThemeCard-Ink,var(--Accent-Ink))');
+    expect(meter.declaration(Pending, 'opacity')).toBe('var(--Opacity-RoundMarkPending)');
+    expect(meter.ruleBody(Pending)).not.toContain('background');
+  });
+
+  it('draws the ticks as pipes rather than dots', () => {
+    // A row of dots on a card this size reads as a rating or a strength meter, and ten of one
+    // shape is too many to count at a glance. A pipe is a mark in a list, which a round is.
+    const width = Number(tokenValue('--Size-RoundMarkWidth').replace('em', ''));
+    const height = Number(tokenValue('--Size-RoundMarkHeight').replace('em', ''));
+    expect(height).toBeGreaterThan(width * 2);
+  });
+
+  it('sizes the ticks against the name, so the row scales with the card', () => {
+    // `em` needs a font size to be a proportion of, and the row would otherwise measure its
+    // ticks against whatever the page inherited — the same marks a different width on the
+    // lobby and on the game. The name's size is already a share of the card's width.
+    expect(meter.declaration(Meter, 'font-size')).toBe('var(--FontSize-ThemeCard)');
+    for (const token of [
+      '--Size-RoundMarkWidth',
+      '--Size-RoundMarkHeight',
+      '--Radius-RoundMark',
+      '--Space-RoundMeterGap',
+    ]) {
+      expect(tokenValue(token)).toMatch(/em$/);
+    }
+  });
+
+  it('greys the pending tick enough to find across six cards, but not into a gap', () => {
+    // A sixth of full strength: greyed enough to pick out at a glance and not so faint that
+    // it reads as a tick that was missed rather than one still to come.
+    const resting = Number(tokenValue('--Opacity-RoundMark'));
+    const pending = Number(tokenValue('--Opacity-RoundMarkPending'));
+    expect(resting).toBe(1);
+    expect(pending).toBeGreaterThan(0);
+    expect(pending).toBeLessThan(resting / 4);
+  });
+
+  it('plays ten rounds of a theme, which is what fills a round of the game', () => {
+    // `GameConfig.rounds.count` is five rounds of the whole game, and two themes to a round is
+    // what fills it: ten topics across the themes on offer, which is a set of themes big
+    // enough that the cards are a choice rather than a formality.
+    expect(GameConfig.themes.roundsPerTheme).toBe(GameConfig.rounds.count * 2);
+    expect(GameConfig.themes.roundsPerTheme).toBe(10);
   });
 });
 
@@ -374,3 +462,4 @@ describe('the deal', () => {
     expect(new Set(deals).size).toBeGreaterThan(1);
   });
 });
+

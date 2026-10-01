@@ -65,11 +65,22 @@ export const GameConfig = {
     /**
      * How many themes a lobby is offered at once.
      *
-     * Six because they are drawn three across and two down, and the fan of theme cards
-     * is written for that shape: the tilt is a fixed set of positions, so a different
-     * count would be a different arrangement rather than a longer or shorter one.
+     * Six because they are drawn three across and two down, and the bank of theme cards
+     * is written for that shape: the turn is measured per card, but the row is capped at
+     * three cards wide, so a different count would be a different arrangement rather than
+     * a longer or shorter one.
      */
     cardsPerLobby: 6,
+    /**
+     * How many rounds a theme is played for.
+     *
+     * The number of ticks along the bottom of a card, and the number of topics the theme
+     * has to answer for. Ten because that is what the room is sized for: `rounds.count` is
+     * five rounds of the whole game, and two themes to a round is what fills it — ten
+     * topics across the two themes on offer, which is a set of themes big enough that the
+     * cards are a choice rather than a formality.
+     */
+    roundsPerTheme: 10,
   },
   limits: {
     nameMaxLength: 16,

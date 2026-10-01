@@ -12,6 +12,18 @@ export interface ThemeCardsProps {
   names: Readonly<Record<ThemeId, string>>;
   /** Asking for a theme. Every card is live for now; who may press is not settled. */
   onPick?: (theme: ThemeId) => void;
+  /** How many rounds each theme is played for, from the game's own rules. */
+  roundsPerTheme: number;
+  /**
+   * Which tick has not been played yet, counted from one.
+   *
+   * Left out it is the last tick on every card, which is what a bank of themes that has not
+   * started looks like. Every card carries the same tick, which is why it is here on the bank
+   * rather than on one card: six themes are being played at once and the room is at the same
+   * point in all of them, and a card that took its own would be showing a different tick from
+   * the five beside it.
+   */
+  pending?: number;
 }
 
 /**
@@ -33,7 +45,7 @@ export interface ThemeCardsProps {
  * them on every resize, and a fresh set each render would be a fresh set of nodes to write
  * to every time anything else on the screen moved.
  */
-export function ThemeCards({ themes, names, onPick }: ThemeCardsProps) {
+export function ThemeCards({ themes, names, onPick, roundsPerTheme, pending }: ThemeCardsProps) {
   const row = useRef<HTMLDivElement>(null);
   const cards = useRef<ReturnType<typeof createRef<HTMLDivElement>>[]>([]);
   if (cards.current.length !== themes.length) {
@@ -49,6 +61,8 @@ export function ThemeCards({ themes, names, onPick }: ThemeCardsProps) {
             theme={theme}
             name={names[theme]}
             index={index + 1}
+            rounds={roundsPerTheme}
+            pending={pending}
             onPick={onPick}
           />
         </div>
