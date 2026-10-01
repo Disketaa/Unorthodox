@@ -1,4 +1,3 @@
-import { ComponentChildren } from 'preact';
 import { Stack } from '@/Design/Primitives';
 import { Separator } from '@/Design/Primitives';
 import { PlayerChip } from '@/Design/Components';
@@ -13,11 +12,6 @@ export interface LobbyRosterProps {
   isHost: boolean;
   /** Only the host gets this: the room's way to remove a player. */
   onKick: (playerId: PlayerId) => void;
-  /**
-   * What puts somebody in the list, carried in so it lands under the rule that names
-   * the list: the control and the names it makes are one part of the same card.
-   */
-  addBot?: ComponentChildren;
 }
 
 /**
@@ -37,11 +31,10 @@ export interface LobbyRosterProps {
  *
  * Kept apart from the screen so the screen stays about arranging parts.
  */
-export function LobbyRoster({ players, ownPlayerId, isHost, onKick, addBot }: LobbyRosterProps) {
+export function LobbyRoster({ players, ownPlayerId, isHost, onKick }: LobbyRosterProps) {
   return (
     <Stack gap="Md">
       <Separator>{Strings.lobby.roster}</Separator>
-      {addBot}
       <Stack gap="Sm">
         {players.map((player, index) => (
           <PlayerChip

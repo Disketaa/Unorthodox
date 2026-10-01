@@ -67,13 +67,11 @@ export function LobbyScreen({
   ownPlayerName,
   ownLook,
   isHost,
-  debugEnabled,
   onPickLook,
   onPickPace,
   onStart,
   onExit,
   onKick,
-  onAddBot,
 }: LobbyScreenProps) {
   return (
     <Screen>
@@ -82,13 +80,11 @@ export function LobbyScreen({
         players={players}
         ownPlayerId={ownPlayerId}
         isHost={isHost}
-        debugEnabled={debugEnabled}
         onStart={onStart}
         onExit={onExit}
         onKick={onKick}
-        onAddBot={onAddBot}
       />
-      <LobbyPace pace={pace} onPick={onPickPace} />
+      <LobbyPace pace={pace} isHost={isHost} onPick={onPickPace} />
       {ownLook !== undefined && (
         <LookPicker
           ownName={ownPlayerName}

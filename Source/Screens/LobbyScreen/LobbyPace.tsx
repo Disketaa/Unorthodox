@@ -1,4 +1,3 @@
-import { useState } from 'preact/hooks';
 import { Separator, Stack } from '@/Design/Primitives';
 import { Banner, Button } from '@/Design/Components';
 import { GameConfig, Pace } from '@/Game';
@@ -17,9 +16,11 @@ export interface LobbyPaceProps {
   /** The pace the room is set to, which only the host can change. */
   pace: Pace;
   /**
-   * Asking for a pace. The host's click changes the room and the answer comes back
-   * through `pace`; a client's click changes nothing but its own preview.
+   * Whether this device owns the setting, which is what makes the buttons live. A
+   * client still sees the card and its numbers, and finds the buttons inert.
    */
+  isHost: boolean;
+  /** Asking for a pace. Only reached by the host, since a client's buttons are dead. */
   onPick: (pace: Pace) => void;
 }
 
@@ -45,24 +46,16 @@ function waits(pace: Pace) {
  * the buttons exist: a pace named "fast" says nothing, and a fast game that nobody
  * can see the terms of is a trap for the room rather than a choice.
  *
- * A client may press them and is shown its own pace, because a setting nobody can look
- * at is a setting nobody can agree to. What it is shown next is the room's: the preview
- * is dropped the moment the room's pace changes, so the host's answer is what is read.
+ * A client sees the same card with the same numbers, and the buttons are drawn dead —
+ * `disabled`, which is what puts the not-allowed cursor and the half opacity on them
+ * rather than a new variant of the button. The card is not hidden from a client: a
+ * player who cannot see what pace the room is playing cannot agree to play it, and the
+ * numbers are the whole point of the card.
  *
- * The reset is done during render rather than in an effect, because the alternative is
- * a frame in which the card shows the host's new numbers and the old button is still
- * filled — a flash of "Обычно" that nobody chose. Setting state while rendering is the
- * documented way to do this: React runs the component again immediately, before
- * painting, and the second pass has both values already in step.
+ * So nothing is local here any more. The pace is read from the room and the press goes
+ * to whoever owns it, which is what the state does and what this used to work around.
  */
-export function LobbyPace({ pace, onPick }: LobbyPaceProps) {
-  const [preview, setPreview] = useState<Pace | undefined>(undefined);
-  const [seen, setSeen] = useState(pace);
-  if (seen !== pace) {
-    setSeen(pace);
-    setPreview(undefined);
-  }
-  const shown = preview ?? pace;
+export function LobbyPace({ pace, isHost, onPick }: LobbyPaceProps) {
   return (
     <LobbyCategory title={Strings.lobby.settings.title}>
       <Separator>{Strings.lobby.settings.params}</Separator>
@@ -70,18 +63,16 @@ export function LobbyPace({ pace, onPick }: LobbyPaceProps) {
         {paces.map((option) => (
           <Button
             key={option}
-            variant={option === shown ? 'Primary' : 'Muted'}
-            onClick={() => {
-              onPick(option);
-              setPreview(option);
-            }}
+            variant={option === pace ? 'Primary' : 'Muted'}
+            disabled={!isHost}
+            onClick={() => onPick(option)}
           >
             {Strings.lobby.settings.paces[option]}
           </Button>
         ))}
       </Stack>
       <Stack gap="Sm" align="Stretch">
-        {waits(shown).map((wait) => (
+        {waits(pace).map((wait) => (
           <Banner
             key={wait.label}
             variant="Muted"

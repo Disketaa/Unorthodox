@@ -7,35 +7,33 @@ import { Pace } from '@/Game';
 import { Strings } from '@/Content';
 
 const standardWaits = ['60с', '90с', '20с'];
-const fastWaits = ['40с', '60с', '15с'];
 
 /** The waits on the card, each asserted on its own since labels sit between them. */
 function expectWaits(container: HTMLElement, waits: readonly string[]): void {
   waits.forEach((wait) => expect(container.textContent).toContain(wait));
 }
 
-function card(container: HTMLElement, pace: Pace, onPick: (pace: Pace) => void): void {
-  render(<LobbyPace pace={pace} onPick={onPick} />, container);
-}
-
-function press(container: HTMLElement, index: number): void {
-  const button = container.querySelectorAll('button')[index];
-  if (!(button instanceof HTMLButtonElement)) throw new Error('no button at that index');
-  act(() => {
-    button.click();
-  });
-}
-
-function mount(): HTMLElement {
+function mount(isHost: boolean, picked: Pace[] = []): HTMLElement {
   const container = document.createElement('div');
   document.body.appendChild(container);
-  card(container, 'Standard', () => {});
+  render(
+    <LobbyPace pace="Standard" isHost={isHost} onPick={(pace) => picked.push(pace)} />,
+    container,
+  );
   return container;
 }
 
+function buttons(container: HTMLElement): HTMLButtonElement[] {
+  const found: HTMLButtonElement[] = [];
+  container.querySelectorAll('button').forEach((button) => {
+    if (button instanceof HTMLButtonElement) found.push(button);
+  });
+  return found;
+}
+
 describe('the pace card', () => {
-  it('shows the three waits of the pace it is given', () => {
-    const container = mount();
+  it('shows the three waits of the pace the room is set to', () => {
+    const container = mount(true);
     // Read from the config rather than written out, so this cannot pass against a
     // config the card is not actually using.
     expect(container.textContent).toContain(Strings.lobby.settings.writing);
@@ -44,46 +42,40 @@ describe('the pace card', () => {
     expectWaits(container, standardWaits);
   });
 
-  it('marks the room’s own pace as the chosen one', () => {
-    // Buttons are drawn in the order `LobbyPace` lists them, Standard first, and the
-    // chosen one is the filled button rather than a tick or a border.
-    const container = mount();
-    const buttons = container.querySelectorAll('button');
-    expect(buttons[0].className).not.toBe(buttons[1].className);
+  it('fills the room’s own pace and leaves the other one quiet', () => {
+    const container = mount(true);
+    expect(buttons(container)[0].className).not.toBe(buttons(container)[1].className);
   });
 
-  it('lets a client press a button and see what that pace means', () => {
-    const container = mount();
-    // A setting nobody can look at is a setting nobody can agree to, so the buttons
-    // are live for everyone even though only the host's press reaches the room.
-    press(container, 1);
-    expectWaits(container, fastWaits);
-  });
-
-  it('goes back to what the host says, not to what this device pressed', () => {
-    const container = mount();
-    // The client presses the pace the room is already on, which changes nothing on
-    // screen but leaves a preview behind that disagrees with what comes next.
-    press(container, 0);
-    expectWaits(container, standardWaits);
-    // The host then sets Fast. The preview is for a pace that is no longer the room's,
-    // so it must be dropped and the host's numbers read instead.
+  it('changes the room when the host presses a button', () => {
+    const picked: Pace[] = [];
+    const container = mount(true, picked);
     act(() => {
-      card(container, 'Fast', () => {});
+      buttons(container)[1].click();
     });
-    expectWaits(container, fastWaits);
+    expect(picked).toEqual(['Fast']);
   });
 
-  it('keeps a preview the host has since agreed with', () => {
-    const container = mount();
-    press(container, 1);
-    expectWaits(container, fastWaits);
-    // The host picks the same pace, so the room's answer and the preview agree and
-    // there is nothing to discard — the numbers must not flicker back to Standard on
-    // the way there, which is what a reset on every change would do.
+  it('shows a client the same numbers, so the pace is not a secret', () => {
+    // A player who cannot see what the room is playing cannot agree to play it.
+    expectWaits(mount(false), standardWaits);
+  });
+
+  it('draws a client’s buttons dead, so the setting is visibly not theirs', () => {
+    const dead = buttons(mount(false));
+    expect(dead).toHaveLength(2);
+    // `disabled` rather than a new variant: it is what puts the not-allowed cursor and
+    // the half opacity on, and a control that ignores its press should say so to the
+    // browser rather than only to the eye.
+    dead.forEach((button) => expect(button.disabled).toBe(true));
+  });
+
+  it('does not let a client change the room by pressing a dead button', () => {
+    const picked: Pace[] = [];
+    const container = mount(false, picked);
     act(() => {
-      card(container, 'Fast', () => {});
+      buttons(container).forEach((button) => button.click());
     });
-    expectWaits(container, fastWaits);
+    expect(picked).toEqual([]);
   });
 });

@@ -1,6 +1,5 @@
 import { LobbyScreen } from '@/Screens';
 import { Pace } from '@/Game';
-import { useDebugToggle } from '../Hooks/UseDebugToggle';
 import { GameSessionView } from '../Hooks/UseGameSession';
 
 export interface PhaseViewProps {
@@ -16,10 +15,8 @@ export function LobbyView({ view }: PhaseViewProps) {
   // The name the host has for us, not the one typed on this tab: the character is the
   // host's to keep, so the picker is headed with what the room actually calls us.
   const ownName = players.find((player) => player.id === view.playerId)?.name ?? '';
-  const { debugEnabled } = useDebugToggle(view.isHost);
   return (
     <LobbyScreen
-      debugEnabled={debugEnabled}
       roomCode={view.roomCode}
       players={players}
       pace={pace}
@@ -32,7 +29,6 @@ export function LobbyView({ view }: PhaseViewProps) {
       onStart={view.startGame}
       onExit={view.exitRoom}
       onKick={view.kickPlayer}
-      onAddBot={view.addBot}
     />
   );
 }
