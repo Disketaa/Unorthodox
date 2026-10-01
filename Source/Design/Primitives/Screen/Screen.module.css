@@ -23,15 +23,6 @@
   );
   gap: var(--Space-Lg);
   /*
-   * A container is as tall as what is in it.
-   *
-   * Grid stretches its items to the row by default, so two containers side by side
-   * came out as tall as the taller one and the shorter had its content sitting at the
-   * top of a box sized for something else, which reads as padding nobody set. The rows
-   * still pack together, and a row is still as tall as its own tallest container.
-   */
-  align-items: start;
-  /*
    * Takes the height `#root` has left, rather than asking for a viewport of its own.
    *
    * `1 0 auto` is grow, never shrink, at its own height: short of the room it grows
@@ -63,22 +54,43 @@
 }
 
 /*
- * Always centred, at every width.
+ * Containers lined up by their top edges, and each only as tall as what is in it.
  *
- * A row that is not full is centred rather than left against the page's padding, so
- * two cards on a wide screen sit in the middle of the frame instead of drifting to the
- * left edge with the empty track beside them.
+ * The height is the reason this is not the default. Grid stretches its items to the
+ * row, so two containers side by side came out as tall as the taller one and the
+ * shorter had its content sitting at the top of a box sized for something else, which
+ * reads as padding nobody set.
+ */
+.AlignStart {
+  align-items: start;
+}
+
+/*
+ * Containers centred against one another, for containers of noticeably different
+ * heights that are meant to read as one arrangement.
+ *
+ * A wordmark beside a card of fields is a third of its height, and aligned by the top
+ * edge it floats beside the middle of the menu rather than sitting in the middle of
+ * it. This is the alignment the entry screen asks for and the lobby does not.
+ */
+.AlignCenter {
+  align-items: center;
+}
+
+/*
+ * The rows at the top, for a screen that is a page of controls.
+ *
+ * `align-content` rather than `justify-content` throughout: the rows are what has to
+ * be placed, and a screen taller than the viewport stays at the top and scrolls
+ * instead of being pushed off its own top edge with half of it unreachable.
  */
 .VerticalTop {
   align-content: start;
 }
 
 /*
- * In the middle of the viewport, for a screen that is one short block.
- *
- * `align-content` rather than `justify-content`, because the rows are what has to be
- * centred: on a screen taller than the viewport the rows stay at the top and the page
- * scrolls, instead of being pushed off the top edge with half of it unreachable.
+ * In the middle of the viewport, for a screen that is one short block worth arriving
+ * at. The same `align-content`, since it is the rows that move rather than the frame.
  */
 .VerticalCenter {
   align-content: center;

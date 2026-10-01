@@ -46,7 +46,7 @@ export function JoinScreen({
   const tryJoin = () => submitJoin(onJoin);
 
   return (
-    <Screen vertical="Center">
+    <Screen vertical="Center" align="Center">
       <Card variant="Plain">
         <Wordmark label={Strings.app.title} />
       </Card>

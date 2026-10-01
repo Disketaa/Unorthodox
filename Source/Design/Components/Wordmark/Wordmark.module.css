@@ -25,6 +25,18 @@
 }
 
 /*
+ * The characters' idle sway, on the mark.
+ *
+ * Composed rather than written out, so the two are one movement: a row of characters
+ * is only interesting because no two of them agree, and that comes from the roll
+ * rather than from the drawing. The rolled values are written on `.Root` and read
+ * here, which works because a custom property inherits.
+ */
+.Moving {
+  composes: Moving from '../../Primitives/Sway/Sway.module.css';
+}
+
+/*
  * The name itself, for anything reading the page rather than looking at it, which is
  * what a screen reader and the test that guards the join screen both do. Marked out of
  * the layout rather than `display: none`, because a hidden element is not announced at

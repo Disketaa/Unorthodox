@@ -41,91 +41,18 @@
 }
 
 /*
- * Idle motion.
+ * The idle sway and the still pose, both of which the game's name wears too.
  *
- * The characters rock from side to side, the way someone standing shifts their
- * weight, and that lateral swing is what carries the movement. The vertical part
- * is barely there on purpose: a character that hops reads as bouncing, and a
- * screen of them is busy rather than alive. Sway slowly and the eye reads it as
- * presence, not as motion.
- *
- * Every value behind it is rolled per instance, so no two characters move alike:
- * the resting lean, the swing width, the tempo, the step count, the jump keyword
- * and the place in the cycle. That variety is where the unpredictability comes
- * from. One shared duration and one shared amplitude would look like a row of
- * items on a single conveyor, which is the thing to avoid.
- *
- * The leans are unevenly spaced and do not mirror each other exactly, and the
- * character is its own pivot, so it turns around its middle instead of swinging
- * from a corner. `steps` is what keeps it drawn rather than tweened: the
- * character holds a pose on the turn instead of gliding through it.
+ * Composed rather than written out, so the characters and the wordmark are the same
+ * movement instead of two that happen to agree. This file keeps the one thing that is
+ * a character's alone: which of the two it is.
  */
 .Moving {
-  /*
-   * The fallbacks are what a character looks like for the frame before its own
-   * values are written. The step count and the keyword travel as one finished
-   * `steps()` call, because the build strips a `var()` used *inside* the
-   * function and would leave an invalid timing that cancels the animation.
-   */
-  animation: CharacterBob 3s var(--Character-Motion-Timing, steps(2, jump-none)) infinite;
-  /*
-   * A negative delay starts the character partway into its cycle, which is what
-   * desynchronises them. Without it every character in a row would move in
-   * lockstep, which looks mechanical.
-   */
-  animation-delay: calc(var(--Character-Motion-Duration, 3s) * var(--Character-Motion-Offset, 0) * -1);
+  composes: Moving from '../../Primitives/Sway/Sway.module.css';
 }
 
-@keyframes CharacterBob {
-  /* Settled, tipped a little one way. */
-  0% {
-    transform: translateX(0) rotate(calc(var(--Character-Motion-Tilt, 0deg) * 0.5));
-  }
-
-  /* Swung to one side, leaning into it. */
-  24% {
-    transform: translateX(calc(var(--Character-Motion-Sway, 1px) * -1))
-      rotate(calc(var(--Character-Motion-Tilt, 0deg) * -1.2));
-  }
-
-  /*
-   * Through the middle, with the smallest lift of the whole cycle. This is the
-   * only place it leaves the ground at all, and barely.
-   */
-  50% {
-    transform: translateX(0) translateY(calc(var(--Character-Motion-Range, 0.5px) * -1))
-      rotate(calc(var(--Character-Motion-Tilt, 0deg) * 0.35));
-  }
-
-  /* Swung the other way, leaning the other way. */
-  76% {
-    transform: translateX(var(--Character-Motion-Sway, 1px))
-      rotate(calc(var(--Character-Motion-Tilt, 0deg) * 1.2));
-  }
-
-  100% {
-    transform: translateX(0) rotate(calc(var(--Character-Motion-Tilt, 0deg) * 0.5));
-  }
-}
-
-/*
- * A character that should hold still: the scoreboard, where rows move as the
- * numbers change and a sway on top of that is noise rather than character, and
- * anywhere the reader has asked for less motion. It keeps its resting lean, so a
- * still row of characters still looks like a row of characters rather than a row
- * of upright icons.
- */
 .Still {
-  animation: none;
-  transform: rotate(var(--Character-Motion-Tilt, 0deg));
-}
-
-/* Honours the system setting, rather than swaying regardless. */
-@media (prefers-reduced-motion: reduce) {
-  .Moving {
-    animation: none;
-    transform: rotate(var(--Character-Motion-Tilt, 0deg));
-  }
+  composes: Still from '../../Primitives/Sway/Sway.module.css';
 }
 
 /*

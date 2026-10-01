@@ -2,6 +2,7 @@ import { ComponentChildren } from "preact";
 import styles from "./Screen.module.css";
 
 export type ScreenVertical = "Center" | "Top";
+export type ScreenAlign = "Center" | "Start";
 
 export interface ScreenProps {
   /**
@@ -12,6 +13,20 @@ export interface ScreenProps {
    * where the first thing on it is reachable without scrolling to find it.
    */
   vertical?: ScreenVertical;
+  /**
+   * How containers line up with one another where they sit side by side.
+   *
+   * `Center` where the containers are of noticeably different heights and the point
+   * is that they read as one arrangement, which is the entry screen: a wordmark is
+   * much shorter than the card of fields beside it, and aligned by its top edge the
+   * mark floats beside the middle of the menu instead of sitting in the middle of it.
+   * `Top` for containers that are one another's continuation, where the first line of
+   * each lining up is the thing being read.
+   *
+   * Has no effect once the containers have wrapped into one column, since each is
+   * then the only thing in its own row.
+   */
+  align?: ScreenAlign;
   children?: ComponentChildren;
 }
 
@@ -31,10 +46,16 @@ export interface ScreenProps {
  * track instead of overflowing it. Since the frame is at most `--Layout-ColumnsMax`
  * tracks wide, `auto-fit` can never fit a fourth one, and a fifth container wraps
  * without a width query anywhere in the codebase saying where.
+ *
+ * `vertical` and `align` are two different questions and both are per screen. The
+ * first is where the whole set sits in the viewport; the second is how the
+ * containers line up with one another inside it.
  */
-export function Screen({ vertical = "Top", children }: ScreenProps) {
+export function Screen({ vertical = "Top", align = "Start", children }: ScreenProps) {
   return (
-    <div class={`${styles.Root} ${styles[`Vertical${vertical}`]}`}>
+    <div
+      class={`${styles.Root} ${styles[`Vertical${vertical}`]} ${styles[`Align${align}`]}`}
+    >
       {children}
     </div>
   );

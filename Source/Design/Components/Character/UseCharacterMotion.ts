@@ -1,77 +1,31 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
+import { rollTiming, useSwayMotion } from '@/Design/Primitives';
 
 /**
- * A row of characters only looks alive if no two of them agree: each gets its
- * own resting lean, swing width, tempo, step count and place in the cycle, so
- * they move like a crowd rather than like one item copied nine times. Held in
- * state rather than recomputed, so a character keeps its own motion for as long
- * as it is on screen and does not twitch when something else re-renders.
+ * The values one character brings to a reaction: where it comes from and how it is
+ * cocked when it gets there.
+ *
+ * Everything here is what makes one character differ from another, and nothing here
+ * is shared with anything else. The squash itself, the duration and the idle sway all
+ * belong to `Pop` and to `useSwayMotion`, so every reaction and every resting pose is
+ * the same movement however many things are on the screen.
  */
-export interface CharacterMotion {
+export interface CharacterPop {
   tilt: number;
-  range: number;
-  sway: number;
-  duration: number;
+  offsetX: number;
+  offsetY: number;
   steps: number;
   timing: string;
-  offset: number;
-  popTilt: number;
-  popOffsetX: number;
-  popOffsetY: number;
-  popSteps: number;
-  popTiming: string;
 }
-
-/** The resting lean, in degrees either way. */
-const MaxTiltDeg = 2;
-
-/**
- * How far it bobs, in pixels. Barely there on purpose: a character that hops
- * reads as bouncing, and a screen of them is busy rather than alive. The life
- * comes from the swing instead, which is a slower movement the eye reads as
- * shifting weight.
- */
-const MaxRangePx = 1;
-
-/**
- * How far it swings sideways, in pixels. This is the movement that carries it,
- * and it is only a pixel or so: enough that the weight shift is there if you
- * watch for it, small enough that a row of nine reads as settled rather than as
- * twitching. Anything more and the lobby draws the eye to the artwork instead of
- * to the room code.
- */
-const MaxSwayPx = 1.5;
-
-/**
- * Slow, because a swing that repeats quickly reads as a vibration rather than as
- * someone shifting their weight. The ends stay well short of a twitch.
- */
-const MinDurationS = 2.4;
-const MaxDurationS = 4.8;
-
-/**
- * Few steps, because the swing is already a slow movement and a fine-grained one
- * would smooth it back into a tween. Two or three reads as a held pose on the
- * turn, which is what makes it look drawn.
- */
-const MinSteps = 2;
-const MaxSteps = 3;
-
-/**
- * The four ways a stepped timing can land. Which one a character gets changes
- * whether it snaps on arrival or on departure, which is a lot of the character
- * of the movement.
- */
-const TimingChoices = ['jump-none', 'jump-start', 'jump-end', 'jump-both'] as const;
 
 /** The angle it is cocked over at on its first frame, in degrees. */
 const MaxPopTiltDeg = 5;
 
 /**
- * How far off its resting place it appears, in pixels. This is the "arrives from
- * its own direction" part: a pop from exactly the same point every time looks
- * like a system animation, and a pop from slightly different places and angles
- * looks like nine characters turning up.
+ * How far off its resting place it appears, in pixels. This is the "arrives from its
+ * own direction" part: a pop from exactly the same point every time looks like a
+ * system animation, and a pop from slightly different places and angles looks like
+ * nine characters turning up.
  */
 const MaxPopOffsetPx = 7;
 
@@ -82,8 +36,8 @@ const MaxPopSteps = 8;
 /**
  * The nearest a character arrives from, in pixels.
  *
- * Never zero, because an arrival from exactly its resting place is not an arrival
- * at all, and because the sign of that offset is what says the character dropped in
+ * Never zero, because an arrival from exactly its resting place is not an arrival at
+ * all, and because the sign of that offset is what says the character dropped in
  * rather than surfacing. A roll that landed on zero would break both, so the value
  * starts above it rather than trusting the roll.
  */
@@ -99,87 +53,50 @@ function rollStepsBetween(min: number, max: number): number {
   return min + Math.floor(Math.random() * (max - min + 1));
 }
 
-/** One of the stepped timings, at random. */
-function rollTiming(): string {
-  return TimingChoices[Math.floor(Math.random() * TimingChoices.length)] ?? 'jump-none';
-}
-
-/** One instance's motion, rolled fresh. */
-function rollMotion(): CharacterMotion {
+/** One character's arrival, rolled fresh. */
+function rollPop(): CharacterPop {
   return {
-    tilt: (Math.random() * 2 - 1) * MaxTiltDeg,
-    range: rollBetween(MaxRangePx / 3, MaxRangePx),
-    sway: (Math.random() * 2 - 1) * MaxSwayPx,
-    duration: rollBetween(MinDurationS, MaxDurationS),
-    steps: rollStepsBetween(MinSteps, MaxSteps),
-    timing: rollTiming(),
-    offset: Math.random(),
-    popTilt: (Math.random() * 2 - 1) * MaxPopTiltDeg,
-    popOffsetX: (Math.random() * 2 - 1) * MaxPopOffsetPx,
+    tilt: (Math.random() * 2 - 1) * MaxPopTiltDeg,
+    offsetX: (Math.random() * 2 - 1) * MaxPopOffsetPx,
     // Always from slightly above, and never from nowhere: a character dropping into
     // place from overhead reads as arriving, where from below reads as surfacing.
-    popOffsetY: -rollBetween(MinPopOffsetYAbsPx, MaxPopOffsetPx),
-    popSteps: rollStepsBetween(MinPopSteps, MaxPopSteps),
-    popTiming: rollTiming(),
+    offsetY: -rollBetween(MinPopOffsetYAbsPx, MaxPopOffsetPx),
+    steps: rollStepsBetween(MinPopSteps, MaxPopSteps),
+    timing: rollTiming(),
   };
 }
 
-/** The idle values, as finished CSS values. */
-function idleProperties(motion: CharacterMotion): [string, string][] {
+/** The arrival, as the finished values `Pop` reads. */
+function popProperties(motion: CharacterPop): [string, string][] {
   return [
-    ['--Character-Motion-Tilt', `${motion.tilt.toFixed(2)}deg`],
-    ['--Character-Motion-Range', `${motion.range.toFixed(2)}px`],
-    ['--Character-Motion-Sway', `${motion.sway.toFixed(2)}px`],
-    ['--Character-Motion-Duration', `${motion.duration.toFixed(2)}s`],
-    ['--Character-Motion-Timing', `steps(${motion.steps}, ${motion.timing})`],
-    ['--Character-Motion-Offset', motion.offset.toFixed(3)],
+    ['--Pop-Tilt', `${motion.tilt.toFixed(2)}deg`],
+    ['--Pop-OffsetX', `${motion.offsetX.toFixed(2)}px`],
+    ['--Pop-OffsetY', `${motion.offsetY.toFixed(2)}px`],
+    ['--Pop-Timing', `steps(${motion.steps}, ${motion.timing})`],
   ];
 }
 
 /**
- * The pop's values, for the `Pop` primitive to read.
+ * The ref for a character's own node, carrying its idle sway and its arrival.
  *
- * Only the parts that make one character differ from another: where it comes
- * from and how it is cocked when it gets there. The squash itself and the
- * duration belong to the primitive, so every reaction is the same movement.
- */
-function popProperties(motion: CharacterMotion): [string, string][] {
-  return [
-    ['--Pop-Tilt', `${motion.popTilt.toFixed(2)}deg`],
-    ['--Pop-OffsetX', `${motion.popOffsetX.toFixed(2)}px`],
-    ['--Pop-OffsetY', `${motion.popOffsetY.toFixed(2)}px`],
-    ['--Pop-Timing', `steps(${motion.popSteps}, ${motion.popTiming})`],
-  ];
-}
-
-/**
- * A ref for the element that carries the motion, with the rolled values written
- * onto it as custom properties.
- *
- * The values change once per character and cannot be known in CSS, and a style
- * prop is not allowed, so they are set on the node the way the paper overlay sets
- * its own drift. Expressed as finished values rather than numbers, so the
- * stylesheet still decides what they mean. The timings are passed as whole
- * `steps()` calls because the build strips a `var()` used *inside* the function,
- * which would leave an invalid timing function and silently cancel the animation.
- *
- * The `Pop` values sit on this same node, so the primitive below picks them up by
- * inheritance. That is what lets one mechanism serve every reaction while each
- * character still brings its own.
+ * The two are written by two effects onto one node rather than one hook writing both,
+ * because the sway belongs to every thing on the page and the arrival belongs to a
+ * character: sharing the node is what lets `Pop` read the arrival by inheritance while
+ * the sway runs on the same element.
  */
 export function useCharacterMotion(): { current: HTMLSpanElement | null } {
-  const ref = useRef<HTMLSpanElement>(null);
-  const [motion] = useState(rollMotion);
+  const motionRef = useSwayMotion();
+  const [motion] = useState(rollPop);
 
   useEffect(() => {
-    const node = ref.current;
+    const node = motionRef.current;
     if (node === null) {
       return;
     }
-    for (const [name, value] of [...idleProperties(motion), ...popProperties(motion)]) {
+    for (const [name, value] of popProperties(motion)) {
       node.style.setProperty(name, value);
     }
-  }, [motion]);
+  }, [motion, motionRef]);
 
-  return ref;
+  return motionRef;
 }

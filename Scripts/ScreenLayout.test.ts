@@ -114,11 +114,28 @@ describe('the screen frame', () => {
     expect(declaration('VerticalCenter', 'align-content')).toBe('center');
   });
 
-  it('leaves a container as tall as what is in it', () => {
+  it('leaves a container as tall as what is in it, lined up by its top', () => {
     // Grid stretches items to their row, so a card beside the wordmark was being pulled
     // to the wordmark's height with its own content sitting at the top of the box,
-    // which reads as padding nobody set.
-    expect(declaration('Root', 'align-items')).toBe('start');
+    // which reads as padding nobody set. This is the alignment every screen but the
+    // entry one asks for.
+    expect(declaration('AlignStart', 'align-items')).toBe('start');
+  });
+
+  it('can line containers up in the middle of one another instead', () => {
+    // A wordmark is a third of the height of the card of fields beside it, so aligned
+    // by the top edge it floats beside the middle of the menu rather than sitting in
+    // the middle of it. The entry screen asks for this and the lobby does not, so it
+    // is a choice rather than a default.
+    expect(declaration('AlignCenter', 'align-items')).toBe('center');
+  });
+
+  it('keeps the two alignment axes apart', () => {
+    // `align-content` places the rows in the viewport and `align-items` places a
+    // container in its row. Conflated, a screen could not centre itself without also
+    // centring every container, and the lobby could not sit at its top.
+    expect(declares('AlignStart', 'align-content')).toBe(false);
+    expect(declares('VerticalTop', 'align-items')).toBe(false);
   });
 
   it('fills the room it is given without ever shrinking below its own content', () => {

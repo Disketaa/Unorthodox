@@ -1,0 +1,95 @@
+/*
+ * The idle sway, shared by everything that rocks on the page.
+ *
+ * The characters have it and so does the game's name. It lives here rather than in
+ * `Character` because it is not a character's: a row of nine characters is only
+ * interesting because no two of them agree, and that comes from the roll rather than
+ * from the drawing. Two copies of this would be one movement that had quietly forked.
+ *
+ * Two classes and no element of its own, so a caller composes them onto the node it
+ * already has. See `Truncate`, which is the same arrangement for the same reason.
+ */
+
+/*
+ * Idle motion.
+ *
+ * Things rock from side to side, the way someone standing shifts their weight, and
+ * that lateral swing is what carries the movement. The vertical part is barely there
+ * on purpose: a thing that hops reads as bouncing, and a screen of them is busy
+ * rather than alive. Sway slowly and the eye reads it as presence, not as motion.
+ *
+ * Every value behind it is rolled per instance, so no two move alike: the resting
+ * lean, the swing width, the tempo, the step count, the jump keyword and the place in
+ * the cycle. That variety is where the unpredictability comes from. One shared
+ * duration and one shared amplitude would look like a row of items on a single
+ * conveyor, which is the thing to avoid.
+ *
+ * The leans are unevenly spaced and do not mirror each other exactly, and the thing
+ * is its own pivot, so it turns around its middle instead of swinging from a corner.
+ * `steps` is what keeps it drawn rather than tweened: it holds a pose on the turn
+ * instead of gliding through it.
+ */
+.Moving {
+  /*
+   * The fallbacks are what a thing looks like for the frame before its own values are
+   * written. The step count and the keyword travel as one finished `steps()` call,
+   * because the build strips a `var()` used *inside* the function and would leave an
+   * invalid timing that cancels the animation.
+   */
+  animation: SwayBob 3s var(--Sway-Timing, steps(2, jump-none)) infinite;
+  /*
+   * A negative delay starts it partway into its cycle, which is what desynchronises
+ * them. Without it everything in a row would move in lockstep, which looks mechanical.
+   */
+  animation-delay: calc(var(--Sway-Duration, 3s) * var(--Sway-Offset, 0) * -1);
+}
+
+@keyframes SwayBob {
+  /* Settled, tipped a little one way. */
+  0% {
+    transform: translateX(0) rotate(calc(var(--Sway-Tilt, 0deg) * 0.5));
+  }
+
+  /* Swung to one side, leaning into it. */
+  24% {
+    transform: translateX(calc(var(--Sway-Sway, 1px) * -1))
+      rotate(calc(var(--Sway-Tilt, 0deg) * -1.2));
+  }
+
+  /*
+   * Through the middle, with the smallest lift of the whole cycle. This is the only
+   * place it leaves the ground at all, and barely.
+   */
+  50% {
+    transform: translateX(0) translateY(calc(var(--Sway-Range, 0.5px) * -1))
+      rotate(calc(var(--Sway-Tilt, 0deg) * 0.35));
+  }
+
+  /* Swung the other way, leaning the other way. */
+  76% {
+    transform: translateX(var(--Sway-Sway, 1px)) rotate(calc(var(--Sway-Tilt, 0deg) * 1.2));
+  }
+
+  100% {
+    transform: translateX(0) rotate(calc(var(--Sway-Tilt, 0deg) * 0.5));
+  }
+}
+
+/*
+ * A thing that should hold still: the scoreboard, where rows move as the numbers
+ * change and a sway on top of that is noise rather than character, and anywhere the
+ * reader has asked for less motion. It keeps its resting lean, so a still row still
+ * looks like a row rather than a row of upright icons.
+ */
+.Still {
+  animation: none;
+  transform: rotate(var(--Sway-Tilt, 0deg));
+}
+
+/* Honours the system setting, rather than swaying regardless. */
+@media (prefers-reduced-motion: reduce) {
+  .Moving {
+    animation: none;
+    transform: rotate(var(--Sway-Tilt, 0deg));
+  }
+}
