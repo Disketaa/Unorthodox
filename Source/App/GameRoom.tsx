@@ -15,8 +15,10 @@ export interface GameRoomProps {
   roomCode: string;
   role: SessionRole;
   name: string;
-  /** The character rolled on this device when the page loaded. */
+  /** The character this device joins with, the last one it wore or a fresh roll. */
   look: PlayerLook;
+  /** Reports the character the host kept, so the next room in this tab starts from it. */
+  onLook: (look: PlayerLook) => void;
 }
 
 /** The one sentence for each way a player can find themselves outside the room. */
@@ -26,8 +28,8 @@ const BlockedMessage = {
 } as const;
 
 /** Pick the screen that matches the current phase. */
-export function GameRoom({ roomCode, role, name, look }: GameRoomProps) {
-  const view = useGameSession(roomCode, role, name, look);
+export function GameRoom({ roomCode, role, name, look, onLook }: GameRoomProps) {
+  const view = useGameSession(roomCode, role, name, look, onLook);
   const { exitRoom } = view;
 
   // Both of these end the session as far as this player is concerned, so both send

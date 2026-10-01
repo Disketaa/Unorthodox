@@ -426,3 +426,14 @@ Each image is followed by a hotspot and then by the keyword it replaces, so a mi
 undecodable SVG leaves the platform cursor rather than an invisible pointer. The hotspot values were
 measured from the paths' own geometry rather than assumed at the top-left corner, which the art
 does not use.
+
+A character chosen in one room is kept for the next room in the same tab, not only across a
+reload. The look a session starts from was held in `App` as state that never changed, so a room
+closed and reopened in the same tab started from whatever was rolled when the page loaded, and
+only reloading the page read the stored look back. The confirmed look is now reported up to `App`
+as well as written to `sessionStorage`, which is what the host does with a change: the session keeps
+the character, and the app keeps the one to offer next time.
+
+The look is not read from storage on every render. Storage stays the answer to "what did this device
+last wear", read once at load, and the live value is state, because reading it per render would make
+a room that opened a moment later depend on whether anything had written since.

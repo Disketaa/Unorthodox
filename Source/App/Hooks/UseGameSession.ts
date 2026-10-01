@@ -5,6 +5,7 @@ import { createSession } from '../SessionFactory';
 import { Session, SessionRole, BlockedReason } from '../Session';
 import { useSessionPhase, SessionPhase } from './UseSessionPhase';
 import { useGameActions } from './UseGameActions';
+import type { GameActions } from './UseGameActions';
 import { useHostPhaseTimer } from './UseHostPhaseTimer';
 import { useRememberLook } from './UseRememberLook';
 import {
@@ -96,33 +97,49 @@ function readTopic(publicState: PublicState | undefined): string | null {
   return publicState !== undefined && 'topic' in publicState ? publicState.topic : null;
 }
 
+/**
+ * The marks this player has made in a round, and the actions that make them.
+ *
+ * Each mark is stamped with the round it was made in, which is why this holds state
+ * at all: a player who answers and is then shown the next round must stop counting
+ * as having answered, and only the round a mark belongs to can say that.
+ */
+function useRoundMarks(
+  session: Session,
+  topic: string | null,
+): { marks: RoundMarks; actions: GameActions } {
+  const [marks, setMarks] = useState<RoundMarks>(emptyMarks);
+  const actions = useGameActions(
+    session,
+    () => setMarks((current) => markSubmitted(current, topic)),
+    (groupId) => setMarks((current) => markRejected(current, topic, groupId)),
+  );
+  return { marks, actions };
+}
+
 /** Join a room and expose one uniform view of the game for the screens. */
 export function useGameSession(
   roomCode: string,
   role: SessionRole,
   playerName: string,
-  look: PlayerLook
+  look: PlayerLook,
+  onLook: (look: PlayerLook) => void,
 ): GameSessionView {
   const [session] = useState<Session>(() => createSession(role, roomCode, playerName, look));
   const [, setVersion] = useState(0);
-  const [marks, setMarks] = useState<RoundMarks>(emptyMarks);
   const [hostLeft, setHostLeft] = useState(false);
   useSessionUpdates(session, setVersion, setHostLeft);
 
   const publicState = session.getPublicState();
   const phase = useSessionPhase(publicState, session.getClockOffsetMs());
   const topic = readTopic(publicState);
-  const actions = useGameActions(
-    session,
-    () => setMarks((current) => markSubmitted(current, topic)),
-    (groupId) => setMarks((current) => markRejected(current, topic, groupId)),
-  );
+  const { marks, actions } = useRoundMarks(session, topic);
 
   useHostPhaseTimer(session, role === 'Host', phase, actions.nextRound);
 
   const playerId = session.getPlayerId();
   const ownLook = ownLookFor(playerId, phase.playerLooks);
-  useRememberLook(ownLook);
+  useRememberLook(ownLook, onLook);
 
   return {
     ...phase,

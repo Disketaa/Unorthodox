@@ -3,11 +3,13 @@ import { ComponentChildren } from 'preact';
 import { PlayerLook, randomLook } from '@/Core';
 import { GalleryPage } from '@/Dev/ComponentGallery/GalleryPage';
 import { JoinScreen } from '@/Screens';
+import type { JoinScreenProps } from '@/Screens';
 import { GlyphField, PaperBackground } from '@/Design/Overlays';
 import { createRoomCode, normalizeRoomCode } from './RoomCode';
 import { loadLook } from './LookStorage';
 import { parseRoute, roomPath, Route } from './Routes';
 import { GameRoom } from './GameRoom';
+import type { GameRoomProps } from './GameRoom';
 
 /**
  * The player name is kept in sessionStorage, which is scoped to one tab.
@@ -63,6 +65,24 @@ function WithBackground({ children }: WithBackgroundProps) {
   );
 }
 
+/** The room, over the background. Split out so the app below stays about routing. */
+function Room(props: GameRoomProps) {
+  return (
+    <WithBackground>
+      <GameRoom {...props} />
+    </WithBackground>
+  );
+}
+
+/** The entry screen, over the background. */
+function Entry(props: JoinScreenProps) {
+  return (
+    <WithBackground>
+      <JoinScreen {...props} />
+    </WithBackground>
+  );
+}
+
 export function App() {
   const route = useHashRoute();
   const [name, setName] = useState(loadName);
@@ -71,7 +91,13 @@ export function App() {
   // is what really keeps it: a player who leaves and comes back is given the
   // character it already had for them, not a new roll. Changing it later is the
   // lobby's job, so the host can refuse once the game has started.
-  const [look] = useState<PlayerLook>(() => loadLook() ?? randomLook(Math.random));
+  //
+  // Held as state rather than read from storage on each room, because storage is
+  // only read when the page loads. A room that closed and reopened in the same tab
+  // would otherwise start from whatever was rolled at that load rather than from
+  // the character the player has since picked, and only closing the tab would
+  // bring it back.
+  const [look, setLook] = useState<PlayerLook>(() => loadLook() ?? randomLook(Math.random));
 
   const onNameChange = (value: string) => {
     setName(value);
@@ -90,23 +116,23 @@ export function App() {
   }
   const nameMissing = name.trim().length === 0;
   if (route.kind === 'Room' && !nameMissing) {
-    return (
-      <WithBackground>
-        <GameRoom roomCode={route.roomCode} role={route.role} name={name.trim()} look={look} />
-      </WithBackground>
-    );
+    const room: GameRoomProps = {
+      roomCode: route.roomCode,
+      role: route.role,
+      name: name.trim(),
+      look,
+      onLook: setLook,
+    };
+    return <Room {...room} />;
   }
 
-  return (
-    <WithBackground>
-      <JoinScreen
-        name={name}
-        roomCode={roomCode}
-        onNameChange={onNameChange}
-        onRoomCodeChange={onRoomCodeChange}
-        onJoin={onJoin}
-        onCreate={onCreate}
-      />
-    </WithBackground>
-  );
+  const entry: JoinScreenProps = {
+    name,
+    roomCode,
+    onNameChange,
+    onRoomCodeChange,
+    onJoin,
+    onCreate,
+  };
+  return <Entry {...entry} />;
 }
