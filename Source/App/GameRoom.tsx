@@ -80,7 +80,9 @@ export function GameRoom({ roomCode, role, name, look, onLook }: GameRoomProps) 
     <>
       <PhaseScreen view={view} />
       <DebugDock enabled={debugEnabled} label={Strings.lobby.debugOn}>
-        <LobbyDebugTools publicState={view.publicState} onAddBot={view.addBot} />
+        {view.isHost && (
+          <LobbyDebugTools publicState={view.publicState} onAddBot={view.addBot} />
+        )}
       </DebugDock>
     </>
   );
