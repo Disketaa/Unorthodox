@@ -1,5 +1,50 @@
 ﻿# DECISIONS
 
+## 2026-10-01 — a theme card is a button that washes in its own accent and numbers itself
+The card is a `<button>` rather than a `Card` with a hover on a wrapper, and that is the only
+place in the design system where a surface is re-declared: `Card` paints an opaque background
+of its own and takes no `className`, so the wash would have been hidden underneath it. The
+frame is drawn from the same tokens, so it reads as the same family as every other card.
+
+The wash and the ink are written onto the card's own node from `themeAccent` in `Core` rather
+than passed in as props. A caller that passed the colour could pass the wrong one, and two
+cards of one bank wearing two colours would be a mistake nothing could see. The nine themes
+reuse the eight `CharacterColor` tints — the palette is smaller than the catalogue, and
+`Accents` are already measured for contrast and already on screen as the faces players are
+drawn as. The wash and never the raw tint: a tint behind a name fails contrast in all eight.
+
+The number behind the name is the card's place in the bank, counted from one, not the theme's
+place in the catalogue. Six cards in front of a player are numbered one to six whatever they
+are; a catalogue index would read as a fact about the theme that the room has not agreed on.
+It is pushed into the bottom right corner and cut off on two sides, because a figure set to
+fill the panel and then clipped is something the card is showing, and a figure that fits
+inside the card is a second label.
+
+The cards ride the shared `Sway` through `composes`, so a card and a character are one
+movement. That forced the press onto `scale` rather than `transform`: the sway animates
+`transform` on the same node, and an animation outranks a transition on the same property, so
+a press written there would shrink the card for one frame and then stop. `useSwayMotion` is
+now generic over its element, because the characters ride a span and a card rides a button.
+
+## 2026-10-01 — a block centred in the viewport gives back half of what is above it
+`ViewportCenter` exists because "centred in what is left" and "centred in the viewport" are
+different questions, and the second one is what a stage wants. A child that grows into the
+room below a bar is centred in that room, so the bar pushes it half its own height too low —
+and the error grows with the bar, which wraps onto a second row on a phone and is not the
+same height as on a desktop.
+
+The fix measures the height above the frame and takes half of it back off the top with a
+negative `margin-top`. The half is the whole of it: a stage with `a` above and `b` below
+centres the child in the middle of `a + b`, which is half a bar too low exactly when `a` is
+half a bar. It measures its own offset from the top rather than summing its siblings, so the
+number of things at the top of the game is not a number this has to be told about — a sibling
+count would have been wrong from the first phase that added something above.
+
+`Stack` gained `grow` for the same reason it needed one: a stack is otherwise exactly as tall
+as its contents, so a child with room to be given has none. And the measure-then-subscribe
+shape was written twice — once here, once in `useCardTurns` — so it is `useViewportMeasure`,
+one hook for both.
+
 ## 2026-10-01 — the themes are a bank of cards, dealt from the room code and turned to face the player
 `Core/Themes.ts` holds nine themes and `dealThemes`, a partial shuffle rather than six
 independent rolls: a deal that can hold the same theme twice is not a choice, since a player

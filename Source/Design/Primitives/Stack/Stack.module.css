@@ -3,6 +3,18 @@
 }
 
 /*
+ * The row takes the height its parent has left.
+ *
+ * Grow, never shrink, at its own height: short of the room it grows to fill it, and taller
+ * than the room it keeps its height and the page scrolls rather than the row's contents
+ * being squeezed. A `0` basis would be wrong here, since the row's own height is what it
+ * is.
+ */
+.Grow {
+  flex: 1 0 auto;
+}
+
+/*
  * Every child one equal share of the row's width.
  *
  * On the children rather than on the row, and with a `0` basis, which is the whole

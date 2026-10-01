@@ -1,27 +1,186 @@
 /*
- * The name on a theme card, which is the whole content of the card.
+ * One theme card: the frame the `Card` variant would draw, plus the hover.
  *
- * Centred and in the display face rather than the body one: the six cards are a choice
- * between six words, and six lines of body text at reading size read as a paragraph
- * that happens to be broken up rather than as six things to pick from. The name is
- * allowed to wrap rather than being cut, since a theme cut short is a theme nobody
- * can read.
+ * The frame is re-declared rather than taken from `Card` because the card has to be the
+ * thing the wash lands on. `Card` paints an opaque surface of its own and takes no
+ * `className`, so a button wrapped in one would hide the hover underneath it — the one
+ * place in the design system where a surface is written out again. Same tokens, same
+ * radius, same padding, so it reads as the same family as every other card.
  *
- * In the default ink rather than the title's accent, and this is the one place in the
- * game a theme name is written: the accent is the tint a player chose for themselves,
- * and six cards of it would say whose screen this is rather than what the room could
- * play. Every player in the room has to read the same six names, so they wear the same
- * colour, which is the reason `--Color-Room-Yellow` exists for the marks that are about
- * the room rather than about the viewer.
+ * `width` and `height` are 100% rather than left alone because the slot around this card
+ * sets the shape, and a button is the one element in the box that does not fill it by
+ * default.
+ *
+ * The transitions are the ones `Button` uses, so a press on a theme card answers in the
+ * same time and easing as a press on anything else.
+ *
+ * `position: relative` and `overflow: hidden` are both for the mark behind the name: the mark
+ * is taken out of the flow and centred on the card, and it is larger than the card in every
+ * direction. Clipping is the card's own rather than a mask on the mark, so the mark is cut by
+ * the same rounded frame the card is drawn in and cannot escape past its corners.
  */
-.Name {
+.Root {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background: var(--Color-Surface-Default);
+  color: var(--Color-Text-Default);
+  border: var(--Border-Width-Default) solid var(--Color-Border-Default);
+  border-radius: var(--Radius-Card);
+  cursor: var(--Cursor-Pointer);
+  transition: background var(--Duration-Fast) var(--Easing-Standard),
+    border-color var(--Duration-Fast) var(--Easing-Standard),
+    color var(--Duration-Fast) var(--Easing-Standard);
+}
+
+/*
+ * The hover, in the theme's own accent.
+ *
+ * A wash rather than the tint, because the name is read off the card and a raw tint behind
+ * a name fails contrast in every one of the eight tints in the palette — the ink step of
+ * the same accent is what can be read on its own wash. The border takes the ink because a
+ * hairline in the accent is what says the card is the thing under the pointer, which the
+ * fill alone does not say on a pale wash.
+ *
+ * Both values are written by the component from `Core`, where the accents are measured, so
+ * the fallback here is only what a card looks like before it has been written to.
+ */
+.Root:hover {
+  background: var(--ThemeCard-Wash, var(--Accent-Wash));
+  border-color: var(--ThemeCard-Ink, var(--Accent-Ink));
+  color: var(--ThemeCard-Ink, var(--Accent-Ink));
+}
+
+/*
+ * The idle sway and the still pose, both of which the characters and the wordmark wear too.
+ *
+ * Composed rather than written out, so a theme card and a character are the same movement
+ * instead of two that happen to agree. This file keeps the one thing that is a card's alone:
+ * which of the two it is.
+ */
+.Moving {
+  composes: Moving from '../../Primitives/Sway/Sway.module.css';
+}
+
+.Still {
+  composes: Still from '../../Primitives/Sway/Sway.module.css';
+}
+
+/*
+ * The press, as a scale on `scale` rather than on `transform`.
+ *
+ * The sway animates `transform` on this same node, and an animation outranks a transition
+ * on the same property — so a press written on `transform` would shrink the card on the
+ * first frame and then stop, because the sway took the property back. `scale` is a
+ * separate property and composes with it, which is the same arrangement the bar's crown uses
+ * to centre itself under the same movement.
+ */
+.Root:active {
+  scale: 0.97;
+}
+
+/*
+ * The focus ring on the card's own border rather than an outline, so the focused card never
+ * shows two frames, one inside the other: the border is already there and only its colour
+ * changes, which is what `TextField` does for the same reason.
+ */
+.Root:focus-visible {
+  outline: none;
+  border-color: var(--Color-Border-Focus);
+}
+
+/*
+ * The mark: the card's own number, one figure, far larger than the card.
+ *
+ * Taken out of the flow and pushed past the bottom right corner, which is the whole of it: a
+ * figure set to fill the panel and then clipped reads as something the card is showing rather
+ * than as a number that happens to fit on it, and a corner is what leaves most of it showing
+ * while still cutting it — centred, it would be a figure inside a card.
+ *
+ * The offset is a share of the figure's own size rather than a length, so it holds when the
+ * figure grows with the card: a fixed inset would put the figure back inside the card on the
+ * narrow screens where the card is at its smallest.
+ *
+ * It is the panel's substance rather than another thing written on it: a card with a name on
+ * it and nothing else is a label, and the bank is being held out at the player rather than
+ * listed.
+ *
+ * In the card's own colour at a low opacity rather than in a second one, so it darkens with
+ * the surface instead of sitting on it — `inherit` is the card's colour, which takes the
+ * theme's ink on hover. An opacity and not a paler colour, because the name is the same
+ * colour and has to stay the stronger of the two.
+ *
+ * Not selectable, not announced, and scaled rather than resized on hover: one figure has no
+ * wrap to reflow, but a scale still keeps it off the layout path and it is the same property
+ * the name's own hover uses.
+ */
+.Mark {
+  position: absolute;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 1em;
+  height: 1em;
+  top: 50%;
+  left: 50%;
+  translate: var(--Offset-ThemeCardMark) var(--Offset-ThemeCardMark);
+  overflow: hidden;
+  font-family: var(--FontFamily-Display);
+  font-size: var(--FontSize-ThemeCardMark);
+  font-weight: bold;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  opacity: var(--Opacity-ThemeCardMark);
+  color: inherit;
+  transform: scale(1);
+  transform-origin: center;
   /*
-   * No height of its own: the slot around this card sets the shape, and a height here as
-   * well would be a second number that could disagree with it on a narrow screen.
+   * The delay, and on this rule rather than on the `:hover` one.
+   *
+   * A delay written on the hover applies to the change into it and not out of it, so a mark
+   * that waited to open would still be there after the pointer had gone. Here it applies both
+   * ways, and the name carries no delay: the word answers at once and the mark follows a beat
+   * behind it, which is the depth between the two rather than one image changing size.
    */
+  transition: transform var(--Duration-Fast) var(--Easing-Standard) var(
+      --Duration-ThemeCardMarkDelay
+    ),
+    opacity var(--Duration-Fast) var(--Easing-Standard) var(--Duration-ThemeCardMarkDelay);
+}
+
+/*
+ * The name on the card, which is the whole content of it.
+ *
+ * Centred and in the display face rather than the body one: the six cards are a choice
+ * between six words, and six lines of body text at reading size read as a paragraph that
+ * happens to be broken up rather than as six things to pick from. The name is allowed to wrap
+ * rather than being cut, since a theme cut short is a theme nobody can read.
+ *
+ * `z-index` because it shares the card with the mark, which is absolutely positioned and would
+ * paint over the one thing on the card that is meant to be read.
+ *
+ * In the default ink rather than the title's accent at rest, and it takes the accent only on
+ * hover, from the same custom property the fill does. The accent is the tint a player chose
+ * for themselves, so wearing it permanently on six cards would say whose screen this is rather
+ * than what the room could play; on hover it is the card's own colour answering the pointer,
+ * which is a fact about the card rather than about the viewer.
+ *
+ * No height of its own: the slot around this card sets the shape, and a height here as well
+ * would be a second number that could disagree with it on a narrow screen.
+ */
+.Name {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   height: 100%;
   padding: var(--Space-ThemeCardPadding);
   font-family: var(--FontFamily-Display);
@@ -29,5 +188,23 @@
   line-height: 1.1;
   text-align: center;
   overflow-wrap: break-word;
-  color: var(--Color-Text-Default);
+  color: inherit;
+  transition: font-size var(--Duration-Fast) var(--Easing-Standard);
+}
+
+/*
+ * The name and the mark open up together on hover, by the same share.
+ *
+ * The name alone would leave the mark the same size and the panel would stop opening up; the
+ * mark alone would swell out from behind a name that did not, which reads as the card growing
+ * rather than as the word on it. `font-size` on the name so the text reflows instead of being
+ * drawn larger and going soft at the edges.
+ */
+.Root:hover .Name {
+  font-size: calc(var(--FontSize-ThemeCard) * var(--Scale-ThemeCardHover));
+}
+
+.Root:hover .Mark {
+  transform: scale(var(--Scale-ThemeCardHover));
+  opacity: var(--Opacity-ThemeCardMarkHover);
 }

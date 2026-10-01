@@ -1,5 +1,5 @@
 import { ThemeCard } from './ThemeCard';
 
 export function ThemeCardGallery() {
-  return <ThemeCard name="Видеоигры" />;
+  return <ThemeCard theme="VideoGames" name="Видеоигры" />;
 }

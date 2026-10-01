@@ -43,6 +43,20 @@ describe('the row that fills itself', () => {
     expect(sheet.text).not.toContain('.FillContent');
   });
 
+  it('grows into the room its parent has left, and never shrinks below its contents', () => {
+    // `Screen` answers this for a whole page of containers; a row inside a page needs it
+    // too, or a child that centres itself below a sibling has no space to be given.
+    // Shrink at 0 would squeeze the contents instead of letting the page scroll.
+    expect(sheet.ruleBody(/\.Grow\s*\{([^}]*)\}/)).toContain('flex:10auto');
+  });
+
+  it('leaves every other row at the height of what is in it', () => {
+    // The default has to stay a row of its own contents, or every Stack in the app grows
+    // to fill whatever it is dropped into.
+    expect(sheet.text).not.toContain('.NotGrow');
+    expect(sheet.declares(/\.Root\s*\{([^}]*)\}/, 'flex')).toBe(false);
+  });
+
   it('leaves align and justify to mean what they mean', () => {
     // Two axes on one primitive, and they answer two different questions. Folding the
     // fill into either of them is what made this a second, contradictory property.

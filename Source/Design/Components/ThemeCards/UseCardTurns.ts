@@ -1,5 +1,6 @@
 import { RefObject } from 'preact';
-import { useEffect } from 'preact/hooks';
+import { useCallback } from 'preact/hooks';
+import { useViewportMeasure } from '@/Design/Primitives';
 import { turnFor } from './CardTurn';
 
 /** The row and the cards it holds, as the refs the hook writes the turn onto. */
@@ -24,53 +25,41 @@ export type CardRefs = readonly RefObject<HTMLDivElement | null>[];
  * where dividing by a zero width would be a card pointing at the ceiling.
  */
 export function useCardTurns(row: RefObject<HTMLDivElement | null>, cards: CardRefs): void {
-  useEffect(() => {
+  const apply = useCallback(() => {
     const rowNode = row.current;
     if (rowNode === null) {
       return;
     }
-
-    const apply = () => {
-      const maxYaw = angleOf(rowNode, '--Angle-ThemeCardYaw');
-      const maxPitch = angleOf(rowNode, '--Angle-ThemeCardPitch');
-      const viewport = rowNode.ownerDocument.defaultView;
-      if (viewport === null) {
+    const viewport = rowNode.ownerDocument.defaultView;
+    if (viewport === null) {
+      return;
+    }
+    const maxYaw = angleOf(rowNode, '--Angle-ThemeCardYaw');
+    const maxPitch = angleOf(rowNode, '--Angle-ThemeCardPitch');
+    const middleX = viewport.innerWidth / 2;
+    const middleY = viewport.innerHeight / 2;
+    cards.forEach((card) => {
+      const node = card.current;
+      if (node === null) {
         return;
       }
-      const middleX = viewport.innerWidth / 2;
-      const middleY = viewport.innerHeight / 2;
-      cards.forEach((card) => {
-        const node = card.current;
-        if (node === null) {
-          return;
-        }
-        const box = node.getBoundingClientRect();
-        const centreX = box.left + box.width / 2;
-        const centreY = box.top + box.height / 2;
-        node.style.setProperty(
-          '--ThemeCard-Yaw',
-          `${turnFor(centreX - middleX, viewport.innerWidth / 2, maxYaw)}deg`,
-        );
-        node.style.setProperty(
-          '--ThemeCard-Pitch',
-          `${turnFor(centreY - middleY, viewport.innerHeight / 2, maxPitch)}deg`,
-        );
-      });
-    };
-
-    apply();
-    viewportOf(rowNode)?.addEventListener('resize', apply);
-    return () => viewportOf(rowNode)?.removeEventListener('resize', apply);
+      const box = node.getBoundingClientRect();
+      node.style.setProperty(
+        '--ThemeCard-Yaw',
+        `${turnFor(box.left + box.width / 2 - middleX, middleX, maxYaw)}deg`,
+      );
+      node.style.setProperty(
+        '--ThemeCard-Pitch',
+        `${turnFor(box.top + box.height / 2 - middleY, middleY, maxPitch)}deg`,
+      );
+    });
   }, [row, cards]);
+
+  useViewportMeasure(row, apply);
 }
 
 /** The angle a token holds, in degrees, or nothing turned when it cannot be read. */
 function angleOf(node: HTMLElement, token: string): number {
-  const value = getComputedStyle(node).getPropertyValue(token).trim();
-  const degrees = Number.parseFloat(value);
+  const degrees = Number.parseFloat(getComputedStyle(node).getPropertyValue(token));
   return Number.isFinite(degrees) ? degrees : 0;
-}
-
-function viewportOf(node: HTMLElement): Window | null {
-  return node.ownerDocument.defaultView;
 }

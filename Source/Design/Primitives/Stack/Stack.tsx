@@ -21,6 +21,16 @@ export interface StackProps {
   align?: StackAlign;
   justify?: StackJustify;
   fill?: StackFill;
+  /**
+   * Whether the row takes the height its parent has left.
+   *
+   * The question `Screen` answers for a whole page of containers, and this answers for one
+   * row inside a page: a stack is otherwise exactly as tall as what is in it, so a child
+   * that centres itself in the space below a sibling has no space to be given. `1 0 auto`
+   * grows into the room and never shrinks below its own content, which is what lets the
+   * same row still scroll when its contents are taller than the room.
+   */
+  grow?: boolean;
   children?: ComponentChildren;
   padding?: StackSize;
   margin?: StackSize;
@@ -32,6 +42,7 @@ export function Stack({
   align = "Stretch",
   justify = "Start",
   fill = "Content",
+  grow = false,
   children,
   padding,
   margin,
@@ -43,6 +54,7 @@ export function Stack({
     styles[`Align${align}`],
     styles[`Justify${justify}`],
     fill === "Even" && styles.FillEven,
+    grow && styles.Grow,
     padding && styles[`Padding${padding}`],
     margin && styles[`Margin${margin}`],
   ]

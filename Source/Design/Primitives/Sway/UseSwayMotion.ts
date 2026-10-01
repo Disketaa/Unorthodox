@@ -13,6 +13,10 @@ import { useEffect, useRef, useState } from 'preact/hooks';
  * The node is found through the ref this returns, so a caller that also needs its own
  * custom properties on the same element writes them there. `Character` does exactly
  * that, for the values its nested `Pop` reads by inheritance.
+ *
+ * Generic over the element rather than fixed to a span, because the caller knows what it is
+ * putting the movement on and the movement does not care: the characters ride a span and a
+ * theme card rides a button, and a ref typed to one of them is a cast away at the other.
  */
 export interface IdleMotion {
   tilt: number;
@@ -129,8 +133,8 @@ function idleProperties(motion: IdleMotion): [string, string][] {
  * strips a `var()` used *inside* the function, which would leave an invalid timing
  * function and silently cancel the animation.
  */
-export function useSwayMotion(): { current: HTMLSpanElement | null } {
-  const ref = useRef<HTMLSpanElement>(null);
+export function useSwayMotion<T extends HTMLElement>(): { current: T | null } {
+  const ref = useRef<T>(null);
   const [motion] = useState(rollIdle);
 
   useEffect(() => {

@@ -746,6 +746,67 @@ body.PageFade {
    */
   --FontSize-ThemeCard: calc(var(--Size-ThemeCardWidth) * 0.115);
   /*
+   * How large a card's own number is drawn behind its name.
+   *
+   * Far larger than the name and far larger than the card, so the frame cuts it on two
+   * sides and what is left of it is most of a figure rather than the whole of one: a mark
+   * that fits inside the card is a second label, and this one is meant to be the panel's
+   * substance rather than another thing written on it. A share of the card's width, so it
+   * holds on a phone as well as on a desktop — the card narrows to fit two across, and a flat
+   * size would be a figure on a card rather than a figure filling it.
+   */
+  --FontSize-ThemeCardMark: calc(var(--Size-ThemeCardWidth) * 1.45);
+  /*
+   * How far the figure is pushed past the card's centre towards its bottom right corner.
+   *
+   * In `em` — the figure's own size — rather than a length or a share of the card, so it
+   * holds at every card size: the card narrows on a phone and a fixed inset would put the
+   * figure back inside it there, which is the case the offset exists to avoid.
+   *
+   * A quarter of the figure's width and height, which leaves most of it showing while still
+   * cutting it on two sides. Enough that the number reads as a number and not as a shape.
+   */
+  --Offset-ThemeCardMark: -0.25em;
+  /*
+   * How long after the name the mark starts opening up.
+   *
+   * A delay rather than a slower movement, and it is the difference between two things
+   * scaling together and one thing chasing the other. The name is the thing being read and
+   * answers at once; the mark behind it answers a beat later, so the panel looks like it has
+   * depth between the word and the surface rather than being one flat image that changed size.
+   *
+   * A fraction of `--Duration-Fast`, so it stays in step with the hover rather than becoming
+   * a second, slower movement that lands after the pointer has already left.
+   */
+  --Duration-ThemeCardMarkDelay: 40ms;
+  /*
+   * How much bigger the name and the mark get under the pointer.
+   *
+   * A scale rather than a size, because the two are at different sizes already — the name and
+   * the mark behind it — and a second pair of sizes would be four numbers where one ratio
+   * says the same thing.
+   *
+   * Modest, because the card is already large and its name already fills a good part of it.
+   * Much more than this and the longest name wraps on hover, so a card that was one line
+   * becomes two the moment it is looked at.
+   */
+  --Scale-ThemeCardHover: 1.12;
+  /*
+   * How far the mark is held back at rest, and under the pointer.
+   *
+   * A twentieth at rest and twice that under the pointer. The mark is behind the name and
+   * has to stay behind it: it is the panel's substance rather than another thing to read,
+   * and it is drawn in the name's own colour, so how much of itself it is worth is the only
+   * thing standing between it and competing. At this size a card is a hint of a figure under
+   * a word, which is what a large quiet thing behind a name should be.
+   *
+   * By opacity rather than by a paler colour, because the name is drawn in the same colour
+   * and has to stay the stronger of the two. It is the card's own colour at this opacity over
+   * its own surface, so it darkens with the hover rather than sitting on top of it.
+   */
+  --Opacity-ThemeCardMark: 0.05;
+  --Opacity-ThemeCardMarkHover: 0.1;
+  /*
    * How much room a theme name keeps inside its card.
    *
    * A third of the smallest body step, and its own token because this is the only card in

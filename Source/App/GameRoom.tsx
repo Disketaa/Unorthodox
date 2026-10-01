@@ -2,7 +2,7 @@ import { useState } from 'preact/hooks';
 import { InfoScreen, LobbyDebugTools } from '@/Screens';
 import { Strings } from '@/Content';
 import { PlayerLook, assertNever } from '@/Core';
-import { Stack } from '@/Design/Primitives';
+import { Stack, ViewportCenter } from '@/Design/Primitives';
 import { DebugDock, StartCountdown } from '@/Design/Overlays';
 import { useGameSession } from './Hooks/UseGameSession';
 import { useDebugToggle } from './Hooks/UseDebugToggle';
@@ -46,19 +46,37 @@ function blockedMessage(reason: BlockedReason, roomLimit: number): string {
 }
 
 /**
- * The game itself, while it is being designed.
+ * The stage the game plays on: the bar of players at the top, the bank of themes under it.
  *
- * The bar along the top and nothing under it. The four phases that used to be here
- * drew a topic, a timer and a card of answers, and they are all of them still in
- * `Screens/` — a bar that has to be judged against the space it leaves for the game
- * cannot be judged with three screens still on the page, so the stage is empty and
- * `PhaseScreen` chooses it for every phase after the lobby.
+ * A `Stack` filling the height rather than a `Screen`, and the difference is the bar. A
+ * `Screen` is a grid of fixed-width containers, which is right for a page of cards and
+ * wrong here: it caps every row at one readable column, so the bank of six was laid out
+ * inside a 480px track and the cards came out narrow and against one side.
+ *
+ * The bar is left at the top and the bank centred because they are answering two different
+ * questions. The bar is a roster — it belongs where it can be found without scrolling to
+ * look for, which is the top of the game. The bank is the thing being looked at, and six
+ * cards facing the player read as an arrangement only when they are in the middle of what
+ * is left rather than pushed against the bar.
+ *
+ * The bank is wrapped in `ViewportCenter` rather than centred with `justify-content`, and
+ * that is the whole of the difference between "in the middle of the screen" and "in the
+ * middle of what the bar left". The frame measures the height above itself and gives half of
+ * it back, so the bank stays in the middle of the viewport however many things sit at the
+ * top of the game and however tall they are.
+ *
+ * The four phase screens that used to stand here are still in `Screens/`, unmounted, and
+ * `PhaseScreen` chooses this for every phase after the lobby — so the theme bank is on
+ * screen for writing and reviewing too. It is the first phase's cards showing through the
+ * whole game, which is what a phase that has no rule yet looks like from the outside.
  */
 function GameScene({ view }: { view: GameSessionView }) {
   return (
-    <Stack align="Center" gap="Lg">
+    <Stack align="Stretch" gap="Md" grow>
       <PlayerBarView view={view} />
-      <ThemeCardsView roomCode={view.roomCode} />
+      <ViewportCenter>
+        <ThemeCardsView roomCode={view.roomCode} />
+      </ViewportCenter>
     </Stack>
   );
 }

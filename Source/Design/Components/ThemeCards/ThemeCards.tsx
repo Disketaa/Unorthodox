@@ -6,10 +6,12 @@ import { useCardTurns } from './UseCardTurns';
 import styles from './ThemeCards.module.css';
 
 export interface ThemeCardsProps {
-  /** The themes this lobby was dealt. */
+  /** The themes this lobby was dealt, in the order they are shown. */
   themes: readonly ThemeId[];
   /** Names for the themes, by the same key as `ThemeId`. */
   names: Readonly<Record<ThemeId, string>>;
+  /** Asking for a theme. Every card is live for now; who may press is not settled. */
+  onPick?: (theme: ThemeId) => void;
 }
 
 /**
@@ -31,7 +33,7 @@ export interface ThemeCardsProps {
  * them on every resize, and a fresh set each render would be a fresh set of nodes to write
  * to every time anything else on the screen moved.
  */
-export function ThemeCards({ themes, names }: ThemeCardsProps) {
+export function ThemeCards({ themes, names, onPick }: ThemeCardsProps) {
   const row = useRef<HTMLDivElement>(null);
   const cards = useRef<ReturnType<typeof createRef<HTMLDivElement>>[]>([]);
   if (cards.current.length !== themes.length) {
@@ -43,7 +45,12 @@ export function ThemeCards({ themes, names }: ThemeCardsProps) {
     <div class={styles.Root} role="group" ref={row}>
       {themes.map((theme, index) => (
         <div class={styles.Slot} key={theme} ref={cards.current[index]}>
-          <ThemeCard name={names[theme]} />
+          <ThemeCard
+            theme={theme}
+            name={names[theme]}
+            index={index + 1}
+            onPick={onPick}
+          />
         </div>
       ))}
     </div>

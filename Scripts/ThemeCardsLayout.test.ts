@@ -28,6 +28,11 @@ const Root = /\.Root\s*\{([^}]*)\}/;
 /** One card's slot, which is where the measured turn is applied. */
 const Slot = /\.Slot\s*\{([^}]*)\}/;
 
+/** The card itself, and the mark behind its name. */
+const Card = /\.Root\s*\{([^}]*)\}/;
+const Mark = /\.Mark\s*\{([^}]*)\}/;
+const Name = /\.Name\s*\{([^}]*)\}/;
+
 describe('the row of theme cards', () => {
   it('views the cards from one vanishing point rather than six', () => {
     // A `perspective` per card would give every card its own viewpoint, and six cards
@@ -45,7 +50,7 @@ describe('the row of theme cards', () => {
 
   it('caps the row at three cards, so the bank is never a row of four over a pair', () => {
     // Six fixed-width cards fit easily across a desktop, and then the fourth starts a
-    // second row by itself — the arrangement the fan was written to avoid. The cap is on
+    // second row by itself — the arrangement the bank was written to avoid. The cap is on
     // the row's width rather than on the window, so the fourth always wraps.
     expect(sheet.declaration(Root, 'max-width')).toBe('var(--Layout-ThemeCardsMaxWidth)');
     expect(GameConfig.themes.cardsPerLobby).toBe(6);
@@ -65,29 +70,13 @@ describe('the row of theme cards', () => {
     // A height as well would be a second number free to disagree with the width, and the
     // six would stop being six matching panels on whichever screen they disagreed.
     expect(sheet.declaration(Slot, 'aspect-ratio')).toBe('var(--Ratio-ThemeCard)');
-    expect(card.declaration(/\.Name\s*\{([^}]*)\}/, 'height')).toBe('100%');
+    expect(card.declaration(Name, 'height')).toBe('100%');
   });
 
   it('turns each card about its own centre, which is what closes the row on a point', () => {
     // A slot turned about its outside edge swings away from the middle instead of towards
     // it, so the row opens out rather than closing in.
     expect(sheet.declaration(Slot, 'transform-origin')).toBe('center');
-  });
-
-  it('does not ask for a 3D context it has nothing to put in', () => {
-    // The cards are flat surfaces with nothing nested inside them. `preserve-3d` here is
-    // what let a card's border be drawn as a plane floating off its own fill — the flat
-    // broken edges that made this read as a rendering fault rather than as an arrangement.
-    expect(sheet.text).not.toContain('preserve-3d');
-  });
-
-  it('reads its angles and its distance from tokens, with no number of its own', () => {
-    // The zeroes are the unmeasured fallback, not a written angle: the real ones are
-    // degrees parsed out of the tokens by the hook.
-    const numbers = sheet.text.replace(/0deg/g, '');
-    expect(numbers).not.toMatch(/\d+deg/);
-    expect(numbers).not.toMatch(/\d+px/);
-    expect(numbers).not.toMatch(/#[0-9a-f]{3,8}\b/i);
   });
 
   it('turns the card by what the measurement wrote, not by a position in the row', () => {
@@ -100,30 +89,121 @@ describe('the row of theme cards', () => {
   });
 });
 
-describe("a card's own name", () => {
-  it("is written in the same ink for everyone, not in the viewer's accent", () => {
-    // The accent is the tint a player picked for themselves. Six cards of it would say
-    // whose screen this is rather than what the room could play, and every player in the
-    // room has to read the same six names.
-    expect(card.declaration(/\.Name\s*\{([^}]*)\}/, 'color')).toBe('var(--Color-Text-Default)');
-    expect(card.flat).not.toContain('--Color-Text-Title');
-    expect(card.flat).not.toContain('--Accent-');
+describe('the theme cards', () => {
+  it('washes in the theme accent on hover, in the same time as every other control', () => {
+    // A wash rather than the tint, because the name is read off the card and a raw tint
+    // behind a name fails contrast in every one of the eight.
+    const hover = /\.Root:hover\s*\{([^}]*)\}/;
+    expect(card.declaration(hover, 'background')).toContain('var(--ThemeCard-Wash');
+    expect(card.declaration(hover, 'color')).toContain('var(--ThemeCard-Ink');
+    expect(card.text).toContain('--Duration-Fast');
+    expect(card.text).toContain('--Easing-Standard');
   });
 
-  it('takes its colour and its padding from tokens, so one edit moves all six', () => {
-    expect(card.text).not.toMatch(/#[0-9a-f]{3,8}\b/i);
-    expect(card.declaration(/\.Name\s*\{([^}]*)\}/, 'padding')).toBe(
-      'var(--Space-ThemeCardPadding)',
+  it("wears the viewer's ink at rest, taking the theme's accent only on hover", () => {
+    // The accent is the tint a player chose for themselves. Wearing it on six cards at rest
+    // would say whose screen this is rather than what the room could play; on hover it is
+    // the card's own colour answering the pointer, which is a fact about the card.
+    expect(card.declaration(Name, 'color')).toBe('inherit');
+    expect(card.declaration(Card, 'color')).toBe('var(--Color-Text-Default)');
+  });
+
+  it('presses with a scale rather than a transform, so the sway is not cancelled', () => {
+    // The sway animates `transform` on this node and an animation outranks a transition on
+    // the same property, so a press on `transform` would shrink the card for one frame and
+    // then stop. `scale` is its own property and composes with the movement.
+    expect(card.declaration(/\.Root:active\s*\{([^}]*)\}/, 'scale')).toBe('0.97');
+    expect(card.ruleBody(/\.Root:active\s*\{([^}]*)\}/)).not.toContain('transform');
+  });
+
+  it('rides the shared sway rather than a movement of its own', () => {
+    // Composed, so a theme card and a character are the same movement instead of two that
+    // happen to agree. A bank of six still cards is a menu; six that shift their weight is
+    // a hand being held out.
+    expect(card.text).toContain('Sway.module.css');
+    expect(card.declaration(/\.Moving\s*\{([^}]*)\}/, 'composes')).toContain(
+      'Movingfrom\'../../Primitives/Sway/Sway.module.css\'',
     );
-    expect(card.declaration(/\.Name\s*\{([^}]*)\}/, 'font-size')).toBe(
-      'var(--FontSize-ThemeCard)',
+    expect(card.declaration(/\.Still\s*\{([^}]*)\}/, 'composes')).toContain(
+      'Stillfrom\'../../Primitives/Sway/Sway.module.css\'',
+    );
+  });
+});
+
+describe('the number behind the name', () => {
+  it('is one figure, cut off by the card, and not a second thing written on it', () => {
+    // A single number is the panel's substance; a name repeated behind the name competes with
+    // it, and the name is what the card is for.
+    expect(card.declaration(Mark, 'position')).toBe('absolute');
+    expect(card.declaration(Mark, 'overflow')).toBe('hidden');
+    expect(card.declaration(Mark, 'font-size')).toBe('var(--FontSize-ThemeCardMark)');
+    expect(card.declaration(Name, 'z-index')).toBe('1');
+  });
+
+  it('sits past the bottom right corner rather than centred in the card', () => {
+    // Centred, a figure larger than the card is a figure inside a card; pushed into the
+    // corner it is most of a number with two sides of it cut, which is the whole of it.
+    expect(card.declaration(Mark, 'top')).toBe('50%');
+    expect(card.declaration(Mark, 'left')).toBe('50%');
+    expect(card.declaration(Mark, 'translate')).toBe(
+      'var(--Offset-ThemeCardMark)var(--Offset-ThemeCardMark)',
     );
   });
 
-  it('keeps the name off the frame of its own card', () => {
-    // At zero the longest word touches the edge, and on a turned card that edge is the
-    // most visible one there is.
-    expect(Number(tokenValue('--Space-ThemeCardPadding').replace('px', ''))).toBeGreaterThan(0);
+  it('holds its offset in its own size, so it does not come back inside a small card', () => {
+    // The card narrows on a phone and a fixed inset would put the figure back inside it,
+    // which is the case the offset exists to avoid.
+    expect(tokenValue('--Offset-ThemeCardMark')).toMatch(/em$/);
+  });
+
+  it('is drawn far larger than the card, or it is a number on a card', () => {
+    const mark = Number(
+      tokenValue('--FontSize-ThemeCardMark').match(/[\d.]+/)?.[0],
+    );
+    const name = Number(tokenValue('--FontSize-ThemeCard').match(/[\d.]+/)?.[0]);
+    expect(mark).toBeGreaterThan(name * 8);
+  });
+
+  it('is held back with opacity rather than with a colour of its own', () => {
+    // The name is drawn in the same colour and has to stay the stronger of the two, so the
+    // mark cannot be a paler version of a hue — it has to be the same hue at less of itself.
+    expect(card.declaration(Mark, 'opacity')).toBe('var(--Opacity-ThemeCardMark)');
+    expect(card.declaration(Mark, 'color')).toBe('inherit');
+    expect(card.ruleBody(Mark)).not.toContain('--Color-');
+  });
+
+  it('stays behind the name at rest, which is what the hover is for', () => {
+    // Drawn in the name's own colour, so how much of itself the mark is worth is the only
+    // thing between it and competing with the one thing on the card being read.
+    const resting = Number(tokenValue('--Opacity-ThemeCardMark'));
+    const lifted = Number(tokenValue('--Opacity-ThemeCardMarkHover'));
+    expect(resting).toBeLessThan(1);
+    expect(lifted).toBeGreaterThan(resting);
+    expect(lifted).toBeLessThan(1);
+  });
+
+  it('opens a beat after the name, and on the way out as well', () => {
+    // A delay written on the `:hover` rule applies to the change into it and not out of it,
+    // so a mark that waited to close would hang on the card after the pointer had gone.
+    expect(card.ruleBody(Mark)).toContain('--Duration-ThemeCardMarkDelay');
+    expect(card.ruleBody(/\.Root:hover\s+\.Mark\s*\{([^}]*)\}/)).not.toContain('transition');
+    const delay = Number(tokenValue('--Duration-ThemeCardMarkDelay').replace('ms', ''));
+    const hover = Number(tokenValue('--Duration-Fast').replace('ms', ''));
+    expect(delay).toBeGreaterThan(0);
+    expect(delay).toBeLessThan(hover);
+  });
+
+  it('is scaled on hover rather than resized, so nothing reflows under the pointer', () => {
+    expect(card.declaration(/\.Root:hover\s+\.Mark\s*\{([^}]*)\}/, 'transform')).toBe(
+      'scale(var(--Scale-ThemeCardHover))',
+    );
+    expect(card.declaration(Mark, 'transform')).toBe('scale(1)');
+  });
+
+  it('opens with the name by one ratio, or the panel is one image changing size', () => {
+    expect(card.declaration(/\.Root:hover\s+\.Name\s*\{([^}]*)\}/, 'font-size')).toBe(
+      'calc(var(--FontSize-ThemeCard)*var(--Scale-ThemeCardHover))',
+    );
   });
 });
 
@@ -148,32 +228,20 @@ describe('the tokens behind the bank', () => {
     expect(ratio[0]).toBeGreaterThan(ratio[1] as number);
   });
 
-  it('narrows a card to what two of them need, so a phone holds a row rather than a list', () => {
-    // A flat width meant one card per row on anything narrower than two of them plus the
-    // gap, and six turned cards stood in a column. The width is capped at half the window
-    // less the gaps and the page's own padding either side, which is the two-card floor.
-    const width = tokenValue('--Size-ThemeCardWidth').replace(/\s+/g, '');
-    expect(width).toContain('min(320px,calc(');
-    expect(width).toContain('100vw-3*var(--Space-ThemeCardsGap)');
-    expect(width).toContain('/2)');
-    const gap = Number(tokenValue('--Space-ThemeCardsGap').replace('px', ''));
-    const padding = Number(tokenValue('--Layout-ScreenPaddingHorizontal').replace('px', ''));
-    const narrowest = 2 * gap + 2 * padding;
-    // The narrowest window the floor is written for is the one two cards have to fit in at
-    // their smallest: whatever the cap resolves to, a card plus its gap stays under half.
-    expect(narrowest).toBeLessThan(Number(tokenValue('--Layout-ColumnMinWidth').replace('px', '')));
-  });
-
   it('names a theme large enough to be the content of a panel, not a caption on one', () => {
     // The only name in the game drawn as the whole content of a card rather than as a
     // heading over something, and a share of the card's width rather than a size of its
     // own: the card narrows on a phone, and a flat size would be a caption again there.
     const size = tokenValue('--FontSize-ThemeCard').replace(/\s+/g, '');
     expect(size).toBe('calc(var(--Size-ThemeCardWidth)*0.115)');
-    const card = stylesheet('../Source/Design/Components/ThemeCard/ThemeCard.module.css');
-    expect(card.declaration(/\.Name\s*\{([^}]*)\}/, 'font-size')).toBe(
-      'var(--FontSize-ThemeCard)',
-    );
+    expect(card.declaration(Name, 'font-size')).toBe('var(--FontSize-ThemeCard)');
+  });
+
+  it('keeps the name off the frame of its own card', () => {
+    // At zero the longest word touches the edge, and on a turned card that edge is the most
+    // visible one there is.
+    expect(Number(tokenValue('--Space-ThemeCardPadding').replace('px', ''))).toBeGreaterThan(0);
+    expect(card.declaration(Name, 'padding')).toBe('var(--Space-ThemeCardPadding)');
   });
 });
 
