@@ -10,6 +10,11 @@ export interface IconButtonProps {
   /** What the button does, for anyone who cannot see the mark. */
   label: string;
   tone?: IconTone;
+  /**
+   * Small sits inside another control, where the button is part of it rather than
+   * beside it; Medium stands on its own.
+   */
+  size?: 'Small' | 'Medium';
   onClick: () => void;
 }
 
@@ -25,11 +30,19 @@ export interface IconButtonProps {
  * as a control on its own, and these sit inside a chip or beside a title where the
  * box is already the control.
  */
-export function IconButton({ icon, label, tone = 'Accent', onClick }: IconButtonProps) {
+export function IconButton({
+  icon,
+  label,
+  tone = 'Accent',
+  size = 'Medium',
+  onClick,
+}: IconButtonProps) {
   return (
     <button
       type="button"
-      class={`${styles.Root} ${styles[`Tone${tone}`]} ${styles[`Icon${icon}`]}`}
+      class={`${styles.Root} ${styles[`Tone${tone}`]} ${styles[`Size${size}`]} ${
+        styles[`Icon${icon}`]
+      }`}
       aria-label={label}
       title={label}
       onClick={onClick}

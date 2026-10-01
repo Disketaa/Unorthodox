@@ -57,7 +57,13 @@ export function PlayerChip({
       {isHost && <span class={styles.Crown} aria-hidden="true" />}
       {onKick !== undefined && (
         <span class={styles.Kick}>
-          <IconButton icon="Kick" label={kickLabel} tone="Muted" onClick={onKick} />
+          <IconButton
+            icon="Kick"
+            label={kickLabel}
+            tone="Muted"
+            size="Small"
+            onClick={onKick}
+          />
         </span>
       )}
     </div>

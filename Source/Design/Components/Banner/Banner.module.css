@@ -47,26 +47,23 @@
 }
 
 /*
- * Ink on the three light fills, white on the deep one.
- *
- * The fills are all mid-tone, and only the error tone is dark enough to carry white
- * legibly; the rest read better with the game's own text colour, which is what the
- * gold button already does. This is contrast, not taste: white on this palette sits
- * around two to one on three of the four, and the words are the whole message.
+ * White on every fill, so the four variants read as one kind of block. The tones are
+ * mid-weight, so this is legible on the deep error and thin on the lighter three:
+ * deepening those fills is the way to have both, rather than dropping to ink.
  */
 .VariantInfo {
   background: var(--Color-Feedback-Info);
-  color: var(--Color-Text-Default);
+  color: var(--Color-Surface-Default);
 }
 
 .VariantSuccess {
   background: var(--Color-Feedback-Success);
-  color: var(--Color-Text-Default);
+  color: var(--Color-Surface-Default);
 }
 
 .VariantWarning {
   background: var(--Color-Feedback-Warning);
-  color: var(--Color-Text-Default);
+  color: var(--Color-Surface-Default);
 }
 
 .VariantError {

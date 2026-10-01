@@ -227,6 +227,11 @@ body {
 
   --Color-Text-Default: #212121;
   --Color-Text-Muted: #757575;
+  /*
+   * One step back from the muted tone: for marks that sit inside another control,
+   * where the muted grey reads as the control being switched off.
+   */
+  --Color-Text-Quiet: var(--Color-Neutral-500);
   /* The game title, matching the create-room button so the two read as a pair. */
   --Color-Text-Display: var(--Color-Action-Secondary-Background);
   /* Section headings, in the accent the lobby already spends on its actionables. */
