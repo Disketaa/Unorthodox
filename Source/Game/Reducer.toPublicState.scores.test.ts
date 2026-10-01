@@ -9,6 +9,7 @@ describe('toPublicState Scores state', () => {
       durationMs: 30000,
       startedAt: 1000,
       scores: new Map([['p1', 3], ['p2', 1]]),
+      players: new Map(),
       cumulativeScores: new Map(),
     };
     const publicState = toPublicState(state);

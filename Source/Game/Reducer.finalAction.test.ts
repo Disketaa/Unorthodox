@@ -9,6 +9,7 @@ describe('reducer FINAL action', () => {
       durationMs: 15000,
       startedAt: 1000,
       scores: new Map([['p1', 3]]),
+      players: new Map(),
       cumulativeScores: new Map([['p1', 6], ['p2', 2]]),
     };
     const next = reducer(state, { type: 'FINAL' });

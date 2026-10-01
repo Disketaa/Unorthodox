@@ -1,5 +1,11 @@
 import { HostState } from './GameState';
-import { groupAnswers } from './Grouping';
+import {
+  toPublicFinalState,
+  toPublicLobbyState,
+  toPublicReviewingState,
+  toPublicScoresState,
+  toPublicWritingState,
+} from './PublicPhases';
 import { PlayerId, PlayerLook, assertNever } from '@/Core';
 import type { Pace } from './GameConfig';
 
@@ -37,6 +43,7 @@ export type PublicWritingState = {
    */
   startedAt: number;
   submittedCount: number; // number of answers submitted so far
+  players: PublicPlayer[];
 };
 
 export type PublicReviewingState = {
@@ -44,6 +51,7 @@ export type PublicReviewingState = {
   topic: string;
   durationMs: number;
   startedAt: number;
+  players: PublicPlayer[];
   groups: { groupId: number; text: string; playerCount: number }[];
 };
 
@@ -51,12 +59,16 @@ export type PublicScoresState = {
   phase: 'Scores';
   durationMs: number;
   startedAt: number;
+  players: PublicPlayer[];
   scores: { id: PlayerId; score: number }[];
+  /** The round total per player, which is what the bar of players shows. */
+  cumulative: { id: PlayerId; score: number }[];
 };
 
 export type PublicFinalState = {
   phase: 'Final';
   durationMs: number;
+  players: PublicPlayer[];
   scores: { id: PlayerId; score: number }[];
 };
 
@@ -83,91 +95,4 @@ export function toPublicState(hostState: HostState): PublicState {
       // The exhaustive switch ensures we never reach here.
       return assertNever(hostState);
   }
-}
-
-function toPublicLobbyState(state: HostState): PublicLobbyState {
-  if (state.phase !== 'Lobby') {
-    throw new Error('Invalid state for Lobby');
-  }
-  const playersArray: PublicPlayer[] = [];
-  state.players.forEach((player, id) => {
-    playersArray.push({
-      id,
-      name: player.name,
-      look: player.look,
-      isOnline: player.isOnline,
-    });
-  });
-  return {
-    phase: 'Lobby',
-    players: playersArray,
-    pace: state.pace,
-  };
-}
-
-function toPublicWritingState(state: HostState): PublicWritingState {
-  if (state.phase !== 'Writing') {
-    throw new Error('Invalid state for Writing');
-  }
-  return {
-    phase: 'Writing',
-    topic: state.topic,
-    durationMs: state.durationMs,
-    startedAt: state.startedAt,
-    submittedCount: state.answers.size,
-  };
-}
-
-function toPublicReviewingState(state: HostState): PublicReviewingState {
-  if (state.phase !== 'Reviewing') {
-    throw new Error('Invalid state for Reviewing');
-  }
-  // We need to compute groups from the answers.
-  const answerTexts = Array.from(state.answers.values());
-  const grouped = groupAnswers(answerTexts);
-  // Build groups for public state: each group has the answer text and player count.
-  // We don't reveal which players submitted which answer.
-  const groups = grouped.map(g => ({
-    groupId: g.groupId,
-    text: g.answers[0], // we can use any answer from the group as the representative text
-    playerCount: g.answers.length,
-  }));
-  return {
-    phase: 'Reviewing',
-    topic: state.topic,
-    durationMs: state.durationMs,
-    startedAt: state.startedAt,
-    groups,
-  };
-}
-
-function toPublicScoresState(state: HostState): PublicScoresState {
-  if (state.phase !== 'Scores') {
-    throw new Error('Invalid state for Scores');
-  }
-  const scoresArray: { id: PlayerId; score: number }[] = [];
-  state.scores.forEach((score, id) => {
-    scoresArray.push({ id, score });
-  });
-  return {
-    phase: 'Scores',
-    durationMs: state.durationMs,
-    startedAt: state.startedAt,
-    scores: scoresArray,
-  };
-}
-
-function toPublicFinalState(state: HostState): PublicFinalState {
-  if (state.phase !== 'Final') {
-    throw new Error('Invalid state for Final');
-  }
-  const scoresArray: { id: PlayerId; score: number }[] = [];
-  state.cumulativeScores.forEach((score, id) => {
-    scoresArray.push({ id, score });
-  });
-  return {
-    phase: 'Final',
-    durationMs: 0, // not used
-    scores: scoresArray,
-  };
 }

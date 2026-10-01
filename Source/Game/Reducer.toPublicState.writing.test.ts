@@ -10,6 +10,7 @@ describe('toPublicState Writing state', () => {
       durationMs: 60000,
       startedAt: 1000,
       answers: new Map([['p1', 'Ans1'], ['p2', 'Ans2']]),
+      players: new Map(),
       cumulativeScores: new Map(),
     };
     const publicState = toPublicState(state);

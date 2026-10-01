@@ -64,6 +64,10 @@ export class HostSession {
     this.state = loadRoomState(roomCode) ?? freshLobby();
     // The host plays too, under the reserved `host` id.
     this.roster.addHost(HostPlayerId, hostName);
+    // The roster of the resumed room comes back as a set of seats, not as a set of
+    // connections: this tab was hosting that game a moment ago, and every player in it
+    // is somebody it was already waiting on.
+    this.roster.restore([...this.state.players.entries()]);
     this.apply({ type: 'JOIN', playerId: HostPlayerId, name: hostName, look });
     // The bots in a resumed room keep their seats: counting what is already there is
     // what stops the next bot being handed a seat that is taken.

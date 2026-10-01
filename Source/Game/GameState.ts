@@ -10,10 +10,22 @@ export interface Player {
   isOnline: boolean;
 }
 
-export type LobbyState = {
-  phase: 'Lobby';
+/**
+ * What every phase carries, whatever the room is doing.
+ *
+ * The roster and the totals outlive the phase, and they have to: the bar of players
+ * runs across the whole game rather than being rebuilt per phase, a player who
+ * refreshes mid-round is let back in because their seat is still here, and the final
+ * standings are the totals of every round. Every state below is this plus what is
+ * particular to its phase.
+ */
+export interface RoomMembers {
   players: Map<PlayerId, Player>;
-  cumulativeScores: Map<PlayerId, number>; // cumulative scores across rounds
+  cumulativeScores: Map<PlayerId, number>;
+}
+
+export type LobbyState = RoomMembers & {
+  phase: 'Lobby';
   /**
    * The pace the host has set, which every player reads from the public state.
    *
@@ -25,36 +37,32 @@ export type LobbyState = {
   pace: Pace;
 };
 
-export type WritingState = {
+export type WritingState = RoomMembers & {
   phase: 'Writing';
   topic: string;
   durationMs: number; // total duration of the writing phase
   startedAt: number; // performance.now() when phase started
   answers: Map<PlayerId, string>; // submitted answers
-  cumulativeScores: Map<PlayerId, number>; // cumulative scores across rounds
 };
 
-export type ReviewingState = {
+export type ReviewingState = RoomMembers & {
   phase: 'Reviewing';
   topic: string;
   durationMs: number;
   startedAt: number;
   answers: Map<PlayerId, string>; // all answers from writing phase
   groupRejections: Map<number, Set<PlayerId>>; // groupId -> set of playerIds who rejected this group
-  cumulativeScores: Map<PlayerId, number>; // cumulative scores across rounds
 };
 
-export type ScoresState = {
+export type ScoresState = RoomMembers & {
   phase: 'Scores';
   durationMs: number;
   startedAt: number;
   scores: Map<PlayerId, number>; // scores for this round
-  cumulativeScores: Map<PlayerId, number>; // cumulative scores across rounds
 };
 
-export type FinalState = {
+export type FinalState = RoomMembers & {
   phase: 'Final';
-  cumulativeScores: Map<PlayerId, number>;
 };
 
 export type HostState =

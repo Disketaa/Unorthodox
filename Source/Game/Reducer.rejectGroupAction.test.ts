@@ -11,6 +11,7 @@ describe('reducer REJECT_GROUP action', () => {
       startedAt: 1000,
       answers: new Map([['p1', 'Ans1'], ['p2', 'Ans1']]), // same answer, will be grouped
       groupRejections: new Map(),
+      players: new Map(),
       cumulativeScores: new Map(),
     };
     // We need to know the groupId for the answer. For simplicity, we'll assume the groupId is 0.

@@ -1,5 +1,72 @@
 ﻿# DECISIONS
 
+## 2026-10-01 — the bar of players runs across the whole game, and the roster moved into every phase
+`PlayerBar` draws every player along the top of a game as character, name and score, in
+roster order, and holds `--Layout-PlayerBarSlots` of them. The row wraps onto a second row
+rather than scrolling, because a bar a player has to swipe sideways is a bar nobody can find
+themselves in.
+
+Making it span the phases turned out to be a change to what the host's state is, not to the
+UI. Names, faces and presence were on the wire only in the lobby, so the bar had a roster in
+the lobby and nothing at all afterwards — which is also why a client that refreshed mid-round
+came back to a bar with nobody in it, and why a client could not be told a dropped player had
+dropped. `players` is now on every phase rather than the lobby's alone (`GameState.RoomMembers`),
+so `toPublicState` sends the roster in all of them. Nothing new is exposed: a name, a face and
+whether a player is connected were all public in the lobby already.
+
+That in turn is what makes a mid-game return work. `AlreadyStarted` was right for a stranger
+and wrong for a tab that had been in the room a moment ago, and the difference is a seat rather
+than a phase, so `HostRoster.restore` puts the seats back when a host resumes its game and
+`hasSeatForName` decides the join. A returning player keeps their seat, their score, their
+answer and their character; `handleJoin` will not let a join rewrite the record the room has of
+somebody. A restored seat starts marked gone, because the refresh has lost every connection the
+room had — and because a seat whose name is held by a browser this tab knows nothing about would
+turn that same returning player into an impostor, which is what the first attempt did and what
+`ReturningPlayer.test.ts` caught.
+
+The cost is one field on every phase and a room-state codec that writes the roster in all of
+them, for a room that is otherwise a lobby with a game bolted on. `Game/PublicState.ts` also had
+to split: the five per-phase mappers went to `Game/PublicPhases.ts` because the roster pushed it
+past the 150-line limit.
+
+Two things deliberately not built on the back of this. A returning player's own marks — the
+answer they have already written, the groups they have already rejected — are still local state
+and are lost on a refresh, so they can be asked again for something they have already answered.
+And `PublicScoresState` grew a `cumulative` beside its round `scores`, because a bar that drops
+back to the last round every time the scores phase arrives is a bar that cannot be read as a
+running total.
+
+## 2026-10-01 — a room holds sixteen, and the bar holds exactly as many
+`GameConfig.limits.maxPlayers` was ten and is now sixteen, which is what
+`--Layout-PlayerBarSlots` has always said. They are the same number on purpose: a bar that drops
+a player the room still has is worse than a room that is too big for a bar. The token is the copy
+rather than the other way round because `Design` may not import `Game`, so
+`Scripts/PlayerBarLayout.test.ts` holds the two to each other and fails if either moves.
+
+The bar's slot count is read off the document rather than written in the component, with a
+fallback for a page that has not loaded `Tokens.css` — and that fallback is a second copy of the
+number, which is the only part of this that can go stale quietly, so the same test holds it to
+the token.
+
+Sixteen is wide for a party game and narrow for a phone, which is why the slot is 84px rather
+than the character size: at the small size a room of ten could only have been drawn by throwing
+away most of the names. The row wrapping is what covers the rest — more bar rather than less of
+it, with a player cut to an ellipsis rather than a slot dropped.
+
+## 2026-10-01 — the game screen is an empty stage, on purpose
+The four phase screens are still in `Screens/` and are no longer mounted: `PhaseScreen` chooses
+`GameScene` for every phase after the lobby, which draws the bar and nothing under it. A bar has
+to be judged against the space it leaves for the game, and it cannot be judged with three
+screens still on the page. `App/Views/WritingView.tsx` and its three siblings are unused until
+the screens come back.
+
+## 2026-10-01 — bots are named to break the bar, not to sound like a room
+The bot names went from twelve Russian first names to thirty-eight, which is not a bigger list
+so much as a list written against the slot: one to be cut with an ellipsis, one in another
+script, one in caps, one letter, one with a glyph, one in a mixture of cases. A bot is the only
+player nobody has to type, so it is the only name the bar is guaranteed to be tested with, and a
+list of tidy short names tested nothing.
+
 ## 2026-10-01 — the room asks who you are, instead of waiting to be told you left
 A player who refreshed could not get back into a room, ever: the same name, from the
 menu, through the join screen, for as long as the host's page stayed open. It was not a

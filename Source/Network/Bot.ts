@@ -14,7 +14,14 @@ const log = createLogger('Bot');
  * waits on it, so a round plays out to the clock with the seat merely sitting there.
  */
 
-/** The names a bot goes by, rolled at random like everything else about it. */
+/**
+ * The names a bot goes by, rolled at random like everything else about it.
+ *
+ * Written to stress the bar rather than to sound like a room: a name that has to be cut
+ * with an ellipsis, one in another script, one the glyph field can have, one in caps and
+ * one letter are all here because the bar's slot has to survive a real name rather than
+ * only the tidy ones, and a bot is the only player nobody has to type.
+ */
 const names = [
   'Аня',
   'Боря',
@@ -28,6 +35,32 @@ const names = [
   'Мила',
   'Нина',
   'Олег',
+  'Ян',
+  'Ёж',
+  'Боб',
+  'Кот',
+  'Пёс',
+  'Соня',
+  'Тимур',
+  'Римма',
+  'Константинтинтинтинтин',
+  'Александра',
+  'Полина',
+  'Анна-Мария',
+  'Императрица',
+  'А',
+  'Ы',
+  'Bob',
+  'Grace',
+  'ZYZZYVA',
+  'Ægir',
+  'Ǟlice',
+  'MiXeD CaSe',
+  'Ō-sama',
+  '李雷',
+  '😀',
+  '🕶',
+  'Æon',
 ] as const;
 
 /** A bot's seat. Never `p<number>`, which is what the roster hands to real players. */
@@ -65,13 +98,14 @@ export function botNumber(playerId: PlayerId): number {
 }
 
 /**
- * How many bots are already in the lobby, so the next one is not handed a taken seat.
+ * How many bots are already in the room, so the next one is not handed a taken seat.
  *
- * Zero outside the lobby, where a bot cannot be added at all and there is nothing to
- * count.
+ * Counted from the roster rather than from the lobby alone, because that is where a
+ * resumed room keeps them: a host that refreshes four rounds in has no counter left to
+ * count with, and a bot handed a seat that is taken would be two players wearing one
+ * name.
  */
 export function botsIn(state: HostState): number {
-  if (state.phase !== 'Lobby') return 0;
   return [...state.players.keys()].reduce((highest, id) => Math.max(highest, botNumber(id)), 0);
 }
 

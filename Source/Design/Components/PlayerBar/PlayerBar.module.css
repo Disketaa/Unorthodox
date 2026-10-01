@@ -1,0 +1,106 @@
+/*
+ * The row of players across the top of a game.
+ *
+ * One borderless strip with no card and no frame of its own: it is a readout of who is
+ * in the room, and a border around it would make the game's own content sit inside
+ * something. The slots carry the shapes instead.
+ *
+ * Wrapping rather than scrolling, and that is the whole of the narrow-screen answer.
+ * A bar wide enough for sixteen players does not fit on a phone, and the three ways to
+ * deal with that are all worse than a second row: scrolling hides the local player
+ * behind a swipe, shrinking every slot to fit the count makes the faces unreadable, and
+ * an ellipsis hides players with nothing to say so. A second row is more bar rather
+ * than less of it, which on a phone is the honest trade.
+ *
+ * Centred so a wrapped row does not sit against the left margin with its last slot
+ * alone at the end of the first row.
+ */
+.Root {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--Space-Sm);
+}
+
+/*
+ * One player: a character, a name and a score, stacked.
+ *
+ * A fixed width rather than one shared by the row, so every slot is the same size
+ * whatever the name in it is and the characters line up across the bar. A slot that
+ * grew with its name would make the row ragged and the faces hop about as players
+ * arrive.
+ */
+.Slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--Space-Xs);
+  width: var(--Size-PlayerBarSlot);
+  padding: var(--Space-Sm) var(--Space-Xs);
+  background: transparent;
+  border: var(--Border-Width-Default) solid transparent;
+  border-radius: var(--Radius-Card);
+}
+
+/*
+ * The local player, in the accent wash rather than a ring.
+ *
+ * The same fill the accent banner uses, and for the same reason: it is the one note in
+ * the interface that follows the viewer's own tint, and marking yourself is that kind
+ * of note. A ring in the room's yellow says the seat is yours to the whole room, which
+ * is true of the host's crown and not of this — a player who knows which face is theirs
+ * is looking at their own screen.
+ *
+ * A fill rather than a border for the second reason the lobby's chip gives: the bar has
+ * nothing but these slots in it, so the marked one has to be a block of colour or it is
+ * a hairline in a row of nothing. The border stays transparent at rest, so picking
+ * yourself out never changes the size of the bar.
+ */
+.Self {
+  background: var(--Accent-Wash);
+}
+
+/*
+ * A player the host has lost.
+ *
+ * Held back rather than removed, and by the same amount the lobby's chip holds back: the
+ * seat is still theirs and they may be back, and a bar that loses a slot reads as a
+ * smaller room rather than as a player who dropped. The whole slot goes quiet together —
+ * face, name and score — so there is nothing left to keep in step.
+ */
+.Offline {
+  opacity: 0.5;
+}
+
+/*
+ * The name is cut rather than wrapped, which is what keeps every slot the same height
+ * and the score always in the same place within it.
+ */
+.Name {
+  composes: Truncate from '../../Primitives/Truncate/Truncate.module.css';
+  max-width: 100%;
+  font-size: var(--FontSize-Caption);
+  color: var(--Color-Text-Default);
+  text-align: center;
+}
+
+/*
+ * The standing, in the room's yellow.
+ *
+ * The fixed gold rather than the accent ink the scoreboard uses: this bar is on screen
+ * through every phase at once, so a score here is read as the room's running figure, and
+ * a number that changed colour with the viewer's tint would say the same figure meant
+ * different things to different players. The scoreboard is one screen read by everybody
+ * at the same moment, which is not what this is.
+ *
+ * Held to a width of its own so a one-digit and a two-digit score do not shift the
+ * names above them.
+ */
+.Score {
+  min-width: 2ch;
+  font-size: var(--FontSize-Body);
+  font-weight: 600;
+  color: var(--Color-Room-Yellow);
+  text-align: center;
+}

@@ -22,6 +22,7 @@ const writingPhase: HostState = {
   durationMs: 60000,
   startedAt: 5000,
   answers: new Map([['host', 'раз']]),
+  players: new Map(),
   cumulativeScores: new Map([['host', 7]]),
 };
 
@@ -33,7 +34,23 @@ const reviewingPhase: HostState = {
   startedAt: 5000,
   answers: new Map([['host', 'раз']]),
   groupRejections: new Map([[1, new Set(['host', 'p1'])]]),
+  players: new Map(),
   cumulativeScores: new Map([['host', 7]]),
+};
+
+const scoresPhase: HostState = {
+  phase: 'Scores',
+  durationMs: 15000,
+  startedAt: 2,
+  scores: new Map([['host', 10]]),
+  players: new Map(),
+  cumulativeScores: new Map([['host', 10]]),
+};
+
+const finalPhase: HostState = {
+  phase: 'Final',
+  players: new Map(),
+  cumulativeScores: new Map([['host', 10]]),
 };
 
 describe('a room that outlives its tab', () => {
@@ -57,19 +74,11 @@ describe('a room that outlives its tab', () => {
     expect(loadRoomState('1234')).toEqual(reviewingPhase);
   });
 
-  it('comes back on the scores and on the last table', () => {
-    const scores: HostState = {
-      phase: 'Scores',
-      durationMs: 15000,
-      startedAt: 2,
-      scores: new Map([['host', 10]]),
-      cumulativeScores: new Map([['host', 10]]),
-    };
-    const final: HostState = { phase: 'Final', cumulativeScores: new Map([['host', 10]]) };
-    saveRoomState('1', scores);
-    saveRoomState('2', final);
-    expect(loadRoomState('1')).toEqual(scores);
-    expect(loadRoomState('2')).toEqual(final);
+it('comes back on the scores and on the last table', () => {
+    saveRoomState('1', scoresPhase);
+    saveRoomState('2', finalPhase);
+    expect(loadRoomState('1')).toEqual(scoresPhase);
+    expect(loadRoomState('2')).toEqual(finalPhase);
   });
 
   it('is forgotten when the room is left, and kept apart from other rooms', () => {

@@ -2,29 +2,30 @@ import { HostState } from './GameState';
 import type { ActionOf } from './GameActions';
 
 /**
- * The lobby's roster changes: joining, changing a face, and going quiet.
+ * The roster's own changes: joining, changing a face, going quiet, and being removed.
  *
- * Separate from the phases that follow, because these three are the only actions
- * that exist while the roster is still changing shape, and each of them is a change
- * to one player rather than a move of the room.
+ * Separate from the phases, because each of these is a change to one player rather than
+ * a move of the room, and because they are the actions that exist in every phase: a
+ * player who refreshes mid-round is joining again, and a player who drops is going quiet
+ * whether the room is in the lobby or four rounds deep.
  */
 
-/*
- * Re-joining under a known seat marks that player back online, so a player who
- * closed the tab and came back stops reading as gone.
+/** The same room with a different roster, whatever phase it is in. */
+function withRoster(state: HostState, players: HostState['players']): HostState {
+  return { ...state, players };
+}
+
+/**
+ * A player taking their seat, or taking it back.
+ *
+ * A seat that already exists keeps the record the room has of it — the name and the
+ * character it was given — and only comes back online, so a refresh cannot rename a
+ * player or repaint their face from the other end of the room.
  */
 export function handleJoin(state: HostState, action: ActionOf<'JOIN'>): HostState {
-  if (state.phase !== 'Lobby') {
-    return state;
-  }
-  const newPlayers = new Map(state.players);
-  newPlayers.set(action.playerId, { name: action.name, look: action.look, isOnline: true });
-  return {
-    phase: 'Lobby',
-    players: newPlayers,
-    cumulativeScores: state.cumulativeScores,
-    pace: state.pace,
-  };
+  const known = state.players.get(action.playerId);
+  const player = known ?? { name: action.name, look: action.look, isOnline: true };
+  return withRoster(state, new Map(state.players).set(action.playerId, { ...player, isOnline: true }));
 }
 
 /**
@@ -42,63 +43,41 @@ export function handleSetLook(state: HostState, action: ActionOf<'SET_LOOK'>): H
   if (player === undefined) {
     return state;
   }
-  const newPlayers = new Map(state.players);
-  newPlayers.set(action.playerId, { ...player, look: action.look });
-  return {
-    phase: 'Lobby',
-    players: newPlayers,
-    cumulativeScores: state.cumulativeScores,
-    pace: state.pace,
-  };
+  return withRoster(state, new Map(state.players).set(action.playerId, { ...player, look: action.look }));
 }
 
 /**
  * Record whether a player is still on the line.
  *
- * The player stays in the roster either way: a dropped connection is not a seat
- * given up, and the host may yet see them come back under the same name. Only the
- * lobby shows this, since a later phase has no roster left to show it in.
+ * The player stays in the roster either way: a dropped connection is not a seat given
+ * up, and the host may yet see them come back under the same name. This happens in every
+ * phase, which is what lets the bar of players hold a dropped face rather than lose it
+ * for the rest of the game.
  */
 export function handleSetOnline(state: HostState, action: ActionOf<'SET_ONLINE'>): HostState {
-  if (state.phase !== 'Lobby') {
-    return state;
-  }
   const player = state.players.get(action.playerId);
   if (player === undefined || player.isOnline === action.isOnline) {
     return state;
   }
-  const newPlayers = new Map(state.players);
-  newPlayers.set(action.playerId, { ...player, isOnline: action.isOnline });
-  return {
-    phase: 'Lobby',
-    players: newPlayers,
-    cumulativeScores: state.cumulativeScores,
-    pace: state.pace,
-  };
+  return withRoster(state, new Map(state.players).set(action.playerId, { ...player, isOnline: action.isOnline }));
 }
 
 /**
  * Take a player out of the room at the host's word.
  *
- * Unlike a dropped connection, a kick gives the seat up: the player is out, and so
- * are their scores, because a room that still tallies a player who was removed
- * would carry them into the next game. Only the lobby can do this, since a later
- * phase has no roster left to remove anyone from.
+ * Unlike a dropped connection, a kick gives the seat up: the player is out, and so are
+ * their scores, because a room that still tallies a player who was removed would carry
+ * them into the next game.
  */
 export function handleKick(state: HostState, action: ActionOf<'KICK'>): HostState {
-  if (state.phase !== 'Lobby' || !state.players.has(action.playerId)) {
+  if (!state.players.has(action.playerId)) {
     return state;
   }
-  const newPlayers = new Map(state.players);
-  newPlayers.delete(action.playerId);
-  const newScores = new Map(state.cumulativeScores);
-  newScores.delete(action.playerId);
-  return {
-    phase: 'Lobby',
-    players: newPlayers,
-    cumulativeScores: newScores,
-    pace: state.pace,
-  };
+  const players = new Map(state.players);
+  players.delete(action.playerId);
+  const cumulativeScores = new Map(state.cumulativeScores);
+  cumulativeScores.delete(action.playerId);
+  return { ...state, players, cumulativeScores };
 }
 
 /**
@@ -112,10 +91,5 @@ export function handleSetPace(state: HostState, action: ActionOf<'SET_PACE'>): H
   if (state.phase !== 'Lobby' || state.pace === action.pace) {
     return state;
   }
-  return {
-    phase: 'Lobby',
-    players: state.players,
-    cumulativeScores: state.cumulativeScores,
-    pace: action.pace,
-  };
+  return { ...state, pace: action.pace };
 }

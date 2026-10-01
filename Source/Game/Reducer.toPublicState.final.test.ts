@@ -6,6 +6,7 @@ describe('toPublicState Final state', () => {
   test('converts correctly', () => {
     const state: HostState = {
       phase: 'Final',
+      players: new Map(),
       cumulativeScores: new Map([['p1', 10], ['p2', 5]]),
     };
     const publicState = toPublicState(state);

@@ -10,6 +10,7 @@ describe('reducer SUBMIT_ANSWER action', () => {
       durationMs: 60000,
       startedAt: 1000,
       answers: new Map(),
+      players: new Map(),
       cumulativeScores: new Map(),
     };
     state = reducer(state, { type: 'SUBMIT_ANSWER', playerId: 'p1', text: 'Answer1' });
@@ -27,6 +28,7 @@ describe('reducer SUBMIT_ANSWER action', () => {
       durationMs: 60000,
       startedAt: 1000,
       answers: new Map([['p1', 'Answer1']]),
+      players: new Map(),
       cumulativeScores: new Map(),
     };
     state = reducer(state, { type: 'SUBMIT_ANSWER', playerId: 'p1', text: 'Answer2' });

@@ -9,6 +9,7 @@ describe('reducer NEXT_ROUND action', () => {
       durationMs: 30000,
       startedAt: 1000,
       scores: new Map([['p1', 3]]),
+      players: new Map(),
       cumulativeScores: new Map(),
     };
     state = reducer(state, { type: 'NEXT_ROUND', topic: 'New Topic', durationMs: 60000, startedAt: 2000 });

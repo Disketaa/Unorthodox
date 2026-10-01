@@ -1,6 +1,5 @@
-import { useRef } from 'preact/hooks';
 import { PlayerId, PlayerLook, hostTimeToLocal } from '@/Core';
-import { PublicState } from '@/Game';
+import { PublicPlayer, PublicState } from '@/Game';
 
 /** Every phase a player can be in, which is what the screens are chosen from. */
 export type SessionPhaseName = 'Connecting' | 'Lobby' | 'Writing' | 'Reviewing' | 'Scores' | 'Final';
@@ -20,22 +19,30 @@ export interface SessionPhase {
   clockOffsetMs: number;
   playerNames: ReadonlyMap<PlayerId, string>;
   playerLooks: ReadonlyMap<PlayerId, PlayerLook>;
+  /** Who is still on the line, which only the host can see change. */
+  playerPresence: ReadonlyMap<PlayerId, boolean>;
   playerCount: number;
   submittedCount: number;
 }
 
-/** Names and looks only reach the public state in the Lobby, so remember them once seen. */
-function rememberRoster(
-  players: Map<PlayerId, string>,
-  looks: Map<PlayerId, PlayerLook>,
-  publicState: PublicState | undefined,
-): void {
-  if (publicState?.phase === 'Lobby') {
-    publicState.players.forEach((player) => {
-      players.set(player.id, player.name);
-      looks.set(player.id, player.look);
-    });
-  }
+/**
+ * The room, read as the three lookups the screens ask it for.
+ *
+ * The roster arrives in every phase rather than only in the lobby, so this is derived
+ * from the state on every render instead of being accumulated in a ref: a client that
+ * refreshed mid-round is handed the room back by the state it is sent, and a device that
+ * has not been sent one yet draws an empty bar for the moment before it has.
+ */
+function readRoster(players: readonly PublicPlayer[]) {
+  const names = new Map<PlayerId, string>();
+  const looks = new Map<PlayerId, PlayerLook>();
+  const presence = new Map<PlayerId, boolean>();
+  players.forEach((player) => {
+    names.set(player.id, player.name);
+    looks.set(player.id, player.look);
+    presence.set(player.id, player.isOnline);
+  });
+  return { names, looks, presence };
 }
 
 /** Only the timed phases carry a duration; Lobby and Final have none. */
@@ -48,23 +55,22 @@ function readStartedAt(publicState: PublicState | undefined): number {
   return publicState !== undefined && 'startedAt' in publicState ? publicState.startedAt : 0;
 }
 
-/** Read the current phase, the host's clock, and the roster seen so far. */
+/** Read the current phase, the host's clock, and the room as it stands. */
 export function useSessionPhase(
   publicState: PublicState | undefined,
   clockOffsetMs: number,
 ): SessionPhase {
-  const namesRef = useRef(new Map<PlayerId, string>());
-  const looksRef = useRef(new Map<PlayerId, PlayerLook>());
-  rememberRoster(namesRef.current, looksRef.current, publicState);
+  const roster = readRoster(publicState?.players ?? []);
 
   return {
     phase: publicState?.phase ?? 'Connecting',
     durationMs: readDurationMs(publicState),
     phaseStartedAt: hostTimeToLocal(readStartedAt(publicState), clockOffsetMs),
     clockOffsetMs,
-    playerNames: namesRef.current,
-    playerLooks: looksRef.current,
-    playerCount: namesRef.current.size,
+    playerNames: roster.names,
+    playerLooks: roster.looks,
+    playerPresence: roster.presence,
+    playerCount: roster.names.size,
     submittedCount: publicState?.phase === 'Writing' ? publicState.submittedCount : 0,
   };
 }

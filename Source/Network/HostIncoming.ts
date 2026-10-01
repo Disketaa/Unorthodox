@@ -27,12 +27,16 @@ export function toAction(context: IncomingContext): GameAction | undefined {
   const { message, peerId, roster, transport } = context;
   switch (message.type) {
     case 'Join': {
-      if (context.state.phase !== 'Lobby') {
+      if (context.state.phase !== 'Lobby' && !roster.hasSeatForName(message.name)) {
         // The game is already running, and a room mid-round has nowhere to put a
-        // player who has not been in it: the answer they owe is already being read,
-        // and the round would be waiting on a player nobody has seen. Turned away
-        // rather than ignored, because a client that is ignored has only the joining
-        // screen to look at forever.
+        // player who was never in it: the answer they owe is already being read, and
+        // the round would be waiting on a player nobody has seen. Turned away rather
+        // than ignored, because a client that is ignored has only the joining screen to
+        // look at forever.
+        //
+        // A name that already holds a seat is not that case, and is the whole reason
+        // this is a question about seats: a tab that refreshed mid-round is that
+        // player, and refusing them turned the room into a bar with nobody in it.
         log('info', 'refusing a join into a room that has started');
         transport.sendToPeer(peerId, { type: 'AlreadyStarted' });
         return undefined;
@@ -70,10 +74,10 @@ export function toAction(context: IncomingContext): GameAction | undefined {
 /**
  * The look already recorded for a returning player.
  *
- * Undefined outside the lobby, which is the only phase whose state carries a look,
- * and for a player with no record yet, which is what sends them on with the look
- * they arrived with.
+ * Undefined for a player with no record yet, which is what sends them on with the look
+ * they arrived with. The record is on the roster rather than on a phase, so a player who
+ * refreshed four rounds in keeps the character the room has been drawing this whole time.
  */
 function knownLook(state: HostState, playerId: string) {
-  return state.phase === 'Lobby' ? state.players.get(playerId)?.look : undefined;
+  return state.players.get(playerId)?.look;
 }

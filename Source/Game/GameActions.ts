@@ -29,6 +29,7 @@ export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>
     durationMs: action.durationMs,
     startedAt: action.startedAt,
     answers: new Map<PlayerId, string>(),
+    players: state.players,
     cumulativeScores: state.cumulativeScores,
   };
 }
@@ -48,6 +49,7 @@ export function handleSubmitAnswer(
     durationMs: state.durationMs,
     startedAt: state.startedAt,
     answers: newAnswers,
+    players: state.players,
     cumulativeScores: state.cumulativeScores,
   };
 }
@@ -66,6 +68,7 @@ export function handleStartReviewing(
     startedAt: action.startedAt,
     answers: state.answers,
     groupRejections: new Map<number, Set<PlayerId>>(),
+    players: state.players,
     cumulativeScores: state.cumulativeScores,
   };
 }
@@ -88,6 +91,7 @@ export function handleRejectGroup(
     startedAt: state.startedAt,
     answers: state.answers,
     groupRejections: newGroupRejections,
+    players: state.players,
     cumulativeScores: state.cumulativeScores,
   };
 }
@@ -105,6 +109,7 @@ export function handleEndReviewing(
     durationMs: action.durationMs,
     startedAt: action.startedAt,
     scores: roundScores,
+    players: state.players,
     cumulativeScores,
   };
 }
@@ -122,6 +127,7 @@ export function handleNextRound(state: HostState, action: ActionOf<'NEXT_ROUND'>
     durationMs: action.durationMs,
     startedAt: action.startedAt,
     answers: new Map<PlayerId, string>(),
+    players: state.players,
     cumulativeScores: state.cumulativeScores,
   };
 }
@@ -132,6 +138,7 @@ export function handleFinal(state: HostState): HostState {
   }
   return {
     phase: 'Final',
+    players: state.players,
     cumulativeScores: state.cumulativeScores,
   };
 }

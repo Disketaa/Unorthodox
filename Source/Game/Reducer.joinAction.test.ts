@@ -58,6 +58,7 @@ describe('reducer SET_LOOK action', () => {
       durationMs: 60_000,
       startedAt: 0,
       answers: new Map(),
+      players: new Map(),
       cumulativeScores: new Map(),
     };
     const state = reducer(writing, { type: 'SET_LOOK', playerId: 'p1', look: otherLook });

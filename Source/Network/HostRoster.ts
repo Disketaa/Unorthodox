@@ -50,6 +50,46 @@ export class HostRoster {
   }
 
   /**
+   * Take the roster back out of a room this tab was already hosting.
+   *
+   * A host that refreshes has the room's state again but not the table of seats that
+   * state is keyed by, and every decision about who is in the room is a decision about
+   * seats: how many answers to wait for, whose name is taken, and whether the player who
+   * has just knocked is somebody the room already knows. Without this the resumed room
+   * would have faces and no players behind them.
+   *
+   * Only names and seats. Nobody is behind a browser or an address, because a refresh
+   * has lost every connection the room had — a returning player re-establishes their own
+   * by claiming the seat, which is what makes them a returning player rather than a new
+   * one. A seat this tab already has is left alone, which is how the host's own survives.
+   */
+  restore(players: readonly (readonly [PlayerId, { name: string }])[]): void {
+    players.forEach(([playerId, player]) => {
+      if (this.seats.has(playerId)) return;
+      this.seats.add(playerId);
+      this.seatByName.set(player.name, playerId);
+      // Everyone restored is disconnected until they claim their seat again, which is
+      // what the state itself says: a tab that is gone is a player who dropped, and a
+      // room that waited on them would be waiting on an answer that cannot arrive. It is
+      // also what lets them claim it — a seat whose name is held by a browser this tab
+      // knows nothing about would turn a returning player into an impostor.
+      this.goneSeats.add(playerId);
+    });
+  }
+
+  /**
+   * Whether this name already holds a seat in the room.
+   *
+   * What decides a join once the room has started: a player who was in the lobby at the
+   * start is let back in and nobody else is. Their seat is what they come back to, so a
+   * returning player keeps their score, their answer and their character.
+   */
+  hasSeatForName(name: string): boolean {
+    const seat = this.seatByName.get(name);
+    return seat !== undefined && this.seats.has(seat);
+  }
+
+  /**
    * The seat for a name, reusing the one it had before if this player is
    * returning. A brand new name is given the next free seat.
    */

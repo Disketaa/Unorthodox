@@ -51,6 +51,7 @@ describe('botJoin', () => {
       durationMs: 1_000,
       startedAt: 0,
       answers: new Map(),
+      players: new Map(),
       cumulativeScores: new Map(),
     };
     expect(botJoin(writing, 1, seeded())).toBeUndefined();

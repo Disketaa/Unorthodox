@@ -66,6 +66,14 @@ export const GameConfig = {
     answerMaxLength: 80,
     roomCodeLength: 4,
     minPlayers: 2,
-    maxPlayers: 10,
+    /**
+     * How many players a room holds.
+     *
+     * The bar of players across the top of a game holds this many, so the room and the
+     * bar are the same size and nothing is ever dropped from one and kept in the other.
+     * Sixteen is wide for a party game and narrow for a phone: it is what the bar can
+     * draw without a player's face becoming a thumbnail.
+     */
+    maxPlayers: 16,
   },
 };

@@ -2,6 +2,7 @@ import { useState } from 'preact/hooks';
 import { InfoScreen, LobbyDebugTools } from '@/Screens';
 import { Strings } from '@/Content';
 import { PlayerLook } from '@/Core';
+import { Stack } from '@/Design/Primitives';
 import { DebugDock, StartCountdown } from '@/Design/Overlays';
 import { useGameSession } from './Hooks/UseGameSession';
 import { useDebugToggle } from './Hooks/UseDebugToggle';
@@ -9,10 +10,7 @@ import { useStartCountdown } from './Hooks/UseStartCountdown';
 import type { GameSessionView } from './Hooks/UseGameSession';
 import { SessionRole } from './Session';
 import { LobbyView } from './Views/LobbyView';
-import { WritingView } from './Views/WritingView';
-import { ReviewView } from './Views/ReviewView';
-import { ScoresView } from './Views/ScoresView';
-import { FinalView } from './Views/FinalView';
+import { PlayerBarView } from './Views/PlayerBarView';
 
 export interface GameRoomProps {
   roomCode: string;
@@ -31,6 +29,23 @@ const BlockedMessage = {
   Kicked: Strings.status.kicked,
 } as const;
 
+/**
+ * The game itself, while it is being designed.
+ *
+ * The bar along the top and nothing under it. The four phases that used to be here
+ * drew a topic, a timer and a card of answers, and they are all of them still in
+ * `Screens/` — a bar that has to be judged against the space it leaves for the game
+ * cannot be judged with three screens still on the page, so the stage is empty and
+ * `PhaseScreen` chooses it for every phase after the lobby.
+ */
+function GameScene({ view }: { view: GameSessionView }) {
+  return (
+    <Stack align="Center" gap="Md">
+      <PlayerBarView view={view} />
+    </Stack>
+  );
+}
+
 /** Pick the screen that matches the current phase. */
 function PhaseScreen({ view }: { view: GameSessionView }) {
   // Both of these end the session as far as this player is concerned, so both send
@@ -45,13 +60,10 @@ function PhaseScreen({ view }: { view: GameSessionView }) {
     case 'Lobby':
       return <LobbyView view={view} />;
     case 'Writing':
-      return <WritingView view={view} />;
     case 'Reviewing':
-      return <ReviewView view={view} />;
     case 'Scores':
-      return <ScoresView view={view} />;
     case 'Final':
-      return <FinalView view={view} />;
+      return <GameScene view={view} />;
     default:
       // The same screen as the failures, because it is the same situation seen a
       // moment earlier. The mark and the button both change: the mark says it is

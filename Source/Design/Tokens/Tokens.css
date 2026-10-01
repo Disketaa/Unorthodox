@@ -754,6 +754,31 @@ body.PageFade {
   --Layout-ScreenPaddingVertical: var(--Space-2xl);
   --Layout-ScreenPaddingHorizontal: var(--Space-Lg);
 
+  /*
+   * How many players the bar across the top of a game holds.
+   *
+   * A count rather than a length, so it can be read from JavaScript as well as drawn
+   * with: the bar drops a player past it rather than shrinking to fit, and that
+   * decision is made in render, where a stylesheet cannot reach. The same number as
+   * `GameConfig.limits.maxPlayers`, and it is a token rather than a copy of that value
+   * because Design may not read Game — so `Scripts/PlayerBarLayout.test.ts` holds the
+   * two to each other, and a room that grows past the bar is the room's limit moving.
+   */
+  --Layout-PlayerBarSlots: 16;
+  /*
+   * How wide one slot of the bar is.
+   *
+   * The name under a character is what decides this, and three characters of it: a
+   * player's own name is up to sixteen long and the common one is shorter, so a slot
+   * cut at six or so starts throwing away the names of half the room and a name cut at
+   * twenty pushes a room of ten off the side of a laptop. The name is cut past this
+   * width rather than wrapped, so a long name never makes its own slot taller than the
+   * rest and the characters stay in a row. The row wraps rather than scrolls, which is
+   * what keeps the bar from becoming something a player has to swipe sideways to find
+   * themselves in.
+   */
+  --Size-PlayerBarSlot: 84px;
+
   /* Character sizes, for the roster, the scoreboard and the picker. */
   --Size-Character-Small: 28px;
   --Size-Character-Medium: 44px;

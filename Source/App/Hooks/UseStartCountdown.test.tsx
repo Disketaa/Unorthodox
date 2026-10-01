@@ -23,6 +23,7 @@ function phaseOf(name: SessionPhaseName, startedAt = Date.now()): SessionPhase {
     clockOffsetMs: 0,
     playerNames: new Map(),
     playerLooks: new Map(),
+    playerPresence: new Map(),
     playerCount: 2,
     submittedCount: 0,
   };
@@ -35,7 +36,6 @@ function Count({ phase, room }: { phase: SessionPhase; room: string }) {
 }
 
 const { startVeilMs, startCountdownMs, uiTickMs } = GameConfig.timing;
-const countIn = startVeilMs + startCountdownMs;
 
 /** Effects are flushed before time is moved, or a tick advances an unattached clock. */
 function flush(): void {
@@ -120,7 +120,7 @@ describe('the count-in', () => {
 
   it('counts the game in once, and not every round', () => {
     const room = mount(phaseOf('Writing'));
-    pass(countIn);
+    pass(startVeilMs + startCountdownMs);
     expect(room.read()).toBe('');
     expect(playSound).toHaveBeenCalledTimes(3);
     // The next round's writing phase: these players are already writing, so there is
@@ -163,7 +163,7 @@ describe('who gets counted in', () => {
 
   it('counts a room in again once the room has been left', () => {
     const room = mount(phaseOf('Writing'));
-    pass(countIn);
+    pass(startVeilMs + startCountdownMs);
     expect(room.read()).toBe('');
     markCountedIn(roomCode);
     expect(mount(phaseOf('Writing')).read()).toBe('');
