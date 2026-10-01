@@ -4,19 +4,23 @@
   justify-content: center;
   flex-shrink: 0;
   padding: 0;
-  /*
-   * A white box rather than nothing, so the control is a target on a card that is
-   * itself white. It is only visible once hovered or focused, which is the point:
-   * the mark is what says what it is, and the box is only there to be pressed.
-   */
-  background: var(--Color-Surface-Default);
+  /* Nothing filled: the mark is what says what the control is. */
+  background: transparent;
   border: var(--Border-Width-Default) solid transparent;
   border-radius: var(--Radius-Button);
+  color: var(--Color-Text-Quiet);
   cursor: pointer;
-  transition: background var(--Duration-Fast) var(--Easing-Standard);
+  transition:
+    color var(--Duration-Fast) var(--Easing-Standard),
+    background var(--Duration-Fast) var(--Easing-Standard);
 }
 
+/*
+ * The accent arrives on the pointer rather than sitting there, so the eye is sent to
+ * the control being aimed at and the room keeps its gold for the things it acts on.
+ */
 .Root:hover {
+  color: var(--Color-Action-Primary-Background);
   background: var(--Color-Surface-Hover);
 }
 
@@ -72,18 +76,6 @@
 .SizeSmall .Icon {
   width: 1.1em;
   height: 1.1em;
-}
-
-.ToneAccent {
-  color: var(--Color-Action-Primary-Background);
-}
-
-/*
- * A mid grey rather than the muted text tone, which is dark enough to read as
- * disabled next to a chip that is merely quieter than the rest of the roster.
- */
-.ToneMuted {
-  color: var(--Color-Text-Quiet);
 }
 
 .IconExit .Icon {

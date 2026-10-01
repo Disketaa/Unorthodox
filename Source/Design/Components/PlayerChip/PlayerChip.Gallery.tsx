@@ -31,7 +31,6 @@ export function PlayerChipGallery() {
           onKick={() => {}}
           kickLabel="Исключить Bob"
         />
-      </Stack>
-    </Stack>
+      </Stack>    </Stack>
   );
 }

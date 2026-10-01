@@ -2,14 +2,10 @@ import styles from './IconButton.module.css';
 
 /** The marks that stand in for a button's own label. */
 export type IconName = 'Exit' | 'Kick';
-/** How strongly the mark is drawn, which is how it says how much it matters. */
-export type IconTone = 'Accent' | 'Muted';
-
 export interface IconButtonProps {
   icon: IconName;
   /** What the button does, for anyone who cannot see the mark. */
   label: string;
-  tone?: IconTone;
   /**
    * Small sits inside another control, where the button is part of it rather than
    * beside it; Medium stands on its own.
@@ -26,23 +22,18 @@ export interface IconButtonProps {
  * rest of the artwork is, and is painted through a mask: every icon on disk is a
  * black silhouette, and a mask is what lets one file serve a mark in any colour.
  *
+ * Held back until the pointer is on it, then the accent: nothing in the room should
+ * spend the accent on itself, so the colour is spent on the thing being aimed at.
+ *
  * A rounded square rather than a circle, because a circle is a shape the eye reads
  * as a control on its own, and these sit inside a chip or beside a title where the
  * box is already the control.
  */
-export function IconButton({
-  icon,
-  label,
-  tone = 'Accent',
-  size = 'Medium',
-  onClick,
-}: IconButtonProps) {
+export function IconButton({ icon, label, size = 'Medium', onClick }: IconButtonProps) {
   return (
     <button
       type="button"
-      class={`${styles.Root} ${styles[`Tone${tone}`]} ${styles[`Size${size}`]} ${
-        styles[`Icon${icon}`]
-      }`}
+      class={`${styles.Root} ${styles[`Size${size}`]} ${styles[`Icon${icon}`]}`}
       aria-label={label}
       title={label}
       onClick={onClick}

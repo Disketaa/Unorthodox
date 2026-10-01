@@ -54,17 +54,18 @@ export function PlayerChip({
     >
       <Character character={character} color={color} size="Small" index={index} />
       <span class={styles.Name}>{name}</span>
-      {isHost && <span class={styles.Crown} aria-hidden="true" />}
-      {onKick !== undefined && (
-        <span class={styles.Kick}>
-          <IconButton
-            icon="Kick"
-            label={kickLabel}
-            tone="Muted"
-            size="Small"
-            onClick={onKick}
-          />
+      {isHost && (
+        <span class={styles.Crown} aria-hidden="true">
+          <span class={styles.CrownIcon} />
         </span>
+      )}
+      {onKick !== undefined && (
+        <IconButton
+          icon="Kick"
+          label={kickLabel}
+          size="Small"
+          onClick={onKick}
+        />
       )}
     </div>
   );

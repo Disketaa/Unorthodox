@@ -46,34 +46,42 @@
 }
 
 /*
- * The host's crown, at the far end of the chip so it never sits between the face and
- * the name.
+ * The host's crown, in the same square an icon button occupies, so the end of the
+ * chip looks the same whichever mark is there and a kick does not sit at a
+ * different distance from the name than a crown does.
+ *
+ * A drawn mark rather than a button: the crown says who the host is, and a control
+ * the player can focus, hear announced and press for no effect would be a worse way
+ * to say it than no control at all. Box, radius and border are the same tokens the
+ * icon button uses, which is what keeps them in step without a second copy of them.
  *
  * Painted through a mask rather than embedded, for the same reason as every other
  * mark in the game: the file on disk is a black silhouette and the crown should be
  * the accent the palette says it is. Drawn oversize so the shape fills its box
- * instead of sitting inside the margin the artwork keeps, which is 90% of it here.
+ * instead of sitting inside the margin the artwork keeps.
+ *
+ * In the accent outright, where the controls beside it are not: the crown is a fact
+ * about who is hosting rather than something to aim at, so it holds its colour
+ * permanently instead of waiting for a pointer.
  */
 .Crown {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  width: var(--Size-Character-Small);
+  height: var(--Size-Character-Small);
+  margin-left: auto;
+  padding: 0;
+  background: transparent;
+  border: var(--Border-Width-Default) solid transparent;
+  border-radius: var(--Radius-Button);
+  color: var(--Color-Action-Primary-Background);
+}
+
+.CrownIcon {
   width: 1.1em;
   height: 1.1em;
-  margin-left: auto;
-  color: var(--Color-Action-Primary-Background);
   background-color: currentColor;
   mask: url('../../Icons/Crown.svg') center / 110% no-repeat;
-}
-
-/*
- * The kick sits in the chip's own right-hand gap rather than pushing the name away,
- * so a chip with a kick is the same width as one without and a roster does not
- * reflow as the host looks down it.
- */
-.Kick {
-  display: inline-flex;
-  margin-left: auto;
-}
-
-.Crown + .Kick {
-  margin-left: var(--Space-Xs);
 }
