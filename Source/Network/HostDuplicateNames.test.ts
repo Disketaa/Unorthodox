@@ -100,3 +100,47 @@ describe('Two players under one name', () => {
     expect(rosterSize(hostSession)).toBe(3);
   });
 });
+
+/**
+ * The whole rule in one test, because the two cases are one decision and the browser id
+ * is what tells them apart.
+ *
+ * The same browser under the same name is a player who refreshed, and must be seated. A
+ * different browser under the same name is a second person, and must not be — two
+ * people answering as one name are one person in every answer and every score, and a
+ * room that cannot tell them apart cannot count either of them.
+ */
+describe('A name and the browser holding it', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    InMemoryTransport.resetPeers();
+  });
+
+  it('seats the same browser back and turns a different browser away', () => {
+    const { hostSession } = roomWithAnn();
+
+    // Ann refreshes: same browser, same name, no departure ever reported.
+    const returning = joinAs('Ann');
+    expect(returning.getBlocked()).toBeUndefined();
+    expect(returning.getPlayerId()).not.toBeNull();
+
+    // A second person, on a second device, under the name Ann is already using.
+    const impostor = joinAsFromAnotherBrowser('Ann');
+    expect(impostor.getBlocked()).toBe('NameTaken');
+    expect(impostor.getPlayerId()).toBeNull();
+
+    // One Ann in the room, and the refresh did not double the roster either.
+    const state = hostSession.getState();
+    expect(state?.phase === 'Lobby' ? state.players.size : -1).toBe(2);
+    const anns =
+      state?.phase === 'Lobby'
+        ? [...state.players.values()].filter((player) => player.name === 'Ann').length
+        : -1;
+    expect(anns).toBe(1);
+  });
+});
