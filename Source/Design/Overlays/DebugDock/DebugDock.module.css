@@ -18,7 +18,6 @@
   transform: translateX(-50%);
   z-index: 2;
   /*
-<<<<<<< HEAD
    * Never wider than the window, so a long control cannot run off the edge of a narrow
    * screen. The cap is the same one `Screen` draws its column to, so on a wide window
    * the dock can never be wider than the page it is lying over.
@@ -30,12 +29,4 @@
    * the cap above, and the card's own frame is what draws around whatever it holds.
    */
   width: max-content;
-=======
-   * Never wider than the dock's own contents and never wider than the window, so the
-   * row of controls cannot run off the edge of a narrow screen. The cap is the same
-   * one `Screen` draws its column to, so the dock's width is the same width the page
-   * is laid out in and the two agree on a wide window.
-   */
-  max-width: min(100%, var(--Layout-ContainerMaxWidth));
->>>>>>> fb8341a6de10eefc021414c18150bade904ce026
 }
