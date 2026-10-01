@@ -198,7 +198,7 @@ body.PageFade {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  padding: var(--Layout-ScreenPadding);
+  padding: var(--Layout-ScreenPaddingVertical) var(--Layout-ScreenPaddingHorizontal);
 }
 
 :root {
@@ -678,10 +678,17 @@ body.PageFade {
    * Its own token rather than the card's, because the two are not the same distance
    * and sharing one number made them move together: a card's padding is inside its
    * own frame and a body's step is right for it, while a screen's is the only margin
-   * a top-aligned screen has, and at a body's step its first container sat close
-   * enough to the edge of the viewport to read as clipped rather than as placed.
+   * a top-aligned screen has.
+   *
+   * Two of them, vertical and horizontal, because they are not the same distance
+   * either. Down the page there is nothing but margin, so it is worth as much as the
+   * largest space there is. Across the page the container is already centred and the
+   * margin is only what keeps a wide container off the edge, so the large step spent
+   * 40px a side on the gap between the container and the frame of the page, which is
+   * margin nobody was reading.
    */
-  --Layout-ScreenPadding: var(--Space-2xl);
+  --Layout-ScreenPaddingVertical: var(--Space-2xl);
+  --Layout-ScreenPaddingHorizontal: var(--Space-Lg);
 
   /* Character sizes, for the roster, the scoreboard and the picker. */
   --Size-Character-Small: 28px;

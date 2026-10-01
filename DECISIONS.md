@@ -747,6 +747,16 @@ rather than being cut, because a cut answer is a hidden answer, and the name bes
 way instead. The cut is in the drawing only, so a name stays whole in the data and in the accessible
 name of the control that would remove it.
 
+## 2026-10-01 — the screen's margin is two margins, not one
+
+`--Layout-ScreenPadding` is now `--Layout-ScreenPaddingVertical` and
+`--Layout-ScreenPaddingHorizontal`, at `--Space-2xl` and `--Space-Lg`. They were one number
+because the page's margin is one thing, and it is two: down the page there is nothing but margin
+and the large step is what gives a top-aligned screen any room at all, while across the page the
+container is already centred and the margin is only what keeps a wide container off the edge. At
+64px a side it spent more room on the gap between the container and the frame of the page than
+between the containers themselves, which is margin nobody was reading.
+
 ## 2026-10-01 — every page fades in, on the body, while it renders
 
 One fade for every screen, declared once in `Screen` and applied by `usePageEnter` to the body rather
