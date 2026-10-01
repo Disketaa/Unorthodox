@@ -1,0 +1,67 @@
+/*
+ * Painted from the accent rather than embedded, because both files on disk are
+ * black silhouettes and a mark that ignores the palette is a mark that has to be
+ * redrawn by hand later.
+ *
+ * Sized in `em` so it follows the name beside it, and drawn slightly oversize and
+ * centred so the shape fills its box instead of sitting inside the margins the
+ * artwork keeps. The percentages differ per icon because the artwork differs: each
+ * one is the padding of its own file, measured rather than assumed.
+ */
+.Mark {
+  flex-shrink: 0;
+  width: 1.1em;
+  height: 1.1em;
+  margin-left: auto;
+  color: var(--Color-Action-Primary-Background);
+  background-color: currentColor;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+
+.Crown {
+  mask-image: url('../../Icons/Crown.svg');
+  mask-size: 110%;
+}
+
+.Kick {
+  mask-image: url('../../Icons/Kick.svg');
+  mask-size: 116%;
+}
+
+/*
+ * The button the pressable mark sits in: the same square of space as the drawn
+ * mark, so adding a kick does not move the name or change the chip's height.
+ */
+.Button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.5em;
+  height: 1.5em;
+  padding: 0;
+  margin-left: auto;
+  border: var(--Border-Width-Default) solid transparent;
+  border-radius: var(--Radius-Full);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--Duration-Fast) var(--Easing-Standard);
+}
+
+.Button:hover {
+  background: var(--Color-Surface-Active);
+}
+
+.Button:focus-visible {
+  outline: none;
+  border-color: var(--Color-Border-Focus);
+}
+
+/*
+ * Inside the button the mark sits against the edge, because the button already
+ * draws it.
+ */
+.Button .Mark {
+  margin-left: 0;
+}

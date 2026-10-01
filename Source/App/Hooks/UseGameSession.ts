@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { PublicState } from '@/Game';
 import { PlayerId, PlayerLook, CharacterColor, CharacterId } from '@/Core';
 import { createSession } from '../SessionFactory';
-import { Session, SessionRole } from '../Session';
+import { Session, SessionRole, BlockedReason } from '../Session';
 import { useSessionPhase, SessionPhase } from './UseSessionPhase';
 import { useGameActions } from './UseGameActions';
 import { useHostPhaseTimer } from './UseHostPhaseTimer';
@@ -25,8 +25,10 @@ export interface GameSessionView extends SessionPhase {
   hasSubmitted: boolean;
   rejectedGroupIds: ReadonlySet<number>;
   hostLeft: boolean;
-  /** The host refused this player's name, because someone is already playing it. */
-  nameRejected: boolean;
+  /** Why this player is not in the room, if they are not. */
+  blocked: BlockedReason | undefined;
+  /** The host removing a player from the room. */
+  kickPlayer: (playerId: PlayerId) => void;
   /**
    * This player's own character, as the host has it.
    *
@@ -134,7 +136,8 @@ export function useGameSession(
     hasSubmitted: hasSubmittedIn(marks, topic),
     rejectedGroupIds: rejectedIn(marks, topic),
     hostLeft,
-    nameRejected: session.isNameRejected(),
+    blocked: session.getBlocked(),
+    kickPlayer: (playerId) => session.kick(playerId),
     ownLook,
     exitRoom,
   };

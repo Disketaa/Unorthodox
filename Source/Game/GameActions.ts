@@ -5,6 +5,7 @@ import { scoreRound } from './RoundScoring';
 export type GameAction =
   | { type: 'JOIN'; playerId: PlayerId; name: string; look: PlayerLook }
   | { type: 'SET_ONLINE'; playerId: PlayerId; isOnline: boolean }
+  | { type: 'KICK'; playerId: PlayerId }
   | { type: 'SET_LOOK'; playerId: PlayerId; look: PlayerLook }
   | { type: 'START_GAME'; topic: string; durationMs: number; startedAt: number }
   | { type: 'SUBMIT_ANSWER'; playerId: PlayerId; text: string }

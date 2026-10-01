@@ -14,6 +14,24 @@ export function PlayerChipGallery() {
         <PlayerChip name="Eve" character="Butterfly" color="Coral" isSelf={true} />
         <PlayerChip name="Eve" character="Butterfly" color="Coral" isSelf={true} isHost={true} />
       </Stack>
+      <Text variant="Body">With the host's marks, which only the host's roster offers</Text>
+      <Stack direction="Horizontal" gap="Sm">
+        <PlayerChip
+          name="Ann"
+          character="Ghost"
+          color="Sky"
+          isHost={true}
+          onKick={() => {}}
+          kickLabel="Исключить Ann"
+        />
+        <PlayerChip
+          name="Bob"
+          character="Hat"
+          color="Rose"
+          onKick={() => {}}
+          kickLabel="Исключить Bob"
+        />
+      </Stack>
     </Stack>
   );
 }

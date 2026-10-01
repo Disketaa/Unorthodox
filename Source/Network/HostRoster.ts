@@ -65,6 +65,16 @@ export class HostRoster {
     return this.seatByPeerId.get(peerId);
   }
 
+  /** The address a seat is sitting at, or undefined if it is not connected. */
+  addressForSeat(playerId: PlayerId): string | undefined {
+    for (const [address, seated] of this.seatByPeerId) {
+      if (seated === playerId) {
+        return address;
+      }
+    }
+    return undefined;
+  }
+
   /** Forget a departed address, so a stale one cannot claim a departure twice. */
   releasePeer(peerId: string): void {
     this.seatByPeerId.delete(peerId);
@@ -73,6 +83,27 @@ export class HostRoster {
   /** Note that the player in this seat has dropped off the network. */
   markGone(playerId: PlayerId): void {
     this.goneSeats.add(playerId);
+  }
+
+  /**
+   * Give a seat up at the host's word, unlike a departure.
+   *
+   * Everything the seat was remembered by goes with it, so the name is free again
+   * and the player's own late departure cannot mark a seat that no longer exists.
+   */
+  releaseSeat(playerId: PlayerId): void {
+    this.seats.delete(playerId);
+    this.goneSeats.delete(playerId);
+    for (const [name, seated] of this.seatByName) {
+      if (seated === playerId) {
+        this.seatByName.delete(name);
+      }
+    }
+    for (const [address, seated] of this.seatByPeerId) {
+      if (seated === playerId) {
+        this.seatByPeerId.delete(address);
+      }
+    }
   }
 
   /**
@@ -85,7 +116,7 @@ export class HostRoster {
    */
   isNameActive(name: string): boolean {
     const seat = this.seatByName.get(name);
-    return seat !== undefined && !this.goneSeats.has(seat);
+    return seat !== undefined && this.seats.has(seat) && !this.goneSeats.has(seat);
   }
 
   has(playerId: PlayerId): boolean {

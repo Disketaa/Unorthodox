@@ -55,7 +55,7 @@ describe('Two players under one name', () => {
     const { hostSession } = roomWithAnn();
     const second = joinAs('Ann');
 
-    expect(second.isNameRejected()).toBe(true);
+    expect(second.getBlocked()).toBe('NameTaken');
     expect(second.getPlayerId()).toBeNull();
     expect(rosterSize(hostSession)).toBe(2);
   });
@@ -64,7 +64,7 @@ describe('Two players under one name', () => {
     const { hostSession } = roomWithAnn();
     const impostor = joinAs('Host');
 
-    expect(impostor.isNameRejected()).toBe(true);
+    expect(impostor.getBlocked()).toBe('NameTaken');
     expect(rosterSize(hostSession)).toBe(2);
   });
 
@@ -73,7 +73,7 @@ describe('Two players under one name', () => {
     transport.simulateLeave();
     const second = joinAs('Ann');
 
-    expect(second.isNameRejected()).toBe(false);
+    expect(second.getBlocked()).toBeUndefined();
     expect(second.getPlayerId()).not.toBeNull();
     expect(rosterSize(hostSession)).toBe(2);
   });
@@ -82,7 +82,7 @@ describe('Two players under one name', () => {
     const { hostSession } = roomWithAnn();
     const bob = joinAs('Bob');
 
-    expect(bob.isNameRejected()).toBe(false);
+    expect(bob.getBlocked()).toBeUndefined();
     expect(rosterSize(hostSession)).toBe(3);
   });
 });

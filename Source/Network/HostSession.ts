@@ -1,6 +1,7 @@
 import { Transport } from './Transport';
 import { isClientMessage, ClientMessage } from './Protocol';
-import { HostRoster, resolveLook } from './HostRoster';
+import { HostRoster } from './HostRoster';
+import { toAction } from './HostIncoming';
 import { startGame, closeWriting, closeReviewing, nextRound } from './HostPhases';
 import * as Game from '@/Game';
 import { PlayerId, PlayerLook, createLogger } from '@/Core';
@@ -83,19 +84,6 @@ export class HostSession {
     this.updateListener = undefined;
   }
 
-  /**
-   * The look already recorded for a returning player.
-   *
-   * Returns undefined only if the player was in the roster but their record was
-   * somehow dropped, in which case the caller falls back to the incoming look.
-   */
-  private knownLook(playerId: PlayerId): PlayerLook | undefined {
-    if (this.state?.phase !== 'Lobby') {
-      return undefined;
-    }
-    return this.state.players.get(playerId)?.look;
-  }
-
   /** The peerId is the transport address the message arrived from, not a player id. */
   private handleClientMessage(message: ClientMessage, peerId: string): void {
     if (!this.state) {
@@ -108,41 +96,15 @@ export class HostSession {
       this.broadcastState();
       return;
     }
-    const action = this.toAction(message, peerId);
+    const action = toAction({
+      message,
+      peerId,
+      roster: this.roster,
+      transport: this.transport,
+      state: this.state,
+    });
     if (action) {
       this.apply(action);
-    }
-  }
-
-  private toAction(message: ClientMessage, peerId: string): Game.GameAction | undefined {
-    switch (message.type) {
-      case 'Join': {
-        if (this.roster.isNameActive(message.name)) {
-          // Two players under one name would be the same person to the host in every
-          // answer and every score, so the second one is turned away rather than
-          // seated twice.
-          log('info', 'refusing a join under a name already in play', message.name);
-          this.transport.sendToPeer(peerId, { type: 'NameRejected' });
-          return undefined;
-        }
-        // A player we already know is the same person coming back, so they keep
-        // the seat and the character they had rather than a fresh roll.
-        const playerId = this.roster.claimSeat(message.name, peerId);
-        const look = resolveLook(this.knownLook(playerId), message.look);
-        // Answer the peer the message came from: the game player id is assigned
-        // here and never reaches the wire, so it is not routable.
-        log('info', 'assigning playerId', playerId, 'to peer', peerId);
-        this.transport.sendToPeer(peerId, { type: 'SetPlayerId', playerId });
-        return { type: 'JOIN', playerId, name: message.name, look };
-      }
-      case 'SetLook':
-        return { type: 'SET_LOOK', playerId: message.playerId, look: message.look };
-      case 'SubmitAnswer':
-        return { type: 'SUBMIT_ANSWER', playerId: message.playerId, text: message.text };
-      case 'RejectGroup':
-        return { type: 'REJECT_GROUP', playerId: message.playerId, groupId: message.groupId };
-      default:
-        return undefined;
     }
   }
 
@@ -185,6 +147,24 @@ export class HostSession {
   /** The host changing its own character, as the lobby allows until play starts. */
   setOwnLook(look: PlayerLook): void {
     this.apply({ type: 'SET_LOOK', playerId: HostPlayerId, look });
+  }
+
+  /**
+ * Remove a player from the room at the host's word.
+ *
+ * The address is released before the seat, so that a player who walks out of their
+ * own kicked session is not then reported as one more dropout by a host that has
+ * already forgotten they were here.
+ */
+  kick(playerId: PlayerId): void {
+    const address = this.roster.addressForSeat(playerId);
+    if (address !== undefined) {
+      this.transport.sendToPeer(address, { type: 'Kicked' });
+      this.roster.releasePeer(address);
+    }
+    this.roster.releaseSeat(playerId);
+    log('info', 'kicking player', playerId);
+    this.apply({ type: 'KICK', playerId });
   }
 
   rejectOwnGroup(groupId: number): void {

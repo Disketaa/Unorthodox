@@ -24,6 +24,8 @@ export interface LobbyScreenProps {
   onPickLook: (character: CharacterId, color: CharacterColor) => void;
   onStart: () => void;
   onExit: () => void;
+  /** Only the host gets this: the room's way to remove a player. */
+  onKick: (playerId: PlayerId) => void;
 }
 
 /**
@@ -34,9 +36,13 @@ export interface LobbyScreenProps {
 function Roster({
   players,
   ownPlayerId,
+  isHost,
+  onKick,
 }: {
   players: readonly PublicPlayer[];
   ownPlayerId: PlayerId | null;
+  isHost: boolean;
+  onKick: (playerId: PlayerId) => void;
 }) {
   return (
     <Stack gap="Sm">
@@ -50,6 +56,9 @@ function Roster({
           isHost={index === 0}
           isOnline={player.isOnline}
           isSelf={player.id === ownPlayerId}
+          // The host cannot remove itself, so its own chip never offers the mark.
+          onKick={isHost && player.id !== ownPlayerId ? () => onKick(player.id) : undefined}
+          kickLabel={Strings.lobby.kick(player.name)}
         />
       ))}
     </Stack>
@@ -91,6 +100,54 @@ function LookPicker({
   );
 }
 
+/**
+ * Whether the room is ready to start, and whether it is already full.
+ *
+ * Counted from the players who are actually here: a seat whose owner has dropped
+ * is still on the roster, but starting a round would wait on an answer that can no
+ * longer arrive, so a room of one live player is a room of one.
+ */
+function readiness(players: readonly PublicPlayer[]): {
+  enoughPlayers: boolean;
+  roomFull: boolean;
+} {
+  const hereCount = players.filter((player) => player.isOnline).length;
+  return {
+    enoughPlayers: hereCount >= GameConfig.limits.minPlayers,
+    roomFull: players.length >= GameConfig.limits.maxPlayers,
+  };
+}
+
+/** The room itself: its code, who is in it, and the way to start or wait. */
+function Room({
+  roomCode,
+  players,
+  ownPlayerId,
+  isHost,
+  onPickStart,
+  onKick,
+  onExit,
+}: Pick<
+  LobbyScreenProps,
+  'roomCode' | 'players' | 'ownPlayerId' | 'isHost' | 'onKick' | 'onExit'
+> & { onPickStart: () => void }) {
+  const { enoughPlayers, roomFull } = readiness(players);
+  return (
+    <LobbyCategory
+      title={<RoomCodeBadge code={roomCode} />}
+      action={<ExitButton label={Strings.lobby.exit} onClick={onExit} />}
+    >
+      <Roster players={players} ownPlayerId={ownPlayerId} isHost={isHost} onKick={onKick} />
+      <LobbyStart
+        enoughPlayers={enoughPlayers}
+        roomFull={roomFull}
+        isHost={isHost}
+        onStart={onPickStart}
+      />
+    </LobbyCategory>
+  );
+}
+
 /** Waiting room: the room code, the roster, and the character picker. */
 export function LobbyScreen({
   roomCode,
@@ -102,28 +159,19 @@ export function LobbyScreen({
   onPickLook,
   onStart,
   onExit,
+  onKick,
 }: LobbyScreenProps) {
-  // Counted from the players who are actually here: a seat whose owner has dropped
-  // is still on the roster, but starting a round would wait on an answer that can
-  // no longer arrive, so a room of one live player is a room of one.
-  const hereCount = players.filter((player) => player.isOnline).length;
-  const enoughPlayers = hereCount >= GameConfig.limits.minPlayers;
-  const roomFull = players.length >= GameConfig.limits.maxPlayers;
-
   return (
     <Stack gap="Lg" align="Stretch">
-      <LobbyCategory
-        title={<RoomCodeBadge code={roomCode} />}
-        action={<ExitButton label={Strings.lobby.exit} onClick={onExit} />}
-      >
-        <Roster players={players} ownPlayerId={ownPlayerId} />
-        <LobbyStart
-          enoughPlayers={enoughPlayers}
-          roomFull={roomFull}
-          isHost={isHost}
-          onStart={onStart}
-        />
-      </LobbyCategory>
+      <Room
+        roomCode={roomCode}
+        players={players}
+        ownPlayerId={ownPlayerId}
+        isHost={isHost}
+        onPickStart={onStart}
+        onKick={onKick}
+        onExit={onExit}
+      />
       {ownLook !== undefined && (
         <LookPicker
           ownName={ownPlayerName}

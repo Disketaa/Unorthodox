@@ -34,6 +34,8 @@ export const Strings = {
     roomFull: 'Комната заполнена',
     /** The accessible name of the icon-only control that leaves the room. */
     exit: 'Выйти из комнаты',
+    /** What the host's control on a player says, naming who it would remove. */
+    kick: (name: string) => `Исключить ${name}`,
   },
   /**
    * Names for the character picker.
@@ -93,10 +95,11 @@ Coral: 'Коралл',
     playAgain: 'Сыграть ещё раз',
     place: (rank: number) => `Место: ${rank}`,
   },
-  status: {
-    /** One sentence: what happened, and what to do about it. */
-    hostLeft: 'Хост вышел из комнаты.',
+status: {
+    /** One short sentence each: what happened, and nothing else. */
+    hostLeft: 'Комната была закрыта.',
     nameTaken: 'Это имя уже занято.',
+    kicked: 'Вы были исключены.',
     connecting: 'Подключаемся…',
   },
 } as const;

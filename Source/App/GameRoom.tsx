@@ -19,6 +19,12 @@ export interface GameRoomProps {
   look: PlayerLook;
 }
 
+/** The one sentence for each way a player can find themselves outside the room. */
+const BlockedMessage = {
+  NameTaken: Strings.status.nameTaken,
+  Kicked: Strings.status.kicked,
+} as const;
+
 /** Pick the screen that matches the current phase. */
 export function GameRoom({ roomCode, role, name, look }: GameRoomProps) {
   const view = useGameSession(roomCode, role, name, look);
@@ -29,8 +35,8 @@ export function GameRoom({ roomCode, role, name, look }: GameRoomProps) {
   if (view.hostLeft) {
     return <InfoScreen message={Strings.status.hostLeft} onAcknowledge={exitRoom} />;
   }
-  if (view.nameRejected) {
-    return <InfoScreen message={Strings.status.nameTaken} onAcknowledge={exitRoom} />;
+  if (view.blocked !== undefined) {
+    return <InfoScreen message={BlockedMessage[view.blocked]} onAcknowledge={exitRoom} />;
   }
   switch (view.phase) {
     case 'Lobby':

@@ -26,7 +26,7 @@ function createHostSession(roomCode: string, playerName: string, look: PlayerLoo
     onUpdate: (listener) => hostSession.onUpdate(listener),
     onHostLeave: () => {},
     // The host is the name in the room, so nothing can collide with it.
-    isNameRejected: () => false,
+    getBlocked: () => undefined,
     join: () => {},
     setLook: (look) => hostSession.setOwnLook(look),
     submitAnswer: (text) => hostSession.submitOwnAnswer(text.trim()),
@@ -35,6 +35,7 @@ function createHostSession(roomCode: string, playerName: string, look: PlayerLoo
     closePhase: (durationMs) => hostSession.endReviewing(durationMs),
     startNextRound: (topic, durationMs) => hostSession.nextRound(topic, durationMs),
     finish: () => hostSession.finish(),
+    kick: (playerId) => hostSession.kick(playerId),
     stop: () => hostSession.stop(),
   };
 }
@@ -51,7 +52,7 @@ function createPlayerSession(roomCode: string, playerName: string, look: PlayerL
     getClockOffsetMs: () => clientSession.getClockOffsetMs(),
     onUpdate: (listener) => clientSession.onUpdate(listener),
     onHostLeave: (listener) => clientSession.onHostLeave(listener),
-    isNameRejected: () => clientSession.isNameRejected(),
+    getBlocked: () => clientSession.getBlocked(),
     join: () => {},
     setLook: (look) => clientSession.setLook(look),
     submitAnswer: (text) => clientSession.submitAnswer(text.trim()),
@@ -60,6 +61,7 @@ function createPlayerSession(roomCode: string, playerName: string, look: PlayerL
     closePhase: () => {},
     startNextRound: () => {},
     finish: () => {},
+    kick: () => {},
     stop: () => clientSession.stop(),
   };
 }

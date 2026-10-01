@@ -16,6 +16,14 @@ const log = createLogger('ClientSession');
  */
 export const SyncIntervalMs = 5_000;
 
+/**
+ * Why a client is not in a room.
+ *
+ * Both are the host's doing and both end the same way on screen, so they are one
+ * field with a reason rather than two booleans that could both be set.
+ */
+export type BlockedReason = 'NameTaken' | 'Kicked';
+
 export class ClientSession {
   private state: Game.PublicState | undefined = undefined;
   private transport: Transport;
@@ -27,8 +35,8 @@ export class ClientSession {
   private syncTimer: ReturnType<typeof setInterval> | null = null;
   /** Skew between the host's clock and this device's, in milliseconds. */
   private clockOffsetMs = 0;
-  /** Whether the host turned this player away for taking a name already in play. */
-  private nameRejected = false;
+  /** Why this player is not in the room, if they are not. */
+  private blocked: BlockedReason | undefined = undefined;
 
   /** Subscribe to state changes so the UI can re-render. */
   onUpdate(listener: () => void): void {
@@ -89,7 +97,7 @@ export class ClientSession {
     this.transport.stop();
     this.state = undefined;
     this.playerId = null;
-    this.nameRejected = false;
+    this.blocked = undefined;
     this.updateListener = undefined;
   }
 
@@ -114,8 +122,17 @@ export class ClientSession {
         // Refused: this name is already being played. Retrying would only be
         // refused again, so the join is abandoned and the player is told why.
         log('info', 'host refused the join under this name');
-        this.nameRejected = true;
+        this.blocked = 'NameTaken';
         this.joinRetry.stop();
+        this.updateListener?.();
+        break;
+      case 'Kicked':
+        // Out of the room, and staying out: a kicked player must not be able to
+        // rejoin under the same name and reclaim the seat they were removed from.
+        log('info', 'kicked out of the room');
+        this.blocked = 'Kicked';
+        this.joinRetry.stop();
+        this.transport.stop();
         this.updateListener?.();
         break;
     }
@@ -184,8 +201,8 @@ export class ClientSession {
     return this.playerId;
   }
 
-  /** Whether the host refused this player's name. */
-  isNameRejected(): boolean {
-    return this.nameRejected;
+  /** Why this client is not in a room, or undefined if it is in one. */
+  getBlocked(): BlockedReason | undefined {
+    return this.blocked;
   }
 }

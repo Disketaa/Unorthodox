@@ -1,6 +1,10 @@
 import { CharacterColor, CharacterId } from '@/Core';
 import { Character } from '../Character';
+import { PlayerChipMark } from './PlayerChipMark';
 import styles from './PlayerChip.module.css';
+
+const HostMark = 'Crown';
+const KickMark = 'Kick';
 
 export interface PlayerChipProps {
   name: string;
@@ -23,6 +27,15 @@ export interface PlayerChipProps {
    * the local player is outlined and everybody else is not.
    */
   isSelf?: boolean;
+  /**
+   * When given, the host is offered a way to remove this player.
+   *
+   * Only the host's own roster passes it, so a kick can never appear on the chip of
+   * the player who would be removing themselves.
+   */
+  onKick?: () => void;
+  /** What the kick says, for anyone who cannot see the mark. */
+  kickLabel?: string;
 }
 
 export function PlayerChip({
@@ -33,6 +46,8 @@ export function PlayerChip({
   isHost = false,
   isOnline = true,
   isSelf = false,
+  onKick,
+  kickLabel = '',
 }: PlayerChipProps) {
   return (
     <div
@@ -40,9 +55,10 @@ export function PlayerChip({
         isSelf ? styles.Self : ''
       }`}
     >
-      {isHost && <span class={styles.HostIndicator} />}
       <Character character={character} color={color} size="Small" index={index} />
       <span class={styles.Name}>{name}</span>
+      {isHost && <PlayerChipMark icon={HostMark} />}
+      {onKick !== undefined && <PlayerChipMark icon={KickMark} label={kickLabel} onClick={onKick} />}
     </div>
   );
 }

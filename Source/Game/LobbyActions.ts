@@ -73,3 +73,26 @@ export function handleSetOnline(state: HostState, action: ActionOf<'SET_ONLINE'>
     cumulativeScores: state.cumulativeScores,
   };
 }
+
+/**
+ * Take a player out of the room at the host's word.
+ *
+ * Unlike a dropped connection, a kick gives the seat up: the player is out, and so
+ * are their scores, because a room that still tallies a player who was removed
+ * would carry them into the next game. Only the lobby can do this, since a later
+ * phase has no roster left to remove anyone from.
+ */
+export function handleKick(state: HostState, action: ActionOf<'KICK'>): HostState {
+  if (state.phase !== 'Lobby' || !state.players.has(action.playerId)) {
+    return state;
+  }
+  const newPlayers = new Map(state.players);
+  newPlayers.delete(action.playerId);
+  const newScores = new Map(state.cumulativeScores);
+  newScores.delete(action.playerId);
+  return {
+    phase: 'Lobby',
+    players: newPlayers,
+    cumulativeScores: newScores,
+  };
+}

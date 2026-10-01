@@ -22,6 +22,7 @@ export function LobbyView({ view }: PhaseViewProps) {
       onPickLook={view.setLook}
       onStart={view.startGame}
       onExit={view.exitRoom}
+      onKick={view.kickPlayer}
     />
   );
 }
