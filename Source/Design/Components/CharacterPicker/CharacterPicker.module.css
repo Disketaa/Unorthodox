@@ -66,12 +66,17 @@
 }
 
 /*
- * A darker grey than the resting border, rather than the focus colour or the accent
- * gold: under the cursor is neither of the two states the border otherwise means,
- * and both of those belong to a cell that is chosen or focused.
+ * The accent gold, the same colour the chosen cell wears on its border.
+ *
+ * The border is the only thing that changes here, and the chosen cell is marked by
+ * its fill rather than by anything on the border, so the two never depend on being
+ * told apart by border colour alone. That is what lets the hover speak in the
+ * game's accent instead of the grey it used to: a grey border read as the cell
+ * being switched off, which is not what hovering says, and on a row of eight
+ * tints it was the one dark thing on the screen.
  */
 .Choice:hover {
-  border-color: var(--Color-Text-Muted);
+  border-color: var(--Color-Action-Primary-Background);
 }
 
 /*
