@@ -1,5 +1,39 @@
 ﻿# DECISIONS
 
+## 2026-10-01 — a button pops, and two pops are not the same note
+`Design/Sounds/SoundBank.ts` plays `Pop.ogg` on press. `Button`, `IconButton`, and both rows of
+the character picker call `playSound('Pop')`, so a press anywhere on the interface answers with
+the same sound; the picker rows play it directly rather than through a prop because the press is
+the event, not a property of the drawing inside the cell.
+
+One element per clip name, replayed from `currentTime = 0`. Clicking faster than the clip lasts
+cuts it off rather than queueing a second copy behind it: a button pressed twice is two presses,
+not a burst. A refused `play()` promise is swallowed, because a browser blocking playback before
+the first gesture is not a fault to report at the press.
+
+Each press also lands on a different pitch, re-rolled within five semitones of the recorded one.
+The clip is one recorded note, and replaying it verbatim makes two presses in a row read as a stuck
+sample rather than as two hands.
+
+Twelve per cent of playback rate was not enough, and neither was a spread of one, which is to say
+the variation was inaudible at any width tried: `playbackRate` is reset by the media element when
+loading finishes, so the rate written before `play()` was gone before anything was heard. Web Audio
+replaced it, where `detune` belongs to a per-press source node and is not a property of the clip
+that a later load can overwrite. Detuning also keeps the length, which varying the rate does not, so
+a wide shift no longer drags the sound out as well.
+
+Nothing is loaded on the first press. `preloadSounds()` runs from `main.tsx`: the context opens
+suspended, which is legal and is exactly why the fetch and decode can happen before any gesture, and
+by the time anything can be pressed the buffer is in memory. A press that still beats its own load
+plays when the decode lands rather than being dropped.
+
+The bank stays silent where there is no Web Audio at all, which happy-dom found by throwing
+`AudioContext is not defined` through four screen tests. A sound is an addition to a press and never
+a condition of it.
+
+Both are props' business rather than the design system's: `Button` and `IconButton` take
+`sound?: SoundName | false` for a control that has to be silent, and nothing else passes one.
+
 ## 2026-10-01 — the player name lives in localStorage, saved on entering a room
 The name used to sit in `sessionStorage` and be written on every keystroke, which meant it
 died with the tab and a returning player retyped it. It is now `localStorage`, so it outlives
@@ -518,3 +552,16 @@ whatever it sits in, so leaving the roster packed tight gave two rules dividing 
 at different distances from each other, which is worse than either spacing on its own. The roster
 moved into its own file because adding the rule to the screen pushed it past the line limit, and it
 was already a self-contained part with a single caller.
+
+A name is cut with an ellipsis wherever it is drawn, never wrapped: in the roster chip, on a score
+row, on an answer card and in a title. A name is whatever someone typed, and on a narrow phone a long
+one either made the row two lines tall, pushed the marks and the controls off the end of it, or
+stretched the card. Every one of those cases needs `min-width: 0` first: a flex item refuses to
+shrink below its contents by default, so without it the ellipsis is never reached. The `Title` variant
+of `Text` also has to become a block, since it is a span and an inline box ignores `overflow`
+entirely. The word on a separator is cut for the same reason and by the same rule, with the runs of
+the line given `flex: 1 1 0` so they are the ones that give way: a word that wrapped would push the
+two runs apart and turn one rule into two lines and a paragraph. An answer is the exception and wraps
+rather than being cut, because a cut answer is a hidden answer, and the name beside it is what gives
+way instead. The cut is in the drawing only, so a name stays whole in the data and in the accessible
+name of the control that would remove it.

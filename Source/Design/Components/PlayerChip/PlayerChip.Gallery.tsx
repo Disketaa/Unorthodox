@@ -31,6 +31,28 @@ export function PlayerChipGallery() {
           onKick={() => {}}
           kickLabel="Исключить Bob"
         />
-      </Stack>    </Stack>
+      </Stack>
+      <Text variant="Body">
+        With a name too long for the row, which is cut with an ellipsis rather than
+        wrapped or allowed to push the marks off the end
+      </Text>
+      <LongName />
+    </Stack>
+  );
+}
+
+/** One chip in a column, so it is as wide as the gallery and the cut is visible. */
+function LongName() {
+  return (
+    <Stack direction="Vertical" gap="Sm">
+      <PlayerChip
+        name="Константинтинтинтинтин"
+        character="Ghost"
+        color="Sky"
+        isHost={true}
+        onKick={() => {}}
+        kickLabel="Исключить Константинтинтинтинтин"
+      />
+    </Stack>
   );
 }

@@ -15,10 +15,24 @@
   text-align: right;
 }
 
+/*
+ * The name is whatever someone typed, so it is cut rather than wrapped: the row is
+ * a ranking, and a name that wrapped made a long name a taller row and pushed its
+ * score away from the place the eye expects to find it. The score keeps its own
+ * width, so the cut lands on the name and never on the number.
+ *
+ * `min-width: 0` is what makes the cut happen: a flex item defaults to refusing to
+ * shrink below its contents, which is what let a long name push the score off the
+ * end of the row instead of being cut.
+ */
 .Name {
   flex: 1;
+  min-width: 0;
   font-size: var(--FontSize-Body);
   color: var(--Color-Text-Default);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .Score {

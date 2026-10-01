@@ -23,7 +23,8 @@
  * than the row and shifts everything below it by a pixel.
  */
 .Line {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   height: 1px;
   background: var(--Color-Border-Default);
 }
@@ -38,9 +39,24 @@
  */
 .Label {
   flex-shrink: 0;
+  /*
+   * Cut rather than allowed to run long, because the word is the one thing on the
+   * rule that has to stay on one line: a word that wrapped would push the two runs
+   * of the rule apart and turn the separator into two lines and a paragraph.
+   *
+   * `min-width: 0` on the runs is what makes the cut happen at all. They are flex
+   * children of a row sized by its widest content, and by default they refuse to
+   * shrink below it, so a long word would push the whole row wider than the card
+   * rather than shortening the rule to fit.
+   */
+  max-width: 100%;
+  min-width: 0;
   padding: 0 var(--Space-Sm);
   background: var(--Color-Surface-Default);
   font-size: var(--FontSize-Caption);
   font-weight: 500;
   color: var(--Color-Text-Muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
