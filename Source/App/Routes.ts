@@ -1,14 +1,19 @@
-import { SessionRole } from './Session';
 import { normalizeRoomCode, isValidRoomCode } from './RoomCode';
 import { GameConfig } from '@/Game';
 
 export type Route =
   | { kind: 'Join' }
   | { kind: 'Gallery' }
-  | { kind: 'Room'; roomCode: string; role: SessionRole };
+  | { kind: 'Room'; roomCode: string };
 
 /**
  * Hash routing, because GitHub Pages does not rewrite SPA paths.
+ *
+ * A room link carries the code and nothing else. It used to carry the role too, and
+ * that was a hole rather than a convenience: a link that says who is hosting is a
+ * link anyone can edit, and one word changed in the address is the app opening as the
+ * host of somebody else's room. What this device may do with a room is remembered
+ * instead — see `RoomOwnership`.
  *
  * The hash is percent-encoded by the browser, and room codes are Cyrillic, so
  * the segments are decoded before reading. A malformed escape sequence falls
@@ -20,18 +25,20 @@ export function parseRoute(hash: string): Route {
   if (segments[0] === 'Gallery') {
     return { kind: 'Gallery' };
   }
-  const role = readRole(segments[2]);
-  if (segments[0] === 'Room' && role !== undefined) {
+  if (segments[0] === 'Room' && segments[1] !== undefined) {
     // The raw segment is checked as well as the normalised code, because
     // normalising truncates: a five letter path would otherwise be accepted as
     // the first four letters and quietly join the wrong room.
+    //
+    // Anything after the code is ignored rather than refused, so links made before the
+    // role left the address still open the room they name.
     const raw = segments[1];
     if (raw.length > GameConfig.limits.roomCodeLength) {
       return { kind: 'Join' };
     }
     const roomCode = normalizeRoomCode(raw);
     if (isValidRoomCode(roomCode)) {
-      return { kind: 'Room', roomCode, role };
+      return { kind: 'Room', roomCode };
     }
   }
   return { kind: 'Join' };
@@ -52,9 +59,8 @@ function decodeSegments(hash: string): string[] {
     });
 }
 
-function readRole(segment: string | undefined): SessionRole | undefined {
-  return segment === 'Host' || segment === 'Player' ? segment : undefined;
-}
+
+
 
 /** The first path segment of every route, which is what a stray path is matched on. */
 const RouteRoots = new Set(['Room', 'Gallery']);
@@ -87,8 +93,9 @@ function basePath(): string {
   return base.length > 0 ? `/${base.join('/')}/` : '/';
 }
 
-export function roomPath(roomCode: string, role: SessionRole): string {
-  return `#/Room/${roomCode}/${role}`;
+/** The link to a room, carrying its code and nothing else. */
+export function roomPath(roomCode: string): string {
+  return `#/Room/${roomCode}`;
 }
 
 /**

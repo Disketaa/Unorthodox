@@ -4,7 +4,7 @@ import { PublicState, Pace } from '@/Game';
 export type SessionRole = 'Host' | 'Player';
 
 /** Why this player is not in the room, if they are not. */
-export type BlockedReason = 'NameTaken' | 'Kicked';
+export type BlockedReason = 'NameTaken' | 'AlreadyStarted' | 'Kicked';
 
 /**
  * One API for the host and a client, so the UI can be written once. Methods a

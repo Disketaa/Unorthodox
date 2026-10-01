@@ -3,8 +3,8 @@
  * here: this is always rendered as a section title, and spelling out the display face
  * and the size a second time is two places to change for one heading.
  *
- * The sign trails the digits, the way a receipt prints a number, and is held back to
- * the text colour so the mark reads as a mark rather than as part of the number.
+ * The sign leads the digits, the way a number sign is written in front of one, and is
+ * held back to the text colour so the mark reads as a mark rather than as part of it.
  */
 .Root {
   display: inline-flex;

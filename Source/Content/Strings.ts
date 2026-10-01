@@ -145,6 +145,8 @@ status: {
     /** One short sentence each: what happened, and nothing else. */
     hostLeft: 'Комната была закрыта',
     nameTaken: 'Это имя уже занято',
+    /** The room was past its lobby, so this player has a round they were never in. */
+    alreadyStarted: 'Игра уже началась',
     kicked: 'Вы были исключены',
     connecting: 'Подключаемся…',
   },

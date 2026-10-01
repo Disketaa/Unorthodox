@@ -7,6 +7,7 @@ import type { JoinScreenProps } from '@/Screens';
 import { AccentProvider } from '@/Design/Accent';
 import { GlyphField, PaperBackground } from '@/Design/Overlays';
 import { useAccent } from './Hooks/UseAccent';
+import { hostsRoom, rememberHosting } from '@/Network/RoomOwnership';
 import { createRoomCode, normalizeRoomCode } from './RoomCode';
 import { loadLook } from './LookStorage';
 import { navigate, parseRoute, roomPath, Route } from './Routes';
@@ -97,10 +98,15 @@ function Entry(props: JoinScreenProps) {
  * Split out because all of it belongs to the join screen and none of it to the
  * accent or the route, and keeping it here is what leaves `App` about which screen
  * is on rather than about how the entry screen works.
+ *
+ * A room link that finds this browser without a name still has its code filled in,
+ * which is the one thing the link knows: the room it names. The role is not the
+ * player or the host's to pick here — it is what this browser remembers about the
+ * room, and `onCreate` is what starts remembering.
  */
-function useEntryScreen() {
+function useEntryScreen(roomCodeFromLink?: string) {
   const [name, setName] = useState(loadName);
-  const [roomCode, setRoomCode] = useState('');
+  const [roomCode, setRoomCode] = useState(() => roomCodeFromLink ?? '');
   const onNameChange = (value: string) => setName(value);
   const onRoomCodeChange = (value: string) => setRoomCode(normalizeRoomCode(value));
   const enter = (path: string) => {
@@ -112,14 +118,20 @@ function useEntryScreen() {
     roomCode,
     onNameChange,
     onRoomCodeChange,
-    onJoin: () => enter(roomPath(normalizeRoomCode(roomCode), 'Player')),
-    onCreate: () => enter(roomPath(createRoomCode(), 'Host')),
+    onJoin: () => enter(roomPath(normalizeRoomCode(roomCode))),
+    onCreate: () => {
+      const created = createRoomCode();
+      // Remembered before the room is opened, because the session to host it is opened
+      // on the strength of this and there is nothing to ask yet.
+      rememberHosting(created);
+      enter(roomPath(created));
+    },
   };
 }
 
 export function App() {
   const route = useHashRoute();
-  const entry = useEntryScreen();
+  const entry = useEntryScreen(route.kind === 'Room' ? route.roomCode : undefined);
   const [look, setLook] = useState<PlayerLook>(() => loadLook() ?? randomLook(Math.random));
   const { accent, onLook: onAccentLook } = useAccent();
   const onLook = (next: PlayerLook) => {
@@ -138,7 +150,9 @@ export function App() {
   if (route.kind === 'Room' && entry.name.trim().length > 0) {
     const room: GameRoomProps = {
       roomCode: route.roomCode,
-      role: route.role,
+      // What this browser may do with this room, rather than what the link claims: the
+      // code is all a link carries, so the role is remembered, not read.
+      role: hostsRoom(route.roomCode) ? 'Host' : 'Player',
       name: entry.name.trim(),
       look,
       onLook,

@@ -2,8 +2,11 @@ import { useRef } from 'preact/hooks';
 import { PlayerId, PlayerLook, hostTimeToLocal } from '@/Core';
 import { PublicState } from '@/Game';
 
+/** Every phase a player can be in, which is what the screens are chosen from. */
+export type SessionPhaseName = 'Connecting' | 'Lobby' | 'Writing' | 'Reviewing' | 'Scores' | 'Final';
+
 export interface SessionPhase {
-  phase: 'Connecting' | 'Lobby' | 'Writing' | 'Reviewing' | 'Scores' | 'Final';
+  phase: SessionPhaseName;
   durationMs: number;
   /**
    * When the phase started, on this device's clock.

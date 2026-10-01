@@ -27,6 +27,16 @@ export function toAction(context: IncomingContext): GameAction | undefined {
   const { message, peerId, roster, transport } = context;
   switch (message.type) {
     case 'Join': {
+      if (context.state.phase !== 'Lobby') {
+        // The game is already running, and a room mid-round has nowhere to put a
+        // player who has not been in it: the answer they owe is already being read,
+        // and the round would be waiting on a player nobody has seen. Turned away
+        // rather than ignored, because a client that is ignored has only the joining
+        // screen to look at forever.
+        log('info', 'refusing a join into a room that has started');
+        transport.sendToPeer(peerId, { type: 'AlreadyStarted' });
+        return undefined;
+      }
       if (roster.isNameActive(message.name, message.clientId)) {
         // Two players under one name would be the same person to the host in every
         // answer and every score, so the second one is turned away rather than

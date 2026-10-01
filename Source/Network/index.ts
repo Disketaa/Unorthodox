@@ -4,4 +4,7 @@ export * from './TrysteroTransport';
 export * from './InMemoryTransport';
 export * from './HostSession';
 export * from './Bot';
+export * from './RoomStateStore';
+export * from './CountIn';
+export * from './RoomOwnership';
 export * from './ClientSession';

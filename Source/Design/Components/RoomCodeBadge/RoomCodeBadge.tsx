@@ -7,9 +7,9 @@ export interface RoomCodeBadgeProps {
 export function RoomCodeBadge({ code }: RoomCodeBadgeProps) {
   return (
     <span class={styles.Root}>
-      {code}
       {/* A marker, not copy: it says "this was a number" the way a receipt does. */}
       <span class={styles.Marker}>№</span>
+      {code}
     </span>
   );
 }

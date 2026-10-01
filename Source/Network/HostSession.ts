@@ -3,7 +3,10 @@ import { isClientMessage, ClientMessage } from './Protocol';
 import { HostRoster } from './HostRoster';
 import { toAction } from './HostIncoming';
 import { startGame, closeWriting, closeReviewing, nextRound } from './HostPhases';
-import { botJoin } from './Bot';
+import { botJoin, botsIn } from './Bot';
+import { departureOf } from './HostPresence';
+import { publishPublicState } from './HostOutgoing';
+import { forgetRoom, freshLobby, loadRoomState, saveRoomState } from './RoomStateStore';
 import * as Game from '@/Game';
 import { PlayerId, PlayerLook, createLogger } from '@/Core';
 
@@ -12,6 +15,8 @@ const log = createLogger('HostSession');
 /** Reserved player id of the room creator. */
 export const HostPlayerId: PlayerId = 'host';
 
+/** A room with nobody in it, which is what a code this tab has never hosted means. */
+
 export class HostSession {
   private state: Game.HostState | undefined = undefined;
   private transport: Transport;
@@ -19,15 +24,16 @@ export class HostSession {
   private updateListener: (() => void) | undefined = undefined;
   /** How many bots this room has been given, which is how the next one is numbered. */
   private botsAdded = 0;
+  /** The room this session is hosting, which is also where its state is written. */
+  private roomCode: string | undefined = undefined;
+
 
   constructor(transport: Transport) {
     this.transport = transport;
 
     this.transport.onMessage((message, fromHost, peerId) => {
       log('debug', 'onMessage', message, 'from peer:', peerId);
-      if (fromHost) {
-        return;
-      }
+      if (fromHost) return;
       if (!isClientMessage(message)) {
         log('warn', 'ignoring unrecognised client message');
         return;
@@ -41,51 +47,48 @@ export class HostSession {
     this.updateListener = listener;
   }
 
+  /**
+   * Open the room, picking up the game this tab was already running.
+   *
+   * A host who refreshes has not left, so the state comes back from where it was last
+   * written rather than from nothing: a fresh lobby here would be a different room
+   * with the same code, and everybody still in it would be waiting on a host that no
+   * longer exists.
+   */
   start(roomCode: string, hostName: string, look: PlayerLook): void {
     log('info', 'starting host session', roomCode, hostName);
+    this.roomCode = roomCode;
     // The state must exist before the room opens, because a waiting client can
     // answer the moment the host becomes addressable, and messages arriving
     // before the state is ready would be dropped.
-    this.state = { phase: 'Lobby', players: new Map(), cumulativeScores: new Map(), pace: 'Standard' };
+    this.state = loadRoomState(roomCode) ?? freshLobby();
     // The host plays too, under the reserved `host` id.
     this.roster.addHost(HostPlayerId, hostName);
     this.apply({ type: 'JOIN', playerId: HostPlayerId, name: hostName, look });
+    // The bots in a resumed room keep their seats: counting what is already there is
+    // what stops the next bot being handed a seat that is taken.
+    this.botsAdded = botsIn(this.state);
     this.transport.setPlayerId(HostPlayerId);
     this.transport.start(roomCode, hostName, true);
     // Only the host is told about every peer, so presence is recorded here and
     // travels to the clients in the public state rather than being detected twice.
-    this.transport.onPeerLeave((peerId) => this.markDeparted(peerId));
-  }
-
-  /**
-   * Mark the player behind a departing peer as gone.
-   *
-   * The address is released first, because a peer that reconnects claims a fresh
-   * address for the same seat, and the old one must not be able to mark them gone
-   * a second time after they have already come back.
-   *
-   * Marking them gone also stops the room waiting on their answer: a dropped player
-   * holds the round open otherwise, and nothing would ever close it.
-   */
-  private markDeparted(peerId: string): void {
-    const playerId = this.roster.seatForPeer(peerId);
-    this.roster.releasePeer(peerId);
-    if (playerId === undefined) {
-      log('warn', 'peer left without a seat', peerId);
-      return;
-    }
-    log('info', 'player went offline', playerId);
-    this.roster.markGone(playerId);
-    this.apply({ type: 'SET_ONLINE', playerId, isOnline: false });
+    this.transport.onPeerLeave((peerId) => {
+      const departure = departureOf(peerId, this.roster);
+      if (departure !== undefined) this.apply(departure);
+    });
   }
 
   stop(): void {
     log('info', 'stopping host session');
+    // Leaving the room for good, rather than refreshing it, so the game this tab was
+    // running is forgotten: opening the same code again is a new room, not a return.
+    if (this.roomCode !== undefined) forgetRoom(this.roomCode);
     this.transport.stop();
     this.state = undefined;
     this.roster.clear();
     this.updateListener = undefined;
     this.botsAdded = 0;
+    this.roomCode = undefined;
   }
 
   /** The peerId is the transport address the message arrived from, not a player id. */
@@ -113,14 +116,9 @@ export class HostSession {
   }
 
   private broadcastState(): void {
-    if (!this.state) {
-      return;
+    if (this.state) {
+      publishPublicState(this.state, this.transport);
     }
-    const publicState = Game.toPublicState(this.state);
-    log('debug', 'broadcasting', publicState.phase);
-    // The host's own clock travels with the state so each client can measure
-    // the skew and count the phase down from when it really started.
-    this.transport.broadcast({ type: 'State', state: publicState, hostNow: Date.now() });
   }
 
   startGame(topic: string, durationMs: number): void {
@@ -175,6 +173,7 @@ export class HostSession {
     }
   }
 
+
   /**
  * Remove a player from the room at the host's word.
  *
@@ -201,15 +200,20 @@ export class HostSession {
     this.apply({ type: 'FINAL' });
   }
 
-  private commit(next: Game.HostState): void {
-    this.state = next;
-    this.broadcastState();
-    this.updateListener?.();
-  }
-
   private apply(action: Game.GameAction): void {
     log('debug', 'reducing action', action.type);
     this.commit(Game.reducer(this.state, action));
+  }
+
+  private commit(next: Game.HostState): void {
+    this.state = next;
+    // Written on every change rather than on the way out, because a refresh never runs
+    // the way out: the tab is gone, and this is what the room comes back to.
+    if (this.roomCode !== undefined) {
+      saveRoomState(this.roomCode, next);
+    }
+    this.broadcastState();
+    this.updateListener?.();
   }
 
   /**

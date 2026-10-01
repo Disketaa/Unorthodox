@@ -54,6 +54,27 @@ function freeName(random: Random, taken: readonly string[]): string {
   return `${names[0]} ${taken.length + 1}`;
 }
 
+/**
+ * The number out of a bot's seat, or zero for anything that is not a bot.
+ *
+ * Counted from the room rather than remembered, because the room is what survives a
+ * refresh of the host and a counter would not.
+ */
+export function botNumber(playerId: PlayerId): number {
+  return playerId.startsWith(BotIdPrefix) ? Number(playerId.slice(BotIdPrefix.length)) || 0 : 0;
+}
+
+/**
+ * How many bots are already in the lobby, so the next one is not handed a taken seat.
+ *
+ * Zero outside the lobby, where a bot cannot be added at all and there is nothing to
+ * count.
+ */
+export function botsIn(state: HostState): number {
+  if (state.phase !== 'Lobby') return 0;
+  return [...state.players.keys()].reduce((highest, id) => Math.max(highest, botNumber(id)), 0);
+}
+
 /** Roll one bot: a name, a character, a tint, and a seat nobody can be given. */
 function createBot(id: number, random: Random, taken: readonly string[]): Bot {
   return {

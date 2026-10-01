@@ -3,30 +3,22 @@ import { describe, it, expect } from 'vitest';
 import { navigate, parseRoute, pruneStrayPath, roomPath } from './Routes';
 
 describe('Route parsing', () => {
-  it('reads a plain numeric room path', () => {
-    expect(parseRoute('#/Room/1234/Host')).toEqual({
-      kind: 'Room',
-      roomCode: '1234',
-      role: 'Host',
-    });
+  it('reads a room path as nothing but a code', () => {
+    expect(parseRoute('#/Room/1234')).toEqual({ kind: 'Room', roomCode: '1234' });
   });
 
   it('round-trips a path through encoding and parsing', () => {
-    const path = roomPath('1234', 'Player');
+    const path = roomPath('1234');
     const encoded = `#${encodeURI(path.replace('#', ''))}`;
-    expect(parseRoute(encoded)).toEqual({
-      kind: 'Room',
-      roomCode: '1234',
-      role: 'Player',
-    });
+    expect(parseRoute(encoded)).toEqual({ kind: 'Room', roomCode: '1234' });
   });
 
-  it('reads the player role', () => {
-    expect(parseRoute('#/Room/5678/Player')).toEqual({
-      kind: 'Room',
-      roomCode: '5678',
-      role: 'Player',
-    });
+  it('opens a link made before the role left the address', () => {
+    // Those links are in every chat log and bookmark list there is. The role they
+    // named is not read: what this browser may do with the room is remembered, so a
+    // pasted host link opens the room rather than somebody else's hosting of it.
+    expect(parseRoute('#/Room/5678/Host')).toEqual({ kind: 'Room', roomCode: '5678' });
+    expect(parseRoute('#/Room/5678/Player')).toEqual({ kind: 'Room', roomCode: '5678' });
   });
 });
 
@@ -42,11 +34,7 @@ describe('Route rejections', () => {
   });
 
   it('rejects a room code that is not digits', () => {
-    expect(parseRoute('#/Room/ABCD/Host').kind).toBe('Join');
-  });
-
-  it('rejects an unknown role', () => {
-    expect(parseRoute('#/Room/БГДЖ/Spectator').kind).toBe('Join');
+    expect(parseRoute('#/Room/ABCD').kind).toBe('Join');
   });
 
   it('falls back to the join screen for an empty or unknown hash', () => {
@@ -96,14 +84,11 @@ describe('Navigation', () => {
     expect(notified).toBe(1);
   });
 
-  it('puts a room path in the fragment', () => {
-    navigate(roomPath('1234', 'Player'));
+  it('puts a room path in the fragment, with nothing else in it', () => {
+    navigate(roomPath('1234'));
 
-    expect(parseRoute(window.location.hash)).toEqual({
-      kind: 'Room',
-      roomCode: '1234',
-      role: 'Player',
-    });
+    expect(parseRoute(window.location.hash)).toEqual({ kind: 'Room', roomCode: '1234' });
+    expect(window.location.hash).not.toContain('Host');
   });
 });
 
@@ -116,11 +101,7 @@ describe('Stray path pruning', () => {
     pruneStrayPath();
 
     expect(window.location.pathname).toBe('/');
-    expect(parseRoute(window.location.hash)).toEqual({
-      kind: 'Room',
-      roomCode: '4362',
-      role: 'Host',
-    });
+    expect(parseRoute(window.location.hash)).toEqual({ kind: 'Room', roomCode: '4362' });
   });
 
   it('leaves a deploy base path alone', () => {

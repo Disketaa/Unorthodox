@@ -25,6 +25,7 @@ export type HostMessage =
     }
   | { type: 'SetPlayerId'; playerId: PlayerId }
   | { type: 'NameRejected' }
+  | { type: 'AlreadyStarted' }
   | { type: 'Kicked' };
 
 /** Narrow an unknown value to an indexable record so its fields can be checked. */
@@ -77,6 +78,9 @@ export function isHostMessage(value: unknown): value is HostMessage {
       return typeof record.playerId === 'string';
     case 'NameRejected':
       // The host refused this client's join, so it gets no player id and no state.
+      return true;
+    case 'AlreadyStarted':
+      // The room is past its lobby, so this client cannot be in it at all.
       return true;
     case 'Kicked':
       // The host removed this player from the room.

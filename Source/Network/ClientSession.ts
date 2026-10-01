@@ -20,10 +20,10 @@ export const SyncIntervalMs = 5_000;
 /**
  * Why a client is not in a room.
  *
- * Both are the host's doing and both end the same way on screen, so they are one
- * field with a reason rather than two booleans that could both be set.
+ * All of them are the host's doing and all end the same way on screen, so they are one
+ * field with a reason rather than several booleans that could all be set.
  */
-export type BlockedReason = 'NameTaken' | 'Kicked';
+export type BlockedReason = 'NameTaken' | 'AlreadyStarted' | 'Kicked';
 
 export class ClientSession {
   private state: Game.PublicState | undefined = undefined;
@@ -125,6 +125,16 @@ export class ClientSession {
         log('info', 'host refused the join under this name');
         this.blocked = 'NameTaken';
         this.joinRetry.stop();
+        this.updateListener?.();
+        break;
+      case 'AlreadyStarted':
+        // The room is mid-game, and no retry can put this player in it: the round
+        // they would be joining has already read its answers. Abandoned for good, so
+        // the join does not keep asking a question with one answer.
+        log('info', 'room has already started');
+        this.blocked = 'AlreadyStarted';
+        this.joinRetry.stop();
+        this.transport.stop();
         this.updateListener?.();
         break;
       case 'Kicked':

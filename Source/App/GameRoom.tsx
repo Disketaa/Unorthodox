@@ -27,6 +27,7 @@ export interface GameRoomProps {
 /** The one sentence for each way a player can find themselves outside the room. */
 const BlockedMessage = {
   NameTaken: Strings.status.nameTaken,
+  AlreadyStarted: Strings.status.alreadyStarted,
   Kicked: Strings.status.kicked,
 } as const;
 
@@ -76,21 +77,19 @@ function PhaseScreen({ view }: { view: GameSessionView }) {
  * nothing else can, so every other phase shows the note with no controls beside it.
  *
  * So is the count-in, for the same reason: it belongs to the moment the host pressed
- * Start rather than to the screen that came up afterwards, and it is counted from the
- * host's own start of the writing phase, so every device is on the same number.
+ * Start rather than to the screen that came up afterwards, and it is counted on each
+ * device's own clock, so a device that heard about the game late still gets all three
+ * numbers rather than joining the count wherever the room already was.
  */
 export function GameRoom({ roomCode, role, name, look, onLook }: GameRoomProps) {
   const view = useGameSession(roomCode, role, name, look, onLook);
   const { debugEnabled } = useDebugToggle(view.isHost);
-  return (
-    <>
-      <CountedRoom view={view} debugEnabled={debugEnabled} />
-    </>
-  );
+  return <CountedRoom view={view} roomCode={roomCode} debugEnabled={debugEnabled} />;
 }
 
 interface CountedRoomProps {
   view: GameSessionView;
+  roomCode: string;
   debugEnabled: boolean;
 }
 
@@ -112,8 +111,8 @@ interface CountedRoomProps {
  * A client that walked into the room mid-count has no lobby to hold, and is shown the
  * screen it has rather than an empty one.
  */
-function CountedRoom({ view, debugEnabled }: CountedRoomProps) {
-  const { veiling, count } = useStartCountdown(view);
+function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
+  const { veiling, count } = useStartCountdown(view, roomCode);
   const counting = veiling || count !== null;
   // Kept while the room is being counted in to, and dropped the moment it is not, so
   // the lobby is what the shade is over rather than the screen the room has already
