@@ -460,13 +460,20 @@ size, because a mark is placed from the band's outer screen edge and the band is
 laid out in: widening the bands on a narrow screen would widen those boxes without moving anything
 inside them.
 
-The scrollbar is painted in the accent, on `html`, and with no border on it. It is the one piece of
-the interface the browser paints rather than the game, and left alone it is the only grey on the page
-belonging to neither the palette nor the paper. Its hover and active values are the primary button's
-own, so it answers the pointer with the same weight as everything else. The track is transparent
-rather than a colour of its own, because the paper texture covers the viewport and anything opaque
-painted there is a hole in it. Both the standard `scrollbar-color` pair and the `::-webkit-scrollbar`
+The scrollbar answers the pointer the way an icon button does: quiet at rest, accent on hover, and
+with no border on it. It is the one piece of the interface the browser paints rather than the game,
+and left alone it is the only grey on the page belonging to neither the palette nor the paper. The
+arrangement is the icon button's rather than a new one, and the resting values are read off that
+button's own tokens so the two cannot drift apart. Accent at rest would spend the room's gold on
+something that is not being acted on. The track is transparent rather than a colour of its own,
+because the paper texture covers the viewport and anything opaque painted there is a hole in it. Only
+the resting colour reaches Firefox, which reads `scrollbar-color` and has no hover state for a bar
+at all. Both the standard `scrollbar-color` pair and the `::-webkit-scrollbar`
 pseudo-elements are written: the first is what a browser reads and the second is the only way to get a
-borderless rounded thumb anywhere, and each is ignored where it is not understood. A device with no
+borderless rounded thumb anywhere, and each is ignored where it is not understood. `scrollbar-width`
+is left at `auto` rather than `thin`, which is load-bearing rather than an omission: in Chrome
+anything but `auto` on that property makes the browser discard the `::-webkit-scrollbar` rules for
+the element altogether, so `thin` was throwing away the width, the borderless thumb and the rounded
+ends and leaving a stock bar. A device with no
 pointer gets no bar at all, since there is nothing to drag one with and it would be a permanent strip
 of accent down the side of the page.

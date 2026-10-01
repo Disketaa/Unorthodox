@@ -37,14 +37,20 @@ body {
  * document scrollbar belongs to the viewport, and styling `body` would only
  * reach it where a browser decided to propagate the values up.
  *
- * Two sets of rules, because there are two of everything. The standard
- * `scrollbar-color` and `scrollbar-width` are what a browser that supports them
- * uses, and they are what Safari will fall back to; the `::-webkit-scrollbar`
- * pseudo-elements are the only way to get a borderless bar with a shaped thumb
- * anywhere else, and they are ignored where they are not understood. Neither set
- * is a fallback for the other in the sense of "the other looks wrong": a browser
- * that reads the standard properties and ignores the pseudo-elements gets a flat
- * accent bar, and one that reads the pseudo-elements gets the same bar rounded.
+ * Two sets of rules, because there are two of everything, and they are kept out
+ * of each other's way. The `::-webkit-scrollbar` pseudo-elements are the only way
+ * to get a borderless bar with a shaped thumb and a hover state, and they are
+ * ignored where they are not understood. The standard `scrollbar-color` is what a
+ * browser without them reads, and it is written inside a support query that
+ * excludes the browsers with them, because a browser given both does not merge
+ * them: it draws the standard-coloured bar with its own widget and drops the
+ * pseudo-elements, hover included.
+ *
+ * Only the resting colour reaches Firefox, because `scrollbar-color` is a pair
+ * with no hover state at all: a browser that reads only the standard properties
+ * gets the quiet bar and no accent. The hover is the pseudo-elements', and it is
+ * worth having the rounded borderless thumb for even where the accent never
+ * arrives.
  *
  * `scrollbar-width` is left at `auto` on purpose, and that is load-bearing
  * rather than an omission. In Chrome a value of anything but `auto` on that
@@ -63,13 +69,43 @@ body {
  * rather than a frame.
  */
 html {
-  scrollbar-color: var(--Scrollbar-Thumb) var(--Scrollbar-Track);
   scrollbar-width: auto;
 }
 
+/*
+ * The standard pair, for the browsers that have no pseudo-elements.
+ *
+ * Behind a `selector()` support query, which is where this has to live. Naming
+ * `scrollbar-color` on the element outright is what killed the hover: a browser
+ * that reads it draws the bar with its own widget and stops honouring
+ * `::-webkit-scrollbar` altogether, hover rules and all, so the accent arrived on
+ * the pseudo-element and the standard colour replaced the whole thing. A browser
+ * that understands `::-webkit-scrollbar` is precisely the one that must not be
+ * given the property, and `selector()` is what can say that.
+ *
+ * `scrollbar-width` stays on the element above and is not queried: `auto` is the
+ * value that hands the pseudo-elements back, and a browser reading it changes
+ * nothing about which colour it paints.
+ */
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-color: var(--Scrollbar-Thumb) var(--Scrollbar-Track);
+  }
+}
+
+/*
+ * `padding: 0` is what makes the bar the full width asked for. The pseudo-element
+ * carries a default inset on each side, which is the gap a stock bar shows
+ * between its thumb and the edge of the page; left alone it makes a twelve pixel
+ * bar read as a narrower one floating in a channel, and the accent hover looks
+ * like it arrived on a stripe rather than on the bar. Zeroed here and nowhere
+ * else: the thumb is the only thing in the bar that should ever be inset from
+ * it, and it insets itself with the radius.
+ */
 html::-webkit-scrollbar {
   width: var(--Scrollbar-Width);
   height: var(--Scrollbar-Width);
+  padding: 0;
   background: var(--Scrollbar-Track);
 }
 
@@ -257,20 +293,23 @@ html::-webkit-scrollbar-thumb:active {
   --Color-Surface-Inverse: #212121;
 
   /*
-   * The scrollbar, in the accent.
+   * The scrollbar, answering the pointer the way an icon button does.
    *
-   * The accent rather than a neutral because the scrollbar is the one piece of
-   * the interface the browser paints rather than the game, and left alone it is
-   * the only grey on the page that belongs to neither the palette nor the paper.
-   * In the accent it reads as part of the same set as the buttons and the marks.
+   * Quiet at rest and accent on hover, which is the icon button's arrangement
+   * exactly, and for the same reason: the scrollbar is the one piece of the
+   * interface the browser paints rather than the game, and left alone it is the
+   * only grey on the page belonging to neither the palette nor the paper. Idle in
+   * the quiet tone it belongs to the page, and arriving in the accent on hover
+   * it says the same thing every other control says, that this is the thing the
+   * pointer is on. Accent at rest would spend the room's gold on something that
+   * is not being acted on.
    *
-   * Hover and active are the button's own values, so the scrollbar answers the
-   * pointer with the same weight as everything else rather than with a tint of
-   * its own.
+   * So the resting values are the icon button's own tokens, read straight off it,
+   * rather than new ones that would drift from it the first time either moved.
    */
   --Scrollbar-Track: transparent;
-  --Scrollbar-Thumb: var(--Color-Action-Primary-Background);
-  --Scrollbar-ThumbHover: var(--Color-Action-Primary-Hover);
+  --Scrollbar-Thumb: var(--Color-Text-Quiet);
+  --Scrollbar-ThumbHover: var(--Color-Action-Primary-Background);
   --Scrollbar-ThumbActive: var(--Color-Action-Primary-Active);
   --Scrollbar-TrackHover: transparent;
   /*
@@ -278,7 +317,7 @@ html::-webkit-scrollbar-thumb:active {
    * fraction of the thumb, which is a fraction of a fraction, so this is a length
    * and the one place the scrollbar is not scaled with the page.
    */
-  --Scrollbar-Width: 16px;
+  --Scrollbar-Width: 8px;
 
   /*
    * The paper texture sits over the interface and multiplies into it, so it
