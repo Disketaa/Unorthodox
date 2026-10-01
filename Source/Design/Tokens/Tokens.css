@@ -227,11 +227,12 @@ body {
 
   --Color-Text-Default: #212121;
   --Color-Text-Muted: #757575;
-  /* The game title, a deep blue rather than the near-black of body text. */
   /* The game title, matching the create-room button so the two read as a pair. */
   --Color-Text-Display: var(--Color-Action-Secondary-Background);
+  /* Section headings, in the accent the lobby already spends on its actionables. */
+  --Color-Text-Title: var(--Color-Action-Primary-Background);
   --Color-Text-Inverse: #ffffff;
-  --Color-Text-Link: #ff9800;
+  --Color-Text-Link: var(--Color-Action-Primary-Background);
 
   /*
    * The accent gold. Its text is ink rather than white: gold is far too light to
@@ -313,8 +314,10 @@ body {
   /* The chosen character in the picker, above the rows of choices. */
   --Size-Character-Preview: 160px;
 
-  /* Marks that stand in for a word, as in the exit control. */
-  --Size-Icon-Sm: 16px;
-  --Size-Icon-Md: 20px;
-  --Size-Icon-Lg: 24px;
+  /*
+   * The size of a mark that stands in for a word, as in the exit control. Marks that
+   * sit in a line of text are sized in `em` against that text instead, so they follow
+   * the wording rather than a scale of their own.
+   */
+  --Size-Icon: 30px;
 }

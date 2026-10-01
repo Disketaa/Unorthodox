@@ -23,6 +23,14 @@ export function LobbyStart({
   if (!isHost) {
     return <Text variant="Caption">{Strings.lobby.waitingForHost}</Text>;
   }
+  /*
+   * The Start button appears only once it would work.
+   *
+   * Not a disabled button: a greyed-out button still has to be read past and
+   * worked out, and the banner above already says plainly why it is not there.
+   * Half-strength gold on white reads as broken rather than as not yet.
+   */
+  const canStart = enoughPlayers && !roomFull;
   return (
     <Stack gap="Md" align="Stretch">
       {roomFull && <Banner variant="Error">{Strings.lobby.roomFull}</Banner>}
@@ -31,14 +39,11 @@ export function LobbyStart({
           {Strings.lobby.notEnoughPlayers(GameConfig.limits.minPlayers)}
         </Banner>
       )}
-      <Button
-        variant="Primary"
-        size="Large"
-        disabled={!enoughPlayers || roomFull}
-        onClick={onStart}
-      >
-        {Strings.lobby.startButton}
-      </Button>
+      {canStart && (
+        <Button variant="Primary" size="Large" onClick={onStart}>
+          {Strings.lobby.startButton}
+        </Button>
+      )}
     </Stack>
   );
 }

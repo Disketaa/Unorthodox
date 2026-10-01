@@ -1,10 +1,37 @@
 .Root {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  gap: var(--Space-Sm);
   padding: var(--Space-Sm) var(--Space-Md);
   border-radius: var(--Radius-Card);
   font-size: var(--FontSize-Body);
   font-weight: 500;
+  text-align: left;
+}
+
+/*
+ * The mark is painted from the banner's own text colour, so one shape serves every
+ * variant without a set of marks to keep in step with the palette. It is masked
+ * rather than embedded, because the file on disk is a black silhouette and the mark
+ * has to come out of the block in the colour of the words beside it.
+ *
+ * Sized in `em` against the banner's own text rather than in pixels, so it grows with
+ * the wording. The box is a quarter larger than the line it sits on, and a little of
+ * that is the margin `contain` fits, so the shape itself comes out at about the
+ * text's own height.
+ */
+.Icon {
+  flex-shrink: 0;
+  width: 1.25em;
+  height: 1.25em;
+  /* Held back a step, so the mark marks the line rather than competing with it. */
+  opacity: 0.75;
+  background-color: currentColor;
+  mask: url('../../Icons/Info.svg') center / contain no-repeat;
+}
+
+.Text {
+  min-width: 0;
 }
 
 .VariantInfo {

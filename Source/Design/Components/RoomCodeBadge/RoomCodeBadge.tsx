@@ -1,4 +1,4 @@
-import styles from "./RoomCodeBadge.module.css";
+import styles from './RoomCodeBadge.module.css';
 
 export interface RoomCodeBadgeProps {
   code: string;
@@ -7,9 +7,9 @@ export interface RoomCodeBadgeProps {
 export function RoomCodeBadge({ code }: RoomCodeBadgeProps) {
   return (
     <span class={styles.Root}>
-      {/* A separator, not copy: it marks the code the way the URL does. */}
-      <span class={styles.Prefix}>#</span>
       {code}
+      {/* A marker, not copy: it says "this was a number" the way a receipt does. */}
+      <span class={styles.Marker}>№</span>
     </span>
   );
 }

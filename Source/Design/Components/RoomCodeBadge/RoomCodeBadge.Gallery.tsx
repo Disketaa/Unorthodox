@@ -1,15 +1,14 @@
-import { RoomCodeBadge } from "./RoomCodeBadge";
-import { Stack } from "@/Design/Primitives";
-import { Text } from "@/Design/Primitives";
+import { RoomCodeBadge } from './RoomCodeBadge';
+import { Stack, Text } from '@/Design/Primitives';
 
 export function RoomCodeBadgeGallery() {
   return (
     <Stack direction="Vertical" gap="Md">
       <Text variant="Body">RoomCodeBadge</Text>
-      <Stack direction="Vertical" gap="Xs">
-        <Text variant="Title">Лобби</Text>
-        <RoomCodeBadge code="ABCD" />
-      </Stack>
+      {/* Inside a title, because it is only ever rendered as one. */}
+      <Text variant="Title">
+        <RoomCodeBadge code="7752" />
+      </Text>
     </Stack>
   );
 }

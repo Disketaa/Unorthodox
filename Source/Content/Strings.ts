@@ -25,13 +25,11 @@ export const Strings = {
   },
   lobby: {
     headline: 'Ждём игроков',
-    category: 'Лобби',
     startButton: 'Начать игру',
     waitingForHost: 'Ждём, пока хост начнёт игру',
     /** Built from the limit, so the hint cannot drift from the actual rule. */
     notEnoughPlayers: (min: number) => `Нужно минимум ${min} игрока`,
     roomFull: 'Комната заполнена',
-    characterHeading: 'Персонаж',
     /** The accessible name of the icon-only control that leaves the room. */
     exit: 'Выйти из комнаты',
   },

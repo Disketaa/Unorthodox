@@ -51,8 +51,8 @@
  * rather than a black one that ignores every state above.
  */
 .Icon {
-  width: calc(var(--Size-Icon-Md) * 1.5);
-  height: calc(var(--Size-Icon-Md) * 1.5);
+  width: var(--Size-Icon);
+  height: var(--Size-Icon);
   background-color: currentColor;
   mask: url('../../Icons/Exit.svg') center / contain no-repeat;
 }

@@ -16,6 +16,8 @@ export interface LobbyScreenProps {
   players: readonly PublicPlayer[];
   /** This device's player, outlined in the roster so it can be found in a full room. */
   ownPlayerId: PlayerId | null;
+  /** This player's own name, which titles the character picker. */
+  ownPlayerName: string;
   /** This player's own character, once the host has told us which one it kept. */
   ownLook: { character: CharacterId; color: CharacterColor } | undefined;
   isHost: boolean;
@@ -57,19 +59,23 @@ function Roster({
  * The picker for this player's own character.
  *
  * In a card, so the whole editing area reads as one thing against the roster
- * above and the start button below. Hidden until the host has said which
- * character it kept for us, so the picker never shows a character that the rest
- * of the room is not seeing.
+ * above and the start button below. Titled with the player's own name, which is what
+ * the rest of the room calls them: a card headed by their name reads as their sheet
+ * of paper rather than as a settings panel. Hidden until the host has said which
+ * character it kept for us, so the picker never shows a character that the rest of
+ * the room is not seeing.
  */
 function LookPicker({
+  ownName,
   ownLook,
   onPick,
 }: {
+  ownName: string;
   ownLook: { character: CharacterId; color: CharacterColor };
   onPick: (character: CharacterId, color: CharacterColor) => void;
 }) {
   return (
-    <LobbyCategory title={Strings.lobby.characterHeading}>
+    <LobbyCategory title={ownName}>
       <CharacterPicker
         character={ownLook.character}
         color={ownLook.color}
@@ -89,6 +95,7 @@ export function LobbyScreen({
   roomCode,
   players,
   ownPlayerId,
+  ownPlayerName,
   ownLook,
   isHost,
   onPickLook,
@@ -101,8 +108,7 @@ export function LobbyScreen({
   return (
     <Stack gap="Lg" align="Stretch">
       <LobbyCategory
-        title={Strings.lobby.category}
-        subtitle={<RoomCodeBadge code={roomCode} />}
+        title={<RoomCodeBadge code={roomCode} />}
         action={<ExitButton label={Strings.lobby.exit} onClick={onExit} />}
       >
         <Roster players={players} ownPlayerId={ownPlayerId} />
@@ -114,7 +120,11 @@ export function LobbyScreen({
         />
       </LobbyCategory>
       {ownLook !== undefined && (
-        <LookPicker ownLook={ownLook} onPick={onPickLook} />
+        <LookPicker
+          ownName={ownPlayerName}
+          ownLook={ownLook}
+          onPick={onPickLook}
+        />
       )}
     </Stack>
   );

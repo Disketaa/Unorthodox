@@ -1,30 +1,18 @@
 /*
- * The code reads as the line under a section's title, so it is a step below the
- * title in the body face and the action colour, rather than a pill: a filled badge
- * of the display face would pull the eye away from the group it belongs to.
+ * The room code as a heading, so the type is the heading's own and is not repeated
+ * here: this is always rendered as a section title, and spelling out the display face
+ * and the size a second time is two places to change for one heading.
  *
- * The weight is the body's Bold, because the code is the one thing a player has to
- * read off someone else's screen, and the smallest space step is cancelled so the
- * line sits against the title instead of under it.
+ * The sign trails the digits, the way a receipt prints a number, and is held back to
+ * the text colour so the mark reads as a mark rather than as part of the number.
  */
 .Root {
   display: inline-flex;
   align-items: baseline;
-  gap: var(--Space-Xs);
-  margin-top: calc(var(--Space-Xs) * -1);
-  color: var(--Color-Action-Primary-Background);
-  font-family: var(--FontFamily-Body);
-  font-size: var(--FontSize-H3);
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.1em;
+  gap: 0.06em;
+  letter-spacing: 0.02em;
 }
 
-/*
- * The hash marks the code without being part of it, so it is the text colour: black
- * beside gold puts the mark and the code apart, where more gold would just
- * read as one longer word.
- */
-.Prefix {
+.Marker {
   color: var(--Color-Text-Default);
 }
