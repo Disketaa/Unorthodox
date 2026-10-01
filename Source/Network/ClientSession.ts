@@ -1,6 +1,7 @@
 import { Transport } from './Transport';
 import { isHostMessage, HostMessage } from './Protocol';
 import { JoinRetry } from './JoinRetry';
+import { clientId } from './ClientIdentity';
 import * as Game from '@/Game';
 import { PlayerLook, createLogger, measureClockOffset } from '@/Core';
 
@@ -141,7 +142,12 @@ export class ClientSession {
   join(playerName: string, look: PlayerLook): void {
     log('info', 'joining as', playerName);
     // Held and re-sent until the host seats us or refuses the name.
-    this.joinRetry.send({ type: 'Join', name: playerName, look });
+    this.joinRetry.send({
+      type: 'Join',
+      name: playerName,
+      look,
+      clientId: clientId(),
+    });
   }
 
   /**

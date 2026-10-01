@@ -1,5 +1,48 @@
 ﻿# DECISIONS
 
+## 2026-10-01 — the room asks who you are, instead of waiting to be told you left
+A player who refreshed could not get back into a room, ever: the same name, from the
+menu, through the join screen, for as long as the host's page stayed open. It was not a
+transient glitch and not a relay problem to shrug at — it was the roster's duplicate-name
+rule doing exactly what it was written to do, against a player it should have recognised.
+
+`HostRoster.isNameActive` freed a name when its holder had been reported gone, and a
+departure is a notice. Notices are lost. A tab that closes does not get to choose whether
+the relays carried the news before the new connection arrived, and this room runs on
+public relays that fail visibly in the console — two of five were refusing writes or
+erroring in the session that surfaced this. When the notice was late or lost, the seat
+stayed held, the returning player was refused as an impostor, and `NameRejected` was
+terminal: the client gave up and showed a dead end. Reproduced in two lines — a client
+that stops and rejoins under its own name, with the host in no way having misbehaved —
+and it failed even when the transport was told to report the departure, which is the
+detail that shows the rule was wrong rather than merely unlucky.
+
+So the client now says who it is. `ClientIdentity` keeps a random id in `localStorage`,
+the `Join` message carries it, and a name already held by the *same browser* is free
+again. That is evidence the room asked for rather than inferred, and it is what makes a
+refresh work without depending on anything outside the two tabs. `localStorage` and not
+`sessionStorage` is the whole point: the failure being fixed is the one where the tab's
+storage is destroyed. Scoped per browser rather than per tab, because a player who
+refreshes, or opens the room twice, is one player either way.
+
+The id is also held in a module variable, which is a requirement and not a cache. The
+join is re-sent until the host answers it, so a client minting per call would be seated
+by the first attempt and then told it was an impostor by its own retry — turning a
+transient relay hiccup into a permanent lockout rather than a delayed one. Caught by
+reading what the retry loop does, not by the refresh test, which passes either way.
+
+What this deliberately does not do is remove the duplicate-name rule. Two people under
+one name are still the same person in every answer and every score, and the second is
+still refused — a second browser has a different id, which is the only thing separating
+that case from a refresh. `HostDuplicateNames.test.ts` now says so at every call site
+rather than assuming it, because a test that used the same browser for both "players"
+would have quietly stopped testing either case; the one that failed after this change is
+how the distinction is known to be real rather than assumed.
+
+The trade-off is that a name is now held against a browser rather than a connection, so
+clearing site data mid-game loses the seat the same way closing the tab does. That is
+the old behaviour, not a new one: the seat was already kept for a player who vanished.
+
 ## 2026-10-01 — the pace is the host's, and a client is shown it rather than let to try it
 `pace` moved into `LobbyState` and out through `PublicLobbyState`, so the room's answer
 travels to every client rather than living in the lobby screen. That is the whole of the

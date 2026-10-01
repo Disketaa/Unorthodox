@@ -32,6 +32,17 @@ export class HostRoster {
    */
   private readonly goneSeats = new Set<PlayerId>();
 
+  /**
+   * The browser behind each seat, so a returning player can be recognised without
+   * having been seen to leave.
+   *
+   * Keyed by seat rather than by name, because the seat is what a claim reclaims and
+   * what the answers are attached to. A browser that vanishes and comes back finds its
+   * own entry, which is what lets a refresh keep the seat even when the departure
+   * notice never arrived.
+   */
+  private readonly browserBySeat = new Map<PlayerId, string>();
+
   /** Claim a seat for the host itself, which plays under a reserved id. */
   addHost(hostId: PlayerId, name: string): void {
     this.seats.add(hostId);
@@ -42,11 +53,12 @@ export class HostRoster {
    * The seat for a name, reusing the one it had before if this player is
    * returning. A brand new name is given the next free seat.
    */
-  claimSeat(name: string, peerId: string): PlayerId {
+  claimSeat(name: string, peerId: string, browserId: string): PlayerId {
     const known = this.seatByName.get(name);
     const seat = known ?? `p${this.nextId++}`;
     this.seats.add(seat);
     this.seatByName.set(name, seat);
+    this.browserBySeat.set(seat, browserId);
     // The address that just claimed this seat is the one whose departure counts,
     // and any earlier address for the same seat is stale: it has already gone.
     for (const [address, seated] of this.seatByPeerId) {
@@ -94,6 +106,7 @@ export class HostRoster {
   releaseSeat(playerId: PlayerId): void {
     this.seats.delete(playerId);
     this.goneSeats.delete(playerId);
+    this.browserBySeat.delete(playerId);
     for (const [name, seated] of this.seatByName) {
       if (seated === playerId) {
         this.seatByName.delete(name);
@@ -113,10 +126,21 @@ export class HostRoster {
    * the only handle the room has and that player is not in it. The host's own name
    * counts as taken: the host is playing, and a second player wearing its name would
    * be indistinguishable from it in every answer and every score.
+   *
+   * A browser that already holds the name is not an impostor either, and this is the
+   * case that a dropped seat alone does not cover. Whether the host heard the previous
+   * connection leave is a fact about relays, and relays fail: a player who refreshed
+   * while one was refusing writes would otherwise be locked out of a room it is
+   * demonstrably talking to, under a name that can never be freed again while the host's
+   * page lives. The browser answering for the name is the evidence, and it is evidence
+   * the room asked for rather than inferred.
    */
-  isNameActive(name: string): boolean {
+  isNameActive(name: string, browserId: string): boolean {
     const seat = this.seatByName.get(name);
-    return seat !== undefined && this.seats.has(seat) && !this.goneSeats.has(seat);
+    if (seat === undefined || !this.seats.has(seat) || this.goneSeats.has(seat)) {
+      return false;
+    }
+    return this.browserBySeat.get(seat) !== browserId;
   }
 
   has(playerId: PlayerId): boolean {
@@ -139,6 +163,7 @@ export class HostRoster {
     this.seatByName.clear();
     this.seatByPeerId.clear();
     this.goneSeats.clear();
+    this.browserBySeat.clear();
     this.nextId = 1;
   }
 }

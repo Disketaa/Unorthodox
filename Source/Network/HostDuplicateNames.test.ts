@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { InMemoryTransport } from './InMemoryTransport';
 import { ClientSession } from './ClientSession';
 import { HostSession } from './HostSession';
+import { forgetClientId } from './ClientIdentity';
 import { PlayerLook } from '@/Core';
 
 const roomCode = 'ABCD';
@@ -26,6 +27,19 @@ function joinAs(name: string): ClientSession {
   session.join(name, clientLook);
   vi.advanceTimersByTime(5_000);
   return session;
+}
+
+/**
+ * A client trying to sit down under a name from a different browser.
+ *
+ * The id is forgotten first, which is what makes this a second person rather than the
+ * first one returning. Two players under one name are only a problem when they are two
+ * players: the same browser coming back is a refresh, and the room has to be able to
+ * tell those apart, so a test that did not separate them would be testing neither.
+ */
+function joinAsFromAnotherBrowser(name: string): ClientSession {
+  forgetClientId();
+  return joinAs(name);
 }
 
 /** How many players the host has seated. */
@@ -53,7 +67,7 @@ describe('Two players under one name', () => {
 
   it('refuses the second one while the first is still here', () => {
     const { hostSession } = roomWithAnn();
-    const second = joinAs('Ann');
+    const second = joinAsFromAnotherBrowser('Ann');
 
     expect(second.getBlocked()).toBe('NameTaken');
     expect(second.getPlayerId()).toBeNull();
@@ -62,7 +76,7 @@ describe('Two players under one name', () => {
 
   it('refuses the host’s own name, since the host is playing', () => {
     const { hostSession } = roomWithAnn();
-    const impostor = joinAs('Host');
+    const impostor = joinAsFromAnotherBrowser('Host');
 
     expect(impostor.getBlocked()).toBe('NameTaken');
     expect(rosterSize(hostSession)).toBe(2);
@@ -71,7 +85,7 @@ describe('Two players under one name', () => {
   it('lets the name go once the first player has dropped', () => {
     const { hostSession, transport } = roomWithAnn();
     transport.simulateLeave();
-    const second = joinAs('Ann');
+    const second = joinAsFromAnotherBrowser('Ann');
 
     expect(second.getBlocked()).toBeUndefined();
     expect(second.getPlayerId()).not.toBeNull();

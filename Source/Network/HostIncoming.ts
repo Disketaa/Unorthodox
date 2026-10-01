@@ -27,17 +27,18 @@ export function toAction(context: IncomingContext): GameAction | undefined {
   const { message, peerId, roster, transport } = context;
   switch (message.type) {
     case 'Join': {
-      if (roster.isNameActive(message.name)) {
+      if (roster.isNameActive(message.name, message.clientId)) {
         // Two players under one name would be the same person to the host in every
         // answer and every score, so the second one is turned away rather than
-        // seated twice.
+        // seated twice. A name already held by the same browser is not this case: that
+        // is a player who refreshed, and they are the one who should be seated.
         log('info', 'refusing a join under a name already in play', message.name);
         transport.sendToPeer(peerId, { type: 'NameRejected' });
         return undefined;
       }
       // A player we already know is the same person coming back, so they keep
       // the seat and the character they had rather than a fresh roll.
-      const playerId = roster.claimSeat(message.name, peerId);
+      const playerId = roster.claimSeat(message.name, peerId, message.clientId);
       const look = resolveLook(knownLook(context.state, playerId), message.look);
       // Answer the peer the message came from: the game player id is assigned
       // here and never reaches the wire, so it is not routable.
