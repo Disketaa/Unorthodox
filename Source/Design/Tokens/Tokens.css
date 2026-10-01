@@ -193,14 +193,26 @@ body {
    * rearranging rather than as breathing.
    */
   --Glyph-Drift: 7%;
-  /* Pulled past both edges, so the drift never shows an edge of the band. */
-  --Glyph-Overscan: 120px;
+  /*
+   * Pulled past both edges, so neither the drift nor the scroll parallax ever
+   * shows an edge of the band. Sized against the furthest a mark travels rather
+   * than against the drift alone: the parallax carries a deep mark a couple of
+   * hundred pixels down the page, and a band only overscanned for the drift
+   * would uncover its own top edge at full travel.
+   */
+  --Glyph-Overscan: 280px;
   /*
    * How much of the screen one band's worth of marks covers, counted from the
    * outer edge inward. Fifteen per cent, at every screen size: the field is a
    * fixed part of the layout rather than something that adapts, so the same
    * arrangement reads the same way on a phone and on a desktop, and the middle
    * seventy per cent is always the game's.
+   *
+   * The same at every screen size, and not a breakpoint. Both bands hang off a
+   * screen edge and a mark is placed from that edge, so the band's width is the
+   * area a mark is laid out in rather than where it sits: widening the bands
+   * would widen the boxes without moving a single mark, and the margins close in
+   * from the size of the marks rather than from the size of the bands.
    */
   --Glyph-BandWidth: 15%;
   /*
@@ -213,9 +225,18 @@ body {
    * margin, and a large one reads as a shape the margin is cut out of, and the
    * margin needs both. The largest is only just wider than the band, so a large
    * mark spans the band without reaching the text.
+   *
+   * Each is a share with a floor under it, through `max`, rather than a share
+   * with a breakpoint under it. A bare share collapses the field on a phone,
+   * where sixteen per cent is little more than a glyph of body text and the
+   * margins read as a nearly empty page; a floor keeps a mark from getting that
+   * small without stopping it from growing on a large one. `max` rather than a
+   * second rule per screen size, because the size has to keep changing as the
+   * window changes: a mark that jumped size at a breakpoint would jump size
+   * again on the way past it, and the field is one continuous arrangement.
    */
-  --Glyph-MarkWidthMin: 13vw;
-  --Glyph-MarkWidthMax: 26vw;
+  --Glyph-MarkWidthMin: max(16vw, 120px);
+  --Glyph-MarkWidthMax: max(32vw, 240px);
 
   /*
    * How far past the screen edge a mark's centre may sit, as a share of its own
@@ -223,7 +244,7 @@ body {
    * of its width, which is the plain reading; lower values scale the whole range
    * down and pull the field back off the edge.
    */
-  --Glyph-EdgeReach: 1;
+  --Glyph-EdgeReach: 3  ;
 
   --Color-Text-Default: #212121;
   --Color-Text-Muted: #757575;
@@ -380,3 +401,6 @@ body {
     --Cursor-NotAllowed: url('../Cursors/Unavailable.svg') 2 3, not-allowed;
   }
 }
+
+
+

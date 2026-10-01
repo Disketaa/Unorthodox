@@ -118,7 +118,14 @@ export function rollGlyph(slot: number): Glyph {
     char,
     scale,
     rotation: fixedBetween(-RotationDeg, RotationDeg),
-    depth: fixedBetween(0.2, 1),
+    /*
+     * This mark's share of the scroll parallax: how far it travels against the
+     * page. Widened well past one, because the parallax is now the main thing
+     * the field does and it needs real separation between layers to read as
+     * depth: a shallow mark barely answers a scroll while a deep one crosses a
+     * good share of the viewport, and that spread of speeds is the effect.
+     */
+    depth: fixedBetween(0.15, 1.6),
     durationS: fixedBetween(DurationMinS, DurationMaxS),
     delayS: fixedBetween(-DurationMaxS, 0),
     top: Number(slotTop(slot).toFixed(2)),

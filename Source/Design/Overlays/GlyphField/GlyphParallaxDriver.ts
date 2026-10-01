@@ -1,24 +1,15 @@
 /**
  * How quickly the field catches up with the target, per 60th of a second.
  *
- * Very low on purpose, and applied as a frame-rate independent smoothing, so the
- * field never arrives. A fiftieth is roughly a second and a half of
- * follow-through: the marks keep drifting towards where the pointer was for a
- * moment after it has stopped, which is what makes the movement read as weight
- * rather than as a value being written. Anything quicker tracks the pointer and
- * stops looking like the field is being moved at all.
+ * Low enough that the field trails the scroll rather than sitting on it, and
+ * applied as a frame-rate independent smoothing so the lag is the same whether
+ * the page is being flicked or crawled. There is still follow-through left after
+ * a scroll stops, which is what makes the movement read as weight rather than as
+ * a value being written, but it is a few frames of it rather than the second and
+ * a half a faint pointer-follow needed: a field meant to be felt on every scroll
+ * cannot be one that is still catching up long after the next one starts.
  */
-const CatchUp = 0.015;
-
-/**
- * How many pixels the field may travel from its resting place at the extreme
- * edge of the screen.
- *
- * Barely more than a nudge, because the field is under the paper and behind the
- * text: enough for the marks to answer the pointer if you watch for them, small
- * enough that nothing in the margins appears to be attached to the cursor.
- */
-const ShiftMaxPx = 60;
+const CatchUp = 0.06;
 
 /**
  * How much page scroll counts as the field having spread all the way, in pixels.
@@ -27,26 +18,22 @@ const ShiftMaxPx = 60;
  * and would carry the marks off the screen entirely. Past this much scrolling the
  * field is as spread as it ever gets and scrolling further does nothing.
  */
-const ScrollRangePx = 600;
+const ScrollRangePx = 420;
 
 /**
- * How far the field may spread outwards from its resting place, in pixels.
+ * How far the field may travel from its resting place, in pixels.
  *
- * Small, and the point of it is the direction: scrolling pushes the marks away
- * from the middle rather than sliding them across it, so reading down the page
- * opens the centre up instead of filling it. A field that leaned inward on every
- * scroll was the thing that made the middle cramped on a long page.
+ * Large, because scroll is the only thing that moves this field and it has to
+ * read as the field travelling with the page rather than as wallpaper pinned to
+ * the screen. At the deep end a mark crosses a good share of the viewport, which
+ * is what separates it from the page it sits behind: the page slides under a
+ * still frame, the marks slide under a still frame at their own speeds, and the
+ * difference between those two speeds is the effect. Vertical, so it follows the
+ * page's own direction rather than sliding across it.
  */
-const SpreadMaxPx = 70;
-
-/** Where the field is heading, in pixels, on each axis. */
-export interface GlyphTarget {
-  x: number;
-  y: number;
-}
+const SpreadMaxPx = 240;
 
 export interface GlyphParallaxDriver {
-  aim: (target: GlyphTarget) => void;
   stop: () => void;
 }
 
@@ -56,12 +43,12 @@ function eased(value: number, target: number, deltaS: number): number {
   return value + (target - value) * factor;
 }
 
-/** A whole value's worth of travel on an axis, in pixels, and never more than a cap. */
-function bound(value: number, half: number, cap: number = ShiftMaxPx): number {
-  if (half <= 0) {
+/** A whole value's worth of travel, as a ratio, and never more than a cap. */
+function bound(value: number, range: number, cap: number): number {
+  if (range <= 0) {
     return 0;
   }
-  return Math.max(-1, Math.min(1, value / half)) * cap;
+  return Math.max(-1, Math.min(1, value / range)) * cap;
 }
 
 /**
@@ -93,24 +80,20 @@ function readZoom(): number {
  * Drives the shared parallax offset, frame by frame.
  *
  * One `requestAnimationFrame` loop for the whole field, started once and left
- * running while the page is open. The events only move the target; nothing is
- * written on them, so a fast mouse or a flick-scroll cannot produce a fast
- * field. Writes happen on the frame the browser is already painting, at the
- * frame's own pace, which is why the easing is computed against real elapsed
- * time instead of being assumed to be 60fps.
+ * running while the page is open. Scroll is read on the frame rather than
+ * subscribed to, so a flick-scroll cannot produce a fast field. Writes happen on
+ * the frame the browser is already painting, at the frame's own pace, which is
+ * why the easing is computed against real elapsed time instead of being assumed
+ * to be 60fps.
+ *
+ * Scroll is the only thing that moves the field. The pointer is deliberately not
+ * read: nothing here is affected by where a mouse is or by a finger dragging
+ * across the screen, so the marks cannot be pulled around by a hand.
  */
 export function startGlyphParallax(node: HTMLDivElement): GlyphParallaxDriver {
-  const target: GlyphTarget = { x: 0, y: 0 };
-  let current: GlyphTarget = { x: 0, y: 0 };
   let previous = performance.now();
   let spread = 0;
   let frame = 0;
-
-  const write = () => {
-    node.style.setProperty('--Glyph-OffsetX', `${current.x.toFixed(2)}px`);
-    node.style.setProperty('--Glyph-OffsetY', `${current.y.toFixed(2)}px`);
-    node.style.setProperty('--Glyph-Zoom', readZoom().toFixed(3));
-  };
 
   const tick = (now: number) => {
     frame = requestAnimationFrame(tick);
@@ -118,32 +101,20 @@ export function startGlyphParallax(node: HTMLDivElement): GlyphParallaxDriver {
     // across the screen in a single frame.
     const deltaS = Math.min((now - previous) / 1000, 0.05);
     previous = now;
-    const halfWidth = window.innerWidth / 2;
-    const halfHeight = window.innerHeight / 2;
-    // The pointer moves the field as one piece, bounded on both axes.
-    //
-    // Scrolling does not move it at all along those axes. It writes a separate
-    // spread value instead, which the two bands read in opposite directions, so
-    // scrolling pushes the left band further left and the right band further
-    // right. That is the whole behaviour: reading down the page opens the middle
-    // up rather than carrying the marks across it.
-    current = {
-      x: eased(current.x, bound(target.x, halfWidth), deltaS),
-      y: eased(current.y, bound(target.y, halfHeight), deltaS),
-    };
+    // Scrolling does not move the field sideways. It writes a single vertical
+    // spread value, which both bands read the same way, so the marks travel
+    // down the page with it. That is the whole behaviour: nothing in the field
+    // ever moves on the horizontal axis.
     spread = eased(spread, bound(window.scrollY, ScrollRangePx, SpreadMaxPx), deltaS);
     node.style.setProperty('--Glyph-Spread', `${spread.toFixed(2)}px`);
-    write();
+    node.style.setProperty('--Glyph-Zoom', readZoom().toFixed(3));
   };
 
   frame = requestAnimationFrame(tick);
-  write();
+  node.style.setProperty('--Glyph-Spread', '0px');
+  node.style.setProperty('--Glyph-Zoom', readZoom().toFixed(3));
 
   return {
-    aim: (next) => {
-      target.x = next.x;
-      target.y = next.y;
-    },
     stop: () => {
       if (frame !== 0) {
         cancelAnimationFrame(frame);

@@ -21,32 +21,21 @@
 /*
  * A mark's resting place.
  *
- * The transform here is the parallax: the shared pointer offset scaled by this
- * mark's own depth, so a shallow mark barely answers the pointer while a deep one
+ * The transform here is the parallax: the shared scroll spread scaled by this
+ * mark's own depth, so a shallow mark barely answers a scroll while a deep one
  * travels. It is separate from the animation because a running animation owns
  * its transform and would replace this one entirely.
  *
- * The spread is added to the same axis, in opposite directions in the two bands,
- * so scrolling pushes each band away from the middle. Both are scaled by the
- * mark's depth, so a deep mark travels further on both counts and the field
- * spreads as a crowd rather than as one sheet.
+ * The spread is read the same way in both bands and only on the vertical axis,
+ * so scrolling carries the field down the page rather than across it. It is
+ * scaled by the mark's depth, so a deep mark travels further and the field
+ * spreads as a crowd rather than as one sheet. Scroll is the only thing that
+ * writes this: no pointer, mouse or touch position is read anywhere in the
+ * field.
  */
-.SideLeft .Glyph {
-  transform: translate3d(
-    calc(
-      (var(--Glyph-OffsetX, 0px) - var(--Glyph-Spread, 0px)) * var(--Glyph-Depth, 1)
-    ),
-    calc(var(--Glyph-OffsetY, 0px) * var(--Glyph-Depth, 1)),
-    0
-  );
-}
-
+.SideLeft .Glyph,
 .SideRight .Glyph {
-  transform: translate3d(
-    calc((var(--Glyph-OffsetX, 0px) + var(--Glyph-Spread, 0px)) * var(--Glyph-Depth, 1)),
-    calc(var(--Glyph-OffsetY, 0px) * var(--Glyph-Depth, 1)),
-    0
-  );
+  transform: translate3d(0, calc(var(--Glyph-Spread, 0px) * var(--Glyph-Depth, 1)), 0);
 }
 
 .Glyph {

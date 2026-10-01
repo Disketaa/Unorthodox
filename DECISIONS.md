@@ -437,3 +437,25 @@ the character, and the app keeps the one to offer next time.
 The look is not read from storage on every render. Storage stays the answer to "what did this device
 last wear", read once at load, and the live value is state, because reading it per render would make
 a room that opened a moment later depend on whether anything had written since.
+
+The glyph field follows the page scroll and nothing else. The pointer is not read at all: no
+`pointermove` listener, and the shared offset is written from the scroll position on the animation
+frame rather than moved by an event, so neither a mouse nor a finger dragging or panning the screen
+can pull the marks around. A touch that scrolls moves the field exactly as a wheel does, and a touch
+that does not scroll does not move it. What is left is one vertical spread, read the same way by
+both bands, so scrolling carries the field down the page with the content instead of sliding the two
+bands apart across it. The driver no longer exposes a target to aim at, and `--Glyph-OffsetX` and
+`--Glyph-OffsetY` are gone with it. With the pointer gone the parallax carries a mark a couple of
+hundred pixels, so it catches up four times faster than a pointer-follow needed and the travel is
+scaled by a depth that now runs past one, which is what separates the layers from each other: a
+shallow mark barely answers a scroll and a deep one crosses a good share of the viewport.
+
+The marks are sized as a share of the viewport with a floor under it, and there is no breakpoint. A
+bare share empties the margins out on a phone, where sixteen per cent is a mark no bigger than the
+text behind it, and a second rule per screen size would fix that by making a mark jump size twice on
+the way past the breakpoint: once on entering the narrow case and once on leaving it. `max` gives the
+floor without the step, so the field is one continuous arrangement and a resize moves the marks to
+the same relative place rather than somewhere new. The bands are left at fifteen per cent at every
+size, because a mark is placed from the band's outer screen edge and the band is only the area it is
+laid out in: widening the bands on a narrow screen would widen those boxes without moving anything
+inside them.
