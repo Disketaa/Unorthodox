@@ -524,6 +524,7 @@ html::-webkit-scrollbar-thumb:active {
   --Cursor-Default: default;
   --Cursor-Pointer: pointer;
   --Cursor-NotAllowed: not-allowed;
+  --Cursor-Text: text;
 }
 
 /*
@@ -539,14 +540,16 @@ html::-webkit-scrollbar-thumb:active {
  * drawn at whatever size it declares and is never measured, but the hotspot is
  * where the player aims, so being off by more than a pixel or two reads as the
  * game aiming for the wrong answer. Each is the aim point of its own glyph: the
- * arrow's tip, the fingertip, and for the barred one, which points nowhere, the
- * top-left of the ring so the whole badge sits below and right of the pointer.
+ * arrow's tip, the fingertip, for the barred one, which points nowhere, the
+ * top-left of the ring so the whole badge sits below and right of the pointer, and
+ * for the I-beam, the middle of the stem, which is where a click lands rather than
+ * an edge of the glyph.
  *
  * These are in the pixels of the image as the browser draws it, which is why the
  * size lives in the SVG's own width rather than in a stylesheet: changing that
  * width rescales the drawing, and the hotspot below has to be restated to match.
- * The three sizes are linked, and changing one without the others is the way to
- * end up aiming at nothing.
+ * The sizes are linked, and changing one without the others is the way to end up
+ * aiming at nothing.
  *
  * Each SVG is a 512-unit viewBox drawn at 32px. Browsers cap a custom cursor at
  * 128px and scale anything larger down, and a hotspot in a scaled cursor then
@@ -562,6 +565,7 @@ html::-webkit-scrollbar-thumb:active {
     --Cursor-Default: url('../Cursors/Arrow.svg') 4 0, default;
     --Cursor-Pointer: url('../Cursors/Finger.svg') 12 0, pointer;
     --Cursor-NotAllowed: url('../Cursors/Unavailable.svg') 2 3, not-allowed;
+    --Cursor-Text: url('../Cursors/Text.svg') 16 16, text;
   }
 }
 

@@ -62,6 +62,10 @@ body {
  * field takes text, so it takes the I-beam. Left to inherit, a link would be
  * indistinguishable from the text around it and a field would keep the arrow,
  * which is the one cursor on the screen that never points at what it is for.
+ *
+ * The field reads the token rather than naming `text`, so it gets the drawn
+ * I-beam on a device with a pointer and the platform's own on a finger, which is
+ * the same bargain the rest of the cursors are on.
  */
 a {
   cursor: var(--Cursor-Pointer);
@@ -69,7 +73,7 @@ a {
 
 input,
 textarea {
-  cursor: text;
+  cursor: var(--Cursor-Text);
 }
 
 /* A dropdown is picked rather than typed into, so it is a control, not a field. */
