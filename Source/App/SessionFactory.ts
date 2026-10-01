@@ -25,6 +25,8 @@ function createHostSession(roomCode: string, playerName: string, look: PlayerLoo
     getClockOffsetMs: () => 0,
     onUpdate: (listener) => hostSession.onUpdate(listener),
     onHostLeave: () => {},
+    // The host is the name in the room, so nothing can collide with it.
+    isNameRejected: () => false,
     join: () => {},
     setLook: (look) => hostSession.setOwnLook(look),
     submitAnswer: (text) => hostSession.submitOwnAnswer(text.trim()),
@@ -49,6 +51,7 @@ function createPlayerSession(roomCode: string, playerName: string, look: PlayerL
     getClockOffsetMs: () => clientSession.getClockOffsetMs(),
     onUpdate: (listener) => clientSession.onUpdate(listener),
     onHostLeave: (listener) => clientSession.onHostLeave(listener),
+    isNameRejected: () => clientSession.isNameRejected(),
     join: () => {},
     setLook: (look) => clientSession.setLook(look),
     submitAnswer: (text) => clientSession.submitAnswer(text.trim()),

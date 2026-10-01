@@ -14,10 +14,11 @@ const freshLook: PlayerLook = { character: 'Star', color: 'Violet' };
 function roomWithAnn() {
   const hostSession = new HostSession(new InMemoryTransport());
   hostSession.start(roomCode, 'Host', hostLook);
-  const clientSession = new ClientSession(new InMemoryTransport());
+  const transport = new InMemoryTransport();
+  const clientSession = new ClientSession(transport);
   clientSession.start(roomCode, 'Ann');
   clientSession.join('Ann', clientLook);
-  return { hostSession, clientSession };
+  return { hostSession, clientSession, transport };
 }
 
 /** Undefined outside the lobby, which is the only phase whose state carries a look. */
@@ -71,8 +72,16 @@ describe('A player who closes the tab and comes back', () => {
     InMemoryTransport.resetPeers();
   });
 
-  /** A new client under Ann's name, as if her tab had been closed and reopened. */
-  function annReturns(look: PlayerLook): ClientSession {
+  /**
+   * A new client under Ann's name, as if her tab had been closed and reopened.
+   *
+   * The old client is dropped first, because that is what closing a tab looks like
+   * to the host: it sees the departure, which frees the name. A second client
+   * arriving while the first is still connected is a different thing, and is
+   * refused rather than seated twice.
+   */
+  function annReturns(transport: InMemoryTransport, look: PlayerLook): ClientSession {
+    transport.simulateLeave();
     const returning = new ClientSession(new InMemoryTransport());
     returning.start(roomCode, 'Ann');
     returning.join('Ann', look);
@@ -81,23 +90,23 @@ describe('A player who closes the tab and comes back', () => {
   }
 
   it('keeps the character the host already had for them', () => {
-    const { hostSession } = roomWithAnn();
+    const { hostSession, transport } = roomWithAnn();
     // The new client rolls a new character, but the host must ignore that roll
     // and restore what it had.
-    const returning = annReturns(freshLook);
+    const returning = annReturns(transport, freshLook);
 
     expect(returning.getPlayerId()).not.toBeNull();
     expect(lookOf(hostSession, returning.getPlayerId() ?? '')).toEqual(clientLook);
   });
 
   it('keeps a character the player changed before leaving', () => {
-    const { hostSession, clientSession } = roomWithAnn();
+    const { hostSession, clientSession, transport } = roomWithAnn();
     clientSession.setLook(freshLook);
     const id = clientSession.getPlayerId();
 
     // The last choice the player made is the one that survives, not the roll
     // they happen to arrive with.
-    annReturns(clientLook);
+    annReturns(transport, clientLook);
 
     expect(lookOf(hostSession, id ?? '')).toEqual(freshLook);
   });
@@ -115,9 +124,11 @@ describe('Seat identity in the lobby', () => {
   });
 
   it('reclaims the same player id, so scores are not reset', () => {
-    const { hostSession, clientSession } = roomWithAnn();
+    const { hostSession, clientSession, transport } = roomWithAnn();
     const originalId = clientSession.getPlayerId();
 
+    // Ann's tab closes and reopens, so the host sees the departure first.
+    transport.simulateLeave();
     const returning = new ClientSession(new InMemoryTransport());
     returning.start(roomCode, 'Ann');
     returning.join('Ann', freshLook);

@@ -23,6 +23,14 @@ export class HostRoster {
   private readonly seatByPeerId = new Map<string, PlayerId>();
   /** Seats handed out, so the host knows how many answers to wait for. */
   private readonly seats = new Set<PlayerId>();
+  /**
+   * The seats of players who have dropped.
+   *
+   * Held apart from the seat map rather than by removing the seat, because a player
+   * who loses the connection has not given up their place: the room is waiting on
+   * them, not counting them out.
+   */
+  private readonly goneSeats = new Set<PlayerId>();
 
   /** Claim a seat for the host itself, which plays under a reserved id. */
   addHost(hostId: PlayerId, name: string): void {
@@ -47,6 +55,8 @@ export class HostRoster {
       }
     }
     this.seatByPeerId.set(peerId, seat);
+    // Claiming a seat is proof of life, so this player is waiting on the answer.
+    this.goneSeats.delete(seat);
     return seat;
   }
 
@@ -60,18 +70,44 @@ export class HostRoster {
     this.seatByPeerId.delete(peerId);
   }
 
+  /** Note that the player in this seat has dropped off the network. */
+  markGone(playerId: PlayerId): void {
+    this.goneSeats.add(playerId);
+  }
+
+  /**
+   * Whether this name is taken by someone who is still here.
+   *
+   * A name belonging to a player who has dropped is free again, because the name is
+   * the only handle the room has and that player is not in it. The host's own name
+   * counts as taken: the host is playing, and a second player wearing its name would
+   * be indistinguishable from it in every answer and every score.
+   */
+  isNameActive(name: string): boolean {
+    const seat = this.seatByName.get(name);
+    return seat !== undefined && !this.goneSeats.has(seat);
+  }
+
   has(playerId: PlayerId): boolean {
     return this.seats.has(playerId);
   }
 
+  /**
+   * How many answers the room is still waiting for.
+   *
+   * Seats minus the players who have dropped, so a disconnected player does not
+   * hold the round open for an answer that can no longer arrive. The seat is kept
+   * either way, so a player who comes back is waited for again from that moment.
+   */
   get count(): number {
-    return this.seats.size;
+    return this.seats.size - this.goneSeats.size;
   }
 
   clear(): void {
     this.seats.clear();
     this.seatByName.clear();
     this.seatByPeerId.clear();
+    this.goneSeats.clear();
     this.nextId = 1;
   }
 }

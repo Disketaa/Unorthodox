@@ -15,6 +15,8 @@ export interface Session {
   getClockOffsetMs(): number;
   onUpdate(listener: () => void): void;
   onHostLeave(listener: () => void): void;
+  /** Whether the host refused this player's name, because it is already in play. */
+  isNameRejected(): boolean;
   join(name: string, look: PlayerLook): void;
   setLook(look: PlayerLook): void;
   submitAnswer(text: string): void;

@@ -1,12 +1,10 @@
 import { Transport } from './Transport';
 import { isHostMessage, HostMessage } from './Protocol';
+import { JoinRetry } from './JoinRetry';
 import * as Game from '@/Game';
 import { PlayerLook, createLogger, measureClockOffset } from '@/Core';
 
 const log = createLogger('ClientSession');
-
-/** How often a join is re-sent while waiting for the host to become reachable. */
-export const JoinRetryIntervalMs = 2_000;
 
 /**
  * How often the client asks the host where the game is.
@@ -23,14 +21,14 @@ export class ClientSession {
   private transport: Transport;
   private playerId: string | null = null; // assigned by the host on Join, never chosen here
   private updateListener: (() => void) | undefined = undefined;
-  /** Join message held back until the transport can address the host. */
-  private pendingJoin: { type: 'Join'; name: string; look: PlayerLook } | null = null;
-  /** Retries the buffered join until the host assigns us an id. */
-  private joinRetry: ReturnType<typeof setInterval> | null = null;
+  /** The join, held and re-sent until the host answers it or refuses it. */
+  private readonly joinRetry: JoinRetry;
   /** Asks the host for the current state, so a gap does not desync the client. */
   private syncTimer: ReturnType<typeof setInterval> | null = null;
   /** Skew between the host's clock and this device's, in milliseconds. */
   private clockOffsetMs = 0;
+  /** Whether the host turned this player away for taking a name already in play. */
+  private nameRejected = false;
 
   /** Subscribe to state changes so the UI can re-render. */
   onUpdate(listener: () => void): void {
@@ -42,54 +40,13 @@ export class ClientSession {
     this.transport.onPeerLeave(() => listener());
   }
 
-  /**
-   * Send the buffered join as soon as the host is addressable.
-   *
-   * Retrying on a timer alone leaves up to one interval of dead air after the
-   * connection completes, which reads as a hang. The timer stays as a backstop
-   * for the case where the host is addressable but the first send is lost.
-   */
-  private flushPendingJoin(): void {
-    if (!this.pendingJoin || this.playerId !== null) {
-      return;
-    }
-    // The host has to announce itself before it can be addressed. Reporting a
-    // send that the transport is about to drop is what made a room that never
-    // connected look as though it was.
-    if (!this.transport.isHostAddressable()) {
-      log('debug', 'host has not announced itself yet, holding the join back');
-      return;
-    }
-    log('info', 'host is reachable, sending the join now');
-    this.transport.sendToHost(this.pendingJoin);
-  }
-
-  private startJoinRetries(): void {
-    if (this.joinRetry !== null) {
-      return;
-    }
-    this.joinRetry = setInterval(() => {
-      if (this.playerId !== null) {
-        this.stopJoinRetries();
-        return;
-      }
-      this.flushPendingJoin();
-    }, JoinRetryIntervalMs);
-  }
-
-  private stopJoinRetries(): void {
-    if (this.joinRetry !== null) {
-      clearInterval(this.joinRetry);
-      this.joinRetry = null;
-    }
-  }
-
   constructor(transport: Transport) {
     this.transport = transport;
+    this.joinRetry = new JoinRetry(transport);
 
     // The host is reachable the moment it registers on the in-memory broker,
     // so the join can go out without waiting for a retry tick.
-    this.transport.onHostReady(() => this.flushPendingJoin());
+    transport.onHostReady(() => this.joinRetry.flush());
 
     this.transport.onMessage((message, fromHost) => {
       log('debug', 'onMessage', message, 'fromHost:', fromHost);
@@ -124,7 +81,7 @@ export class ClientSession {
 
   stop(): void {
     log('info', 'stopping client session');
-    this.stopJoinRetries();
+    this.joinRetry.stop();
     if (this.syncTimer !== null) {
       clearInterval(this.syncTimer);
       this.syncTimer = null;
@@ -132,7 +89,7 @@ export class ClientSession {
     this.transport.stop();
     this.state = undefined;
     this.playerId = null;
-    this.pendingJoin = null;
+    this.nameRejected = false;
     this.updateListener = undefined;
   }
 
@@ -150,8 +107,15 @@ export class ClientSession {
         log('info', 'playerId assigned:', message.playerId);
         this.playerId = message.playerId;
         // The host has answered, so the join no longer needs retrying.
-        this.stopJoinRetries();
-        this.pendingJoin = null;
+        this.joinRetry.stop();
+        this.updateListener?.();
+        break;
+      case 'NameRejected':
+        // Refused: this name is already being played. Retrying would only be
+        // refused again, so the join is abandoned and the player is told why.
+        log('info', 'host refused the join under this name');
+        this.nameRejected = true;
+        this.joinRetry.stop();
         this.updateListener?.();
         break;
     }
@@ -159,10 +123,8 @@ export class ClientSession {
 
   join(playerName: string, look: PlayerLook): void {
     log('info', 'joining as', playerName);
-    this.pendingJoin = { type: 'Join', name: playerName, look };
-    this.transport.sendToHost(this.pendingJoin);
-    // The first attempt may land before the host is reachable, so keep trying.
-    this.startJoinRetries();
+    // Held and re-sent until the host seats us or refuses the name.
+    this.joinRetry.send({ type: 'Join', name: playerName, look });
   }
 
   /**
@@ -180,21 +142,31 @@ export class ClientSession {
     this.transport.sendToHost({ type: 'SetLook', playerId: this.playerId, look });
   }
 
+  /**
+   * Whether this client is seated yet, logging why not if it is not.
+   *
+   * Every action that names a player goes through here, because all of them are
+   * meaningless before the host has assigned an id. Only a client that has reached
+   * Writing can reach this at all, so the guard catches the player's own click
+   * arriving before their join did.
+   */
+  private seated(action: string): boolean {
+    if (this.playerId !== null) {
+      return true;
+    }
+    log('warn', `cannot ${action} before receiving a playerId`);
+    return false;
+  }
+
   submitAnswer(text: string): void {
-    if (this.playerId === null) {
-      // Dropping is safe rather than queueing: the host cannot start a round until
-      // its roster has players, and every rostered player already has an id, so a
-      // client that has reached Writing always has one. This guard only catches a
-      // call made before the join landed, which is the player's own click.
-      log('warn', 'cannot submit answer before receiving a playerId');
+    if (!this.seated('submit answer')) {
       return;
     }
     this.transport.sendToHost({ type: 'SubmitAnswer', text, playerId: this.playerId });
   }
 
   rejectGroup(groupId: number): void {
-    if (this.playerId === null) {
-      log('warn', 'cannot reject group before receiving a playerId');
+    if (!this.seated('reject group')) {
       return;
     }
     this.transport.sendToHost({ type: 'RejectGroup', groupId, playerId: this.playerId });
@@ -210,5 +182,10 @@ export class ClientSession {
 
   getPlayerId(): string | null {
     return this.playerId;
+  }
+
+  /** Whether the host refused this player's name. */
+  isNameRejected(): boolean {
+    return this.nameRejected;
   }
 }

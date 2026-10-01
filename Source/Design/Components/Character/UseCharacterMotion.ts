@@ -79,6 +79,16 @@ const MaxPopOffsetPx = 7;
 const MinPopSteps = 5;
 const MaxPopSteps = 8;
 
+/**
+ * The nearest a character arrives from, in pixels.
+ *
+ * Never zero, because an arrival from exactly its resting place is not an arrival
+ * at all, and because the sign of that offset is what says the character dropped in
+ * rather than surfacing. A roll that landed on zero would break both, so the value
+ * starts above it rather than trusting the roll.
+ */
+const MinPopOffsetYAbsPx = 1.2;
+
 /** A number anywhere in a range. */
 function rollBetween(min: number, max: number): number {
   return min + Math.random() * (max - min);
@@ -106,9 +116,9 @@ function rollMotion(): CharacterMotion {
     offset: Math.random(),
     popTilt: (Math.random() * 2 - 1) * MaxPopTiltDeg,
     popOffsetX: (Math.random() * 2 - 1) * MaxPopOffsetPx,
-    // Always from slightly above: a character dropping into place from overhead
-    // reads as arriving, where from below reads as surfacing.
-    popOffsetY: -Math.random() * MaxPopOffsetPx,
+    // Always from slightly above, and never from nowhere: a character dropping into
+    // place from overhead reads as arriving, where from below reads as surfacing.
+    popOffsetY: -rollBetween(MinPopOffsetYAbsPx, MaxPopOffsetPx),
     popSteps: rollStepsBetween(MinPopSteps, MaxPopSteps),
     popTiming: rollTiming(),
   };

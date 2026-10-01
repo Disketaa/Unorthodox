@@ -22,6 +22,10 @@ export const Strings = {
     roomError: 'Введите код комнаты, 4 цифры',
     joinButton: 'Войти',
     createButton: 'Создать комнату',
+    /** Shown when the room already has a player under this name. */
+    nameTaken: 'Это имя уже занято',
+    /** The same, saying what to do about it. */
+    nameTakenHint: 'Придумайте другое имя и войдите снова',
   },
   lobby: {
     headline: 'Ждём игроков',

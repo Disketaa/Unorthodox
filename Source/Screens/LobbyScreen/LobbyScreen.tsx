@@ -103,7 +103,11 @@ export function LobbyScreen({
   onStart,
   onExit,
 }: LobbyScreenProps) {
-  const enoughPlayers = players.length >= GameConfig.limits.minPlayers;
+  // Counted from the players who are actually here: a seat whose owner has dropped
+  // is still on the roster, but starting a round would wait on an answer that can
+  // no longer arrive, so a room of one live player is a room of one.
+  const hereCount = players.filter((player) => player.isOnline).length;
+  const enoughPlayers = hereCount >= GameConfig.limits.minPlayers;
   const roomFull = players.length >= GameConfig.limits.maxPlayers;
 
   return (

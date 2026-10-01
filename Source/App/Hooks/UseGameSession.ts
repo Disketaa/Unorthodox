@@ -25,6 +25,8 @@ export interface GameSessionView extends SessionPhase {
   hasSubmitted: boolean;
   rejectedGroupIds: ReadonlySet<number>;
   hostLeft: boolean;
+  /** The host refused this player's name, because someone is already playing it. */
+  nameRejected: boolean;
   /**
    * This player's own character, as the host has it.
    *
@@ -132,6 +134,7 @@ export function useGameSession(
     hasSubmitted: hasSubmittedIn(marks, topic),
     rejectedGroupIds: rejectedIn(marks, topic),
     hostLeft,
+    nameRejected: session.isNameRejected(),
     ownLook,
     exitRoom,
   };

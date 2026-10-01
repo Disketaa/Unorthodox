@@ -59,6 +59,9 @@ export class HostSession {
    * The address is released first, because a peer that reconnects claims a fresh
    * address for the same seat, and the old one must not be able to mark them gone
    * a second time after they have already come back.
+   *
+   * Marking them gone also stops the room waiting on their answer: a dropped player
+   * holds the round open otherwise, and nothing would ever close it.
    */
   private markDeparted(peerId: string): void {
     const playerId = this.roster.seatForPeer(peerId);
@@ -68,6 +71,7 @@ export class HostSession {
       return;
     }
     log('info', 'player went offline', playerId);
+    this.roster.markGone(playerId);
     this.apply({ type: 'SET_ONLINE', playerId, isOnline: false });
   }
 
@@ -113,6 +117,14 @@ export class HostSession {
   private toAction(message: ClientMessage, peerId: string): Game.GameAction | undefined {
     switch (message.type) {
       case 'Join': {
+        if (this.roster.isNameActive(message.name)) {
+          // Two players under one name would be the same person to the host in every
+          // answer and every score, so the second one is turned away rather than
+          // seated twice.
+          log('info', 'refusing a join under a name already in play', message.name);
+          this.transport.sendToPeer(peerId, { type: 'NameRejected' });
+          return undefined;
+        }
         // A player we already know is the same person coming back, so they keep
         // the seat and the character they had rather than a fresh roll.
         const playerId = this.roster.claimSeat(message.name, peerId);

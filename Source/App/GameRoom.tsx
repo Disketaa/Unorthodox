@@ -1,6 +1,6 @@
 import { Banner } from '@/Design/Components';
 import { Stack } from '@/Design/Primitives';
-import { HostLeftScreen } from '@/Screens';
+import { HostLeftScreen, NameTakenScreen } from '@/Screens';
 import { Strings } from '@/Content';
 import { PlayerLook } from '@/Core';
 import { useGameSession } from './Hooks/UseGameSession';
@@ -22,9 +22,14 @@ export interface GameRoomProps {
 /** Pick the screen that matches the current phase. */
 export function GameRoom({ roomCode, role, name, look }: GameRoomProps) {
   const view = useGameSession(roomCode, role, name, look);
+  const { exitRoom } = view;
 
   if (view.hostLeft) {
     return <HostLeftScreen />;
+  }
+  if (view.nameRejected) {
+    // Back to the entry screen, where only the name has to change.
+    return <NameTakenScreen onBack={exitRoom} />;
   }
   switch (view.phase) {
     case 'Lobby':

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { InMemoryTransport } from './InMemoryTransport';
-import { ClientSession, JoinRetryIntervalMs } from './ClientSession';
+import { ClientSession } from './ClientSession';
+import { JoinRetryIntervalMs } from './JoinRetry';
 import { HostSession } from './HostSession';
 import { toPayload, readTag, readRole } from './Payload';
 import { PlayerLook } from '@/Core';
