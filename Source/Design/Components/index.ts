@@ -12,3 +12,4 @@ export * from "./Character";
 export * from "./ColorSwatch";
 export * from "./CharacterPicker";
 export * from "./IconButton";
+export * from "./Wordmark";
