@@ -11,10 +11,10 @@ import unavailableSvg from './Unavailable.svg?raw';
  * colour already in it. That is why this reads the files as text rather than letting
  * the stylesheet inline them.
  *
- * Only the white fill is swapped. Every cursor is drawn as a white body with a black
- * copy of the same path around it, which is what lets a cursor stay visible on the
- * paper; recolouring only the body tints the cursor and keeps the outline that draws
- * it against the page.
+ * Each file is one flat silhouette, so every `fill="black"` becomes the tint and
+ * there is nothing else in the drawing to keep in step. The one white left in
+ * `Unavailable.svg` is the rect inside its `clipPath`, which is a clipping shape and
+ * is never painted.
  */
 const Files: { name: string; svg: string; hotspot: string; fallback: string }[] = [
   { name: '--Cursor-Default', svg: arrowSvg, hotspot: '4 0', fallback: 'default' },
@@ -31,31 +31,26 @@ const Files: { name: string; svg: string; hotspot: string; fallback: string }[] 
  * would be worse than no tint at all. The four values are the ones already in
  * `Tokens.css`, which is where they are documented.
  */
+/**
+ * The four cursors are written unconditionally, and deliberately so.
+ *
+ * An earlier version asked `matchMedia` here and withheld the images on anything that
+ * reported no fine pointer. That was guarding nothing — the files are imported as
+ * text and travel in the bundle either way, and a device with no pointer never reads
+ * `cursor` at all — and it could only ever suppress the feature: had the query
+ * answered false for a reason the stylesheet did not share, the page would quietly
+ * fall back to the black cursors with nothing to show for having tinted them.
+ *
+ * Which is what happened, and why the four are always written now.
+ */
 export function cursorTokens(color: string): [string, string][] {
   return Files.map((file) => {
-    // Only the white body is swapped, and the black outline is left alone. The app
-    // is paper-coloured, so the body is the part that carries the tint and the black
-    // is the part that keeps the cursor visible against it — the same arrangement as
-    // a character, which is a tinted body under black linework.
-    const tinted = file.svg.split('fill="white"').join(`fill="${color}"`);
+    const tinted = file.svg.split('fill="black"').join(`fill="${color}"`);
     // `encodeURIComponent` leaves parentheses alone, and `Unavailable.svg` contains a
-    // `url(#clip)` reference. A literal `)` inside a data URL ends it as far as the
-    // `url()` token is concerned, which silently truncated that cursor to its opening
-    // tag. Escaping them costs three characters and makes every URL paren-free.
+    // `url(#clip0_526_913)` reference. A literal `)` inside a data URL ends it as far
+    // as the `url()` token is concerned, which silently truncated that cursor to its
+    // opening tag. Escaping them makes every URL paren-free.
     const encoded = encodeURIComponent(tinted).replace(/\(/g, '%28').replace(/\)/g, '%29');
-    const url = `url("data:image/svg+xml,${encoded}") ${file.hotspot}, ${file.fallback}`;
-    return [file.name, url];
+    return [file.name, `url("data:image/svg+xml,${encoded}") ${file.hotspot}, ${file.fallback}`];
   });
-}
-
-/**
- * Whether this device has a pointer the drawn cursors are for.
- *
- * The same condition the stylesheet uses to swap them in. It is checked here rather
- * than left to the stylesheet because a custom property written from JavaScript
- * applies everywhere it is read, which would hand a phone four cursor images it has
- * no way to draw and no reason to download.
- */
-export function hasFinePointer(): boolean {
-  return typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 }

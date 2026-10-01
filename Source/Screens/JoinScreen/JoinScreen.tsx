@@ -1,4 +1,4 @@
-import { Stack, Text } from '@/Design/Primitives';
+import { Stack } from '@/Design/Primitives';
 import { Button, Card, Wordmark } from '@/Design/Components';
 import { Strings } from '@/Content';
 import { JoinFields } from './JoinFields';
@@ -47,7 +47,9 @@ export function JoinScreen({
 
   return (
     <Stack gap="Lg" align="Stretch">
-      <Wordmark label={Strings.app.title} />
+      <Card variant="Plain">
+        <Wordmark label={Strings.app.title} />
+      </Card>
       <Card variant="Elevated">
         <Stack gap="Md" align="Stretch">
           <div onKeyDown={(event) => joinsOnEnter(event, tryJoin)}>

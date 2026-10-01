@@ -12,6 +12,9 @@ export function CardGallery() {
       <Card variant="Outlined">
         <Text variant="Body">Outlined Card Content</Text>
       </Card>
+      <Card variant="Plain">
+        <Text variant="Body">Plain Card Content</Text>
+      </Card>
     </Stack>
   );
 }

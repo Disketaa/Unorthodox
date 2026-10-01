@@ -1,6 +1,6 @@
 import { useEffect } from 'preact/hooks';
 import { accentFor, type CharacterColor } from '@/Core';
-import { cursorTokens, hasFinePointer } from '../Cursors/Cursors';
+import { cursorTokens } from '../Cursors/Cursors';
 
 /**
  * The custom property names, which are the contract between this module and
@@ -36,25 +36,34 @@ const Properties = {
  */
 export function AccentProvider({ color }: { color: CharacterColor }) {
   useEffect(() => {
-    const accent = accentFor(color);
-    const root = document.documentElement;
-    root.style.setProperty(Properties.base, accent.base);
-    root.style.setProperty(Properties.hover, accent.hover);
-    root.style.setProperty(Properties.active, accent.active);
-    root.style.setProperty(Properties.ink, accent.ink);
-    root.style.setProperty(Properties.bright, accent.bright);
-    root.style.setProperty(Properties.wash, accent.wash);
-    root.style.setProperty(Properties.on, accent.on);
-    root.style.setProperty(Properties.tint, accent.tint);
-    // The drawn cursors are tinted in the same hue, so the pointer belongs to the
-    // player as well as the buttons do. Skipped on a device with no fine pointer,
-    // where the stylesheet's own keywords are already the whole answer.
-    if (hasFinePointer()) {
-      for (const [name, value] of cursorTokens(accent.base)) {
-        root.style.setProperty(name, value);
-      }
-    }
+    applyAccent(document.documentElement, color);
   }, [color]);
 
   return null;
+}
+
+/**
+ * The write itself, on whichever element it is handed.
+ *
+ * Separate from the component so a test can call it and read the result rather than
+ * having to guess whether an effect has flushed. That guess was worth removing: the
+ * first version of this test passed or failed depending on render timing, which is
+ * no way to find out whether the cursors are being written.
+ */
+export function applyAccent(root: HTMLElement, color: CharacterColor): void {
+  const accent = accentFor(color);
+  root.style.setProperty(Properties.base, accent.base);
+  root.style.setProperty(Properties.hover, accent.hover);
+  root.style.setProperty(Properties.active, accent.active);
+  root.style.setProperty(Properties.ink, accent.ink);
+  root.style.setProperty(Properties.bright, accent.bright);
+  root.style.setProperty(Properties.wash, accent.wash);
+  root.style.setProperty(Properties.on, accent.on);
+  root.style.setProperty(Properties.tint, accent.tint);
+  // The drawn cursors are tinted in the same hue, so the pointer belongs to the
+  // player as well as the buttons do. Written unconditionally: a device with no
+  // pointer never reads `cursor`, and a gate here could only have suppressed them.
+  for (const [name, value] of cursorTokens(accent.base)) {
+    root.style.setProperty(name, value);
+  }
 }

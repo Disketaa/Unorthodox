@@ -1,7 +1,7 @@
 import { ComponentChildren } from "preact";
 import styles from "./Card.module.css";
 
-export type CardVariant = "Elevated" | "Outlined";
+export type CardVariant = "Elevated" | "Outlined" | "Plain";
 
 export interface CardProps {
   variant?: CardVariant;

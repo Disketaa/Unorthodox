@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, it, expect } from 'vitest';
 import { accentFor } from '@/Core';
-import { cursorTokens, hasFinePointer } from './Cursors';
+import { cursorTokens } from './Cursors';
 
 /** The value a token was given, with the data URL decoded back into SVG. */
 function svgFor(tokens: [string, string][], name: string): string {
@@ -21,15 +21,46 @@ describe('the drawn cursors', () => {
     expect(svgFor(tokens, '--Cursor-Default')).toContain('fill="#ef6a5a"');
   });
 
-  it('keeps the black outline, which is what draws the cursor against the paper', () => {
-    // The app is paper-coloured, so the outline is the part that has to stay put: a
-    // cursor whose outline went the same colour as its body would disappear into a
-    // tint of itself. This is the arrangement a character uses, tinted body under
-    // black linework.
+  it('keeps no unpainted black behind, since the drawing is one flat silhouette', () => {
+    // Nothing is left in the tint's place to show through, and nothing is left in
+    // black to be seen: the whole cursor is the accent now.
     const svg = svgFor(tokens, '--Cursor-Default');
-    expect(svg).toContain('fill="black"');
+    expect(svg).not.toContain('fill="black"');
     expect(svg).not.toContain('fill="white"');
   });
+
+  it('carries no stroke, so the only edge is the shape itself', () => {
+    // A thin rim was visible around the drawn cursor and it was not in the file: none
+    // of the four declares a stroke, so what shows is the rasteriser blending the
+    // silhouette's last pixel with the paper. A stroke would have been a second
+    // source of that line and is what this rules out.
+    for (const name of [
+      '--Cursor-Default',
+      '--Cursor-Pointer',
+      '--Cursor-NotAllowed',
+      '--Cursor-Text',
+    ]) {
+      expect(svgFor(tokens, name), name).not.toContain('stroke');
+    }
+  });
+
+  it('paints one flat shape, so nothing is drawn twice', () => {
+    // Each file is a single path. Two of them used to be drawn as an outer shape and
+    // an inner copy, and that is where a seam between the two would have come from.
+    for (const name of [
+      '--Cursor-Default',
+      '--Cursor-Pointer',
+      '--Cursor-NotAllowed',
+      '--Cursor-Text',
+    ]) {
+      const svg = svgFor(tokens, name);
+      expect((svg.match(/<path/g) ?? []).length, name).toBe(1);
+    }
+  });
+});
+
+describe('every cursor at once', () => {
+  const tokens = cursorTokens(accentFor('Coral').base);
 
   it('tints all four, since every one of them is drawn the same way', () => {
     for (const name of [
@@ -40,7 +71,7 @@ describe('the drawn cursors', () => {
     ]) {
       const svg = svgFor(tokens, name);
       expect(svg, name).toContain('fill="#ef6a5a"');
-      expect(svg, name).not.toContain('fill="white"');
+      expect(svg, name).not.toContain('fill="black"');
     }
   });
 
@@ -67,13 +98,5 @@ describe('the drawn cursors', () => {
     const value = tokens.find(([n]) => n === '--Cursor-Default')?.[1] ?? '';
     const encoded = value.match(/data:image\/svg\+xml,([^)]*)\)/)?.[1] ?? '';
     expect(encoded).not.toContain('#');
-  });
-});
-
-describe('which devices get the drawn cursors', () => {
-  it('asks the same question the stylesheet does', () => {
-    // A property written from JavaScript applies wherever it is read, so without this
-    // check a phone would be handed four cursor images it cannot draw.
-    expect(typeof hasFinePointer()).toBe('boolean');
   });
 });
