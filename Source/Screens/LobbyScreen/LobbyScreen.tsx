@@ -1,4 +1,4 @@
-import { Stack } from '@/Design/Primitives';
+import { Screen } from '@/Design/Primitives';
 import { CharacterPicker, IconButton, RoomCodeBadge } from '@/Design/Components';
 import { CharacterColor, CharacterId, PlayerId } from '@/Core';
 import { Strings } from '@/Content';
@@ -127,7 +127,7 @@ export function LobbyScreen({
   onKick,
 }: LobbyScreenProps) {
   return (
-    <Stack gap="Lg" align="Stretch">
+    <Screen>
       <Room
         roomCode={roomCode}
         players={players}
@@ -144,6 +144,6 @@ export function LobbyScreen({
           onPick={onPickLook}
         />
       )}
-    </Stack>
+    </Screen>
   );
 }

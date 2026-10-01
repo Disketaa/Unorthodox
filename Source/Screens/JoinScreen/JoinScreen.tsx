@@ -1,4 +1,4 @@
-import { Stack } from '@/Design/Primitives';
+import { Stack, Screen } from '@/Design/Primitives';
 import { Button, Card, Wordmark } from '@/Design/Components';
 import { Strings } from '@/Content';
 import { JoinFields } from './JoinFields';
@@ -46,7 +46,7 @@ export function JoinScreen({
   const tryJoin = () => submitJoin(onJoin);
 
   return (
-    <Stack gap="Lg" align="Stretch">
+    <Screen vertical="Center">
       <Card variant="Plain">
         <Wordmark label={Strings.app.title} />
       </Card>
@@ -70,6 +70,6 @@ export function JoinScreen({
           </Button>
         </Stack>
       </Card>
-    </Stack>
+    </Screen>
   );
 }

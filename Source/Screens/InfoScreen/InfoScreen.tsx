@@ -1,6 +1,6 @@
 import { Banner, BannerMark, Button } from '@/Design/Components';
+import { Screen, Stack } from '@/Design/Primitives';
 import { Strings } from '@/Content';
-import styles from './InfoScreen.module.css';
 
 export interface InfoScreenProps {
   /** The one thing worth saying, said in a sentence. */
@@ -35,16 +35,24 @@ export interface InfoScreenProps {
  * the same situation seen a moment earlier: the game is not here yet, there is one
  * sentence saying so, and one button that gets the player unstuck. A separate
  * screen for it would be the same layout written twice.
+ *
+ * Centred in the viewport, and only as wide as the sentence needs, since there is
+ * nothing on this screen to justify the width. Both come from the primitives: the
+ * frame decides where the block sits, and `align="Center"` is what keeps a stretched
+ * button from spanning the track. This screen used to carry the only stylesheet in
+ * `Screens/` for exactly those two things.
  */
 export function InfoScreen({ message, onAcknowledge, mark = 'Info', action }: InfoScreenProps) {
   return (
-    <div class={styles.Root}>
-      <Banner variant="Info" align="Center" mark={mark}>
-        {message}
-      </Banner>
-      <Button variant="Primary" size="Large" onClick={onAcknowledge}>
-        {action ?? Strings.common.ok}
-      </Button>
-    </div>
+    <Screen vertical="Center">
+      <Stack gap="Md" align="Center">
+        <Banner variant="Info" align="Center" mark={mark}>
+          {message}
+        </Banner>
+        <Button variant="Primary" size="Large" onClick={onAcknowledge}>
+          {action ?? Strings.common.ok}
+        </Button>
+      </Stack>
+    </Screen>
   );
 }

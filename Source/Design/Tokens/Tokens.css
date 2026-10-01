@@ -150,22 +150,28 @@ html::-webkit-scrollbar-thumb:active {
 }
 
 /**
-   * The app is designed for a phone. On a wider screen the content is centred in a
-   * narrow column rather than stretched, so line lengths stay readable, and it sits
-   * in the middle of the viewport so the entry screen is not pinned to the top.
- *
-   * `align-items: center` with `min-height` rather than `justify-content`, so a
-   * screen taller than the viewport still starts at the top and scrolls instead of
-   * being pushed off the top edge.
+   * The page the screen is laid out on.
+   *
+   * Only the padding and the fill are here. The column's width, its centring in the
+   * viewport and whether the screen sits in the middle of it or at its top all belong
+   * to the `Screen` primitive, because they are decided per screen: the entry screen
+   * is one short block worth centring, and the lobby is a page of controls that
+   * belongs at the top. Setting any of them here would decide it for every screen at
+   * once.
+   *
+   * `min-height` rather than `height`, so a screen taller than the viewport starts at
+   * the top and scrolls instead of being squeezed into the fold.
+   *
+   * The column, so `Screen` can take the height this has left over. It cannot ask for
+   * `100dvh` itself: this element is that tall including its padding, so a child of
+   * the same height would overflow it by the padding and every screen would scroll
+   * whether it fitted or not.
  */
 #root {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   min-height: 100dvh;
-  max-width: var(--Layout-ContentMaxWidth);
-  margin: 0 auto;
-  padding: var(--Layout-ContentPadding);
+  padding: var(--Layout-ScreenPadding);
 }
 
 :root {
@@ -229,6 +235,15 @@ html::-webkit-scrollbar-thumb:active {
   --Space-Md: 16px;
   --Space-Lg: 24px;
   --Space-Xl: 32px;
+  /*
+   * The page's own breathing room, and the only space that is this large.
+   *
+   * Four times the body gap, because it is not a gap: it is the distance from the
+   * edge of the screen to the first container, and a screen whose containers sit at
+   * the top has no other margin at all. At a body's `--Space-Md` the first card was
+   * flush enough to the edge of the viewport to read as clipped rather than as placed.
+   */
+  --Space-2xl: 64px;
 
   --Radius-Sm: 8px;
   --Radius-Md: 12px;
@@ -599,8 +614,35 @@ html::-webkit-scrollbar-thumb:active {
   --FontSize-Display: var(--FontSize-4xl);
 
   /* Layout */
-  --Layout-ContentMaxWidth: 480px;
+  /*
+   * How wide one container of a screen may be, and how many may sit side by side.
+   *
+   * The width is what a card's text is measured against, so it is the readable line
+   * length rather than a share of the screen: a card is never wider because the
+   * window is. It was the whole page's width while the app was a single fixed
+   * column, and it is one container's width now that a screen can lay several out
+   * across, which is the only thing that changed about it.
+   *
+   * The count is the cap on a row rather than a breakpoint. `Screen` sizes itself as
+   * this many columns wide, so a track past the third has nowhere to go and the row
+   * wraps on its own: a fourth card starts a new line without a width query saying
+   * where. One, two or three is decided by how much room there is, and three is the
+   * most that will ever be asked for.
+   */
+  --Layout-ContainerMaxWidth: 480px;
+  --Layout-ColumnsMax: 3;
   --Layout-ContentPadding: var(--Space-Md);
+  /*
+   * The margin around the whole screen, from the edge of the viewport to its first
+   * container.
+   *
+   * Its own token rather than the card's, because the two are not the same distance
+   * and sharing one number made them move together: a card's padding is inside its
+   * own frame and a body's step is right for it, while a screen's is the only margin
+   * a top-aligned screen has, and at a body's step its first container sat close
+   * enough to the edge of the viewport to read as clipped rather than as placed.
+   */
+  --Layout-ScreenPadding: var(--Space-2xl);
 
   /* Character sizes, for the roster, the scoreboard and the picker. */
   --Size-Character-Small: 28px;

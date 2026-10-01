@@ -1,4 +1,4 @@
-import { Stack, Text } from '@/Design/Primitives';
+import { Stack, Screen, Text } from '@/Design/Primitives';
 import { Card, Timer, Banner } from '@/Design/Components';
 import { Strings } from '@/Content';
 import { AnswerInput } from './AnswerInput';
@@ -30,10 +30,12 @@ export function WritingScreen({
   const timeUp = remainingMs <= 0;
 
   return (
-    <Stack gap="Lg" align="Stretch">
+    <Screen>
       <Timer remainingMs={remainingMs} totalMs={totalMs} />
-      <Text variant="Caption">{Strings.writing.topicLabel}</Text>
-      <Text variant="Title">{topic}</Text>
+      <Stack gap="Lg" align="Stretch">
+        <Text variant="Caption">{Strings.writing.topicLabel}</Text>
+        <Text variant="Title">{topic}</Text>
+      </Stack>
       <Card variant="Elevated">
         <AnswerInput
           value={value}
@@ -43,9 +45,11 @@ export function WritingScreen({
           onSubmit={onSubmit}
         />
       </Card>
-      {timeUp && <Banner variant="Warning">{Strings.writing.timeUp}</Banner>}
-      <Text variant="Caption">{Strings.writing.submittedCount(submittedCount, playerCount)}</Text>
-      {submitted && <Text variant="Caption">{Strings.writing.waitForOthers}</Text>}
-    </Stack>
+      <Stack gap="Md" align="Stretch">
+        {timeUp && <Banner variant="Warning">{Strings.writing.timeUp}</Banner>}
+        <Text variant="Caption">{Strings.writing.submittedCount(submittedCount, playerCount)}</Text>
+        {submitted && <Text variant="Caption">{Strings.writing.waitForOthers}</Text>}
+      </Stack>
+    </Screen>
   );
 }

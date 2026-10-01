@@ -1,4 +1,4 @@
-import { Stack, Text } from '@/Design/Primitives';
+import { Stack, Screen, Text } from '@/Design/Primitives';
 import { Button, Card, ScoreRow } from '@/Design/Components';
 import { Strings } from '@/Content';
 import { ScoreEntry } from '../Types';
@@ -12,7 +12,7 @@ export interface FinalScreenProps {
 /** Only the host is offered another round, since the host is what owns the room. */
 export function FinalScreen({ scores, isHost, onPlayAgain }: FinalScreenProps) {
   return (
-    <Stack gap="Lg" align="Stretch">
+    <Screen>
       <Text variant="Title">{Strings.final.headline}</Text>
       <Card variant="Elevated">
         <Stack gap="Sm">
@@ -34,6 +34,6 @@ export function FinalScreen({ scores, isHost, onPlayAgain }: FinalScreenProps) {
           {Strings.final.playAgain}
         </Button>
       )}
-    </Stack>
+    </Screen>
   );
 }

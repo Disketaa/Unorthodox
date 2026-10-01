@@ -4,22 +4,20 @@
 }
 
 /*
- * The mark, in the accent.
+ * The mark, in the game's own gold.
  *
- * `--Accent-Tint` is the step the display title was set in, so the drawing arrives in
- * the same colour the type used to, and the whole thing still follows the tint this
- * player picked.
- *
- * The size is a share of the viewport with a floor and a ceiling rather than a fixed
- * length: the drawing is square and fills its box, so it has to shrink on a phone and
- * stop at the size of the card it sits above on a desktop.
+ * A fixed colour rather than `--Accent-Tint`, on the same grounds as the primary
+ * button and the host's crown: the wordmark is the game's, not this player's, so it
+ * looks the same to everyone in the room. It is the button's gold rather than a step
+ * of the accent, because a step of a tint the player chose would be the name of the
+ * game changing colour with whoever is looking at it.
  */
 .Mark {
   display: block;
   margin: 0 auto;
   width: clamp(160px, 45vw, 280px);
   aspect-ratio: 1;
-  background-color: var(--Accent-Tint);
+  background-color: var(--Color-Action-Primary-Background);
   mask-image: url('../../Icons/Games/Unorthodox.png');
   mask-repeat: no-repeat;
   mask-position: center;

@@ -1,0 +1,85 @@
+/*
+ * The frame a screen's containers are laid out on.
+ *
+ * A grid rather than a wrapping flex row, and the reason is `align-content` below:
+ * a flex row wraps into lines too, but it has no way to say where those lines sit
+ * when the whole set is shorter than the viewport. That is the one thing a screen
+ * decides for itself here, so the layout that can express it is the one to use.
+ *
+ * Tracks are a fixed container width rather than `1fr`, so two cards on a wide
+ * screen stay the size a card is meant to be and do not stretch to fill the row. The
+ * `min()` floor is what keeps a phone narrower than a container from overflowing it:
+ * a `minmax` whose floor is above the available width resolves to the floor, and the
+ * floor here is the container width capped at the width available.
+ */
+.Root {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(
+      min(var(--Layout-ContainerMaxWidth), 100%),
+      var(--Layout-ContainerMaxWidth)
+    )
+  );
+  gap: var(--Space-Lg);
+  /*
+   * A container is as tall as what is in it.
+   *
+   * Grid stretches its items to the row by default, so two containers side by side
+   * came out as tall as the taller one and the shorter had its content sitting at the
+   * top of a box sized for something else, which reads as padding nobody set. The rows
+   * still pack together, and a row is still as tall as its own tallest container.
+   */
+  align-items: start;
+  /*
+   * Takes the height `#root` has left, rather than asking for a viewport of its own.
+   *
+   * `1 0 auto` is grow, never shrink, at its own height: short of the room it grows
+   * to fill it, and taller than the room it keeps its height and the page scrolls. A
+   * `100dvh` of its own would be a viewport plus `#root`'s padding, which is how every
+   * screen came to scroll whether its content fitted or not.
+   */
+  flex: 1 0 auto;
+  /*
+   * As many tracks as a row is allowed, and not one more. This is the whole of the
+   * cap: `auto-fit` fits as many tracks as the frame is wide, so a frame sized for
+   * `--Layout-ColumnsMax` cannot hold a fourth, and the next container wraps to a new
+   * line by itself. A `max-width` rather than a breakpoint, which is also why there
+   * is no width query in this file: the row count falls out of the frame's own size.
+   */
+  max-width: calc(
+    var(--Layout-ColumnsMax) * var(--Layout-ContainerMaxWidth) + (var(
+        --Layout-ColumnsMax
+      ) - 1) * var(--Space-Lg)
+  );
+  /*
+   * The tracks are a fixed width rather than `1fr`, so a row that is not full has
+   * empty space at its end rather than cards stretched across it. That space is
+   * centred rather than left where it lands, or two cards on a wide screen would sit
+   * against the page's left padding with the gap on the wrong side.
+   */
+  justify-content: center;
+  margin: 0 auto;
+}
+
+/*
+ * Always centred, at every width.
+ *
+ * A row that is not full is centred rather than left against the page's padding, so
+ * two cards on a wide screen sit in the middle of the frame instead of drifting to the
+ * left edge with the empty track beside them.
+ */
+.VerticalTop {
+  align-content: start;
+}
+
+/*
+ * In the middle of the viewport, for a screen that is one short block.
+ *
+ * `align-content` rather than `justify-content`, because the rows are what has to be
+ * centred: on a screen taller than the viewport the rows stay at the top and the page
+ * scrolls, instead of being pushed off the top edge with half of it unreachable.
+ */
+.VerticalCenter {
+  align-content: center;
+}

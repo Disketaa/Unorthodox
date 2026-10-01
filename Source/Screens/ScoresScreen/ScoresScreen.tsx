@@ -1,4 +1,4 @@
-import { Stack, Text } from '@/Design/Primitives';
+import { Stack, Screen, Text } from '@/Design/Primitives';
 import { Button, Card, ScoreRow, Timer } from '@/Design/Components';
 import { Strings } from '@/Content';
 import { ScoreEntry } from '../Types';
@@ -20,7 +20,7 @@ export function ScoresScreen({
   onNext,
 }: ScoresScreenProps) {
   return (
-    <Stack gap="Lg" align="Stretch">
+    <Screen>
       <Text variant="Title">{Strings.scores.headline}</Text>
       <Timer remainingMs={remainingMs} totalMs={totalMs} />
       <Card variant="Elevated">
@@ -45,6 +45,6 @@ export function ScoresScreen({
       ) : (
         <Text variant="Caption">{Strings.scores.waitingForHost}</Text>
       )}
-    </Stack>
+    </Screen>
   );
 }

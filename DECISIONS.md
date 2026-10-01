@@ -1,5 +1,61 @@
 ﻿# DECISIONS
 
+## 2026-10-01 — the screens lay themselves out, and `Screen` is the frame that does it
+A screen's containers now sit side by side when there is room and stack when there is not,
+from a width the screen never asks about. `Design/Primitives/Screen` is that frame, and
+every screen is one. It is not a `Stack`: a `Stack` is a direction the caller has chosen,
+and this one takes the direction from the width, so a screen written once is correct on a
+phone and on a desktop and nothing in `Screens/` reads the window.
+
+The cap on a row is the frame's own width rather than a breakpoint, and that is the whole
+mechanism. `auto-fit` fits as many tracks as the frame is wide, so a frame sized for
+`--Layout-ColumnsMax` cannot hold a fourth, and a fifth container wraps to a new line by
+itself. One, two or three is decided by the room available; three is the most anything in
+the game needs. `--Layout-ColumnsMax` is a token rather than a bare 3 in a stylesheet
+because a layout rule written as a number is a rule nobody can find again.
+
+A grid rather than a wrapping flex row, and the reason is `align-content`. A flex row wraps
+into lines too, but it cannot say where those lines sit when the set is shorter than the
+viewport — which is the one thing a screen does decide for itself, as `vertical="Center"`
+for the entry screen and `"Top"` for the lobby. Grid can say it, so grid is what is used.
+`align-content` rather than a centred column, so a screen taller than the viewport stays at
+the top and scrolls instead of being pushed off its own top edge.
+
+Three things were wrong on the way and are worth not getting wrong again.
+
+`#root` asked for a viewport of its own and so did the frame, so every screen was a
+viewport plus `#root`'s padding taller than the page it sat in and scrolled whether it fit
+or not. The frame now takes the height `#root` has left with `flex: 1 0 auto`, which grows
+into the room and never shrinks below its own content.
+
+Grid stretches its items to their row, so a card beside the wordmark was pulled to the
+wordmark's height with its own content sitting at the top of a box sized for something
+else. It read as padding nobody had set. `align-items: start` gives every container the
+height of what is in it, and the rows still pack.
+
+`--Layout-ContentPadding` was both the page's margin and a card's inner padding, so making
+the screen's margin larger made every card's padding larger with it. They are now
+`--Layout-ScreenPadding` and `--Layout-ContentPadding`, on the grounds the tokens file
+already gives for `--Color-Accent-Ink`: reaching past the named token is how the next
+control ends up wearing a value meant for something else.
+
+`--Layout-ContentMaxWidth` is now `--Layout-ContainerMaxWidth`, the same 480 describing one
+container rather than the whole page. The page was a single fixed column when it was named
+for the content; a screen can lay several out across now, and a name that reads as
+per-page is how the next person makes it one again.
+
+The wordmark went back to the fixed gold rather than the accent, on the same grounds as the
+primary button and the host's crown: the name of the game should look the same to everyone
+in the room rather than wear one player's taste.
+
+`Scripts/ScreenLayout.test.ts` reads the stylesheet with `node:fs`, because none of this is
+visible to a test runner: happy-dom does not lay out a grid, resolve a `minmax`, or match a
+width query, so a rendered `Screen` asserts nothing about the one thing it exists to decide.
+
+One thing was left alone on purpose. `ReviewScreen` can have ten answer cards, and they now
+wrap three across like everything else, but how a review screen should deal with ten of
+them is a design question rather than a layout one.
+
 ## 2026-10-01 — the glyph field ships a list of seeds and fades in no more
 The field rolls from one of eight fixed seeds rather than a fresh one per load. Every
 seed gives a valid arrangement, but a good half of them are lopsided enough to be worth looking
