@@ -17,7 +17,6 @@ export function GalleryPage() {
         <Stack direction="Vertical" gap="Md">
           {Object.entries(galleryModules).map(([path, module]) => {
             const Component = module.default;
-            // Extract component name from path
             const componentName = path.split("/").pop()?.replace(".Gallery.tsx", "") || "Unknown";
             return (
               <div key={path} className={styles.Item}>

@@ -6,10 +6,9 @@ export interface Player {
   look: PlayerLook;
 }
 
-// Define the internal host state for each phase
 export type LobbyState = {
   phase: 'Lobby';
-  players: Map<PlayerId, Player>; // playerId -> player record
+  players: Map<PlayerId, Player>;
   cumulativeScores: Map<PlayerId, number>; // cumulative scores across rounds
 };
 
@@ -28,7 +27,6 @@ export type ReviewingState = {
   durationMs: number;
   startedAt: number;
   answers: Map<PlayerId, string>; // all answers from writing phase
-  // We'll compute groups and track rejections
   groupRejections: Map<number, Set<PlayerId>>; // groupId -> set of playerIds who rejected this group
   cumulativeScores: Map<PlayerId, number>; // cumulative scores across rounds
 };

@@ -3,12 +3,6 @@ import { HostState } from './GameState';
 import { assertNever } from '@/Core';
 import { GameAction, handleJoin, handleSetLook, handleStartGame, handleSubmitAnswer, handleStartReviewing, handleRejectGroup, handleEndReviewing, handleNextRound, handleFinal } from './GameActions';
 
-/**
- * Reducer function for the game state.
- * @param currentState Current host state
- * @param action Action to process
- * @returns New host state
- */
 export function reducer(
   currentState: HostState | undefined,
   action: GameAction

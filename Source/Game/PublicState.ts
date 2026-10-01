@@ -9,7 +9,6 @@ export interface PublicPlayer {
   look: PlayerLook;
 }
 
-// Define the public state that is sent to clients
 export type PublicLobbyState = {
   phase: 'Lobby';
   players: PublicPlayer[];
@@ -56,11 +55,6 @@ export type PublicState =
   | PublicScoresState
   | PublicFinalState;
 
-/**
- * Convert internal host state to public state for clients.
- * @param hostState Internal host state
- * @returns Public state to send to clients
- */
 export function toPublicState(hostState: HostState): PublicState {
   switch (hostState.phase) {
     case 'Lobby':

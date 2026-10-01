@@ -22,16 +22,12 @@ export class HostSession {
   constructor(transport: Transport) {
     this.transport = transport;
 
-    // Set up incoming message handler
     this.transport.onMessage((message, fromHost, peerId) => {
       log('debug', 'onMessage', message, 'from peer:', peerId);
-      // We only expect messages from clients (fromHost should be false)
       if (fromHost) {
-        // Ignore messages from host (shouldn't happen in a correct setup)
         return;
       }
       if (!isClientMessage(message)) {
-        // Invalid message, ignore
         log('warn', 'ignoring unrecognised client message');
         return;
       }
@@ -44,7 +40,6 @@ export class HostSession {
     this.updateListener = listener;
   }
 
-  /** Start the host session with a room code and host name */
   start(roomCode: string, hostName: string, look: PlayerLook): void {
     log('info', 'starting host session', roomCode, hostName);
     // The state must exist before the room opens, because a waiting client can
@@ -80,7 +75,7 @@ export class HostSession {
     return this.state.players.get(playerId)?.look;
   }
 
-  /** Handle a message from a client, addressed by the peer it arrived from. */
+  /** The peerId is the transport address the message arrived from, not a player id. */
   private handleClientMessage(message: ClientMessage, peerId: string): void {
     if (!this.state) {
       return;
@@ -98,7 +93,6 @@ export class HostSession {
     }
   }
 
-  /** Turn a client message into the game action it stands for. */
   private toAction(message: ClientMessage, peerId: string): Game.GameAction | undefined {
     switch (message.type) {
       case 'Join': {
@@ -190,7 +184,10 @@ export class HostSession {
     this.commit(Game.reducer(this.state, action));
   }
 
-  /** Get the current host state (for debugging) */
+  /**
+   * The host's own state, every answer in it. Never sent to a client: what
+   * leaves the host goes through `toPublicState`, which drops the answers.
+   */
   getState(): Game.HostState | undefined {
     return this.state;
   }

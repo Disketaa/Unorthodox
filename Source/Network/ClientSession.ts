@@ -24,7 +24,7 @@ export const SyncIntervalMs = 5_000;
 export class ClientSession {
   private state: Game.PublicState | undefined = undefined;
   private transport: Transport;
-  private playerId: string | null = null; // We'll set this when we receive a SetPlayerId message from the host
+  private playerId: string | null = null; // assigned by the host on Join, never chosen here
   private updateListener: (() => void) | undefined = undefined;
   /** Join message held back until the transport can address the host. */
   private pendingJoin: { type: 'Join'; name: string; look: PlayerLook } | null = null;
@@ -95,12 +95,9 @@ export class ClientSession {
     // so the join can go out without waiting for a retry tick.
     this.transport.onHostReady(() => this.flushPendingJoin());
 
-    // Set up incoming message handler
     this.transport.onMessage((message, fromHost) => {
       log('debug', 'onMessage', message, 'fromHost:', fromHost);
-      // We only expect messages from the host (fromHost should be true)
       if (!fromHost) {
-        // Ignore messages from clients (shouldn't happen in a correct setup)
         return;
       }
       if (!isHostMessage(message)) {
@@ -111,7 +108,6 @@ export class ClientSession {
     });
   }
 
-  /** Start the client session with a room code and player name */
   start(roomCode: string, playerName: string): void {
     // The host addresses us by the peer the transport sees, so there is no id
     // for us to declare here. The host assigns our game player id on join.
@@ -145,7 +141,6 @@ export class ClientSession {
     this.updateListener = undefined;
   }
 
-  /** Handle a message from the host */
   private handleHostMessage(message: HostMessage): void {
     switch (message.type) {
       case 'State':
@@ -194,7 +189,10 @@ export class ClientSession {
   /** Send an answer submission to the host */
   submitAnswer(text: string): void {
     if (this.playerId === null) {
-      // We don't have a playerId yet, ignore or wait?
+      // Dropping is safe rather than queueing: the host cannot start a round until
+      // its roster has players, and every rostered player already has an id, so a
+      // client that has reached Writing always has one. This guard only catches a
+      // call made before the join landed, which is the player's own click.
       log('warn', 'cannot submit answer before receiving a playerId');
       return;
     }
@@ -204,14 +202,12 @@ export class ClientSession {
   /** Send a group rejection to the host */
   rejectGroup(groupId: number): void {
     if (this.playerId === null) {
-      // We don't have a playerId yet, ignore or wait?
       log('warn', 'cannot reject group before receiving a playerId');
       return;
     }
     this.transport.sendToHost({ type: 'RejectGroup', groupId, playerId: this.playerId });
   }
 
-  /** Get the current public state */
   getState(): Game.PublicState | undefined {
     return this.state;
   }

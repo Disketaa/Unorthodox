@@ -1,5 +1,5 @@
 export interface Transport {
-  /** Send a message to the host (only clients call this) */
+  /** Only clients call this. A host has nobody above it to address. */
   sendToHost(message: unknown): void;
   /**
    * Send a message to a peer by its transport-level address, which is the id
@@ -29,12 +29,11 @@ export interface Transport {
    * send went out. Hosts report false, since they address clients directly.
    */
   isHostAddressable(): boolean;
-  /** Start the transport with a room code and player name */
+  /** Start the transport. This is where it learns whether it is the host. */
   start(roomCode: string, playerName: string, isHost: boolean): void;
   /** Stop the transport and clean up */
   stop(): void;
   /** Set the player ID for this transport (used for addressing) */
   setPlayerId(playerId: string): void;
-  /** Get the player ID for this transport */
   getPlayerId(): string | null;
 }

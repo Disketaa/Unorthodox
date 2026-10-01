@@ -1,5 +1,102 @@
 ﻿# DECISIONS
 
+## 2026-10-01 — a script that names the comments which only repeat the code
+`npm run comments` (`Scripts/CommentAudit.ts`) walks `Source/`, joins each run of `//`
+lines into one paragraph so a sentence is judged whole, and reports every comment that
+shares little with the code beneath it. Three verdicts, and the split is the point: `noisy`
+is safe to delete, `stale` is an unresolved question or a hedge and needs a decision rather
+than a deletion, `kept` is everything else. `stale` exits non-zero so it can gate a commit.
+
+Nothing is rewritten. The judgement that separates "restates the code" from "records a
+decision the code cannot express" — why Google's STUN is unreachable from here, why a
+trystero action has to exist on both peers — is not mechanical, so the script proposes and a
+person disposes.
+
+The signals are phrase-level rather than token-level: `Step 1:`, `@param`, `// Define the…`,
+a question mark, "might need". A token-overlap rule (does the comment repeat the words in the
+next line?) catches the rest. Both were tuned against false positives, and two of the earliest
+were instructive: `we'?ll` matched the word "well", and judging `//` lines one at a time read
+the middle of a paragraph as its own comment and flagged load-bearing rationale as noise.
+
+`eslint.config.js` now sets `parserOptions.tsconfigRootDir`. An Agent Manager worktree inside
+the repo carries a second `tsconfig.json`, which made `eslint` ambiguous about the project
+root and failed every file with a parsing error. The worktree is now ignored as well.
+
+## 2026-10-01 — the audit was reading about half the comments
+A sample of twenty comments taken across files the audit called clean found `Reducer.ts`
+carrying a four-line `@param`/`@returns` block that no run had ever reported. The collector
+handled `//` lines and, for `/** */`, recorded a placeholder and moved on. Every docstring in
+the codebase had been invisible. Doc comments are now read as text, gutter `*` stripped, and
+seventeen more findings appeared — the `@param` restatements in `Scoring.ts`,
+`PublicState.ts` and `Reducer.ts`, and a run of one-line docstrings that say the method's own
+name back to you (`/** Start the host session with a room code and host name */`).
+
+Reading them raised two more faults. A `//` behind code on its own line annotates the code
+before it, so comparing it to the line after was the wrong reference; and two adjacent inline
+annotations were being welded into one paragraph, which attached the merged text to the wrong
+line and hid the signal entirely. Trailing comments are now marked and never merged, and are
+compared against their own line.
+
+CSS stayed out of the default run, so the claim that it was clean was untested. It now has the
+same lookback for the selector above, and `--css` finds nothing across all twenty stylesheets:
+`GlyphField.module.css`, `Pop.module.css` and `Tokens.css` are design rationale, and the one
+borderline case, `/* Container for the whole gallery */` on `.Root`, shares no words with the
+selector and so cannot be caught by any overlap rule. It stays a judgement call and stays in.
+
+So the honest limit of this tool: it finds restatement, not redundancy. `/* Container for the
+whole gallery */` on `.Root` adds nothing and no regex will say so, because deciding it needs
+to know what `.Root` is for. That is the class of comment this cannot catch, and it is not
+empty.
+
+## 2026-10-01 — the three open questions in the comments, answered instead of deleted
+The audit found three comments that were asking something rather than stating it. A question
+cannot be deleted without answering it first, so each was answered where it stood.
+
+`Grouping.ts` listed Russian endings and said "we might need more, but this is a start." It now
+says what the list actually guarantees: the first match wins, so longer endings come first,
+and words of four characters or fewer are never touched. What it does not promise is coverage,
+so nothing claims a coverage the list does not have.
+
+`ClientSession.submitAnswer` asked whether a send with no `playerId` should be ignored or
+waited for. It is dropped, and now says why that is safe rather than why it was a coin toss:
+the host cannot start a round until its roster has players, and every rostered player already
+has an id, so a client that has reached Writing always holds one.
+
+`Protocol.isHostMessage` said it trusted the state and could check more. It keeps trusting. The
+state is written by the host rather than by a peer, so a host that sends a malformed one has
+broken its own room and a client has nothing better to fall back on; walking every field on
+every message would cost per message and protect nothing.
+
+Two findings are declined and left standing, and both are the same limitation rather than a
+judgement about the comment. `Transport.sendToHost` is annotated "Send a message to the host.
+Clients only; a host has no host to send to." The tool reads the second sentence as restating
+`sendToHost`, but a correct comment on that method has to say who may call it, and every way of
+saying that contains the word "host". The overlap rule cannot separate a constraint from a
+restatement when the constraint and the method name share a subject.
+
+`GameState.ts` annotates `scores` as "scores for this round" directly above `cumulativeScores`,
+which is the only thing telling the two fields apart. The tool no longer reports it — comparing
+a trailing comment against the code before it rather than after turned out to be the correct
+reference, and the annotation stopped looking like restatement once judged that way.
+
+Both are the class this cannot catch: the comment is short, correct, and repeats the name it
+sits on because the name is not enough on its own.
+
+## 2026-10-01 — sixteen comments deleted, and one correction among them
+The narration went: `// Step 1: lowercase` and its four siblings in `Normalization.ts`, the
+`// Initialize the matrix` pair in `Grouping.ts`, four `// Define the…` headers, `// Set up
+incoming message handler` and its two children, and `// Extract component name from path`.
+
+The `Normalization.ts` docstring listed the five steps it was about to perform, so it was the
+same text twice. It now states what normalization is for and keeps only the two parts that
+are decisions rather than mechanics: the 'ё' fold, and punctuation becoming a space so that
+"а,б" splits into two words instead of fusing into "аб". Both were checked against the code,
+not written from memory; an earlier draft of that comment claimed "don't" and "dont" normalize
+together, and they do not — they become "don t" and "dont".
+
+Files are shorter now, which matters because `max-lines` skips comments and had left the count
+looking worse than it was.
+
 ## 2026-09-30 вЂ” happy-dom as a dev dependency for the app smoke test
 `vitest` runs in a node environment by default, so nothing rendered the app itself. A
 blank page passes every unit test, because the logic modules are tested in isolation.

@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .ts,.tsx",
-    "test": "vitest"
+    "test": "vitest",
+    "comments": "node Scripts/CommentAudit.ts"
   },
   "repository": {
     "type": "git",

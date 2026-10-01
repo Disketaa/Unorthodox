@@ -1,12 +1,13 @@
 import { normalizeAnswer } from './Normalization';
 import { PlayerId } from '@/Core';
 
-// Typical Russian endings to strip (ordered by length descending for longest match first)
+// Typical Russian endings to strip. Order matters: the first match wins, so longer
+// endings come first, otherwise 'ам' would be missed behind a trailing 'а'. Only words
+// longer than four characters are stripped at all, which keeps a short stem intact.
 const russianEndings = [
-  'ам', 'ям', 'ом', 'ем', 'им', 'ым', // plural instrumental/dative/prepositional?
+  'ам', 'ям', 'ом', 'ем', 'им', 'ым', // plural instrumental/dative/prepositional
   'а', 'я', 'ы', 'ь', 'й', 'у', 'ю', 'е', // common singular endings
   'и', // plural nominative
-  // Note: we might need more, but this is a start.
 ];
 
 /**
@@ -36,7 +37,6 @@ function levenshteinDistance(a: string, b: string): number {
 
   const matrix: number[][] = [];
 
-  // Initialize the matrix
   for (let i = 0; i <= b.length; i++) {
     matrix[i] = [i];
   }
@@ -44,7 +44,6 @@ function levenshteinDistance(a: string, b: string): number {
     matrix[0][j] = j;
   }
 
-  // Fill in the rest of the matrix
   for (let i = 1; i <= b.length; i++) {
     for (let j = 1; j <= a.length; j++) {
       const cost = a[j - 1] === b[i - 1] ? 0 : 1;
@@ -87,13 +86,11 @@ export function groupAnswers(answers: string[]): { groupId: number; answers: str
 
     for (let i = 0; i < groups.length; i++) {
       const groupKey = groupKeys[i];
-      // Check exact match first
       if (groupKey === key) {
         groups[i].answers.push(answer);
         placed = true;
         break;
       }
-      // Check Levenshtein distance ≤1 and length ≥5
       if (key.length >= 5 && groupKey.length >= 5) {
         const dist = levenshteinDistance(groupKey, key);
         if (dist <= 1) {
@@ -134,7 +131,6 @@ export function groupAnswersWithPlayers(answers: Map<PlayerId, string>): {
     const key = normalizeForGrouping(answer);
     let groupIndex = keyToGroupIndex.get(key);
     if (groupIndex === undefined) {
-      // Try to find a similar key within distance 1 and length >=5
       for (const [existingKey, existingIndex] of keyToGroupIndex) {
         if (
           key.length >= 5 &&

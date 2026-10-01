@@ -20,7 +20,7 @@ function roomWithAnn() {
   return { hostSession, clientSession };
 }
 
-/** The look the host is holding for one player. */
+/** Undefined outside the lobby, which is the only phase whose state carries a look. */
 function lookOf(hostSession: HostSession, playerId: string): PlayerLook | undefined {
   const state = hostSession.getState();
   return state?.phase === 'Lobby' ? state.players.get(playerId)?.look : undefined;

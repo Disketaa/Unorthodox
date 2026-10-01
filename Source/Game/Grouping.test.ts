@@ -41,7 +41,6 @@ describe('groupAnswers', () => {
     // Expect one group for 'hello'/'hallo' and one for 'world'
     const sorted = sortGroups(groups);
     expect(sorted).toHaveLength(2);
-    // Find the group with count 2
     const multiGroup = sorted.find(g => g.count === 2);
     expect(multiGroup).toBeDefined();
     if (multiGroup) {

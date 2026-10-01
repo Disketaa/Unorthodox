@@ -71,7 +71,10 @@ export function isHostMessage(value: unknown): value is HostMessage {
   }
   switch (record.type) {
     case 'State':
-      // We trust that the state is a PublicState (could add more checks if needed)
+      // The payload is not walked field by field. It is written by the host rather
+      // than by a peer, and a host sending a malformed state has broken its own
+      // room, so a client that rejected it would have nothing better to show. The
+      // screens read the fields they need and treat a missing one as absent.
       return 'state' in record;
     case 'SetPlayerId':
       return typeof record.playerId === 'string';

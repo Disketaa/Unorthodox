@@ -2,7 +2,6 @@ import { PlayerId, PlayerLook } from '@/Core';
 import { HostState } from './GameState';
 import { scoreRound } from './RoundScoring';
 
-// Define the action types
 export type GameAction =
   | { type: 'JOIN'; playerId: PlayerId; name: string; look: PlayerLook }
   | { type: 'SET_LOOK'; playerId: PlayerId; look: PlayerLook }

@@ -3,6 +3,10 @@ import tseslint from "typescript-eslint";
 import checkFile from "eslint-plugin-check-file";
 import prettier from "eslint-config-prettier";
 
+// Agent Manager worktrees hold their own tsconfig inside the repo, so the
+// default "walk up from cwd" root is ambiguous and every file fails to parse.
+const rootDir = import.meta.dirname;
+
 const deepImport = {
   regex: "^@/(?!Design/(Primitives|Components)$)[^/]+/.+",
   message:
@@ -27,7 +31,8 @@ const layer = (folder, banned, { allowTrystero = false } = {}) => ({
 });
 
 export default tseslint.config(
-  { ignores: ["dist", "node_modules", "Source/Design/Tokens/Tokens.css"] },
+  { ignores: ["dist", "node_modules", ".kilo", "Source/Design/Tokens/Tokens.css"] },
+  { languageOptions: { parserOptions: { tsconfigRootDir: rootDir } } },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   prettier,

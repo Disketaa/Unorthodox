@@ -7,9 +7,6 @@ import { joinRoom, selfId, type JsonValue, type MessageAction } from 'trystero';
 
 const log = createLogger('TrysteroTransport');
 
-/**
- * Trystero transport implementation.
- */
 export class TrysteroTransport implements Transport {
   private room: ReturnType<typeof joinRoom> | null = null;
   private appId: string = 'unorthodox-game'; // Unique app ID for this project
