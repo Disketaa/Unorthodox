@@ -88,7 +88,7 @@ export function LobbyScreen({
         onKick={onKick}
         onAddBot={onAddBot}
       />
-      <LobbyPace pace={pace} onPick={onPickPace} />
+      <LobbyPace pace={pace} isHost={isHost} onPick={onPickPace} />
       {ownLook !== undefined && (
         <LookPicker
           ownName={ownPlayerName}

@@ -1,0 +1,27 @@
+/*
+ * The host's console, pinned to the foot of the window.
+ *
+ * `fixed` against the window rather than `absolute` against the page, because the
+ * lobby is taller than the viewport on a phone and the dock would end up somewhere
+ * down the page with it — reachable only by scrolling to the bottom to find, which is
+ * the opposite of what a dock is for. Half of the width and moved back by half is how
+ * it is centred without asking where its parent happens to be.
+ *
+ * Above the paper, which sits at 1: the dock is a surface the room's own texture
+ * would otherwise tint, and a note that changes colour with the paper stops being a
+ * note about anything.
+ */
+.Root {
+  position: fixed;
+  bottom: var(--Space-Lg);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  /*
+   * Never wider than the dock's own contents and never wider than the window, so the
+   * row of controls cannot run off the edge of a narrow screen. The cap is the same
+   * one `Screen` draws its column to, so the dock's width is the same width the page
+   * is laid out in and the two agree on a wide window.
+   */
+  max-width: min(100%, var(--Layout-ContainerMaxWidth));
+}

@@ -41,42 +41,13 @@ function readiness(players: readonly PublicPlayer[]): {
 }
 
 /**
- * What the console is for, and one of the things it is for: the note that says
- * logging is on.
+ * Whether there is a seat left for one more player.
  *
- * Nothing at all when the flag is off, which is the whole of the host's guarantee
- * that nobody else ever sees this.
+ * Exported because the host's dock asks the same question about its own button, and
+ * two answers to "is the room full" is one more than this screen should have.
  */
-function DebugNote({ enabled }: { enabled: boolean }) {
-  if (!enabled) return null;
-  return (
-    <Banner variant="Accent" mark="Info">
-      {Strings.lobby.debugOn}
-    </Banner>
-  );
-}
-
-/**
- * The way to put an invented player in the room, under the rule that names the list.
- *
- * The button goes with the last seat, on the same rule as Start: a control that would
- * do nothing is not shown disabled.
- */
-function AddBotButton({
-  enabled,
-  roomFull,
-  onAddBot,
-}: {
-  enabled: boolean;
-  roomFull: boolean;
-  onAddBot: () => void;
-}) {
-  if (!enabled || roomFull) return null;
-  return (
-    <Button variant="Primary" onClick={onAddBot}>
-      {Strings.lobby.addBot}
-    </Button>
-  );
+export function hasRoomFor(players: readonly PublicPlayer[]): boolean {
+  return players.length < GameConfig.limits.maxPlayers;
 }
 
 /** The room itself: its code, who is in it, and the way to start or wait. */
@@ -85,11 +56,9 @@ export function LobbyRoom({
   players,
   ownPlayerId,
   isHost,
-  debugEnabled,
   onStart,
   onExit,
   onKick,
-  onAddBot,
 }: LobbyRoomProps) {
   const { enoughPlayers, roomFull } = readiness(players);
   return (
@@ -102,13 +71,11 @@ export function LobbyRoom({
         ownPlayerId={ownPlayerId}
         isHost={isHost}
         onKick={onKick}
-        addBot={<AddBotButton enabled={debugEnabled} roomFull={roomFull} onAddBot={onAddBot} />}
       />
       <LobbyStart
         enoughPlayers={enoughPlayers}
         roomFull={roomFull}
         isHost={isHost}
-        note={<DebugNote enabled={debugEnabled} />}
         onStart={onStart}
       />
     </LobbyCategory>
