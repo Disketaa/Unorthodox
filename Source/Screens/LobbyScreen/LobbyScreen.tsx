@@ -1,7 +1,7 @@
 import { Stack } from '@/Design/Primitives';
 import {
   CharacterPicker,
-  ExitButton,
+  IconButton,
   PlayerChip,
   RoomCodeBadge,
 } from '@/Design/Components';
@@ -135,7 +135,7 @@ function Room({
   return (
     <LobbyCategory
       title={<RoomCodeBadge code={roomCode} />}
-      action={<ExitButton label={Strings.lobby.exit} onClick={onExit} />}
+      action={<IconButton icon="Exit" label={Strings.lobby.exit} onClick={onExit} />}
     >
       <Roster players={players} ownPlayerId={ownPlayerId} isHost={isHost} onKick={onKick} />
       <LobbyStart

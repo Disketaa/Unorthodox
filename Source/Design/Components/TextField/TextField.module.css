@@ -5,7 +5,7 @@
   border: none;
   outline: none;
   transition: border-color var(--Duration-Fast) var(--Easing-Standard);
-  min-height: 44px;
+  min-height: var(--Size-TouchTarget);
   /* Fill the row, and allow shrinking: a flex item defaults to min-width:auto,
      so the input's own intrinsic width would widen the whole layout. */
   width: 100%;

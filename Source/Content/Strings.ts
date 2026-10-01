@@ -7,13 +7,6 @@ export const Strings = {
     galleryLink: 'Галерея компонентов',
   },
   common: {
-    room: 'Комната',
-    player: 'Игрок',
-    answer: 'Ответ',
-    players: 'Игроки',
-    round: 'Раунд',
-    next: 'Дальше',
-    back: 'Назад',
     /** Acknowledges the message on an info screen, whatever the message was. */
     ok: 'Ок',
   },
@@ -26,9 +19,8 @@ export const Strings = {
     createButton: 'Создать комнату',
   },
   lobby: {
-    headline: 'Ждём игроков',
     startButton: 'Начать игру',
-    waitingForHost: 'Ждём, пока хост начнёт игру',
+    waitingForHost: 'Ждём хоста',
     /** Built from the limit, so the hint cannot drift from the actual rule. */
     notEnoughPlayers: (min: number) => `Нужно минимум ${min} игрока`,
     roomFull: 'Комната заполнена',
@@ -97,9 +89,9 @@ Coral: 'Коралл',
   },
 status: {
     /** One short sentence each: what happened, and nothing else. */
-    hostLeft: 'Комната была закрыта.',
-    nameTaken: 'Это имя уже занято.',
-    kicked: 'Вы были исключены.',
+    hostLeft: 'Комната была закрыта',
+    nameTaken: 'Это имя уже занято',
+    kicked: 'Вы были исключены',
     connecting: 'Подключаемся…',
   },
 } as const;

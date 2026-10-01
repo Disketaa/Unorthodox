@@ -46,19 +46,27 @@
   min-width: 0;
 }
 
+/*
+ * Ink on the three light fills, white on the deep one.
+ *
+ * The fills are all mid-tone, and only the error tone is dark enough to carry white
+ * legibly; the rest read better with the game's own text colour, which is what the
+ * gold button already does. This is contrast, not taste: white on this palette sits
+ * around two to one on three of the four, and the words are the whole message.
+ */
 .VariantInfo {
   background: var(--Color-Feedback-Info);
-  color: var(--Color-Surface-Default);
+  color: var(--Color-Text-Default);
 }
 
 .VariantSuccess {
   background: var(--Color-Feedback-Success);
-  color: var(--Color-Surface-Default);
+  color: var(--Color-Text-Default);
 }
 
 .VariantWarning {
   background: var(--Color-Feedback-Warning);
-  color: var(--Color-Surface-Default);
+  color: var(--Color-Text-Default);
 }
 
 .VariantError {

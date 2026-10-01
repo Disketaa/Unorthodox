@@ -11,4 +11,4 @@ export * from "./Banner";
 export * from "./Character";
 export * from "./ColorSwatch";
 export * from "./CharacterPicker";
-export * from "./ExitButton";
+export * from "./IconButton";

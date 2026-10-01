@@ -33,3 +33,8 @@ Thumbs.db
 
 # Misc
 .cache
+
+# Agent Manager worktrees are whole checkouts inside the repo. Left unignored they
+# are collected by the test runner and by every search, so a worktree's failure is
+# reported as the suite's.
+.kilo/worktrees/

@@ -1,0 +1,69 @@
+.Root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--Size-TouchTarget);
+  height: var(--Size-TouchTarget);
+  padding: 0;
+  border: var(--Border-Width-Default) solid transparent;
+  border-radius: var(--Radius-Button);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--Duration-Fast) var(--Easing-Standard);
+}
+
+.Root:hover {
+  background: var(--Color-Surface-Hover);
+}
+
+.Root:active {
+  background: var(--Color-Surface-Active);
+}
+
+/*
+ * The border is transparent rather than absent, and drawn inside the box, so the
+ * focus ring lands on the control's own edge. An outline stands off the box and
+ * reads as a second frame with a gap around it.
+ */
+.Root:focus-visible {
+  outline: none;
+  border-color: var(--Color-Border-Focus);
+}
+
+/*
+ * Painted through a mask rather than embedded: every icon file on disk is a solid
+ * black silhouette, and a mask is what lets one file be drawn in any colour.
+ *
+ * Drawn oversize and centred so the shape fills its box rather than sitting inside
+ * the margin its own file keeps. Each percentage is that file's padding, measured
+ * rather than guessed, which is why they differ.
+ */
+.Icon {
+  display: block;
+  background-color: currentColor;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+
+.ToneAccent {
+  color: var(--Color-Action-Primary-Background);
+}
+
+.ToneMuted {
+  color: var(--Color-Text-Muted);
+}
+
+.IconExit .Icon {
+  width: calc(var(--Size-Icon) * 0.8);
+  height: calc(var(--Size-Icon) * 0.8);
+  mask-image: url('../../Icons/Exit.svg');
+  mask-size: 112%;
+}
+
+.IconKick .Icon {
+  width: calc(var(--Size-Icon) * 0.7);
+  height: calc(var(--Size-Icon) * 0.7);
+  mask-image: url('../../Icons/Kick.svg');
+  mask-size: 116%;
+}

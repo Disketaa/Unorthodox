@@ -44,3 +44,36 @@
   font-weight: 600;
   color: var(--Color-Text-Default);
 }
+
+/*
+ * The host's crown, at the far end of the chip so it never sits between the face and
+ * the name.
+ *
+ * Painted through a mask rather than embedded, for the same reason as every other
+ * mark in the game: the file on disk is a black silhouette and the crown should be
+ * the accent the palette says it is. Drawn oversize so the shape fills its box
+ * instead of sitting inside the margin the artwork keeps, which is 90% of it here.
+ */
+.Crown {
+  flex-shrink: 0;
+  width: 1.1em;
+  height: 1.1em;
+  margin-left: auto;
+  color: var(--Color-Action-Primary-Background);
+  background-color: currentColor;
+  mask: url('../../Icons/Crown.svg') center / 110% no-repeat;
+}
+
+/*
+ * The kick sits in the chip's own right-hand gap rather than pushing the name away,
+ * so a chip with a kick is the same width as one without and a roster does not
+ * reflow as the host looks down it.
+ */
+.Kick {
+  display: inline-flex;
+  margin-left: auto;
+}
+
+.Crown + .Kick {
+  margin-left: var(--Space-Xs);
+}

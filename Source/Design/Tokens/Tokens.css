@@ -232,7 +232,6 @@ body {
   /* Section headings, in the accent the lobby already spends on its actionables. */
   --Color-Text-Title: var(--Color-Action-Primary-Background);
   --Color-Text-Inverse: #ffffff;
-  --Color-Text-Link: var(--Color-Action-Primary-Background);
 
   /*
    * The accent gold. Its text is ink rather than white: gold is far too light to
@@ -286,7 +285,13 @@ body {
   --Color-Border-Error: #e91e63;
 
   --Color-Feedback-Success: #8bc34a;
-  --Color-Feedback-Warning: #ff9800;
+  /*
+   * The warning tone is a deep step of the accent rather than the orange the
+   * palette started with, so a warning reads as part of this game's colour and not
+   * as a leftover. It is not the accent itself: that is what "go" looks like, and
+   * a warning that shares the button's colour would be saying nothing.
+   */
+  --Color-Feedback-Warning: var(--Color-Action-Primary-Active);
   --Color-Feedback-Error: #e91e63;
   --Color-Feedback-Info: #00bcd4;
 
@@ -314,10 +319,8 @@ body {
   /* The chosen character in the picker, above the rows of choices. */
   --Size-Character-Preview: 160px;
 
-  /*
-   * The size of a mark that stands in for a word, as in the exit control. Marks that
-   * sit in a line of text are sized in `em` against that text instead, so they follow
-   * the wording rather than a scale of their own.
-   */
+  /* Marks that stand in for a word, as in the icon-only controls. */
   --Size-Icon: 30px;
+  /* The smallest thing a finger may be asked to hit. */
+  --Size-TouchTarget: 44px;
 }

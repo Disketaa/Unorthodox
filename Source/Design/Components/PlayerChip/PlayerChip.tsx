@@ -1,10 +1,7 @@
 import { CharacterColor, CharacterId } from '@/Core';
 import { Character } from '../Character';
-import { PlayerChipMark } from './PlayerChipMark';
+import { IconButton } from '../IconButton';
 import styles from './PlayerChip.module.css';
-
-const HostMark = 'Crown';
-const KickMark = 'Kick';
 
 export interface PlayerChipProps {
   name: string;
@@ -57,8 +54,12 @@ export function PlayerChip({
     >
       <Character character={character} color={color} size="Small" index={index} />
       <span class={styles.Name}>{name}</span>
-      {isHost && <PlayerChipMark icon={HostMark} />}
-      {onKick !== undefined && <PlayerChipMark icon={KickMark} label={kickLabel} onClick={onKick} />}
+      {isHost && <span class={styles.Crown} aria-hidden="true" />}
+      {onKick !== undefined && (
+        <span class={styles.Kick}>
+          <IconButton icon="Kick" label={kickLabel} tone="Muted" onClick={onKick} />
+        </span>
+      )}
     </div>
   );
 }

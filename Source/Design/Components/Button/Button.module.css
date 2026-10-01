@@ -9,8 +9,8 @@
   font-weight: 600;
   transition: background var(--Duration-Fast) var(--Easing-Standard),
     transform var(--Duration-Fast) var(--Easing-Standard);
-  min-height: 44px;
-  min-width: 44px;
+  min-height: var(--Size-TouchTarget);
+  min-width: var(--Size-TouchTarget);
 }
 
 .Root:active:not(:disabled) {
