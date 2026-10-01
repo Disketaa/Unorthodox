@@ -233,10 +233,15 @@ body {
   --Color-Text-Inverse: #ffffff;
   --Color-Text-Link: #ff9800;
 
-  --Color-Action-Primary-Background: #ff9800;
-  --Color-Action-Primary-Text: #ffffff;
-  --Color-Action-Primary-Hover: #fb8c00;
-  --Color-Action-Primary-Active: #f57c00;
+  /*
+   * The accent gold. Its text is ink rather than white: gold is far too light to
+   * carry white type legibly, and the accent is the loudest colour in the game, so
+   * the button beside it has to stay the clearest thing on the screen.
+   */
+  --Color-Action-Primary-Background: #eeb62e;
+  --Color-Action-Primary-Text: var(--Color-Text-Default);
+  --Color-Action-Primary-Hover: #e0a824;
+  --Color-Action-Primary-Active: #cf9a1e;
 
   /* A deeper teal than the room-code badge, so the two do not read as siblings. */
   --Color-Action-Secondary-Background: #00838f;
@@ -259,21 +264,22 @@ body {
    */
   --Color-Character-Coral: #ef6a5a;
   --Color-Character-Amber: #f2a63b;
+  /* The action accent, so a player in yellow wears the game's own gold. */
+  --Color-Character-Yellow: var(--Color-Action-Primary-Background);
   --Color-Character-Lime: #7cb342;
   --Color-Character-Mint: #26b58a;
   --Color-Character-Sky: #3d9be9;
   --Color-Character-Violet: #8a7ae0;
   --Color-Character-Rose: #e0559a;
-  --Color-Character-Sand: #b08656;
   /* The linework stays black on every tint, so the face reads the same. */
   --Color-Character-Ink: #000000;
 
   --Color-Border-Default: #e0e0e0;
   --Border-Width-Default: 2px;
   /*
-   * The teal of the secondary action rather than the action orange, so a focused
+   * The teal of the secondary action rather than the accent gold, so a focused
    * control is never mistaken for a chosen one: the two states sit side by side in
-   * the picker, and the same orange on both would tell them apart by nothing.
+   * the picker, and the same colour on both would tell them apart by nothing.
    */
   --Color-Border-Focus: var(--Color-Action-Secondary-Background);
   --Color-Border-Error: #e91e63;

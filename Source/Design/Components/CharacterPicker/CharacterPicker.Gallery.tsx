@@ -22,12 +22,12 @@ const labels = {
   color: {
     Coral: 'Tint Coral',
     Amber: 'Tint Amber',
+    Yellow: 'Tint Yellow',
     Lime: 'Tint Lime',
     Mint: 'Tint Mint',
     Sky: 'Tint Sky',
     Violet: 'Tint Violet',
     Rose: 'Tint Rose',
-    Sand: 'Tint Sand',
   },
   pickCharacter: (name: string) => `Pick ${name}`,
 };

@@ -6,8 +6,10 @@ import { GameConfig } from '@/Game';
 export interface JoinFieldsProps {
   name: string;
   roomCode: string;
-  /** Reveals the validation messages, once the player has tried to continue. */
-  showErrors: boolean;
+  /** Reveals the name message, once the player has tried to continue. */
+  showNameError: boolean;
+  /** Reveals the room code message, only after the player has tried to join. */
+  showCodeError: boolean;
   onNameChange: (value: string) => void;
   onRoomCodeChange: (value: string) => void;
 }
@@ -21,7 +23,8 @@ export interface JoinFieldsProps {
 export function JoinFields({
   name,
   roomCode,
-  showErrors,
+  showNameError,
+  showCodeError,
   onNameChange,
   onRoomCodeChange,
 }: JoinFieldsProps) {
@@ -31,7 +34,7 @@ export function JoinFields({
         value={name}
         placeholder={Strings.join.namePlaceholder}
         maxLength={GameConfig.limits.nameMaxLength}
-        error={showErrors && name.trim().length === 0}
+        error={showNameError && name.trim().length === 0}
         errorText={Strings.join.nameError}
         onChange={onNameChange}
       />
@@ -40,7 +43,7 @@ export function JoinFields({
         placeholder={Strings.join.roomPlaceholder}
         maxLength={GameConfig.limits.roomCodeLength}
         inputMode="numeric"
-        error={showErrors && roomCode.length !== GameConfig.limits.roomCodeLength}
+        error={showCodeError && roomCode.length !== GameConfig.limits.roomCodeLength}
         errorText={Strings.join.roomError}
         onChange={onRoomCodeChange}
       />

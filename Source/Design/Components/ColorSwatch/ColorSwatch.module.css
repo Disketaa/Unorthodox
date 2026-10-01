@@ -83,6 +83,10 @@
   --Character-Tint: var(--Color-Character-Amber);
 }
 
+.Yellow {
+  --Character-Tint: var(--Color-Character-Yellow);
+}
+
 .Lime {
   --Character-Tint: var(--Color-Character-Lime);
 }
@@ -101,8 +105,4 @@
 
 .Rose {
   --Character-Tint: var(--Color-Character-Rose);
-}
-
-.Sand {
-  --Character-Tint: var(--Color-Character-Sand);
 }

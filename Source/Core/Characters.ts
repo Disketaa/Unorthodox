@@ -21,12 +21,12 @@ export type CharacterId = (typeof CharacterIds)[number];
 export const CharacterColors = [
   'Coral',
   'Amber',
+  'Yellow',
   'Lime',
   'Mint',
   'Sky',
   'Violet',
   'Rose',
-  'Sand',
 ] as const;
 
 export type CharacterColor = (typeof CharacterColors)[number];

@@ -66,8 +66,8 @@
 }
 
 /*
- * A darker grey than the resting border, rather than the focus colour or the action
- * orange: under the cursor is neither of the two states the border otherwise means,
+ * A darker grey than the resting border, rather than the focus colour or the accent
+ * gold: under the cursor is neither of the two states the border otherwise means,
  * and both of those belong to a cell that is chosen or focused.
  */
 .Choice:hover {

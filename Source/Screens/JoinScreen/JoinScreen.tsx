@@ -32,7 +32,8 @@ export function JoinScreen({
           <JoinFields
             name={name}
             roomCode={roomCode}
-            showErrors={errors.showErrors}
+            showNameError={errors.showNameError}
+            showCodeError={errors.showCodeError}
             onNameChange={onNameChange}
             onRoomCodeChange={onRoomCodeChange}
           />

@@ -2,8 +2,10 @@ import { useState } from "preact/hooks";
 import { GameConfig } from "@/Game";
 
 export interface JoinFormErrors {
-  /** True once the player has pressed a button and something was still missing. */
-  showErrors: boolean;
+  /** True once the player has pressed join and the name was still missing. */
+  showNameError: boolean;
+  /** True once the player has pressed join and the code was still wrong. */
+  showCodeError: boolean;
   nameMissing: boolean;
   codeValid: boolean;
 }
@@ -22,23 +24,32 @@ export interface JoinFormHandlers {
  * The buttons stay enabled and validate on click. A disabled button cannot
  * explain itself, so the player presses it and only then sees which field is
  * empty, which is the usual pattern and reads better on a phone.
+ *
+ * Each button only reveals the messages for the fields it actually requires:
+ * creating a room needs no code, so the code stays quiet until join asks for it.
  */
 export function useJoinForm(name: string, roomCode: string): JoinFormHandlers {
-  const [showErrors, setShowErrors] = useState(false);
+  const [showNameError, setShowNameError] = useState(false);
+  const [showCodeError, setShowCodeError] = useState(false);
   const nameMissing = name.trim().length === 0;
   const codeValid = roomCode.length === GameConfig.limits.roomCodeLength;
 
-  function attempt(valid: boolean, continueTo: () => void): void {
+  function attempt(valid: boolean, reveal: () => void, continueTo: () => void): void {
     if (valid) {
       continueTo();
       return;
     }
-    setShowErrors(true);
+    reveal();
   }
 
   return {
-    errors: { showErrors, nameMissing, codeValid },
-    submitJoin: (continueTo) => attempt(!nameMissing && codeValid, continueTo),
-    submitCreate: (continueTo) => attempt(!nameMissing, continueTo),
+    errors: { showNameError, showCodeError, nameMissing, codeValid },
+    submitJoin: (continueTo) =>
+      attempt(!nameMissing && codeValid, () => {
+        setShowNameError(true);
+        setShowCodeError(true);
+      }, continueTo),
+    submitCreate: (continueTo) =>
+      attempt(!nameMissing, () => setShowNameError(true), continueTo),
   };
 }
