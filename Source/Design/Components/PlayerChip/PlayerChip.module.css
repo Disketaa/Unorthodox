@@ -39,10 +39,18 @@
   opacity: 0.5;
 }
 
+/*
+ * The name takes the free space, so everything after it — the crown, the kick —
+ * collects at the right-hand end in reading order.
+ *
+ * The space is on the name rather than on the marks, because two marks sharing it
+ * would each claim half and end up with a gap between them in the middle of the row.
+ */
 .Name {
   font-size: var(--FontSize-Body);
   font-weight: 600;
   color: var(--Color-Text-Default);
+  margin-right: auto;
 }
 
 /*
@@ -71,7 +79,6 @@
   flex-shrink: 0;
   width: var(--Size-Character-Small);
   height: var(--Size-Character-Small);
-  margin-left: auto;
   padding: 0;
   background: transparent;
   border: var(--Border-Width-Default) solid transparent;
