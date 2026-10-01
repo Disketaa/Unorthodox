@@ -746,3 +746,18 @@ two runs apart and turn one rule into two lines and a paragraph. An answer is th
 rather than being cut, because a cut answer is a hidden answer, and the name beside it is what gives
 way instead. The cut is in the drawing only, so a name stays whole in the data and in the accessible
 name of the control that would remove it.
+
+## 2026-10-01 — every page fades in, on the body, while it renders
+
+One fade for every screen, declared once in `Screen` and applied by `usePageEnter` to the body rather
+than to a screen or to `#root`: the marks and the paper are fixed layers of the viewport, and only an
+opacity on an ancestor of a fixed element reaches them, so a fade anywhere else arrives without the
+two backgrounds and reads as content drawn onto an already-lit page. The gallery calls the hook
+itself, since it brings its own frame rather than a `Screen`. Two decisions inside the hook are the
+whole of it. The class is applied during render and not in an effect, because an effect runs after the
+browser has painted the new page lit and only then takes it back to nothing — that was the blink on
+every page change. And it is applied once per screen rather than once per render, because a screen
+re-renders as often as its data changes, and a countdown or a vote would have the page pulsing under
+the player's hands. It is removed and put back rather than left on, since an animation only runs when
+its name is newly applied. Its own `--Duration-PageEnter` rather than one of the three durations,
+because a whole page arriving at the speed of a button answering a touch reads as a flash.

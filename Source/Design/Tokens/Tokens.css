@@ -149,6 +149,33 @@ html::-webkit-scrollbar-thumb:active {
   }
 }
 
+/*
+ * One fade for every page, on the body rather than on a screen.
+ *
+ * The body is the only element every page shares, and the only one an opacity
+ * reaches the fixed overlay layers through, so a fade declared on a screen or on
+ * `#root` would arrive without the marks and the paper and read as content drawn
+ * onto an already-lit page.
+ *
+ * `both` fill, so the page holds its finished state rather than snapping back to
+ * nothing when the animation is dropped, and decelerate easing, so the page
+ * arrives quickly and settles rather than drifting up over the whole duration.
+ */
+@keyframes PageFade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* The fade itself, applied by `usePageEnter` while a screen renders. */
+body.PageFade {
+  animation: PageFade var(--Duration-PageEnter) var(--Easing-Decelerate) both;
+}
+
 /**
    * The page the screen is laid out on.
    *
@@ -280,6 +307,15 @@ html::-webkit-scrollbar-thumb:active {
    * continuous rather than as a thing that keeps restarting.
    */
   --Duration-Spin: 900ms;
+  /*
+   * How long a page takes to arrive.
+   *
+   * Its own duration rather than one of the three above, because those are sized
+   * to a control answering a touch and this one covers the whole page at once. At
+   * the speed of a hover the entire interface going from nothing to lit reads as a
+   * flash, and a page that flashes is harder to land on than a page that fades.
+   */
+  --Duration-PageEnter: 550ms;
 
   /*
    * How long the pop takes, how far it squashes, and how far apart two

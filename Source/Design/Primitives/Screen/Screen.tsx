@@ -1,5 +1,6 @@
 import { ComponentChildren } from "preact";
 import styles from "./Screen.module.css";
+import { usePageEnter } from "./UsePageEnter";
 
 export type ScreenVertical = "Center" | "Top";
 export type ScreenAlign = "Center" | "Start";
@@ -52,6 +53,10 @@ export interface ScreenProps {
  * containers line up with one another inside it.
  */
 export function Screen({ vertical = "Top", align = "Start", children }: ScreenProps) {
+  // Every screen arrives through here, so the fade is declared once rather than
+  // per screen, and a screen nobody remembered still fades.
+  usePageEnter();
+
   return (
     <div
       class={`${styles.Root} ${styles[`Vertical${vertical}`]} ${styles[`Align${align}`]}`}

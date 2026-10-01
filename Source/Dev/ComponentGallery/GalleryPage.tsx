@@ -1,5 +1,4 @@
-import { Stack } from "@/Design/Primitives";
-import { Text } from "@/Design/Primitives";
+import { Stack, Text, usePageEnter } from "@/Design/Primitives";
 import { ComponentType } from "preact";
 import styles from "./GalleryPage.module.css";
 
@@ -10,6 +9,10 @@ interface GalleryModule {
 const galleryModules = import.meta.glob<GalleryModule>("../../Design/**/*.Gallery.tsx", { eager: true });
 
 export function GalleryPage() {
+  // The gallery brings its own frame rather than a `Screen`, so it asks for the
+  // fade itself.
+  usePageEnter();
+
   return (
     <div className={styles.Root}>
       <Stack direction="Vertical" gap="Lg" padding="Xl" align="Center">
