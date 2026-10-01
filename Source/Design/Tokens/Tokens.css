@@ -93,19 +93,9 @@ html {
   }
 }
 
-/*
- * `padding: 0` is what makes the bar the full width asked for. The pseudo-element
- * carries a default inset on each side, which is the gap a stock bar shows
- * between its thumb and the edge of the page; left alone it makes a twelve pixel
- * bar read as a narrower one floating in a channel, and the accent hover looks
- * like it arrived on a stripe rather than on the bar. Zeroed here and nowhere
- * else: the thumb is the only thing in the bar that should ever be inset from
- * it, and it insets itself with the radius.
- */
 html::-webkit-scrollbar {
   width: var(--Scrollbar-Width);
   height: var(--Scrollbar-Width);
-  padding: 0;
   background: var(--Scrollbar-Track);
 }
 
