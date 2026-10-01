@@ -16,11 +16,17 @@
 }
 
 /*
- * The accent arrives on the pointer rather than sitting there, so the eye is sent to
- * the control being aimed at and the room keeps its gold for the things it acts on.
+ * The room's yellow arrives on the pointer rather than sitting there, so the eye is
+ * sent to the control being aimed at.
+ *
+ * The same yellow as the primary button and the host's crown, and not the accent. An
+ * icon in the accent's ink step read as a duller version of the same hue — brown on a
+ * yellow accent — and a mark filled with the colour wants the room's yellow rather
+ * than the viewer's tint, which is what the crown and the local player's own chip
+ * already do.
  */
 .Root:hover {
-  color: var(--Color-Accent-Ink);
+  color: var(--Color-Room-Yellow);
   background: var(--Color-Surface-Hover);
 }
 

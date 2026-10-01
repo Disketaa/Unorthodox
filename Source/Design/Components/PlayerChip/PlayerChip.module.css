@@ -19,12 +19,16 @@
  * The local player, in a room where nobody can otherwise tell which chip is theirs.
  *
  * A border rather than a fill: a filled chip would read as a chosen or disabled
- * control, and the roster is a list, not a set of options. The accent gold rather
- * than the focus teal, since this is not a focused control and the gold is the one
- * colour the roster already spends on the host arrow.
+ * control, and the roster is a list, not a set of options.
+ *
+ * The same fixed yellow as the crown and the primary button, and not the accent. The
+ * chip says which seat is yours, which is a fact about the room rather than about
+ * whoever is looking at it, so it must not change colour with the viewer's own tint
+ * — a border in the accent step read as brown against a yellow accent and said
+ * nothing about the seat at all.
  */
 .Self {
-  border-color: var(--Color-Accent-Ink);
+  border-color: var(--Color-Room-Yellow);
 }
 
 /*
@@ -82,7 +86,7 @@
   background: transparent;
   border: var(--Border-Width-Default) solid transparent;
   border-radius: var(--Radius-Button);
-color: var(--Color-Host-Mark);
+color: var(--Color-Room-Yellow);
 }
 
 .CrownIcon {

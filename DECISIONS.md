@@ -1,5 +1,77 @@
 ﻿# DECISIONS
 
+## 2026-10-01 — the accent is the player's tint, and it was cut back to two steps
+Picking a tint repaints the interface in that hue, and it is kept in `localStorage` unlike the character,
+which stays in `sessionStorage` because that is identity and this is taste. `AccentProvider` writes onto
+`:root`, where `Tokens.css` declared its fallbacks, so the join screen and the gallery wear it too.
+
+It began as a four-step ramp per tint and is now two, because the things that would have used the rest
+stopped using it. The primary button is fixed gold, the create-room button fixed cyan, the focus ring
+fixed cyan, the picker's hover and selection border fixed gold, and the host's crown and the local
+player's chip fixed gold. `--Color-Room-Yellow` names that last group: four marks that all say something
+the whole room would agree on, so none of them follows the viewer's own tint. A crown in the accent named
+whoever was looking at the screen as the host.
+
+So five of the eight steps were written and read by nothing, and `--Color-Accent-Tint` went with them
+once the icon button's hover moved to the room's yellow. What is left is the tint for headings and the ink
+step for a score and the ghost button. `AccentProvider.test.tsx` asserts the written list is exactly three
+names, so a fourth cannot quietly accumulate.
+
+The ink step survives a measurement rather than a preference. At the raw tint the best of the eight manages
+3.54 against white, so anything drawn as body text or as a meaningful line needs the hue taken darker.
+`Accents.test.ts` holds both the ink pairings and the fact that no tint passes as body text on its own, so
+the step cannot become redundant unnoticed.
+
+Two things were tried and taken back. The cursors were tinted, which needed the colour baked into the data
+URL because `cursor` takes a URL and nothing else; they are black again and `Cursors.ts` went with them.
+And the headings were set in the raw tint on request, where five of the eight miss the 3:1 large-text bar
+— that cost is written into the test that names them rather than left to be discovered.
+
+The picker hover is scoped away from the chosen cell. A hover rule carrying two classes outranks the single
+class giving the chosen cell its fill, so hovering the current choice washed the fill out and the row lost
+the one thing marking it.
+
+## 2026-10-01 — the idle sway belongs to the page, not to a character
+The game's name now rocks on the same idle movement the characters do, and it does so
+through the same code: `Design/Primitives/Sway` holds the roll and the keyframes, and
+`Character` composes them onto its own node instead of defining them. A row of characters
+is only interesting because no two of them agree, and that comes from the roll rather than
+from the drawing — so a second copy of the movement would have been one movement that had
+quietly forked, free to drift from the first the next time either was tuned.
+
+`--Character-Motion-*` is now `--Sway-*`, and the four stepped timing keywords are shared
+rather than listed twice, so the sway and a character's arrival snap the same set of ways.
+`Character`'s own hook is left with what is genuinely a character's: where it arrives from
+and how it is cocked when it gets there. The squash, the duration and the idle belong to
+the primitive, which is what keeps every reaction and every resting pose the same movement.
+
+The amplitudes are absolute pixels rather than a share of the subject's own size, so a
+character and the game's name swing the same distance. They are the same movement at
+different sizes; a movement that scaled with its subject would be a second one wearing the
+first's numbers.
+
+`Wordmark.test.tsx` exists because those values are written from JavaScript onto a node: a
+change that stopped writing them would leave a wordmark that is present, correctly
+coloured, and perfectly still, and nothing else in the suite would notice.
+
+## 2026-10-01 — a screen aligns its containers in two separate ways
+`Screen` grew an `align` prop beside its `vertical` one, and the two are different
+questions. `vertical` is where the whole set of containers sits in the viewport; `align` is
+how those containers line up with one another inside it.
+
+The wordmark is a third of the height of the card of fields beside it, and aligned by the
+top edge it floated beside the middle of the menu rather than sitting in the middle of it.
+So the entry screen asks for `align="Center"` and the lobby keeps `align="Start"`, where
+the containers are one another's continuation and their first lines lining up is the thing
+being read.
+
+`align-content` and `align-items` are what separate the two, and keeping them apart is the
+point rather than a detail: conflating them would mean a screen could not centre itself
+without also centring every container in it, and the lobby could not sit at its top.
+
+It does nothing once the containers have wrapped into one column, since each is then the
+only thing in its own row, so this is purely a question about the side-by-side arrangement.
+
 ## 2026-10-01 — the screens lay themselves out, and `Screen` is the frame that does it
 A screen's containers now sit side by side when there is room and stack when there is not,
 from a width the screen never asks about. `Design/Primitives/Screen` is that frame, and

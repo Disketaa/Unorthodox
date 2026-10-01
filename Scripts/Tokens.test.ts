@@ -101,9 +101,16 @@ describe('the two filled buttons', () => {
     expect(Primary('Background')).not.toBe(Secondary('Background'));
   });
 
-  it('gives the host crown the same fixed yellow as the primary button', () => {
-    // Both are meant to say something about the room rather than about whoever is
-    // looking at it, so they are the same value on purpose.
-    expect(tokenValue('--Color-Host-Mark')).toBe(Primary('Background'));
+  it('gives the room yellow to the crown, the local chip and the primary button', () => {
+    // All four marks say something the whole room would agree on, so none of them
+    // follows the viewer's own tint. One token rather than four copies is what keeps
+    // "the yellow" a single decision.
+    expect(tokenValue('--Color-Room-Yellow')).toBe(Primary('Background'));
+  });
+
+  it('draws the focus ring in the same cyan as the create-room button', () => {
+    // Where the keyboard is is the same fact for everyone, and a ring that moved with
+    // the accent was the hardest thing for a keyboard player to find.
+    expect(tokenValue('--Color-Border-Focus')).toBe(Secondary('Background'));
   });
 });

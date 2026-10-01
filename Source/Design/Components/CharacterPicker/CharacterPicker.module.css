@@ -66,17 +66,18 @@
 }
 
 /*
- * The accent gold, the same colour the chosen cell wears on its border.
+ * The room's yellow on the pointer over a light grey, both as the icon button does
+ * it.
  *
- * The border is the only thing that changes here, and the chosen cell is marked by
- * its fill rather than by anything on the border, so the two never depend on being
- * told apart by border colour alone. That is what lets the hover speak in the
- * game's accent instead of the grey it used to: a grey border read as the cell
- * being switched off, which is not what hovering says, and on a row of eight
- * tints it was the one dark thing on the screen.
+ * Scoped away from the chosen cell, and that is deliberate rather than incidental: a
+ * hover rule carrying two classes outranks the single class giving the chosen cell its
+ * fill, so hovering the current choice would wash that fill out and the row would lose
+ * the one thing marking it. A chosen cell needs no hover of its own — it is already
+ * marked, and pressing it is not a second choice.
  */
-.Choice:hover {
-  border-color: var(--Color-Accent-Ink);
+.Choice:not(.Chosen):hover {
+  border-color: var(--Color-Room-Yellow);
+  background: var(--Color-Surface-Hover);
 }
 
 /*
@@ -92,11 +93,14 @@
 }
 
 /*
- * The current choice in either row, marked the same way in both: the action colour
- * on the border, since the two rows have to be told apart at a glance but read as
- * one kind of control.
+ * The current choice in either row, marked the same way in both.
+ *
+ * The room's yellow rather than the accent's own step. The picker is where the accent
+ * is chosen, so a border that changed colour as the pointer moved across the row was
+ * showing the choice being made rather than the choice made. The fill marks it too, so
+ * the cell is never told apart from a hovered one by the border alone.
  */
 .Chosen {
-  border-color: var(--Color-Accent-Ink);
+  border-color: var(--Color-Room-Yellow);
   background: var(--Color-Action-Ghost-Hover);
 }

@@ -449,38 +449,38 @@ html::-webkit-scrollbar-thumb:active {
   --Color-Text-Title: var(--Accent-Tint);
   --Color-Text-Inverse: #ffffff;
 
-  /*
+/*
    * The accent, which is the tint this player chose.
    *
    * Declared here as the fallback and overwritten by `AccentProvider` on `:root`,
-   * so a page that somehow loads without the provider still has a whole accent
-   * rather than a transparent button. Yellow is the fallback because it was the
-   * accent before tints could choose it, so it is the one value that cannot look
-   * like a mistake.
+   * so a page that somehow loads without the provider still has a whole accent rather
+   * than an uncoloured interface. Yellow is the fallback because it was the accent
+   * before tints could choose it, so it is the one value that cannot look like a
+   * mistake.
    *
-   * The steps come from `Core/Accents.ts` rather than from here, because they are
-* measured: `Accents.test.ts` holds every pairing to WCAG AA. `ink` is a separate
-   * step from `base` and is not interchangeable with it — at the raw tint the best
-   * of these manages 3.54 against white, so anything drawn as body text or as a
-   * selection border is set in `ink`.
+   * Three steps, and no more. The values come from `Core/Accents.ts` rather than from
+   * here because they are measured: `Accents.test.ts` holds the pairings to WCAG AA.
+   *
+   * There is no fill or press step here, which took a while to notice. The two filled
+   * buttons are fixed colours rather than accent steps, so nothing in the app fills with
+   * the accent, and five of the eight that were being written were read by nothing.
    */
   --Accent-Tint: #eeb62e;
-  --Accent-Base: #eeb62e;
-  --Accent-Hover: #f0bd43;
-  --Accent-Active: #f1c558;
   --Accent-Ink: #8f6d1c;
-  --Accent-Bright: #b58a23;
   --Accent-Wash: #fdf8ea;
-  --Accent-On: var(--Color-Text-Default);
 
   /*
-   * The one name components use for the accent when they mean the text step.
+   * The one name components use for the accent.
    *
-   * `base` fills a control and `ink` is anything drawn on a light surface: a title,
-   * a score, a border, an outline. Components should not be reaching for `--Accent-Ink`
-   * directly, because the pair of them is the decision and `--Color-Accent-Ink` is
-   * where it is recorded. Reaching past it is how the next control ends up filling
-   * itself with the step meant for text.
+   * `ink` is anything drawn on a light surface: a heading, a score. Components should
+   * not be reaching for `--Accent-Ink` directly, because the choice between the steps
+   * is the decision and this is where it is recorded. Reaching past it is how the next
+   * control ends up drawing body text in a step meant for a line.
+   *
+   * There was a second name here for the tint step, for marks filled with the accent.
+   * Nothing filled with it once the icon button's hover moved to the room's yellow and
+   * the picker's selection border with it, so it went rather than sitting there
+   * waiting for the next component to use a colour that no longer had a job.
    */
   --Color-Accent-Ink: var(--Accent-Ink);
 
@@ -497,36 +497,10 @@ html::-webkit-scrollbar-thumb:active {
    * that were there before, and ink clears 8.7:1 on it.
    */
   --Color-Action-Primary-Background: #eeb62e;
-  --Color-Action-Primary-Text: var(--Color-Text-Default);
-  /*
-   * The two filled buttons, hovered and pressed by the same amount.
-   *
-   * One step size for both rather than a ramp per colour, so a pointer moving from
-   * the yellow button to the cyan one crosses the same change of light in both
-   * directions. The two are the only filled buttons that ever sit beside each other,
-   * on the join screen, and a hover only one of them had was reading as the other
-   * being pressed.
-   *
-   * Eight per cent on hover, then twelve per cent more on press — the press step is
-   * measured from the hover, not from the rest, so pressing is always the deeper
-   * change. Twelve is the largest that keeps the cyan's label readable: the cyan is
-   * the darker of the two and decides the limit, falling to 4.67 against ink, where
-   * fourteen would have put it on 4.50 and fifteen under the bar.
-   */
+--Color-Action-Primary-Text: var(--Color-Text-Default);
   --Color-Action-Primary-Hover: #dba72a;
   --Color-Action-Primary-Active: #c19325;
 
-  --Color-Action-Secondary-Hover: #00adc3;
-  --Color-Action-Secondary-Active: #0098ac;
-
-  /*
-   * The host's crown, in the same yellow and for the same reason: it is a fact about
-   * who is hosting, and a mark that followed the viewer's own accent would name the
-   * person looking at the screen instead of the person running the room.
-   */
-  --Color-Host-Mark: #eeb62e;
-
-  /* A deeper teal than the room-code badge, so the two do not read as siblings. */
   /*
    * The second action, in the info blue rather than a step of the accent.
    *
@@ -538,11 +512,36 @@ html::-webkit-scrollbar-thumb:active {
    * Cyan was in the palette and unused by anything, which is why it fits here: it is
    * the one colour in the set that is not a tint, so it cannot be confused with the
    * accent a player chose or with another player in the roster. Its text is ink,
-   * * which clears 7:1 against it.
+   * which clears 7:1 against it.
    */
   --Color-Action-Secondary-Background: var(--Color-Feedback-Info);
   --Color-Action-Secondary-Text: var(--Color-Text-Default);
+  --Color-Action-Secondary-Hover: #00adc3;
+  --Color-Action-Secondary-Active: #0098ac;
 
+  /*
+   * The one yellow, for the things that are about the room rather than about whoever
+   * is looking at it.
+   *
+   * Four marks share it and all four mean the same kind of thing: the button that
+   * starts the game, the host's crown, the border on the local player's own chip, and
+   * an icon button answering the pointer. Each says something the whole room would
+   * agree on, so none of them follows the viewer's own tint — a crown in the accent
+   * would name whoever is looking at the screen as the host.
+   *
+   * It is the same value as the primary button rather than a second one, which is
+   * what keeps "the yellow" a single decision. `Tokens.test.ts` holds them together.
+   */
+  --Color-Room-Yellow: #eeb62e;
+
+  /*
+   * The ghost button, in the accent rather than in the room's yellow.
+   *
+   * The one accent-coloured control left. It is unstyled by design — nothing filled,
+   * the mark or the word is what says what it is — so the accent does not compete
+   * with anything, and a player still sees their own tint on the one control that
+   * costs nothing to look at.
+   */
   --Color-Action-Ghost-Text: var(--Accent-Ink);
   --Color-Action-Ghost-Hover: var(--Accent-Wash);
   --Color-Action-Ghost-Active: var(--Accent-Wash);
@@ -578,13 +577,17 @@ html::-webkit-scrollbar-thumb:active {
   --Color-Border-Default: #e0e0e0;
   --Border-Width-Default: 2px;
   /*
-   * The focus ring, in the accent's text step rather than its fill step, for the
-   * reason `--Color-Text-Title` is: a ring is a line on a light surface and the fill
-   * step cannot be seen there. It is a different token from `--Color-Action-Primary-Background`
-   * on purpose, so a focused control is never mistaken for a chosen one now that
-   * both are the same hue at different steps.
+   * The focus ring, in the same cyan as the create-room button.
+   *
+   * Fixed, like that button: where the keyboard is is the same fact for everyone in
+   * the room, and a ring that changed colour with the viewer's tint made the one
+   * thing a keyboard user relies on the hardest thing to find.
+   *
+   * It is the accent's ink step no longer, and that is not only because of the colour.
+   * Selection borders went black in the same pass, so the focus ring had to move off
+   * the accent entirely rather than share a hue with the thing it sits beside.
    */
-  --Color-Border-Focus: var(--Accent-Ink);
+  --Color-Border-Focus: var(--Color-Feedback-Info);
   --Color-Border-Error: #e91e63;
 
   --Color-Feedback-Success: #8bc34a;
