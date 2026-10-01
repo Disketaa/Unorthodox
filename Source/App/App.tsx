@@ -12,18 +12,24 @@ import { GameRoom } from './GameRoom';
 import type { GameRoomProps } from './GameRoom';
 
 /**
- * The player name is kept in sessionStorage, which is scoped to one tab.
+ * The player name is kept in localStorage, so it outlives the tab.
  *
- * It has to survive a reload, otherwise reloading inside a room shows the join
- * screen with a live room link and the next keystroke joins the game under a
- * one-character name. localStorage would survive reloads too, but it is shared
- * by every tab of the browser, so two tabs would enter as the same player.
+ * Typing does not save it. The name is written when a room is entered, join or
+ * create, so the stored name is always one the player actually committed to and
+ * an abandoned half-typed name never becomes the next visit's name. Until then
+ * the field is state only, and a reload inside a room shows the join screen
+ * with a live room link and the next keystroke would join under a one-character
+ * name, which is what the stored name prevents.
+ *
+ * localStorage is shared by every tab of the browser, so two tabs on one device
+ * would enter as the same player. The host treats a re-joining known name as the
+ * same seat, so the second tab rejoins the first rather than doubling it up.
  */
 const NameStorageKey = 'unorthodox.playerName';
 
 function loadName(): string {
   try {
-    return sessionStorage.getItem(NameStorageKey) ?? '';
+    return localStorage.getItem(NameStorageKey) ?? '';
   } catch {
     return '';
   }
@@ -31,7 +37,7 @@ function loadName(): string {
 
 function saveName(value: string): void {
   try {
-    sessionStorage.setItem(NameStorageKey, value);
+    localStorage.setItem(NameStorageKey, value);
   } catch {
     // Storage may be unavailable in private mode; the name then lasts for the tab only.
   }
@@ -99,15 +105,14 @@ export function App() {
   // bring it back.
   const [look, setLook] = useState<PlayerLook>(() => loadLook() ?? randomLook(Math.random));
 
-  const onNameChange = (value: string) => {
-    setName(value);
-    saveName(value);
-  };
+  const onNameChange = (value: string) => setName(value);
   const onRoomCodeChange = (value: string) => setRoomCode(normalizeRoomCode(value));
   const onJoin = () => {
+    saveName(name);
     window.location.hash = roomPath(normalizeRoomCode(roomCode), 'Player');
   };
   const onCreate = () => {
+    saveName(name);
     window.location.hash = roomPath(createRoomCode(), 'Host');
   };
 

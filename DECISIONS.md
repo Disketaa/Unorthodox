@@ -1,5 +1,18 @@
 ﻿# DECISIONS
 
+## 2026-10-01 — the player name lives in localStorage, saved on entering a room
+The name used to sit in `sessionStorage` and be written on every keystroke, which meant it
+died with the tab and a returning player retyped it. It is now `localStorage`, so it outlives
+the tab, and it is written on `onJoin` and `onCreate` rather than on change. Saving per
+keystroke made the stored value the last thing typed, which is not the same as the name a
+player committed to: half a name survived a closed tab and came back as the suggestion.
+Entering a room is the moment the name becomes real, and both buttons write it, so the stored
+name is always one the player has used. The trade-off is that two tabs of one browser share a
+name, and the host already treats a re-joining known name as the same seat, so the second tab
+rejoins the first rather than duplicating it. The look stays in `sessionStorage`, where the
+tab scoping matters more: it is only a starting point the host may override, so two players
+sharing a device should not both come back as the same character.
+
 ## 2026-10-01 — a script that names the comments which only repeat the code
 `npm run comments` (`Scripts/CommentAudit.ts`) walks `Source/`, joins each run of `//`
 lines into one paragraph so a sentence is judged whole, and reports every comment that

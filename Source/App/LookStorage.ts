@@ -3,10 +3,9 @@ import { PlayerLook, isPlayerLook } from '@/Core';
 /**
  * The last look this device wore, kept in sessionStorage so a reload keeps it.
  *
- * sessionStorage rather than localStorage, for the same reason the player name
- * uses it: it is scoped to one tab, so two players sharing a device do not both
- * come back as the same character. A look is only a starting point anyway, and
- * the host decides what everyone actually sees.
+ * sessionStorage rather than localStorage: it is scoped to one tab, so two
+ * players sharing a device do not both come back as the same character, and
+ * unlike the name a look is only a starting point that the host may override.
  */
 const LookStorageKey = 'unorthodox.look';
 
