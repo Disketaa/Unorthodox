@@ -6,7 +6,19 @@
   border-radius: var(--Radius-Card);
   font-size: var(--FontSize-Body);
   font-weight: 500;
+}
+
+.AlignStart {
   text-align: left;
+}
+
+/*
+ * The mark and the words line up as one block when the note is centred, rather
+ * than the mark drifting to the far edge of a centred line.
+ */
+.AlignCenter {
+  text-align: center;
+  justify-content: center;
 }
 
 /*
