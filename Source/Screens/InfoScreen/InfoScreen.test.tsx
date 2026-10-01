@@ -54,4 +54,24 @@ describe('InfoScreen', () => {
     expect(text.endsWith('Ок')).toBe(true);
     expect(screen.root.querySelector('button')?.textContent).toBe('Ок');
   });
+
+  it('says what its own button does, when the screen gives it a word', () => {
+    // A screen that is still waiting has settled nothing, so the button on it
+    // cannot be the one that acknowledges a fact. It gives up the wait instead,
+    // and says so in the word rather than leaving the player to guess.
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+    act(() => {
+      render(
+        <InfoScreen
+          message="Подключаемся…"
+          mark="Loading"
+          action="Отмена"
+          onAcknowledge={() => {}}
+        />,
+        root,
+      );
+    });
+    expect(root.querySelector('button')?.textContent).toBe('Отмена');
+  });
 });

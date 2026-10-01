@@ -42,6 +42,34 @@
   mask: url('../../Icons/Info.svg') center / contain no-repeat;
 }
 
+.MarkLoading {
+  mask-image: url('../../Icons/Loading.svg');
+  /*
+   * A third of a turn each way, over the slow duration, easing symmetrically
+   * about the middle. Symmetric is the point: a one-sided curve finishes one pass
+   * at a different speed than it starts the next, and the seam is where a loop
+   * built from one of them visibly hitches. One turn, not three, because a mark
+   * this small cannot show which way it is going and a fast one just shivers.
+   */
+  animation: BannerSpin var(--Duration-Spin) var(--Easing-Smooth) infinite;
+}
+
+@keyframes BannerSpin {
+  from {
+    rotate: 0deg;
+  }
+
+  to {
+    rotate: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .MarkLoading {
+    animation: none;
+  }
+}
+
 .Text {
   min-width: 0;
 }

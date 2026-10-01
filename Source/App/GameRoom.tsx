@@ -1,5 +1,3 @@
-import { Banner } from '@/Design/Components';
-import { Stack } from '@/Design/Primitives';
 import { InfoScreen } from '@/Screens';
 import { Strings } from '@/Content';
 import { PlayerLook } from '@/Core';
@@ -51,11 +49,18 @@ export function GameRoom({ roomCode, role, name, look, onLook }: GameRoomProps) 
       return <ScoresView view={view} />;
     case 'Final':
       return <FinalView view={view} />;
-    default:
-      return (
-        <Stack padding="Lg">
-          <Banner variant="Info">{Strings.status.connecting}</Banner>
-        </Stack>
-      );
+      default:
+        // The same screen as the failures, because it is the same situation seen a
+        // moment earlier. The mark and the button both change: the mark says it is
+        // still waiting rather than that something is wrong, and the button gives
+        // up on the wait rather than acknowledging a fact.
+        return (
+          <InfoScreen
+            message={Strings.status.connecting}
+            mark="Loading"
+            action={Strings.common.cancel}
+            onAcknowledge={exitRoom}
+          />
+        );
   }
 }

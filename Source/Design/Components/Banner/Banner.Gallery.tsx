@@ -14,7 +14,12 @@ export function BannerGallery() {
       <Stack direction="Horizontal" gap="Sm">
         <Banner variant="Info">Left by default</Banner>
         <Banner variant="Info" align="Center">Centred</Banner>
-      </Stack>
+      <Text variant="Body">Banner Marks</Text>
+      <Banner variant="Info">The default mark</Banner>
+      <Banner variant="Info" mark="Loading">
+        The spinning mark
+      </Banner>
+    </Stack>
     </Stack>
   );
 }

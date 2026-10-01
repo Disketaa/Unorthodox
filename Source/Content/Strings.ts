@@ -9,6 +9,14 @@ export const Strings = {
   common: {
     /** Acknowledges the message on an info screen, whatever the message was. */
     ok: 'Ок',
+    /**
+     * Abandons what the screen was waiting for, rather than acknowledging what it
+     * said. A different word from `ok` on purpose: on a screen whose message is a
+     * fact already settled, the button confirms and the screen goes away. On one
+     * that is still waiting, the same button would be promising an outcome it
+     * cannot deliver, and this says what it actually does.
+     */
+    cancel: 'Отмена',
   },
   join: {
     namePlaceholder: 'Имя',

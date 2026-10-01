@@ -460,6 +460,18 @@ size, because a mark is placed from the band's outer screen edge and the band is
 laid out in: widening the bands on a narrow screen would widen those boxes without moving anything
 inside them.
 
+The connecting screen is the info screen, not a banner of its own. It is the same situation a moment
+earlier: the game is not here yet, one sentence says so, one button gets the player unstuck. What
+differs is the mark and the button's word, both passed into the shared screen rather than branched
+inside it: the mark says it is still waiting rather than that something has gone wrong, and the
+button is `Отмена` because it gives up the wait. `Ок` would be promising an outcome on a screen
+that has not settled anything. The plank's mark is a prop rather than one shape per variant, because
+the mark is the only part of a note that ever has to say more than the words, and four shapes would
+make a set of notes read as a set of statuses. A `Loading` mark turns one whole revolution over
+`--Duration-Spin` on `--Easing-Smooth`, the one easing token that is symmetric about its middle: the
+others each suit a movement with a beginning and an end, and a loop built from one of them hitches
+at the seam where a fast pass hands over to a slow one.
+
 The scrollbar answers the pointer the way an icon button does: quiet at rest, accent on hover, and
 with no border on it. It is the one piece of the interface the browser paints rather than the game,
 and left alone it is the only grey on the page belonging to neither the palette nor the paper. The
