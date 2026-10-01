@@ -212,7 +212,6 @@ export class ClientSession {
     return this.state;
   }
 
-  /** Skew between the host's clock and this device's, for counting phases down. */
   getClockOffsetMs(): number {
     return this.clockOffsetMs;
   }

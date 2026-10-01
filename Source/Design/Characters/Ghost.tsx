@@ -1,6 +1,5 @@
 import styles from "./Characters.module.css";
 
-/** The artwork, drawn inline so the body can take a tint from CSS. */
 export function Ghost() {
   return (
     <svg viewBox="0 0 512 512" class={styles.Canvas} aria-hidden="true">

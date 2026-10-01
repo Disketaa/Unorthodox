@@ -47,7 +47,6 @@
   font-size: var(--FontSize-Mono);
 }
 
-/* Font weights */
 .WeightNormal { font-weight: 400; }
 .WeightMedium { font-weight: 500; }
 .WeightBold { font-weight: 600; }

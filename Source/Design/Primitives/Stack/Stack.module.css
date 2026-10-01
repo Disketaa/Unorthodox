@@ -2,7 +2,6 @@
   display: flex;
 }
 
-/* Direction */
 .DirectionVertical {
   flex-direction: column;
 }
@@ -10,34 +9,29 @@
   flex-direction: row;
 }
 
-/* Gap */
 .GapXs { gap: var(--Space-Xs); }
 .GapSm { gap: var(--Space-Sm); }
 .GapMd { gap: var(--Space-Md); }
 .GapLg { gap: var(--Space-Lg); }
 .GapXl { gap: var(--Space-Xl); }
 
-/* Align */
 .AlignStart { align-items: flex-start; }
 .AlignCenter { align-items: center; }
 .AlignEnd { align-items: flex-end; }
 .AlignStretch { align-items: stretch; }
 
-/* Justify */
 .JustifyStart { justify-content: flex-start; }
 .JustifyCenter { justify-content: center; }
 .JustifyEnd { justify-content: flex-end; }
 .JustifyBetween { justify-content: space-between; }
 .JustifyAround { justify-content: space-around; }
 
-/* Padding */
 .PaddingXs { padding: var(--Space-Xs); }
 .PaddingSm { padding: var(--Space-Sm); }
 .PaddingMd { padding: var(--Space-Md); }
 .PaddingLg { padding: var(--Space-Lg); }
 .PaddingXl { padding: var(--Space-Xl); }
 
-/* Margin */
 .MarginXs { margin: var(--Space-Xs); }
 .MarginSm { margin: var(--Space-Sm); }
 .MarginMd { margin: var(--Space-Md); }
