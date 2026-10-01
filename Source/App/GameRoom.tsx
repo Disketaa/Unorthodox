@@ -1,6 +1,6 @@
 import { Banner } from '@/Design/Components';
 import { Stack } from '@/Design/Primitives';
-import { HostLeftScreen, NameTakenScreen } from '@/Screens';
+import { InfoScreen } from '@/Screens';
 import { Strings } from '@/Content';
 import { PlayerLook } from '@/Core';
 import { useGameSession } from './Hooks/UseGameSession';
@@ -24,12 +24,13 @@ export function GameRoom({ roomCode, role, name, look }: GameRoomProps) {
   const view = useGameSession(roomCode, role, name, look);
   const { exitRoom } = view;
 
+  // Both of these end the session as far as this player is concerned, so both send
+  // them back to the entry screen rather than leaving them on a dead room.
   if (view.hostLeft) {
-    return <HostLeftScreen />;
+    return <InfoScreen message={Strings.status.hostLeft} onAcknowledge={exitRoom} />;
   }
   if (view.nameRejected) {
-    // Back to the entry screen, where only the name has to change.
-    return <NameTakenScreen onBack={exitRoom} />;
+    return <InfoScreen message={Strings.status.nameTaken} onAcknowledge={exitRoom} />;
   }
   switch (view.phase) {
     case 'Lobby':

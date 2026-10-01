@@ -14,6 +14,8 @@ export const Strings = {
     round: 'Раунд',
     next: 'Дальше',
     back: 'Назад',
+    /** Acknowledges the message on an info screen, whatever the message was. */
+    ok: 'Ок',
   },
   join: {
     namePlaceholder: 'Имя',
@@ -22,10 +24,6 @@ export const Strings = {
     roomError: 'Введите код комнаты, 4 цифры',
     joinButton: 'Войти',
     createButton: 'Создать комнату',
-    /** Shown when the room already has a player under this name. */
-    nameTaken: 'Это имя уже занято',
-    /** The same, saying what to do about it. */
-    nameTakenHint: 'Придумайте другое имя и войдите снова',
   },
   lobby: {
     headline: 'Ждём игроков',
@@ -96,8 +94,9 @@ Coral: 'Коралл',
     place: (rank: number) => `Место: ${rank}`,
   },
   status: {
-    hostLeft: 'Хост вышел из комнаты',
-    hostLeftHint: 'Попросите его создать новую комнату',
-    connecting: 'Подключаемся к комнате…',
+    /** One sentence: what happened, and what to do about it. */
+    hostLeft: 'Хост вышел из комнаты.',
+    nameTaken: 'Это имя уже занято.',
+    connecting: 'Подключаемся…',
   },
 } as const;

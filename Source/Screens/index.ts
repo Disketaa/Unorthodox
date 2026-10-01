@@ -5,5 +5,4 @@ export * from './WritingScreen';
 export * from './ReviewScreen';
 export * from './ScoresScreen';
 export * from './FinalScreen';
-export * from './HostLeftScreen';
-export * from './NameTakenScreen';
+export * from './InfoScreen';

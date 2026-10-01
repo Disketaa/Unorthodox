@@ -1,0 +1,28 @@
+.Root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--Space-Md);
+  /*
+   * Only as wide as the sentence needs, and centred rather than filling the column:
+   * a plank stretched edge to edge reads as a page, and there is nothing on this
+   * screen to justify the width.
+   */
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/*
+ * Centred on both ways. The message is the whole screen, so it is set as a single
+ * block of centred text rather than as a heading with a note under it.
+ */
+.Message {
+  display: block;
+  font-family: var(--FontFamily-Body);
+  font-size: var(--FontSize-Body);
+  line-height: 1.5;
+  text-align: center;
+  color: var(--Color-Text-Default);
+  overflow-wrap: break-word;
+}
