@@ -1,0 +1,33 @@
+/*
+ * The name on a theme card, which is the whole content of the card.
+ *
+ * Centred and in the display face rather than the body one: the six cards are a choice
+ * between six words, and six lines of body text at reading size read as a paragraph
+ * that happens to be broken up rather than as six things to pick from. The name is
+ * allowed to wrap rather than being cut, since a theme cut short is a theme nobody
+ * can read.
+ *
+ * In the default ink rather than the title's accent, and this is the one place in the
+ * game a theme name is written: the accent is the tint a player chose for themselves,
+ * and six cards of it would say whose screen this is rather than what the room could
+ * play. Every player in the room has to read the same six names, so they wear the same
+ * colour, which is the reason `--Color-Room-Yellow` exists for the marks that are about
+ * the room rather than about the viewer.
+ */
+.Name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /*
+   * No height of its own: the slot around this card sets the shape, and a height here as
+   * well would be a second number that could disagree with it on a narrow screen.
+   */
+  height: 100%;
+  padding: var(--Space-ThemeCardPadding);
+  font-family: var(--FontFamily-Display);
+  font-size: var(--FontSize-ThemeCard);
+  line-height: 1.1;
+  text-align: center;
+  overflow-wrap: break-word;
+  color: var(--Color-Text-Default);
+}

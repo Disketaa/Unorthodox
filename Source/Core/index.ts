@@ -5,3 +5,4 @@ export * from './ClockSync';
 export * from './Random';
 export * from './Color';
 export * from './Accents';
+export * from './Themes';

@@ -61,6 +61,16 @@ export const GameConfig = {
   rounds: {
     count: 5,
   },
+  themes: {
+    /**
+     * How many themes a lobby is offered at once.
+     *
+     * Six because they are drawn three across and two down, and the fan of theme cards
+     * is written for that shape: the tilt is a fixed set of positions, so a different
+     * count would be a different arrangement rather than a longer or shorter one.
+     */
+    cardsPerLobby: 6,
+  },
   limits: {
     nameMaxLength: 16,
     answerMaxLength: 80,

@@ -1,5 +1,69 @@
 ﻿# DECISIONS
 
+## 2026-10-01 — the themes are a bank of cards, dealt from the room code and turned to face the player
+`Core/Themes.ts` holds nine themes and `dealThemes`, a partial shuffle rather than six
+independent rolls: a deal that can hold the same theme twice is not a choice, since a player
+would be weighing a card against its own duplicate. The randomness is injected, so a lobby's
+deal can be reproduced from its seed rather than being a thing that happened once.
+
+"Random per lobby" is `randomFor(roomCode)` — FNV-1a over the four letters — and not a roll.
+That is the whole mechanism, and it is a temporary one: every device that knows the room code
+derives the same six themes, with nothing sent between them and no host holding the answer.
+A per-device `Math.random` would give every player a different hand and there would be no hand
+at all. When the host owns the theme and sends it, this is replaced by a field on the lobby
+state and the roll goes away; nothing downstream of `ThemeCardsView` changes, because the six
+ids arrive the same way either way.
+
+Who chooses is deliberately not built. The game's shape is "choose a theme, read a topic, write
+an answer, show answers", and this is that first phase's cards and nothing past them, so the
+cards are a display and not a control. That is also why `ThemeCard` takes a name and no
+callback: adding an `onPick` now would be a control with no rule behind it, and the rule is
+the part that is still being decided.
+
+The arrangement went through four shapes, and three of them were wrong in ways worth recording.
+
+**Six fixed angles per position** was first, and it is wrong for a reason that only shows up on
+a second screen size: how far a card is from the middle of the *screen* is a fact about the
+window, so an angle written for the card in that position is right at exactly one width. The
+turn is now measured per card and re-measured on `resize`, written onto each slot as
+`--ThemeCard-Yaw` and `--ThemeCard-Pitch`. `CardTurn.ts` is the arithmetic and is pure;
+`Scripts/ThemeCardsLayout.test.ts` asserts it as arithmetic, since happy-dom neither lays out
+a row nor composes a transform. The angles are read out of the tokens by the hook through
+`getComputedStyle` rather than imported, so `Tokens.css` stays the one place an angle is
+written.
+
+**`preserve-3d` on the row and on every card** was in the second version and had to go. There
+is nothing nested inside a card to keep in the same 3D space, and asking for it let a card's
+border be painted as a plane floating off its own fill — flat broken edges that read as a
+rendering fault rather than as an arrangement. That is what "the tilt looks weird" turned out
+to be, and it was not the tilt.
+
+**`nth-child` rules for the columns and the rows** were the middle version and are gone with the
+measurement, which is the better of the two anyway: six fixed rules that each set `transform` in
+full is a card in a corner keeping only whichever turn was written last. A grid of three across
+and two down is now three and three because the row's own width is capped
+(`--Layout-ThemeCardsMaxWidth`), not because a stylesheet knows how wide the window is — so the
+fourth card always wraps, on any screen, and six fixed-width cards never sit four over two.
+
+The turn was also inverted and un-inverted on request, and the sign is the interesting part
+rather than the toggle: `rotateY` brings a card's near edge towards the viewer while `rotateX`
+pushes its top edge away, so the two axes of the same 3D rotation do not agree about which way
+is positive. The vertical offset is compared against the same convention rather than copied
+from the horizontal one, which is why the inversion lives in the one function instead of at the
+two call sites.
+
+Cards are `Card variant="Elevated"` with a name on them, in `--Color-Text-Default` rather than
+the title's accent: the accent is the tint a player chose for themselves, and six cards of it
+would say whose screen this is rather than what the room could play. Every player in the room
+has to read the same six names.
+
+Sizes are shares rather than numbers, which is the second thing that was wrong. A flat 320px
+card needed about 660px for two of them, so on a phone the row held one card and six turned
+panels stood in a list. The width is now capped at what two cards need beside the page's own
+padding, the height comes from `--Ratio-ThemeCard` rather than a second number, and the name is
+`calc(var(--Size-ThemeCardWidth) * 0.115)` so it shrinks with the card — a fixed size there
+would have put the name straight back to reading as a caption on a phone.
+
 ## 2026-10-01 — a room full is refused at the door, and the refusal quotes the limit
 Nothing enforced `GameConfig.limits.maxPlayers` on a real join. The rule was in three places
 that only ever *displayed* it — the lobby's Start button, the bot path, and now the bar — so a

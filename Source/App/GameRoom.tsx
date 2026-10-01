@@ -11,6 +11,7 @@ import type { GameSessionView } from './Hooks/UseGameSession';
 import { SessionRole, BlockedReason } from './Session';
 import { LobbyView } from './Views/LobbyView';
 import { PlayerBarView } from './Views/PlayerBarView';
+import { ThemeCardsView } from './Views/ThemeCardsView';
 
 export interface GameRoomProps {
   roomCode: string;
@@ -55,8 +56,9 @@ function blockedMessage(reason: BlockedReason, roomLimit: number): string {
  */
 function GameScene({ view }: { view: GameSessionView }) {
   return (
-    <Stack align="Center" gap="Md">
+    <Stack align="Center" gap="Lg">
       <PlayerBarView view={view} />
+      <ThemeCardsView roomCode={view.roomCode} />
     </Stack>
   );
 }

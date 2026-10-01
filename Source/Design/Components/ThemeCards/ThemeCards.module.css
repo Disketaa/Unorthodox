@@ -1,0 +1,73 @@
+/*
+ * Six theme cards arranged like a bank of monitors around the player.
+ *
+ * Each card is turned to face the middle of the viewport, so the left of the bank looks
+ * right, the right of it looks left, the top tips down and the bottom tips up. That is
+ * the whole of the effect: one `perspective` on the row, and every card rotated about its
+ * own centre by an angle that depends on where it is.
+ *
+ * The angles are not written here. They are measured per card and written onto each slot
+ * as `--ThemeCard-Yaw` and `--ThemeCard-Pitch` by `UseCardTurns`, because the row's width
+ * follows the window: how far a card is from the middle of the screen is a different
+ * number on a phone and on a desktop, so an angle written per position would be right at
+ * exactly one width. The zero is the fallback for a page that has not been measured yet,
+ * which is a plain row rather than six cards pointing at the ceiling.
+ *
+ * `perspective-origin` is left at its default, the centre of the row, which is the middle
+ * of the screen because the row is centred there. Moving it would be moving where the
+ * player is standing rather than moving the cards.
+ *
+ * No `preserve-3d`, on the row or on a card. The cards are flat surfaces with nothing
+ * nested inside them, and asking for it here is what let a card's border be drawn as a
+ * separate plane floating off its own fill — the flat broken edges that made this read as a
+ * rendering fault rather than as an arrangement.
+ *
+ * Wrapping rather than scrolling or squeezing, for the reason the bar of players gives: a
+ * card too narrow for its own name is a card nobody can read, and a bank the player has to
+ * swipe sideways is a bank they never see whole. A second row is more cards rather than
+ * less of them.
+ *
+ * The row is capped at three cards and no more, which is what
+ * `--Layout-ThemeCardsMaxWidth` is for. Six fixed-width cards fit easily across a desktop,
+ * and then the fourth starts a second row by itself: a bank of six reading as a row of four
+ * with a pair underneath. Capping the row's width instead of asking how wide the window is
+ * means the fourth always wraps, on every screen, and the bank is three and three.
+ */
+.Root {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--Space-ThemeCardsGap);
+  max-width: var(--Layout-ThemeCardsMaxWidth);
+  margin: 0 auto;
+  perspective: var(--Perspective-ThemeCards);
+}
+
+/*
+ * One card, and the turn written onto it.
+ *
+ * The slot rather than the card, so `ThemeCard` stays a closed component that knows
+ * nothing about where it sits: the measurement is the grid's business and is written to
+ * the node the grid owns.
+ *
+ * A fixed width rather than a share of the row, because the six only read as six matching
+ * panels when they do match, and a card that grew to fill whatever room it had would be a
+ * slightly different size from its neighbours.
+ *
+ * Turned about its own centre, which is what makes the six converge on one point: a slot
+ * turned about its outside edge would swing away from the middle instead of closing on it,
+ * and the bank would open out rather than fan in.
+ */
+.Slot {
+  flex: 0 0 var(--Size-ThemeCardWidth);
+  width: var(--Size-ThemeCardWidth);
+  aspect-ratio: var(--Ratio-ThemeCard);
+  transform: rotateY(var(--ThemeCard-Yaw, 0deg)) rotateX(var(--ThemeCard-Pitch, 0deg));
+  transform-origin: center;
+}
+
+/* The card fills its slot, or the slot's width would only be padding around a narrow card. */
+.Slot > * {
+  height: 100%;
+}

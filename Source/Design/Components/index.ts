@@ -14,3 +14,5 @@ export * from "./ColorSwatch";
 export * from "./CharacterPicker";
 export * from "./IconButton";
 export * from "./Wordmark";
+export * from "./ThemeCard";
+export * from "./ThemeCards";

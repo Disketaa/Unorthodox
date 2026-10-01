@@ -29,3 +29,20 @@ export function createRandom(seed: number): Random {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
+
+/**
+ * The generator for a piece of text rather than a number.
+ *
+ * FNV-1a, so a room's code is its own seed: every device that knows the code deals the
+ * same arrangement, with nothing sent between them and no host holding the answer. That
+ * is what a per-lobby value needs to be before the host owns it — an arrangement every
+ * player must see identically cannot come from one player's roll.
+ */
+export function randomFor(text: string): Random {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return createRandom(hash);
+}
