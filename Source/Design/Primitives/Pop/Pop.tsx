@@ -29,14 +29,12 @@ export interface PopProps {
  * top of an idle sway without either replacing the other.
  */
 export function Pop({ trigger, index, children }: PopProps) {
-  /*
-   * Set from a ref callback rather than an effect, and the difference is the whole
-   * ripple. An effect runs after the first paint, by which point the animation has
-   * already begun, and a custom property changed mid-animation is too late to
-   * affect the delay it was supposed to set: every character animated at once with
-   * no wait. A ref callback runs during the commit, before the browser has painted
-   * anything, so the delay is in place before the animation exists.
-   */
+  // Set from a ref callback rather than an effect, and the difference is the whole
+  // ripple. An effect runs after the first paint, by which point the animation has
+  // already begun, and a custom property changed mid-animation is too late to
+  // affect the delay it was supposed to set: every character animated at once with
+  // no wait. A ref callback runs during the commit, before the browser has painted
+  // anything, so the delay is in place before the animation exists.
   const setIndex = useCallback(
     (node: HTMLSpanElement | null) => {
       node?.style.setProperty('--Pop-Index', String(index ?? 0));

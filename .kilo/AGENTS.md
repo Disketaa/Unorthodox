@@ -70,6 +70,44 @@ Naming rules enforced by linter (`@typescript-eslint/naming-convention` + `eslin
 - Group rejection: a group is rejected when "not suitable" votes are strictly more than half of that group's own authors. (The earlier wording — majority of all players — was a spec change that was never implemented; the reducer in `Game/GameActions.ts` is the source of truth.)
 - Every function in `Game/` covered by Vitest tests: `normalizeAnswer`, `groupAnswers`, `calculateRoundScores`, phase reducer, `toPublicState`.
 
+# COMMENTS
+Three forms, and which one to use is not a matter of taste.
+
+- `/** ... */` on a declaration: a function, class, type, interface, field, constant. It is
+  the only form a tool shows on hover, so anything a symbol needs saying goes here. One
+  sentence may sit on one line; two or more go in the block form, `*` aligned.
+- `//` on a statement, and trailing a field on the same line. Nothing to attach a docstring
+  to, so nothing to reach for the doc form. A run of `//` lines is one comment.
+- `/* ... */` in CSS only, and `{/* ... */}` inside JSX. There is no declaration in a
+  stylesheet to attach a docstring to. `/* eslint-disable */` is tool syntax, exempt from
+  all of this.
+
+A bare `/* ... */` inside a function body is wrong in `.ts` and `.tsx`: that is a statement
+comment and takes `//`. Only two exceptions exist today, both forced: the eslint directives in
+`Core/Logger.ts`, and JSX braces.
+
+**A comment earns its place only by saying something the code cannot.** Allowed: why this
+approach and not the obvious one, a constraint that would otherwise be "tidied" away, a rule
+the shape of the data does not reveal, a failure mode that was found by using the thing.
+
+Three kinds are banned, and `npm run comments` exists to find the first two:
+
+1. **Restatement.** `/** Stop the host session */` above `stop()`, `/* Padding */` above
+   `.PaddingXs`, `@param` and `@returns` on a signature that already carries them. Delete.
+   If the only reason to keep a comment is that the name could have been better, the answer is
+   a better name.
+2. **Narration.** `// Step 1: lowercase`, `// Initialize the matrix`, `// Find the group with
+   count 2` above the `find(g => g.count === 2)`. Delete.
+3. **Open questions.** A comment ending in a question mark, or hedging with "might", "could
+   add", "not sure". These are not comments, they are unfinished thoughts, and an agent
+   reading one either copies the uncertainty or treats it as a decision. Answer it where it
+   stands, or move it to `DECISIONS.md` and answer it there.
+
+Deleting a comment is not always the right call. A docstring that disambiguates between two
+similar fields (`scores` against `cumulativeScores`), or that records a rule the type system
+cannot hold, is earning its place even when it repeats the name. The tool flags these too;
+dispose of each finding by hand.
+
 # HARD PROHIBITIONS
 1. No `any`, no `as` (except `as const`), no `!` (non-null), no `@ts-ignore`.
 2. No hex colors, `px` spacing, or font names outside `Tokens.css`. No `style={{}}`.
@@ -83,6 +121,7 @@ Naming rules enforced by linter (`@typescript-eslint/naming-convention` + `eslin
 10. No duplicate components like `BigPrimaryButton`: that is a variant.
 11. No `console.log`, commented code, or TODOs without number in `DECISIONS.md`.
 12. No full file rewrites for small edits: point changes only.
+13. No comment that restates the code, narrates it, or asks a question: see COMMENTS.
 
 # EXAMPLES: BAD / GOOD
 

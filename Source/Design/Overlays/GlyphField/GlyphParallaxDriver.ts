@@ -120,15 +120,13 @@ export function startGlyphParallax(node: HTMLDivElement): GlyphParallaxDriver {
     previous = now;
     const halfWidth = window.innerWidth / 2;
     const halfHeight = window.innerHeight / 2;
-    /*
-     * The pointer moves the field as one piece, bounded on both axes.
-     *
-     * Scrolling does not move it at all along those axes. It writes a separate
-     * spread value instead, which the two bands read in opposite directions, so
-     * scrolling pushes the left band further left and the right band further
-     * right. That is the whole behaviour: reading down the page opens the middle
-     * up rather than carrying the marks across it.
-     */
+    // The pointer moves the field as one piece, bounded on both axes.
+    //
+    // Scrolling does not move it at all along those axes. It writes a separate
+    // spread value instead, which the two bands read in opposite directions, so
+    // scrolling pushes the left band further left and the right band further
+    // right. That is the whole behaviour: reading down the page opens the middle
+    // up rather than carrying the marks across it.
     current = {
       x: eased(current.x, bound(target.x, halfWidth), deltaS),
       y: eased(current.y, bound(target.y, halfHeight), deltaS),
