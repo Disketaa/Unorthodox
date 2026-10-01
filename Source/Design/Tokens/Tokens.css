@@ -46,10 +46,15 @@ body {
  * that reads the standard properties and ignores the pseudo-elements gets a flat
  * accent bar, and one that reads the pseudo-elements gets the same bar rounded.
  *
- * The track is transparent rather than a colour of its own, so the bar is a
- * thumb floating over the page instead of a grey channel drawn down the side of
- * it. The paper texture is over the whole viewport, so anything opaque painted
- * here would be a hole in that.
+ * `scrollbar-width` is left at `auto` on purpose, and that is load-bearing
+ * rather than an omission. In Chrome a value of anything but `auto` on that
+ * property makes the browser ignore the `::-webkit-scrollbar` rules for the same
+ * element altogether, so asking for `thin` there is what silently threw away the
+ * width, the borderless thumb and the rounded ends, and left a stock bar painted
+ * in the accent. Setting it to `auto` hands the pseudo-elements back to the
+ * engines that read them. Firefox is the one browser that reads only the
+ * standard pair, and it gets a default-width bar in the accent, which is the
+ * right answer there and the reason this is worth the trade.
  *
  * No border anywhere, and that is the point: the default thumb carries its own
  * border in some engines and a track border in others, and a border in the
@@ -59,7 +64,7 @@ body {
  */
 html {
   scrollbar-color: var(--Scrollbar-Thumb) var(--Scrollbar-Track);
-  scrollbar-width: thin;
+  scrollbar-width: auto;
 }
 
 html::-webkit-scrollbar {
@@ -108,6 +113,7 @@ html::-webkit-scrollbar-thumb:active {
 @media (hover: none) {
   html {
     scrollbar-width: none;
+    -ms-overflow-style: none;
   }
 
   /* Zero rather than `none`, which is what the pseudo-element actually takes. */
@@ -272,7 +278,7 @@ html::-webkit-scrollbar-thumb:active {
    * fraction of the thumb, which is a fraction of a fraction, so this is a length
    * and the one place the scrollbar is not scaled with the page.
    */
-  --Scrollbar-Width: 10px;
+  --Scrollbar-Width: 16px;
 
   /*
    * The paper texture sits over the interface and multiplies into it, so it
