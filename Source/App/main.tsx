@@ -2,8 +2,15 @@ import { render } from 'preact';
 import { App } from './App';
 import { setLogLevel } from '@/Core';
 import { isDebugEnabled } from '@/Network/Diagnostics';
+import { preloadSounds } from '@/Design/Sounds';
 import "@/Design/Tokens/Tokens.css";
 import "@/Design/Reset.css";
+
+/**
+ * Decoded before anyone presses anything, so the first click is not waiting on a
+ * fetch. The context opens suspended, which is why this can run here at all.
+ */
+void preloadSounds();
 
 /**
  * Debug logging is opt-in via ?debug, so the noisy connection tracing stays out

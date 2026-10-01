@@ -1,4 +1,5 @@
 import { ComponentChildren } from "preact";
+import { playSound, type SoundName } from "../../Sounds";
 import styles from "./Button.module.css";
 
 export type ButtonVariant = "Primary" | "Secondary" | "Ghost";
@@ -9,6 +10,7 @@ export interface ButtonProps {
   size?: ButtonSize;
   disabled?: boolean;
   loading?: boolean;
+  sound?: SoundName | false;
   onClick?: () => void;
   children?: ComponentChildren;
 }
@@ -18,6 +20,7 @@ export function Button({
   size = "Medium",
   disabled = false,
   loading = false,
+  sound = "Pop",
   onClick,
   children,
 }: ButtonProps) {
@@ -26,7 +29,10 @@ export function Button({
     <button
       class={classes}
       disabled={disabled || loading}
-      onClick={onClick}
+      onClick={() => {
+        if (sound) playSound(sound);
+        onClick?.();
+      }}
     >
       {loading ? "..." : children}
     </button>

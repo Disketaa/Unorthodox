@@ -1,4 +1,5 @@
 import { CharacterColor } from '@/Core';
+import { playSound } from '../../Sounds';
 import { ColorSwatch } from '../ColorSwatch';
 import styles from './CharacterPicker.module.css';
 
@@ -33,7 +34,12 @@ export function ColorChoice({
     <button
       type="button"
       class={classes}
-      onClick={() => onPick(name)}
+      onClick={() => {
+        // The pop belongs to the press, so it plays whether or not the tint
+        // changes: picking the tint you already wear is still a press.
+        playSound('Pop');
+        onPick(name);
+      }}
       aria-pressed={selected}
       aria-label={label}
     >

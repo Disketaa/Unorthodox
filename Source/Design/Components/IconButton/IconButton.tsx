@@ -1,3 +1,4 @@
+import { playSound, type SoundName } from '../../Sounds';
 import styles from './IconButton.module.css';
 
 /** The marks that stand in for a button's own label. */
@@ -12,6 +13,8 @@ export interface IconButtonProps {
    */
   size?: 'Small' | 'Medium';
   onClick: () => void;
+  /** The clip on press, or `false` to stay silent. */
+  sound?: SoundName | false;
 }
 
 /**
@@ -29,14 +32,23 @@ export interface IconButtonProps {
  * as a control on its own, and these sit inside a chip or beside a title where the
  * box is already the control.
  */
-export function IconButton({ icon, label, size = 'Medium', onClick }: IconButtonProps) {
+export function IconButton({
+  icon,
+  label,
+  size = 'Medium',
+  sound = 'Pop',
+  onClick,
+}: IconButtonProps) {
   return (
     <button
       type="button"
       class={`${styles.Root} ${styles[`Size${size}`]} ${styles[`Icon${icon}`]}`}
       aria-label={label}
       title={label}
-      onClick={onClick}
+      onClick={() => {
+        if (sound) playSound(sound);
+        onClick();
+      }}
     >
       <span class={styles.Icon} aria-hidden="true" />
     </button>

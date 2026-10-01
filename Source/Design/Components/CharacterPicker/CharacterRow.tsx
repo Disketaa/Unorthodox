@@ -1,4 +1,5 @@
 import { CharacterColor, CharacterId, CharacterIds } from '@/Core';
+import { playSound } from '../../Sounds';
 import { Character } from '../Character';
 import styles from './CharacterPicker.module.css';
 
@@ -74,7 +75,10 @@ function CharacterChoice({
       type="button"
       data-character={id}
       class={classes}
-      onClick={() => onPick(id)}
+      onClick={() => {
+        playSound('Pop');
+        onPick(id);
+      }}
       aria-pressed={chosen}
       aria-label={label}
     >

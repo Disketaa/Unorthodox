@@ -22,10 +22,21 @@ replaced it, where `detune` belongs to a per-press source node and is not a prop
 that a later load can overwrite. Detuning also keeps the length, which varying the rate does not, so
 a wide shift no longer drags the sound out as well.
 
+A fifth was too much in the other direction: every press read as a deliberate joke on the clip rather
+than as the same sound. A major third is still two notes rather than one wobbling.
+
 Nothing is loaded on the first press. `preloadSounds()` runs from `main.tsx`: the context opens
 suspended, which is legal and is exactly why the fetch and decode can happen before any gesture, and
 by the time anything can be pressed the buffer is in memory. A press that still beats its own load
 plays when the decode lands rather than being dropped.
+
+Preloading was not on its own enough, and the reason is that a context only starts running inside a
+gesture, and the browser then spends its first moments bringing up an audio thread that did not exist
+before. That first press paid for the thread and for the sound, so the button moved and the pop
+arrived afterwards. `preloadSounds` now arms the context on the page's first `pointerdown` or
+`keydown` anywhere rather than on the button: to the browser it is the same gesture, and it nearly
+always happens first. The listeners are attached only while suspended and removed on the first one to
+land, so an untouched page holds nothing.
 
 The bank stays silent where there is no Web Audio at all, which happy-dom found by throwing
 `AudioContext is not defined` through four screen tests. A sound is an addition to a press and never
