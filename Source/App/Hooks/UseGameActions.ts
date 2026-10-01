@@ -26,7 +26,10 @@ export function useGameActions(
 
   const startGame = useCallback(() => {
     roundsRef.current = 1;
-    session.startGame(topicAt(0), GameConfig.timing.writingDurationMs);
+    // The count-in is inside the writing phase rather than in front of it, so the
+    // numbers the whole room is counting cost the round none of its answering time.
+    const { writingDurationMs, startVeilMs, startCountdownMs } = GameConfig.timing;
+    session.startGame(topicAt(0), writingDurationMs + startVeilMs + startCountdownMs);
   }, [session]);
 
   const nextRound = useCallback(() => {

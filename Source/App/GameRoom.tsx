@@ -1,9 +1,11 @@
+import { useState } from 'preact/hooks';
 import { InfoScreen, LobbyDebugTools } from '@/Screens';
 import { Strings } from '@/Content';
 import { PlayerLook } from '@/Core';
-import { DebugDock } from '@/Design/Overlays';
+import { DebugDock, StartCountdown } from '@/Design/Overlays';
 import { useGameSession } from './Hooks/UseGameSession';
 import { useDebugToggle } from './Hooks/UseDebugToggle';
+import { useStartCountdown } from './Hooks/UseStartCountdown';
 import type { GameSessionView } from './Hooks/UseGameSession';
 import { SessionRole } from './Session';
 import { LobbyView } from './Views/LobbyView';
@@ -72,18 +74,69 @@ function PhaseScreen({ view }: { view: GameSessionView }) {
  * "*" that opens it belongs to the host rather than to a phase, and the controls in
  * it are whatever the screen on top happens to offer — the lobby can add a player and
  * nothing else can, so every other phase shows the note with no controls beside it.
+ *
+ * So is the count-in, for the same reason: it belongs to the moment the host pressed
+ * Start rather than to the screen that came up afterwards, and it is counted from the
+ * host's own start of the writing phase, so every device is on the same number.
  */
 export function GameRoom({ roomCode, role, name, look, onLook }: GameRoomProps) {
   const view = useGameSession(roomCode, role, name, look, onLook);
   const { debugEnabled } = useDebugToggle(view.isHost);
   return (
     <>
-      <PhaseScreen view={view} />
-      <DebugDock enabled={debugEnabled} label={Strings.lobby.debugOn}>
-        {view.isHost && (
-          <LobbyDebugTools publicState={view.publicState} onAddBot={view.addBot} />
-        )}
-      </DebugDock>
+      <CountedRoom view={view} debugEnabled={debugEnabled} />
+    </>
+  );
+}
+
+interface CountedRoomProps {
+  view: GameSessionView;
+  debugEnabled: boolean;
+}
+
+/**
+ * The room as it is being counted in to.
+ *
+ * The screen underneath the shade is the lobby, held there until the count is over.
+ * Not the screen the room has moved to: the writing screen would appear underneath the
+ * numbers the instant they started, which is the button's press taking the lobby away
+ * in the same frame as the press itself. Held instead, the lobby dims under the shade
+ * the room is still sitting in, and the writing screen arrives when the count runs out,
+ * on the page's own fade.
+ *
+ * Held by keeping the view rather than the phase name, because a view is what the
+ * screen was actually drawn from: the roster, the pace and the characters in it only
+ * reach a client while the room is a lobby, and a name would have to be resolved back
+ * into one of those afterwards, by which time the state behind it is gone.
+ *
+ * A client that walked into the room mid-count has no lobby to hold, and is shown the
+ * screen it has rather than an empty one.
+ */
+function CountedRoom({ view, debugEnabled }: CountedRoomProps) {
+  const { veiling, count } = useStartCountdown(view);
+  const counting = veiling || count !== null;
+  // Kept while the room is being counted in to, and dropped the moment it is not, so
+  // the lobby is what the shade is over rather than the screen the room has already
+  // moved on to.
+  const [held, setHeld] = useState<GameSessionView | null>(null);
+  if (counting && held === null) {
+    setHeld(view);
+  }
+  if (!counting && view.phase === 'Lobby') {
+    setHeld(view);
+  }
+
+  return (
+    <>
+      {counting && <StartCountdown veiling={veiling} count={count} />}
+      <PhaseScreen view={counting && held !== null ? held : view} />
+      {!counting && (
+        <DebugDock enabled={debugEnabled} label={Strings.lobby.debugOn}>
+          {view.isHost && (
+            <LobbyDebugTools publicState={view.publicState} onAddBot={view.addBot} />
+          )}
+        </DebugDock>
+      )}
     </>
   );
 }

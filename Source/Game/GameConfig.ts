@@ -22,6 +22,21 @@ const timing = {
   scoresDurationMs: 15000,
   graceMs: 3000,
   uiTickMs: 100,
+  /**
+   * The count-in before the first round, and the writing time it is added to.
+   *
+   * The room's writing phase is this much longer than the pace says, so the count-in
+   * is time the players get rather than time taken from them: the phase starts when
+   * the host presses Start, the numbers are up while it is under way, and everybody
+   * has the full duration waiting for them once they are gone.
+   *
+   * Two parts rather than one. The shade comes up first and the numbers follow it, so
+   * the first number is not already half faded by the time the room can see anything
+   * at all. `startVeilMs` is the shade coming up, `startCountdownMs` is the three
+   * numbers over it, and both are inside the writing phase rather than in front of it.
+   */
+  startVeilMs: 300,
+  startCountdownMs: 3000,
 };
 
 export const GameConfig = {

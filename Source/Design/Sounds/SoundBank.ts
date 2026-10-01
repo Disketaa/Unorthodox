@@ -112,13 +112,18 @@ function loadSound(name: SoundName): Promise<void> {
  * The buffer is shared and cannot be replayed, so every press needs its own
  * source node, and a node that is not stopped keeps the graph alive for as long
  * as the clip is.
+ *
+ * A named pitch replaces the random spread rather than adding to it: a clip asked
+ * for at a pitch is asking for that note, and a note that also wobbles by a couple
+ * of semitones is not the note anybody asked for.
  */
-function speak(context: AudioContext, gain: GainNode, name: SoundName): void {
+function speak(context: AudioContext, gain: GainNode, name: SoundName, semitones?: number): void {
   const buffer = buffers.get(name);
   if (!buffer) return;
   const source = context.createBufferSource();
   source.buffer = buffer;
-  source.detune.value = (Math.random() * 2 - 1) * PitchSpread * 100;
+  const detune = semitones ?? (Math.random() * 2 - 1) * PitchSpread;
+  source.detune.value = detune * 100;
   source.connect(gain);
   source.onended = () => source.disconnect();
   source.start();
@@ -154,8 +159,12 @@ export function preloadSounds(names: readonly SoundName[] = SoundNames): Promise
  * Silent where there is no Web Audio to play through, which is every environment
  * without it rather than a browser this is aiming at. A sound is an addition to a
  * press, never a condition of it.
+ *
+ * `semitones` asks for one exact pitch instead of a press at whatever the clip's own
+ * pitch is: the count-in needs its three notes to be three notes, and a run of
+ * presses that each wobble is a run of notes nobody can put in order.
  */
-export function playSound(name: SoundName): void {
+export function playSound(name: SoundName, semitones?: number): void {
   const played = voiceFor();
   if (!played) return;
   const { context, gain } = played;
@@ -163,10 +172,10 @@ export function playSound(name: SoundName): void {
   // pressed without the preload having armed anything.
   if (context.state === 'suspended') void context.resume();
   if (buffers.has(name)) {
-    speak(context, gain, name);
+    speak(context, gain, name, semitones);
     return;
   }
   // The first press of a clip is early enough to catch its own load; the decode
   // runs to the end either way, so the next press is never waiting.
-  void loadSound(name).then(() => speak(context, gain, name));
+  void loadSound(name).then(() => speak(context, gain, name, semitones));
 }

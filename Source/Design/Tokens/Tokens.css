@@ -318,6 +318,30 @@ body.PageFade {
   --Duration-PageEnter: 550ms;
 
   /*
+   * How long one number of a count-in is on screen.
+   *
+   * A second rather than one of the three above, because this is not a movement but a
+   * whole beat: the number arrives, holds long enough to be read, and is gone before
+   * the next one starts. Sized to the length of a spoken count, which is what the
+   * sound on each number is in time with.
+   */
+  --Duration-CountTick: 1000ms;
+
+  /*
+   * How long the shade over the room takes to come up before the count starts.
+   *
+   * The time the numbers are given to is not time they spend getting there, so this is
+   * a second length rather than part of the count: `GameConfig.timing.startVeilMs`
+   * holds the same number for the code that decides when the first number belongs on
+   * screen, and `Scripts/CountVeil.test.ts` fails rather than letting the two drift.
+   *
+   * Under half a second, because the shade has one job and this is not a wait the room
+   * is meant to sit through: long enough to arrive rather than snap on, short enough
+   * that pressing Start feels like it did something.
+   */
+  --Duration-CountVeil: 300ms;
+
+  /*
    * How long the pop takes, how far it squashes, and how far apart two
    * appearances in a row wait.
    *
