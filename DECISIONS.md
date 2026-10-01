@@ -1,5 +1,36 @@
 ﻿# DECISIONS
 
+## 2026-10-01 — the glyph field ships a list of seeds and fades in no more
+The field rolls from one of eight fixed seeds rather than a fresh one per load. Every
+seed gives a valid arrangement, but a good half of them are lopsided enough to be worth looking
+at before shipping, and these eight were: the same wallpaper for everyone playing instead of a
+different one per visit. One is still chosen per load, so two players are not looking at the
+same margins and neither is looking at an arrangement nobody has seen. `Core/Random.ts` keeps
+the seeded generator, since a roll that ignored its seed would leave the list describing fields
+nobody can get back.
+
+The seed is no longer logged, and `?seed=` is gone with it. Both existed so an arrangement could
+be reported and rolled again, which was the point of seeding it at all; once the seeds were
+chosen by looking at them and written into the source, the reporting was the only thing left
+holding the mechanism together. `GlyphField.test.tsx` now holds the list to its arrangements
+instead: eight seeds, eight different fields, each one a full band.
+
+The marks also stopped fading in. The arrival was staggered per mark, and at forty-four marks a
+band it stretched towards a second, which read as a delay on load rather than as a page settling.
+Wallpaper is printed, not faded up, so a mark is at its own opacity from the first paint and only
+the drift animation is left.
+
+Rolling takes the generator as an argument, the way `randomLook` already took its randomness, so
+the roll stays free of ambient state and can be tested. Both bands come from one seed and one
+sequence rather than two, so an arrangement is a single thing; they still hold different marks,
+because the second is rolled from where the first stopped.
+
+The slots also moved: they used to sit half a step in from each end of the band, which bunched the
+marks into the visible middle and left the top and bottom thinner than the rest. They now span the
+band edge to band edge. The band is already pulled past both screen edges by `--Glyph-Overscan`, so
+a slot on the band's own end lands well off screen, which is what carries the field past the top
+and the bottom rather than stopping at them.
+
 ## 2026-10-01 — a button pops, and two pops are not the same note
 `Design/Sounds/SoundBank.ts` plays `Pop.ogg` on press. `Button`, `IconButton`, and both rows of
 the character picker call `playSound('Pop')`, so a press anywhere on the interface answers with
@@ -402,7 +433,16 @@ therefore the size a mark appears at on screen, and it holds that size at any br
 
 Marks are anchored to the outer edge of their band and mirrored for the right one, rather than
 scattered across the whole band: a mark is much wider than a band, so what decides whether it
-reaches the text is which side its ink falls on. Bands now hold 22 marks.
+reaches the text is which side its ink falls on. Bands now hold 44 marks.
+
+Doubling the marks needed two things pulled back with them, and both are the
+density rather than the count. The jitter was a share of the band, so at half the
+slot step it spanned four slots and dropped marks on top of each other; it is now
+a share of the step, which keeps the arrangement the same shape at any density and
+still lets a mark cross into its neighbour's slot. And the appear stagger is per
+mark, so at the old twenty-two milliseconds the field took about a second to
+arrive, which reads as a delay rather than as a page settling; it is now twelve,
+under half a second for forty-four.
 
 The field compensates for pinch zoom only, not for browser zoom. Browser zoom is not readable from a`page, so inferring it from the device pixel ratio at load made the field depend on`the zoom the page happened to open at, and the same URL looked different per device.`nPinch is reported by the visual viewport and is the same everywhere.
 

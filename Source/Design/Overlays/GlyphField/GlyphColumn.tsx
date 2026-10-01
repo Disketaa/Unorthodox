@@ -2,15 +2,6 @@ import { Glyph, GlyphSide } from './RollGlyph';
 import styles from './GlyphColumn.module.css';
 
 /**
- * How long after the previous one each mark starts appearing.
- *
- * Small, so a band of them arrives as one movement rather than as a list being
- * read out. The whole field is visible well under a second after load, which is
- * what makes it feel like a page settling rather than an animation being played.
- */
-const AppearStaggerMs = 22;
-
-/**
  * Writes one mark's rolled values onto its node.
  *
  * Custom properties rather than a style prop, the way the paper overlay sets its
@@ -18,10 +9,9 @@ const AppearStaggerMs = 22;
  * what each value means. Only unitless numbers and percentages cross this
  * boundary; every length, including a mark's size, comes from `Tokens.css`.
  */
-function applyGlyph(node: HTMLSpanElement, glyph: Glyph, index: number): void {
+function applyGlyph(node: HTMLSpanElement, glyph: Glyph): void {
   const properties: [string, string][] = [
     ['--Glyph-Rotation', `${glyph.rotation.toFixed(2)}deg`],
-    ['--Glyph-AppearDelay', `${(index * AppearStaggerMs).toFixed(0)}ms`],
     ['--Glyph-Depth', glyph.depth.toFixed(2)],
     ['--Glyph-Duration', `${glyph.durationS.toFixed(2)}s`],
     ['--Glyph-Delay', `${glyph.delayS.toFixed(2)}s`],
@@ -60,7 +50,7 @@ export function GlyphColumn({ glyphs, side }: GlyphColumnProps) {
           class={styles.Glyph}
           ref={(node) => {
             if (node !== null) {
-              applyGlyph(node, glyph, index);
+              applyGlyph(node, glyph);
             }
           }}
         >

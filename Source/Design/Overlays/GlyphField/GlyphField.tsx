@@ -1,8 +1,29 @@
 import { useState } from 'preact/hooks';
+import { createRandom } from '@/Core';
 import { GlyphColumn } from './GlyphColumn';
-import { rollGlyphColumn } from './RollGlyph';
+import { rollGlyphColumn, type Glyph } from './RollGlyph';
+import { Seeds } from './GlyphSeeds';
 import { useGlyphParallax } from './UseGlyphParallax';
 import styles from './GlyphField.module.css';
+
+interface Field {
+  left: Glyph[];
+  right: Glyph[];
+}
+
+/**
+ * One seed decides the whole field, both bands.
+ *
+ * Two seeds would let each side be arranged independently, and the bands are
+ * mirror images of each other rather than two of anything, so one arrangement
+ * describes both. They still hold different marks, because the second is rolled
+ * from where the first stopped rather than from the start of the sequence.
+ */
+function rollField(): Field {
+  const seed = Seeds[Math.floor(Math.random() * Seeds.length)] ?? Seeds[0];
+  const random = createRandom(seed);
+  return { left: rollGlyphColumn(random), right: rollGlyphColumn(random) };
+}
 
 /**
  * Oversized marks down the left and right margins, leaving the middle clear for
@@ -21,8 +42,7 @@ import styles from './GlyphField.module.css';
  */
 export function GlyphField() {
   const parallax = useGlyphParallax();
-  const [left] = useState(rollGlyphColumn);
-  const [right] = useState(rollGlyphColumn);
+  const [{ left, right }] = useState(rollField);
 
   return (
     <div ref={parallax} class={styles.Root} aria-hidden="true">

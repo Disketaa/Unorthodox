@@ -1,3 +1,5 @@
+import type { Random } from '@/Core';
+
 /**
  * The pool of marks used to fill the margins.
  *
@@ -8,8 +10,17 @@
  */
 const Symbols = ['@', '#', '$', '%', '&', '*', '+', '=', '?', '!', '~', ';', ':', '/', '\\', '^'];
 
-/** How many marks along one band, and so how finely the height is divided. */
-const SlotsPerColumn = 22;
+
+
+/**
+ * How many marks along one band, and so how finely the height is divided.
+ *
+ * Doubled from twenty-two. A mark is much wider than it is tall, so the band was
+ * reading as a few large shapes with gaps between them rather than as a crowd, and
+ * the fix is more marks rather than smaller ones: a smaller mark on a phone is
+ * barely larger than the body text it sits behind.
+ */
+export const SlotsPerBand = 44;
 
 export type GlyphTone = 'Light' | 'Mid' | 'Deep';
 
@@ -43,13 +54,19 @@ const DurationMinS = 16;
 const DurationMaxS = 34;
 
 /**
- * How far a mark may sit outside the slot it was given, as a share of the band.
+ * How far a mark may sit outside the slot it was given, as a share of the step
+ * between two slots.
  *
- * Narrow, because the slots are already even. This is the difference between
- * an even spread that still looks laid out by hand and a scatter with holes in
- * it: the slots decide where a mark belongs, and only the jitter is random.
+ * Narrow, because the slots are already even. This is the difference between an
+ * even spread that still looks laid out by hand and a scatter with holes in it:
+ * the slots decide where a mark belongs, and only the jitter is random.
+ *
+ * A share of the step and not of the band, which is what keeps the arrangement
+ * the same shape at any density: doubling the slots halves the step, and a jitter
+ * held at the old share of the band would then span four slots and land marks on
+ * top of each other. A mark may cross into its neighbour's slot, never past it.
  */
-const JitterPercent = 22;
+const JitterShare = 0.35;
 
 /**
  * How much paler than full a mark may be, as a share of the opacity token.
@@ -86,38 +103,54 @@ export type GlyphSide = 'Left' | 'Right';
 const Tones: readonly GlyphTone[] = ['Light', 'Light', 'Mid', 'Mid', 'Deep'];
 
 /** A number anywhere in a range. */
-function between(min: number, max: number): number {
-  return min + Math.random() * (max - min);
+function between(min: number, max: number, random: Random): number {
+  return min + random() * (max - min);
 }
 
 /** A number anywhere in a range, rounded to two decimals. */
-function fixedBetween(min: number, max: number): number {
-  return Number(between(min, max).toFixed(2));
+function fixedBetween(min: number, max: number, random: Random): number {
+  return Number(between(min, max, random).toFixed(2));
 }
 
 /**
  * One slot's centre along the band, in percent.
  *
  * Divided by the slot count and spread over the band rather than over the
- * viewport, so the marks are dense everywhere the band is tall. The overflow
- * past the ends is deliberate: it is what hides the last slot's gap at the
- * bottom edge.
+ * viewport, so the marks are dense everywhere the band is tall.
+ *
+ * The slots are spread across the whole band, first on its top edge and last on
+ * its bottom edge, rather than sitting half a step in from each end. The band is
+ * pulled past both screen edges by `--Glyph-Overscan`, so a slot on the band's
+ * own end lands well above the screen and well below it: that is what carries
+ * the field off the top and the bottom rather than stopping at them, and it also
+ * spaces the marks evenly over what is actually visible instead of bunching them
+ * in the middle.
  */
-function slotTop(slot: number): number {
-  const step = 100 / SlotsPerColumn;
-  const jitter = (Math.random() * 2 - 1) * JitterPercent;
-  return step * (slot + 0.5) + jitter;
+function slotTop(slot: number, random: Random): number {
+  const jitter = (random() * 2 - 1) * slotStep() * JitterShare;
+  return (100 * slot) / (SlotsPerBand - 1) + jitter;
 }
 
-/** One mark at random, in the slot it was given. */
-export function rollGlyph(slot: number): Glyph {
-  const char = Symbols[Math.floor(Math.random() * Symbols.length)] ?? '#';
-  const tone = Tones[Math.floor(Math.random() * Tones.length)] ?? 'Light';
-  const scale = ScaleChoices[Math.floor(Math.random() * ScaleChoices.length)] ?? 0.5;
+/** The distance between two slots, as a share of the band. */
+function slotStep(): number {
+  return 100 / (SlotsPerBand - 1);
+}
+
+/**
+ * One mark at random, in the slot it was given.
+ *
+ * The generator is passed in rather than reached for, the way a look is rolled in
+ * Core, so one seed decides the whole field and the field can be rolled again from
+ * the seed that was reported for it.
+ */
+export function rollGlyph(slot: number, random: Random): Glyph {
+  const char = Symbols[Math.floor(random() * Symbols.length)] ?? '#';
+  const tone = Tones[Math.floor(random() * Tones.length)] ?? 'Light';
+  const scale = ScaleChoices[Math.floor(random() * ScaleChoices.length)] ?? 0.5;
   return {
     char,
     scale,
-    rotation: fixedBetween(-RotationDeg, RotationDeg),
+    rotation: fixedBetween(-RotationDeg, RotationDeg, random),
     /*
      * This mark's share of the scroll parallax: how far it travels against the
      * page. Widened well past one, because the parallax is now the main thing
@@ -125,17 +158,17 @@ export function rollGlyph(slot: number): Glyph {
      * depth: a shallow mark barely answers a scroll while a deep one crosses a
      * good share of the viewport, and that spread of speeds is the effect.
      */
-    depth: fixedBetween(0.15, 1.6),
-    durationS: fixedBetween(DurationMinS, DurationMaxS),
-    delayS: fixedBetween(-DurationMaxS, 0),
-    top: Number(slotTop(slot).toFixed(2)),
-    reach: fixedBetween(ReachMinShare, ReachMaxShare),
+    depth: fixedBetween(0.15, 1.6, random),
+    durationS: fixedBetween(DurationMinS, DurationMaxS, random),
+    delayS: fixedBetween(-DurationMaxS, 0, random),
+    top: Number(slotTop(slot, random).toFixed(2)),
+    reach: fixedBetween(ReachMinShare, ReachMaxShare, random),
     tone,
-    fade: fixedBetween(FadeMin, FadeMax),
+    fade: fixedBetween(FadeMin, FadeMax, random),
   };
 }
 
 /** One band of marks, rolled fresh. */
-export function rollGlyphColumn(): Glyph[] {
-  return Array.from({ length: SlotsPerColumn }, (_, slot) => rollGlyph(slot));
+export function rollGlyphColumn(random: Random): Glyph[] {
+  return Array.from({ length: SlotsPerBand }, (_, slot) => rollGlyph(slot, random));
 }

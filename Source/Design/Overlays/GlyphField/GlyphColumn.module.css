@@ -115,6 +115,13 @@
   translate: -30% 0;
 }
 
+/*
+ * The mark's resting opacity is the token times its own share, and it is there
+ * from the first paint. The field used to fade its marks in, staggered by slot,
+ * which was a page settling rather than wallpaper being printed; with forty-four
+ * marks per band the stagger also stretched arrival towards a second, which read
+ * as a delay on load rather than as an arrival.
+ */
 .Mark {
   display: block;
   font-family: var(--FontFamily-Display);
@@ -137,17 +144,8 @@
    */
   opacity: calc(var(--Glyph-Opacity) * var(--Glyph-Fade, 1));
   transform: rotate(var(--Glyph-Rotation, 0deg));
-  /*
-   * Two animations on one element because they move different properties: the
-   * appear fade owns opacity and the drift owns the transform. Only the appear
-   * one has a delay of its own, and only it fills backwards, so a mark waiting
-   * its turn is invisible rather than sitting at full strength and then
-   * disappearing.
-   */
-  animation:
-    MarkAppear var(--Duration-Slow) var(--Easing-Decelerate) backwards,
-    MarkDrift var(--Glyph-Duration, 20s) var(--Easing-Standard) infinite alternate;
-  animation-delay: var(--Glyph-AppearDelay, 0s), var(--Glyph-Delay, 0s);
+  animation: MarkDrift var(--Glyph-Duration, 20s) var(--Easing-Standard) infinite alternate;
+  animation-delay: var(--Glyph-Delay, 0s);
   user-select: none;
 }
 
@@ -165,20 +163,6 @@
 
 .ToneDeep {
   color: var(--Glyph-Tone-Deep);
-}
-
-/*
- * How a mark arrives.
- *
- * Fading in rather than appearing is what makes a reload feel like the same page
- * settling again rather than a different one being drawn. It runs once and holds
- * nothing back afterwards, and the mark goes to the same opacity it would have
- * had with no animation at all, so nothing is permanently dimmer.
- */
-@keyframes MarkAppear {
-  from {
-    opacity: 0;
-  }
 }
 
 @keyframes MarkDrift {

@@ -10,7 +10,7 @@ const Sources: Record<SoundName, string> = {
   Pling: plingUrl,
 };
 
-const Volume = 0.1;
+const Volume = 0.3;
 
 /**
  * How far either side of the recorded pitch a press may land, in semitones.
