@@ -59,6 +59,27 @@ describe('a player the host has lost', () => {
   });
 });
 
+describe('the host', () => {
+  it('is crowned, and nobody else is', () => {
+    const root = mounted(<PlayerBar players={['Аня', 'Боря'].map((name) => player(name))} />);
+    const [first, second] = [...(root.firstElementChild?.children ?? [])];
+    // The host is the first of the roster, which is where the room puts them, so the bar
+    // needs to be told nothing to know who is wearing the crown.
+    expect(first?.querySelectorAll('span[class*="CrownIcon"]')).toHaveLength(1);
+    expect(second?.querySelectorAll('span[class*="CrownIcon"]')).toHaveLength(0);
+  });
+
+  it('keeps the crown on the host when the local player is moved to the last slot', () => {
+    // A room past the bar's slots takes the local player out of the roster order, and the
+    // crown must not travel with them.
+    const room = Array.from({ length: 18 }, (_, index) => player(`Игрок ${index + 1}`));
+    const root = mounted(<PlayerBar players={room} ownPlayerId="Игрок 17" />);
+    const slots = [...(root.firstElementChild?.children ?? [])];
+    expect(slots[0]?.querySelectorAll('span[class*="CrownIcon"]')).toHaveLength(1);
+    expect(slots[slots.length - 1]?.querySelectorAll('span[class*="CrownIcon"]')).toHaveLength(0);
+  });
+});
+
 describe('the bar itself', () => {
   it('draws the local player with a class of its own', () => {
     // The local player is the one mark in the bar that follows the viewer's own tint, and

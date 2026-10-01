@@ -4,7 +4,7 @@ import { PublicState, Pace } from '@/Game';
 export type SessionRole = 'Host' | 'Player';
 
 /** Why this player is not in the room, if they are not. */
-export type BlockedReason = 'NameTaken' | 'AlreadyStarted' | 'Kicked';
+export type BlockedReason = 'NameTaken' | 'AlreadyStarted' | 'RoomFull' | 'Kicked';
 
 /**
  * One API for the host and a client, so the UI can be written once. Methods a
@@ -20,6 +20,14 @@ export interface Session {
   onHostLeave(listener: () => void): void;
   /** Why this player is not in the room, or undefined if they are in one. */
   getBlocked(): BlockedReason | undefined;
+  /**
+   * How many players the room holds, for the refusal that says the room is full.
+   *
+   * The host's number rather than a copy of the game's: `App` may not read `GameConfig`
+   * for a client's own state, and a refusal quoting a different limit from the room's
+   * would be a number nobody can argue with.
+   */
+  getRoomLimit(): number;
   /** Only the host calls this. Removes a player from the room. */
   kick(playerId: string): void;
   join(name: string, look: PlayerLook): void;

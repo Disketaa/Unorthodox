@@ -27,7 +27,7 @@ function room(count: number): PlayerBarEntry[] {
 export function PlayerBarGallery() {
   return (
     <Stack direction="Vertical" gap="Md">
-      <Text variant="Body">A room, in roster order, with the local player ringed</Text>
+      <Text variant="Body">A room, in roster order, with the host crowned and the local player ringed</Text>
       <PlayerBar players={room(5)} ownPlayerId="p2" />
 
       <Text variant="Body">As many players as the bar holds, wrapped onto a second row</Text>

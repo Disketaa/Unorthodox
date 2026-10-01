@@ -29,6 +29,9 @@ export interface PlayerBarProps {
  * between writing and the scores. It holds as many slots as the token declares and
  * wraps onto a second row where the width runs out, rather than scrolling: a bar you
  * have to swipe is a bar nobody can find themselves in.
+ *
+ * The host is the first player of the roster, which is where the room puts them, so the
+ * bar asks for no crown of its own.
  */
 export function PlayerBar({ players, ownPlayerId = null }: PlayerBarProps) {
   const slots = slotsFor(players, ownPlayerId, slotLimit());
@@ -41,6 +44,7 @@ export function PlayerBar({ players, ownPlayerId = null }: PlayerBarProps) {
           entry={player}
           index={index}
           isSelf={player.id === ownPlayerId}
+          isHost={index === 0}
         />
       ))}
     </div>

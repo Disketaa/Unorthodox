@@ -1,29 +1,24 @@
 import { Transport } from './Transport';
-import { isHostMessage, HostMessage } from './Protocol';
+import { isHostMessage, HostMessage, BlockedReason } from './Protocol';
+import { refusalFor } from './ClientRefusals';
 import { JoinRetry } from './JoinRetry';
 import { clientId } from './ClientIdentity';
 import * as Game from '@/Game';
 import { PlayerLook, createLogger, measureClockOffset } from '@/Core';
+
+export type { BlockedReason } from './Protocol';
 
 const log = createLogger('ClientSession');
 
 /**
  * How often the client asks the host where the game is.
  *
- * A client that was suspended, backgrounded or offline misses the state
- * messages sent on phase changes, so it asks again on a timer. It also makes
- * the countdown correct after the client wakes up, because the state carries the
- * host's phase start time rather than the moment the client received it.
+ * A client that was suspended, backgrounded or offline misses the state messages sent on
+ * phase changes, so it asks again on a timer. It also makes the countdown correct after
+ * the client wakes up, because the state carries the host's phase start time rather than
+ * the moment the client received it.
  */
 export const SyncIntervalMs = 5_000;
-
-/**
- * Why a client is not in a room.
- *
- * All of them are the host's doing and all end the same way on screen, so they are one
- * field with a reason rather than several booleans that could all be set.
- */
-export type BlockedReason = 'NameTaken' | 'AlreadyStarted' | 'Kicked';
 
 export class ClientSession {
   private state: Game.PublicState | undefined = undefined;
@@ -38,6 +33,8 @@ export class ClientSession {
   private clockOffsetMs = 0;
   /** Why this player is not in the room, if they are not. */
   private blocked: BlockedReason | undefined = undefined;
+  /** How many players the room holds, as the host reported it in a full-room refusal. */
+  private roomLimit = 0;
 
   /** Subscribe to state changes so the UI can re-render. */
   onUpdate(listener: () => void): void {
@@ -103,6 +100,21 @@ export class ClientSession {
   }
 
   private handleHostMessage(message: HostMessage): void {
+    const refusal = refusalFor(message);
+    if (refusal !== undefined) {
+      log('info', 'refused by the host:', refusal.reason);
+      this.blocked = refusal.reason;
+      this.roomLimit = refusal.roomLimit;
+      // The retry stops either way: the join has been answered, and a host that has just
+      // refused one will refuse it again, so a retry would be this tab knocking on a closed
+      // door rather than the player asking to come in.
+      this.joinRetry.stop();
+      if (refusal.closes) {
+        this.transport.stop();
+      }
+      this.updateListener?.();
+      return;
+    }
     switch (message.type) {
       case 'State':
         this.state = message.state;
@@ -119,39 +131,12 @@ export class ClientSession {
         this.joinRetry.stop();
         this.updateListener?.();
         break;
-      case 'NameRejected':
-        // Refused: this name is already being played. Retrying would only be
-        // refused again, so the join is abandoned and the player is told why.
-        log('info', 'host refused the join under this name');
-        this.blocked = 'NameTaken';
-        this.joinRetry.stop();
-        this.updateListener?.();
-        break;
-      case 'AlreadyStarted':
-        // The room is mid-game, and no retry can put this player in it: the round
-        // they would be joining has already read its answers. Abandoned for good, so
-        // the join does not keep asking a question with one answer.
-        log('info', 'room has already started');
-        this.blocked = 'AlreadyStarted';
-        this.joinRetry.stop();
-        this.transport.stop();
-        this.updateListener?.();
-        break;
-      case 'Kicked':
-        // Out of the room, and staying out: a kicked player must not be able to
-        // rejoin under the same name and reclaim the seat they were removed from.
-        log('info', 'kicked out of the room');
-        this.blocked = 'Kicked';
-        this.joinRetry.stop();
-        this.transport.stop();
-        this.updateListener?.();
-        break;
     }
   }
 
-  join(playerName: string, look: PlayerLook): void {
+join(playerName: string, look: PlayerLook): void {
     log('info', 'joining as', playerName);
-    // Held and re-sent until the host seats us or refuses the name.
+    // Held and re-sent until the host seats us or refuses the join.
     this.joinRetry.send({
       type: 'Join',
       name: playerName,
@@ -220,5 +205,15 @@ export class ClientSession {
   /** Why this client is not in a room, or undefined if it is in one. */
   getBlocked(): BlockedReason | undefined {
     return this.blocked;
+  }
+
+  /**
+   * How many players the room holds, as the host last reported it.
+   *
+   * Zero until a refusal says otherwise, which is the only thing the UI reads it for: a
+   * full-room refusal is the one refusal whose sentence carries a number.
+   */
+  getRoomLimit(): number {
+    return this.roomLimit;
   }
 }

@@ -1,5 +1,48 @@
 ﻿# DECISIONS
 
+## 2026-10-01 — a room full is refused at the door, and the refusal quotes the limit
+Nothing enforced `GameConfig.limits.maxPlayers` on a real join. The rule was in three places
+that only ever *displayed* it — the lobby's Start button, the bot path, and now the bar — so a
+seventeenth player was seated in a sixteen-seat room and the bar quietly drew sixteen of the
+seventeen. The bar is what made it visible: it drops a player past its slot count, so the game
+looked right and the roster was not.
+
+`HostRoster.hasRoom` counts seats, not connections, and is checked before the phase rather than
+after: a dropped player still holds a seat, and a room that filled up with the gaps left behind
+would turn somebody's bad connection into a locked door. A player who already holds a seat is
+exempt, which is the same exemption the mid-game return needs — a refresh asks with a name the
+room already knows, and a room at its limit must not answer that the way it answers a stranger.
+
+`RoomFull` carries `maxPlayers` rather than the host writing the sentence, for the same reason
+`SetPlayerId` carries an id: the number is the host's, and a client that quoted a copy of the
+limit would put a number in front of the player that the room does not hold. It is the one
+refusal that can be withdrawn, so it is also the one that does not close the session — a kicked
+player must not be left listening to the room they were put out of, and a refused one may knock
+again.
+
+The four refusals were a case each in `ClientSession.handleHostMessage` and are now a table in
+`Network/ClientRefusals.ts`, because they differ in exactly two facts — which reason, and whether
+the session closes — and the handler had outgrown its 40 lines while saying so. `BlockedReason`
+moved to `Protocol.ts` with it: the reasons are the host's messages first and the client's own
+bookkeeping second.
+
+## 2026-10-01 — the crown is the host's mark again, and it breathes
+The bar's host wears the same crown the lobby chip does, in the same room yellow: a fact the
+whole room would agree on must not follow the viewer's own tint. It is out of the flow and lifted
+onto the top edge of the slot, because a crown in the flow makes the host the only tall slot in a
+row of faces, and half above the edge makes it a mark on a seat rather than a fourth line of text.
+
+It is centred over the character rather than tucked into a corner, and it carries the shared
+`Sway` — the same movement as the characters, composed rather than copied. Centring rides the
+`translate` property for exactly that reason: the sway animates `transform` on the same node, so
+the two compose instead of one being written over.
+
+## 2026-10-01 — the slot went back to being slim
+`--Size-PlayerBarSlot` is 60px, down from the 84px it was widened to. A name is up to sixteen long
+and the common one is five or six, so a wide slot only bought back names nobody uses, while what
+it really bought was fewer rows: at 60px sixteen slots are two rows on a phone and one on a
+desktop, and a bar the game has no room under is not a bar.
+
 ## 2026-10-01 — the bar of players runs across the whole game, and the roster moved into every phase
 `PlayerBar` draws every player along the top of a game as character, name and score, in
 roster order, and holds `--Layout-PlayerBarSlots` of them. The row wraps onto a second row

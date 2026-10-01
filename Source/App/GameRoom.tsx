@@ -1,14 +1,14 @@
 import { useState } from 'preact/hooks';
 import { InfoScreen, LobbyDebugTools } from '@/Screens';
 import { Strings } from '@/Content';
-import { PlayerLook } from '@/Core';
+import { PlayerLook, assertNever } from '@/Core';
 import { Stack } from '@/Design/Primitives';
 import { DebugDock, StartCountdown } from '@/Design/Overlays';
 import { useGameSession } from './Hooks/UseGameSession';
 import { useDebugToggle } from './Hooks/UseDebugToggle';
 import { useStartCountdown } from './Hooks/UseStartCountdown';
 import type { GameSessionView } from './Hooks/UseGameSession';
-import { SessionRole } from './Session';
+import { SessionRole, BlockedReason } from './Session';
 import { LobbyView } from './Views/LobbyView';
 import { PlayerBarView } from './Views/PlayerBarView';
 
@@ -22,12 +22,27 @@ export interface GameRoomProps {
   onLook: (look: PlayerLook) => void;
 }
 
-/** The one sentence for each way a player can find themselves outside the room. */
-const BlockedMessage = {
-  NameTaken: Strings.status.nameTaken,
-  AlreadyStarted: Strings.status.alreadyStarted,
-  Kicked: Strings.status.kicked,
-} as const;
+/**
+ * The one sentence for each way a player can find themselves outside the room.
+ *
+ * A function rather than a table because one of the four carries a number, and the number
+ * is the host's rather than one written here: a refusal quoting a different limit from the
+ * room's would be a number the player could not argue with.
+ */
+function blockedMessage(reason: BlockedReason, roomLimit: number): string {
+  switch (reason) {
+    case 'NameTaken':
+      return Strings.status.nameTaken;
+    case 'AlreadyStarted':
+      return Strings.status.alreadyStarted;
+    case 'RoomFull':
+      return Strings.status.roomFull(roomLimit);
+    case 'Kicked':
+      return Strings.status.kicked;
+    default:
+      return assertNever(reason);
+  }
+}
 
 /**
  * The game itself, while it is being designed.
@@ -54,7 +69,12 @@ function PhaseScreen({ view }: { view: GameSessionView }) {
     return <InfoScreen message={Strings.status.hostLeft} onAcknowledge={view.exitRoom} />;
   }
   if (view.blocked !== undefined) {
-    return <InfoScreen message={BlockedMessage[view.blocked]} onAcknowledge={view.exitRoom} />;
+    return (
+      <InfoScreen
+        message={blockedMessage(view.blocked, view.roomLimit)}
+        onAcknowledge={view.exitRoom}
+      />
+    );
   }
   switch (view.phase) {
     case 'Lobby':

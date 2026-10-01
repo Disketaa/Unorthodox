@@ -32,6 +32,7 @@
  * arrive.
  */
 .Slot {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -41,6 +42,53 @@
   background: transparent;
   border: var(--Border-Width-Default) solid transparent;
   border-radius: var(--Radius-Card);
+}
+
+/*
+ * The host's crown, riding half above the slot rather than sitting inside it.
+ *
+ * Taken out of the flow entirely, so the crown does not make the host's slot taller than
+ * the rest and every face in the bar stays on one line — which is the whole reason the
+ * bar can be read at a glance. Lifted by half its own height so it sits on the top edge
+ * like a mark on a seat rather than as a fourth line of text under the name.
+ *
+ * Centred over the character rather than tucked into a corner: the slot is a column, so
+ * the middle of it is the middle of the face, and a crown on the shoulder of a drawing
+ * reads as something the player is wearing.
+ *
+ * The idle sway is composed rather than written here, which is what makes the crown
+ * breathe in time with the characters underneath it instead of beside them. It rides the
+ * `translate` property for its centring while the sway animates `transform`, so the two
+ * movements compose rather than one overwriting the other.
+ *
+ * No background of its own: it is drawn over the slot, and a filled box behind it would
+ * read as a chip in a bar of slots rather than as a mark on one.
+ */
+.Crown {
+  composes: Moving from '../../Primitives/Sway/Sway.module.css';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  translate: -50% -50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--Size-Character-Small);
+  height: var(--Size-Character-Small);
+  color: var(--Color-Room-Yellow);
+  pointer-events: none;
+}
+
+/*
+ * The fill step rather than the text one, because it is a mark rather than words, and the
+ * same yellow the lobby's crown and the Start button use: it says who is hosting, which
+ * is a fact the whole room would agree on, so it must not follow the viewer's own tint.
+ */
+.CrownIcon {
+  width: 1.1em;
+  height: 1.1em;
+  background-color: currentColor;
+  mask: url('../../Icons/Crown.svg') center / 110% no-repeat;
 }
 
 /*

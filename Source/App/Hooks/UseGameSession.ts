@@ -29,6 +29,8 @@ export interface GameSessionView extends SessionPhase {
   hostLeft: boolean;
   /** Why this player is not in the room, if they are not. */
   blocked: BlockedReason | undefined;
+  /** How many players the room holds, which the full-room refusal quotes. */
+  roomLimit: number;
   /** The host removing a player from the room. */
   kickPlayer: (playerId: PlayerId) => void;
   /**
@@ -159,6 +161,7 @@ export function useGameSession(
     rejectedGroupIds: rejectedIn(marks, topic),
     hostLeft,
     blocked: session.getBlocked(),
+    roomLimit: session.getRoomLimit(),
     kickPlayer: (playerId) => session.kick(playerId),
     ownLook,
     exitRoom,

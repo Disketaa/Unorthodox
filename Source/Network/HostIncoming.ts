@@ -2,6 +2,7 @@ import { ClientMessage } from './Protocol';
 import { Transport } from './Transport';
 import { HostRoster, resolveLook } from './HostRoster';
 import { GameAction, HostState } from '@/Game';
+import { GameConfig } from '@/Game';
 import { createLogger } from '@/Core';
 
 const log = createLogger('HostIncoming');
@@ -27,6 +28,18 @@ export function toAction(context: IncomingContext): GameAction | undefined {
   const { message, peerId, roster, transport } = context;
   switch (message.type) {
     case 'Join': {
+      if (!roster.hasRoom && !roster.hasSeatForName(message.name)) {
+        // Every seat is taken, so this player cannot be given one. Checked before the
+        // phase, because a full room is full in the lobby and full again four rounds in,
+        // and a returning player keeps the seat they already hold rather than needing one
+        // to be free.
+        log('info', 'refusing a join into a room with no seat left');
+        transport.sendToPeer(peerId, {
+          type: 'RoomFull',
+          maxPlayers: GameConfig.limits.maxPlayers,
+        });
+        return undefined;
+      }
       if (context.state.phase !== 'Lobby' && !roster.hasSeatForName(message.name)) {
         // The game is already running, and a room mid-round has nowhere to put a
         // player who was never in it: the answer they owe is already being read, and

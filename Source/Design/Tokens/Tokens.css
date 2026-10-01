@@ -768,16 +768,15 @@ body.PageFade {
   /*
    * How wide one slot of the bar is.
    *
-   * The name under a character is what decides this, and three characters of it: a
-   * player's own name is up to sixteen long and the common one is shorter, so a slot
-   * cut at six or so starts throwing away the names of half the room and a name cut at
-   * twenty pushes a room of ten off the side of a laptop. The name is cut past this
-   * width rather than wrapped, so a long name never makes its own slot taller than the
-   * rest and the characters stay in a row. The row wraps rather than scrolls, which is
-   * what keeps the bar from becoming something a player has to swipe sideways to find
-   * themselves in.
+   * The name under a character is what decides this, and the slot is deliberately slim:
+   * a name is up to sixteen long and the common one is five or six, so a slot cut at
+   * about four letters already throws away the tail of half the room, and a wide slot
+   * only buys back the names nobody uses. What the width really buys is rows — sixteen
+   * slots at this width are two rows on a phone and one on a desktop, which is a bar the
+   * game still has room under. The name is cut rather than wrapped, so a long name never
+   * makes its own slot taller than the rest and the characters stay in a row.
    */
-  --Size-PlayerBarSlot: 84px;
+  --Size-PlayerBarSlot: 60px;
 
   /* Character sizes, for the roster, the scoreboard and the picker. */
   --Size-Character-Small: 28px;

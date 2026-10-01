@@ -77,6 +77,35 @@ describe('the bar of players', () => {
   });
 });
 
+it('draws the host crown out of the flow, so the host is not the tallest slot', () => {
+    // In the flow it would push the host's name and score down a line and break the row of
+    // faces, which is the one thing the bar is for.
+    expect(declaration('Crown', 'position')).toBe('absolute');
+    expect(declaration('Slot', 'position')).toBe('relative');
+  });
+
+it('centres the crown on the character and lifts it onto the slot edge', () => {
+    expect(declaration('Crown', 'left')).toBe('50%');
+    // `translate` and not `transform`: the sway animates `transform` on this same node,
+    // so the centring has to be the property that composes with it rather than the one it
+    // would be written over.
+    expect(declaration('Crown', 'translate')).toBe('-50%-50%');
+    // No fill of its own: a box behind it would read as a chip in a bar of slots rather
+    // than as a mark on one.
+    expect(sheet.declares(/\.Crown\s*\{([^}]*)\}/, 'background')).toBe(false);
+  });
+
+it('rocks the crown on the same movement as the characters', () => {
+    // Composed from the shared primitive rather than given keyframes of its own: two
+    // copies of the sway would be one movement that had quietly forked.
+    expect(ruleBody('Crown')).toContain('Sway.module.css');
+  });
+
+it('crowns the host in the room yellow, like the lobby and the Start button', () => {
+    expect(declaration('Crown', 'color')).toBe('var(--Color-Room-Yellow)');
+    expect(ruleBody('CrownIcon')).toContain('Crown.svg');
+  });
+
 describe('the tokens behind it', () => {
   it('holds sixteen players, and says so as a count rather than a length', () => {
     // A count, because the bar drops a player past it in render, which is a decision a

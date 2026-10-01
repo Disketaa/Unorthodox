@@ -26,6 +26,17 @@ export type HostMessage =
   | { type: 'SetPlayerId'; playerId: PlayerId }
   | { type: 'NameRejected' }
   | { type: 'AlreadyStarted' }
+  | {
+      type: 'RoomFull';
+      /**
+       * How many players the room holds.
+       *
+       * On the wire rather than written into a sentence, because the room's limit is a
+       * number the host holds and the client may not read, and a refusal that says "full"
+       * without saying of what is a dead end the player cannot argue with.
+       */
+      maxPlayers: number;
+    }
   | { type: 'Kicked' };
 
 /** Narrow an unknown value to an indexable record so its fields can be checked. */
@@ -35,6 +46,16 @@ function asRecord(value: unknown): Record<string, unknown> | undefined {
   }
   return { ...value };
 }
+
+/**
+ * Why a client is not in a room.
+ *
+ * Every one of them is a message the host sends and all end the same way on screen, so
+ * they are one field with a reason rather than several booleans that could all be set.
+ * Declared here rather than on the session because the reasons are the host's messages
+ * first and the client's own bookkeeping second.
+ */
+export type BlockedReason = 'NameTaken' | 'AlreadyStarted' | 'RoomFull' | 'Kicked';
 
 export function isClientMessage(value: unknown): value is ClientMessage {
   const record = asRecord(value);
@@ -82,6 +103,11 @@ export function isHostMessage(value: unknown): value is HostMessage {
     case 'AlreadyStarted':
       // The room is past its lobby, so this client cannot be in it at all.
       return true;
+    case 'RoomFull':
+      // The room has every seat it holds. The count is checked because the sentence the
+      // client builds says how many, and a host that sent a nonsense one would put a
+      // number nobody can act on in front of the player.
+      return typeof record.maxPlayers === 'number';
     case 'Kicked':
       // The host removed this player from the room.
       return true;

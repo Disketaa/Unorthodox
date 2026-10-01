@@ -147,6 +147,8 @@ status: {
     nameTaken: 'Это имя уже занято',
     /** The room was past its lobby, so this player has a round they were never in. */
     alreadyStarted: 'Игра уже началась',
+    /** Every seat is taken. The count is the host's, so it travels rather than being written here. */
+    roomFull: (maxPlayers: number) => `В комнате уже ${maxPlayers} игроков`,
     kicked: 'Вы были исключены',
     connecting: 'Подключаемся…',
   },

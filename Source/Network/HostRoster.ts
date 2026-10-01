@@ -1,4 +1,5 @@
 import { PlayerId, PlayerLook } from '@/Core';
+import { GameConfig } from '@/Game';
 
 /**
  * Who is at the table, and which seat each name belongs to.
@@ -87,6 +88,18 @@ export class HostRoster {
   hasSeatForName(name: string): boolean {
     const seat = this.seatByName.get(name);
     return seat !== undefined && this.seats.has(seat);
+  }
+
+  /**
+   * Whether the room has a seat left to give.
+   *
+   * Counted over seats rather than over players who are connected, so a dropped player
+   * still holds theirs: the seat is kept for a player who may yet come back, and a room
+   * that filled up with the gaps left behind would turn a connection into a reason to lock
+   * somebody out.
+   */
+  get hasRoom(): boolean {
+    return this.seats.size < GameConfig.limits.maxPlayers;
   }
 
   /**

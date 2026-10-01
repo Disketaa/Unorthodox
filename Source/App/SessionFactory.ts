@@ -4,7 +4,7 @@ import {
   HostSession,
   TrysteroTransport,
 } from '@/Network';
-import { toPublicState } from '@/Game';
+import { GameConfig, toPublicState } from '@/Game';
 import { PlayerLook } from '@/Core';
 import { Session, SessionRole } from './Session';
 
@@ -27,6 +27,8 @@ function createHostSession(roomCode: string, playerName: string, look: PlayerLoo
     onHostLeave: () => {},
     // The host is the name in the room, so nothing can collide with it.
     getBlocked: () => undefined,
+    // The host cannot be refused a seat, so it has no room limit to quote.
+    getRoomLimit: () => GameConfig.limits.maxPlayers,
     join: () => {},
     setLook: (look) => hostSession.setOwnLook(look),
     setPace: (pace) => hostSession.setPace(pace),
@@ -55,6 +57,7 @@ function createPlayerSession(roomCode: string, playerName: string, look: PlayerL
     onUpdate: (listener) => clientSession.onUpdate(listener),
     onHostLeave: (listener) => clientSession.onHostLeave(listener),
     getBlocked: () => clientSession.getBlocked(),
+    getRoomLimit: () => clientSession.getRoomLimit(),
     join: () => {},
     setLook: (look) => clientSession.setLook(look),
     // A client asking for a pace would be two people deciding the same setting, and the
