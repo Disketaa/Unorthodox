@@ -459,3 +459,14 @@ the same relative place rather than somewhere new. The bands are left at fifteen
 size, because a mark is placed from the band's outer screen edge and the band is only the area it is
 laid out in: widening the bands on a narrow screen would widen those boxes without moving anything
 inside them.
+
+The scrollbar is painted in the accent, on `html`, and with no border on it. It is the one piece of
+the interface the browser paints rather than the game, and left alone it is the only grey on the page
+belonging to neither the palette nor the paper. Its hover and active values are the primary button's
+own, so it answers the pointer with the same weight as everything else. The track is transparent
+rather than a colour of its own, because the paper texture covers the viewport and anything opaque
+painted there is a hole in it. Both the standard `scrollbar-color` pair and the `::-webkit-scrollbar`
+pseudo-elements are written: the first is what a browser reads and the second is the only way to get a
+borderless rounded thumb anywhere, and each is ignored where it is not understood. A device with no
+pointer gets no bar at all, since there is nothing to drag one with and it would be a permanent strip
+of accent down the side of the page.

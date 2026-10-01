@@ -31,6 +31,93 @@ body {
 }
 
 /**
+ * The page's own scrollbar, painted in the accent.
+ *
+ * On `html` rather than `body`, because that is the element that scrolls: the
+ * document scrollbar belongs to the viewport, and styling `body` would only
+ * reach it where a browser decided to propagate the values up.
+ *
+ * Two sets of rules, because there are two of everything. The standard
+ * `scrollbar-color` and `scrollbar-width` are what a browser that supports them
+ * uses, and they are what Safari will fall back to; the `::-webkit-scrollbar`
+ * pseudo-elements are the only way to get a borderless bar with a shaped thumb
+ * anywhere else, and they are ignored where they are not understood. Neither set
+ * is a fallback for the other in the sense of "the other looks wrong": a browser
+ * that reads the standard properties and ignores the pseudo-elements gets a flat
+ * accent bar, and one that reads the pseudo-elements gets the same bar rounded.
+ *
+ * The track is transparent rather than a colour of its own, so the bar is a
+ * thumb floating over the page instead of a grey channel drawn down the side of
+ * it. The paper texture is over the whole viewport, so anything opaque painted
+ * here would be a hole in that.
+ *
+ * No border anywhere, and that is the point: the default thumb carries its own
+ * border in some engines and a track border in others, and a border in the
+ * accent reads as a hairline of a different colour rather than as an edge of
+ * this one. The thumb is a rounded bar of flat colour instead, which is a shape
+ * rather than a frame.
+ */
+html {
+  scrollbar-color: var(--Scrollbar-Thumb) var(--Scrollbar-Track);
+  scrollbar-width: thin;
+}
+
+html::-webkit-scrollbar {
+  width: var(--Scrollbar-Width);
+  height: var(--Scrollbar-Width);
+  background: var(--Scrollbar-Track);
+}
+
+html::-webkit-scrollbar-track {
+  background: var(--Scrollbar-Track);
+  border: none;
+}
+
+/*
+ * The corners where the two bars meet, which are the track's own background and
+ * would otherwise square off the ends of the thumb where it reaches them.
+ */
+html::-webkit-scrollbar-corner {
+  background: var(--Scrollbar-Track);
+}
+
+html::-webkit-scrollbar-thumb {
+  background: var(--Scrollbar-Thumb);
+  border: none;
+  border-radius: 999px;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: var(--Scrollbar-ThumbHover);
+}
+
+html::-webkit-scrollbar-thumb:active {
+  background: var(--Scrollbar-ThumbActive);
+}
+
+/*
+ * No bars at all where the pointer cannot reach one.
+ *
+ * A touch device has nothing to drag a scrollbar with, so a bar there is a
+ * permanent strip of accent down the side of the page that scrolls by itself and
+ * cannot be moved. The page still scrolls; only the indicator goes. This is a
+ * pointer query rather than a width one, because it is the absence of a pointer
+ * that matters and not the size of the screen: a narrow desktop window is still
+ * a window someone can drag a scrollbar in.
+ */
+@media (hover: none) {
+  html {
+    scrollbar-width: none;
+  }
+
+  /* Zero rather than `none`, which is what the pseudo-element actually takes. */
+  html::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+}
+
+/**
  * The app is designed for a phone. On a wider screen the content is centred in a
  * narrow column rather than stretched, so line lengths stay readable, and it sits
  * in the middle of the viewport so the entry screen is not pinned to the top.
@@ -162,6 +249,30 @@ body {
   --Color-Surface-Hover: #f5f5f5;
   --Color-Surface-Active: #eeeeee;
   --Color-Surface-Inverse: #212121;
+
+  /*
+   * The scrollbar, in the accent.
+   *
+   * The accent rather than a neutral because the scrollbar is the one piece of
+   * the interface the browser paints rather than the game, and left alone it is
+   * the only grey on the page that belongs to neither the palette nor the paper.
+   * In the accent it reads as part of the same set as the buttons and the marks.
+   *
+   * Hover and active are the button's own values, so the scrollbar answers the
+   * pointer with the same weight as everything else rather than with a tint of
+   * its own.
+   */
+  --Scrollbar-Track: transparent;
+  --Scrollbar-Thumb: var(--Color-Action-Primary-Background);
+  --Scrollbar-ThumbHover: var(--Color-Action-Primary-Hover);
+  --Scrollbar-ThumbActive: var(--Color-Action-Primary-Active);
+  --Scrollbar-TrackHover: transparent;
+  /*
+   * How wide the scrollbar is, in pixels. A share of nothing would be a
+   * fraction of the thumb, which is a fraction of a fraction, so this is a length
+   * and the one place the scrollbar is not scaled with the page.
+   */
+  --Scrollbar-Width: 10px;
 
   /*
    * The paper texture sits over the interface and multiplies into it, so it
