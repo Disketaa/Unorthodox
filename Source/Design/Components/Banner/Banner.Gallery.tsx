@@ -19,6 +19,16 @@ export function BannerGallery() {
       <Banner variant="Info" mark="Loading">
         The spinning mark
       </Banner>
+      <Banner variant="Info" mark="Clock">
+        The mark for a length of time
+      </Banner>
+      <Text variant="Body">Banner Values</Text>
+      <Banner variant="Muted" mark="Clock" value="60 с">
+        Время на ответ
+      </Banner>
+      <Banner variant="Muted" mark="Clock" value="90 с">
+        Время на голосование
+      </Banner>
     </Stack>
     </Stack>
   );

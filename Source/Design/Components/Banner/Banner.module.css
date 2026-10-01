@@ -42,6 +42,10 @@
   mask: url('../../Icons/Info.svg') center / contain no-repeat;
 }
 
+.MarkClock {
+  mask-image: url('../../Icons/Clock.svg');
+}
+
 .MarkLoading {
   mask-image: url('../../Icons/Loading.svg');
   /*
@@ -75,6 +79,20 @@
 }
 
 /*
+ * The value sits at the far end of the row, and the words take the space between.
+ *
+ * `margin-left: auto` rather than a `justify-content` on the block, because the
+ * block's justify is the alignment variant's business and a value is never paired
+ * with a centred one.
+ */
+.Value {
+  margin-left: auto;
+  font-family: var(--FontFamily-Body);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/*
  * White on every fill, so the four variants read as one kind of block. The tones are
  * mid-weight, so this is legible on the deep error and thin on the lighter three:
  * deepening those fills is the way to have both, rather than dropping to ink.
@@ -97,4 +115,17 @@
 .VariantError {
   background: var(--Color-Feedback-Error);
   color: var(--Color-Surface-Default);
+}
+
+/*
+ * The one variant with no status in it, and so the only one that is not a block of
+ * colour: a setting the room chose, which is a fact rather than a warning, and four
+ * status fills would make it read as one.
+ *
+ * The two greys rather than a border, because a row of hairline frames reads as a
+ * form to be filled in and this is a readout.
+ */
+.VariantMuted {
+  background: var(--Color-Surface-Hover);
+  color: var(--Color-Text-Muted);
 }

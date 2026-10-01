@@ -41,12 +41,19 @@ export interface ScreenProps {
  * without the screen knowing which one it is on. Nothing in `Screens/` names a
  * direction for its own containers, and nothing reads the window.
  *
- * The cap on a row is the width rather than a breakpoint, and `min()` on the track
- * is the whole reason it works on a narrow screen: a track is one container wide,
- * floored at `min(480px, 100%)` so a phone narrower than a container shrinks the
- * track instead of overflowing it. Since the frame is at most `--Layout-ColumnsMax`
- * tracks wide, `auto-fit` can never fit a fourth one, and a fifth container wraps
- * without a width query anywhere in the codebase saying where.
+ * The row count is all or nothing, and that is the one thing here a caller does not
+ * choose. `auto-fit` fits as many tracks as the frame is wide, so a row of three
+ * containers was three across, then two across and one below, then one per row — and
+ * the middle of those reads as the pair the screen is about with the third left over
+ * underneath it. Fitting a track is a per-track question, so no setting of `auto-fit`
+ * answers it; the stylesheet compares the window against the width a full row needs and
+ * below that there is one container per row.
+ *
+ * Inside that query `auto-fit` is still doing a job, and it is a different one: a
+ * screen with fewer containers than the row's count still fills the width, because
+ * `auto-fit` collapses the tracks nothing is in. A fixed count would leave an empty
+ * track at the end of the entry screen's two, so the wordmark and the card of fields
+ * would sit against the left with the gap on the wrong side.
  *
  * `vertical` and `align` are two different questions and both are per screen. The
  * first is where the whole set sits in the viewport; the second is how the

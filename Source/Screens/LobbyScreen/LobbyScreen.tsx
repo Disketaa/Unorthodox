@@ -4,6 +4,7 @@ import { CharacterColor, CharacterId, PlayerId } from '@/Core';
 import { Strings } from '@/Content';
 import { GameConfig, PublicPlayer } from '@/Game';
 import { LobbyCategory } from './LobbyCategory';
+import { LobbyPace } from './LobbyPace';
 import { LobbyRoster } from './LobbyRoster';
 import { LobbyStart } from './LobbyStart';
 
@@ -137,6 +138,7 @@ export function LobbyScreen({
         onKick={onKick}
         onExit={onExit}
       />
+      <LobbyPace />
       {ownLook !== undefined && (
         <LookPicker
           ownName={ownPlayerName}

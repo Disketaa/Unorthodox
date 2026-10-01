@@ -38,6 +38,36 @@ export const Strings = {
     exit: 'Выйти из комнаты',
     /** What the host's control on a player says, naming who it would remove. */
     kick: (name: string) => `Исключить ${name}`,
+    /**
+     * The pace the room plays at, and the three waits it decides.
+     *
+     * Named as the game is named, so the two buttons say what picking one does
+     * rather than naming a speed nobody has an idea of.
+     */
+    settings: {
+      title: 'Настройки',
+      /**
+       * On the rule that opens the body of the card, naming what is under it: the
+       * two pace buttons and the three waits they decide, which are one thing.
+       */
+      params: 'Параметры',
+      /**
+       * The two paces, by the same key as `Pace`.
+       *
+       * Adjectives rather than names for the game: a button reading "Обычно" is a
+       * choice between two speeds, where "Стандартная игра" is a second name for the
+       * thing the card is already about.
+       */
+      paces: {
+        Fast: 'Быстро',
+        Standard: 'Обычно',
+      },
+      writing: 'Время на ответ',
+      deciding: 'Время на голосование',
+      category: 'Время на выбор темы',
+      /** A wait in whole seconds, which is the only unit the buttons move in. */
+      seconds: (seconds: number) => `${seconds} с`,
+    },
   },
   /**
    * Names for the character picker.

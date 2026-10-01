@@ -670,6 +670,46 @@ body.PageFade {
    */
   --Layout-ContainerMaxWidth: 480px;
   --Layout-ColumnsMax: 3;
+  /*
+   * How narrow a column in a row of several may get before the row stops being a row.
+   *
+   * Not `--Layout-ContainerMaxWidth`, and the difference is a layout that works on a
+   * laptop. The cap above is how wide one container may grow, which is the readable line
+   * length; nothing said a column in a row of three has to reach it, and measuring the
+   * row against the cap put the threshold at 1536px — wider than most laptops, so a
+   * room of three sat in one column on a 1440 screen with the space for all three
+   * plainly there.
+   *
+   * This is the width the row is *measured* at, not a floor on the track: the tracks
+   * inside the query are `1fr` and share the frame, and this is the point below which
+   * there is not enough room to be worth having. Its own floor is being legible rather
+   * than comfortable, since a column that opens a row is by definition as narrow as the
+   * row allows.
+   *
+   * The width at which the row actually opens is this times `--Layout-ColumnsMax`, plus
+   * the gaps and the page margin, and that total deliberately is not a token. A media
+   * query does not resolve `var()`, so the one declaration that needs the total cannot
+   * read a token at all, and a token nothing reads is a number that looks load-bearing
+   * and is not. It is written out in `Screen.module.css` and recomputed from these
+   * tokens by `Scripts/ScreenLayout.test.ts`, which is the only place that can see both
+   * sides at once and which fails rather than letting them drift.
+   */
+  --Layout-ColumnMinWidth: 320px;
+  /*
+   * The window width at which a full row of containers opens.
+   *
+   * A literal, and the one number in the file that is a whole row rather than a
+   * single thing. A media query cannot hold a `calc()` the minifier accepts, and cannot
+   * hold a `var()` at all, so the threshold has to be spelled out even though it is
+   * arithmetic over the tokens above.
+   *
+   * Which is why the arithmetic is written here rather than left in the stylesheet: one
+   * place to recompute, and `Scripts/ScreenLayout.test.ts` resolves the tokens and
+   * compares them against it, so a change to `--Layout-ColumnsMax`,
+   * `--Layout-ColumnMinWidth`, `--Space-Lg` or `--Layout-ScreenPaddingHorizontal`
+   * cannot quietly leave the row opening at a width the columns no longer fit into.
+   */
+  --Layout-ColumnMinWidth: 320px;
   --Layout-ContentPadding: var(--Space-Md);
   /*
    * The margin around the whole screen, from the edge of the viewport to its first

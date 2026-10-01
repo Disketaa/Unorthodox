@@ -10,6 +10,7 @@ export function ButtonGallery() {
         <Button variant="Primary" onClick={() => {}}>Primary</Button>
         <Button variant="Secondary" onClick={() => {}}>Secondary</Button>
         <Button variant="Ghost" onClick={() => {}}>Ghost</Button>
+        <Button variant="Muted" onClick={() => {}}>Muted</Button>
       </Stack>
       <Text variant="Body">Button Sizes</Text>
       <Stack direction="Horizontal" gap="Sm">

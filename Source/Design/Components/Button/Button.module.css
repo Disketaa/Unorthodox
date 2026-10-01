@@ -75,3 +75,24 @@
 .VariantGhost:active:not(:disabled) {
   background: var(--Color-Action-Ghost-Active);
 }
+
+/*
+ * The option that is not the one chosen, in a set where one of them is.
+ *
+ * Quiet in the neutral greys rather than in the second action's cyan: cyan is a
+ * different act rather than the same act declined, and a pair of buttons where one
+ * says "the other one" in a second hue reads as two offers. Nothing filled either,
+ * so the filled one carries the choice on its own.
+ */
+.VariantMuted {
+  background: transparent;
+  color: var(--Color-Text-Muted);
+}
+
+.VariantMuted:hover:not(:disabled) {
+  background: var(--Color-Surface-Hover);
+}
+
+.VariantMuted:active:not(:disabled) {
+  background: var(--Color-Surface-Active);
+}

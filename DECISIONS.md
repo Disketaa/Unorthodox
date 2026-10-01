@@ -1,5 +1,155 @@
 ﻿# DECISIONS
 
+## 2026-10-01 — a screen's containers go in one row or one column, and never two of three
+`Screen` no longer fits as many containers as the width allows. It had one track of
+`auto-fit`, which has exactly two answers for a row of three: three across, or two
+across with the third below. Nothing in between is expressible, because fitting a
+track is a per-track question and this is a question about the row — and the in-between
+case is the one nobody chose. Two cards sharing a row read as the pair the screen is
+about, with the third left over underneath, and on the lobby that is the room code
+beside the settings with the character picker orphaned below them.
+
+So the frame is one container per row by default, and a media query opens the row once
+the window is wide enough for all of them. This is the file's first width query, and the
+older decision that it had none — along with the test that asserted as much — is
+reversed. "The direction comes from the width, not from the caller" still holds; what
+changed is that the width is now compared against the whole set rather than fitted one
+container at a time.
+
+The row opens at three columns of `--Layout-ColumnMinWidth`, not three of
+`--Layout-ContainerMaxWidth`, and the difference is whether the game works on a laptop.
+The cap is how wide one container may grow, which is the readable line length; nothing
+said a column in a row of three had to reach it. Measuring against the cap put the
+threshold at 1536px, which is wider than most laptops, so a room of three sat in a
+single column on a 1440 screen with the space for all three plainly there. It is now
+1056px.
+
+That token is the width the row is *measured* at and nothing constrains the tracks to
+it, which is the second half of that change and was got wrong first. The tracks are
+`minmax(0, 1fr)`, and putting the 320px floor on them was actively harmful: `auto-fit`
+fits tracks at their minimum and divides the remainder between them, so on a window wide
+enough for four tracks a 320px floor produced three columns of about 342px and threw the
+fourth away — narrower than the readable line length, and shrinking as the window grew.
+A `0` floor makes the tracks for the containers alone and lets them share the frame, and
+the frame's own `max-width` is what stops a column passing the cap: at three across it
+can be no wider than 480px however wide the window is.
+
+So the cap and the floor are on opposite sides of the mechanism and neither is redundant.
+`--Layout-ColumnMinWidth` is only ever read by the arithmetic in the test now, which is
+also why it is honest to describe it as the point below which a row is not worth having:
+a column that opens a row is by definition as narrow as the row allows.
+
+`--Layout-ColumnMinWidth` is a new token and the threshold deliberately is not one. A
+media query condition does not resolve `var()` at all — that is a rule of the language,
+not of a tool, and `calc()` around a `var()` is no different, which the build confirmed
+by refusing to minify the first two attempts. So the number is a literal in the
+stylesheet, and the arithmetic it stands for lives in the token's comment. What keeps
+that duplication from drifting is `Scripts/ScreenLayout.test.ts`, which recomputes the
+threshold from the tokens and compares, so a change to any of the four values fails the
+suite instead of quietly leaving a room that opens at a width its columns no longer fit
+into. A token for the total was written and removed: nothing could read it, and a token
+nothing reads is a number that looks load-bearing and is not.
+
+`auto-fit` did not go away, it moved inside the query, and it is doing a different job
+there. A fixed count of tracks leaves an empty one at the end of the entry screen's two,
+so the wordmark and the card of fields sit against the left with the gap on the wrong
+side; `auto-fit` collapses the empty track and the two share the row, which is what
+`justify-content: center` is then free to centre. So the query decides how many fit and
+`auto-fit` decides how the ones that are there share the width — neither doing the
+other's job, which is what was wrong when `auto-fit` was asked to do both. Inside the
+query a third container therefore always has a track of its own rather than pushing one
+out of the row, so nothing there can arrive at two either.
+
+One limit is worth recording, because it is the kind that looks like a passing test. The
+assertions in `ScreenLayout.test.ts` read the stylesheet and work out what the two rules
+add up to; happy-dom does not lay out a grid, so nothing in the suite has watched a
+browser put three containers in a row. The property "one per row or three across, never
+two" is therefore asserted as arithmetic over the declarations and not as a rendered
+result, and a rule that computes the right answer for the wrong reason would pass. There
+is no layout engine in the project's dependencies and adding one is a dependency decision
+rather than a testing detail.
+
+The query measures the window and the frame is drawn inside the page's own margin, so
+the threshold carries two margins' worth of padding. Leaving them out opens the row
+exactly two margins too late, and on a window that has only just cleared the row's
+width that is the whole difference between three across and one.
+
+The two widths that showed the old behaviour were 800, 1050 and 1700, and they are
+pinned in the test rather than left as a description: `rowCountAt` works the stylesheet's
+two answers out at a given width, so "one per row or three across" is asserted as a
+number instead of as a claim about a declaration. It is also swept from 320 to 2560 in
+one-pixel steps, because the failure was a *range* and not a width — the whole band
+between one column and the full row used to answer two — and a test that sampled three
+widths would have passed against the layout it was written for. Every other assertion in
+that file checks a declaration, which is why this one does not: a frame with a perfectly
+good `auto-fit` on it still managed two of three.
+
+## 2026-10-01 — the pace is a readout on the Banner, and the Banner grew a value
+The lobby's settings container is a `LobbyCategory` like the other two, titled
+"Настройки", so the room code, the pace and the character all read as three parts of
+one screen. The wordmark already names the game on the entry screen, and a card
+headed by the same name inside the room would be a fourth statement of it. The
+`Separator` opens the body of the card rather than splitting it, so "Параметры" names
+the pace buttons and the three waits as one thing — the buttons do not set a different
+kind of thing from the numbers, they set the numbers. Its three lines are
+`Banner variant="Muted"` with a
+`value`, which is the sample markup that was asked for and no more: a `Banner` is
+already a mark, a wording and a fill, and a second component drawing the same three
+things in grey would have been that component with a different name.
+
+`value` is a prop rather than a child, because the figure has to be at the far end
+of the row and `justify-content` is the alignment variant's business. Pushed with
+`margin-left: auto` on the value itself, which is why a value is never paired with
+`align="Center"`. The three lines are muted rather than a border around each: a
+column of hairline frames reads as a form to fill in, and this is a readout.
+
+The pace is local state inside `LobbyPace` and nothing else, so it is not yet wired
+to the durations the host runs the game on. `GameConfig.paces` is where that lands:
+`Standard` is written from `timing` rather than as three numbers of its own, so the
+pace shown and the pace played cannot drift apart once the host reads it. Adding a
+third pace means adding a key there and a label in `Strings.lobby.settings`, and
+nothing else — the two buttons are generated from the same union.
+
+The pace buttons are a `Stack direction="Horizontal" fill="Even"`, and getting there took
+three answers, two of which were wrong in ways worth not repeating.
+
+`justify="Center"` was the first: the buttons were the width of their own words and
+the pair sat in the middle of the card. That answers "where does the leftover width
+go" for a row that does not fill, and it is the only thing it does — `justify-content`
+moves children around inside a row, and cannot widen one. So the space stayed outside
+the buttons, which was the opposite of what was wanted.
+
+`fill="Even"` as a `fit-content` grid row was the second, and it did equalise the two.
+It was also wrong about which side of the question it answered, and it was given a
+`Stack` prop for a question one row had asked. Flex distributes free space by each
+child's own size, so a grid with equal tracks can size to the widest child and divide
+it evenly where a flex row cannot; that much was real, and the primitive did not need
+to know it. The `fit-content` was the invention. A row that shrink-wraps has no free
+space left to divide, so the buttons ended up sized to the text again.
+
+What was actually wanted is `flex: 1 1 0` on the children, which is where the space
+goes *inside* them, and it needs no new layout mode at all. `fill="Even"` stayed as
+the name for it, with `Content` left as the default so nothing else in the app moved.
+The `0` basis is the part that cannot be dropped: at `auto` the shares are in
+proportion to each word and "Быстро" is narrower than "Обычно" again.
+`min-width: 0` goes with it, since a flex item's floor is its own content and one long
+word would otherwise push the row past the card.
+
+`Scripts/StackLayout.test.ts` reads the stylesheet with `node:fs` for the reason
+`ScreenLayout.test.ts` does: happy-dom does not lay out a flex row, so a rendered
+`Stack` asserts nothing about the one thing `fill` exists to decide. It also holds
+`justify` and `align` to their own meanings, since folding the fill into either of
+them is what turned this into a second and contradictory property.
+
+The buttons are "Обычно" and "Быстро", offered in that order, and the room starts on
+the first. Adjectives rather than names for the game, because a card already headed
+"Настройки" that also offers "Стандартная игра" names the same thing twice. The
+declined one is `Button variant="Muted"`: nothing filled, in the neutral greys. Not
+`Ghost`, whose accent text is a deliberate decision for a button that is the only one
+of its kind, and not `Secondary`, whose cyan is a different act rather than the same
+act declined — a pair where one of the two says "the other one" in a second hue
+reads as two offers rather than as one choice.
+
 ## 2026-10-01 — the accent is the player's tint, and it was cut back to two steps
 Picking a tint repaints the interface in that hue, and it is kept in `localStorage` unlike the character,
 which stays in `sessionStorage` because that is identity and this is taste. `AccentProvider` writes onto
