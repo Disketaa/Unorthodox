@@ -9,7 +9,7 @@ export interface FinalScreenProps {
   onPlayAgain: () => void;
 }
 
-/** Final ranking. */
+/** Only the host is offered another round, since the host is what owns the room. */
 export function FinalScreen({ scores, isHost, onPlayAgain }: FinalScreenProps) {
   return (
     <Stack gap="Lg" align="Stretch">

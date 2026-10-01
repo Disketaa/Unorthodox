@@ -2,7 +2,6 @@ import { FinalScreen } from '@/Screens';
 import { toScoreEntries } from '../Rankings';
 import { PhaseViewProps } from './LobbyView';
 
-/** Final ranking after the last round. */
 export function FinalView({ view }: PhaseViewProps) {
   const state = view.publicState?.phase === 'Final' ? view.publicState : undefined;
 

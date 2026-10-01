@@ -10,9 +10,6 @@ const log = createLogger('HostSession');
 /** Reserved player id of the room creator. */
 export const HostPlayerId: PlayerId = 'host';
 
-/**
- * Manages the host side of the game state and communication.
- */
 export class HostSession {
   private state: Game.HostState | undefined = undefined;
   private transport: Transport;
@@ -53,7 +50,6 @@ export class HostSession {
     this.transport.start(roomCode, hostName, true);
   }
 
-  /** Stop the host session */
   stop(): void {
     log('info', 'stopping host session');
     this.transport.stop();
@@ -117,7 +113,6 @@ export class HostSession {
     }
   }
 
-  /** Broadcast the current public state to all clients */
   private broadcastState(): void {
     if (!this.state) {
       return;
@@ -129,7 +124,6 @@ export class HostSession {
     this.transport.broadcast({ type: 'State', state: publicState, hostNow: Date.now() });
   }
 
-  /** Call this to start the game (host presses start button) */
   startGame(topic: string, durationMs: number): void {
     this.commit(startGame(this.state, topic, durationMs));
   }
@@ -146,7 +140,6 @@ export class HostSession {
     this.commit(next);
   }
 
-  /** Call this to go to the next round (after scores screen) */
   nextRound(topic: string, durationMs: number): void {
     this.commit(nextRound(this.state, topic, durationMs));
   }
@@ -161,24 +154,20 @@ export class HostSession {
     this.apply({ type: 'SET_LOOK', playerId: HostPlayerId, look });
   }
 
-  /** The host's own rejection vote on an answer group. */
   rejectOwnGroup(groupId: number): void {
     this.apply({ type: 'REJECT_GROUP', playerId: HostPlayerId, groupId });
   }
 
-  /** Close the game and show the final ranking. */
   finish(): void {
     this.apply({ type: 'FINAL' });
   }
 
-  /** Take a new state, then tell everyone about it. */
   private commit(next: Game.HostState): void {
     this.state = next;
     this.broadcastState();
     this.updateListener?.();
   }
 
-  /** Reduce an action into the host state and broadcast the result */
   private apply(action: Game.GameAction): void {
     log('debug', 'reducing action', action.type);
     this.commit(Game.reducer(this.state, action));

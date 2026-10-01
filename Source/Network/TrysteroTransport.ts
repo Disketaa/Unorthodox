@@ -17,17 +17,14 @@ export class TrysteroTransport implements Transport {
   // reserved `host` id in game state but on the wire as its trystero selfId.
   private peerId: string = selfId;
 
-  // Actions for sending messages
   private hostToClientAction: MessageAction<JsonValue> | null = null;
   private clientToHostAction: MessageAction<JsonValue> | null = null;
 
-  // Callbacks for incoming messages and peer leave
   private onMessageCallback: ((message: unknown, fromHost: boolean, peerId: string) => void) | null =
     null;
   private onPeerLeaveCallback: ((playerId: string) => void) | null = null;
   private onHostReadyCallback: (() => void) | null = null;
 
-  // Access to the host peerId discovered by the room wiring
   private hostPeer: { get: () => string | null; clear: () => void } | null = null;
   /** Stops the periodic connection logging. */
   private stopDiagnostics: (() => void) | null = null;
@@ -97,13 +94,11 @@ export class TrysteroTransport implements Transport {
     return this.playerId;
   }
 
-  /** Convert a message for the wire, logging why it cannot be sent. */
   private prepare(message: unknown): JsonValue | undefined {
     return preparePayload(message, 'send', (reason, dropped) => log('warn', reason, dropped));
   }
 
   sendToHost(message: unknown): void {
-    // Only clients should call this
     if (this.isHost || !this.clientToHostAction) {
       log('warn', 'sendToHost called on the host or before joining, ignoring');
       return;

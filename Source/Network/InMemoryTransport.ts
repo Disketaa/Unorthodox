@@ -8,7 +8,6 @@ let nextPeerAddress = 0;
  * All peers share the same transport instance via a static broker.
  */
 export class InMemoryTransport implements Transport {
-  /** Static map of all peers by their transport-level address */
   private static peersByPeer = new Map<string, {
     transport: InMemoryTransport;
     isHost: boolean;
@@ -27,13 +26,11 @@ export class InMemoryTransport implements Transport {
   /** Whether this peer is the host, set in start() */
   private isHost: boolean = false;
 
-  /** Callbacks for incoming messages and peer leave */
   private onMessageCallback: ((message: unknown, fromHost: boolean, peerId: string) => void) | null =
     null;
   private onPeerLeaveCallback: ((playerId: string) => void) | null = null;
   private onHostReadyCallback: (() => void) | null = null;
 
-  /** Callback for receiving messages from the broker */
   private receiveCallback: (message: unknown, fromHost: boolean, peerId: string) => void;
 
   constructor() {
@@ -86,16 +83,13 @@ export class InMemoryTransport implements Transport {
   }
 
   sendToHost(message: unknown): void {
-    // Only clients should call this
     if (this.isHost) {
       return;
     }
-    // Find the host peer
     const hostEntry = Array.from(InMemoryTransport.peersByPeer.values()).find(
       entry => entry.isHost
     );
     if (hostEntry) {
-      // Deliver the message to the host's receive callback (fromHost = false)
       hostEntry.receive(message, false, this.address());
       return;
     }
@@ -109,21 +103,17 @@ export class InMemoryTransport implements Transport {
   }
 
   sendToPeer(peerId: string, message: unknown): void {
-    // Only the host should call this
     if (!this.isHost) {
       return;
     }
-    // Reply to whichever peer registered under this transport address.
     const entry = InMemoryTransport.peersByPeer.get(peerId);
     entry?.receive(message, true, peerId);
   }
 
   broadcast(message: unknown): void {
-    // Only the host should call this
     if (!this.isHost) {
       return;
     }
-    // Send to all clients (peers that are not host)
     for (const [, entry] of InMemoryTransport.peersByPeer) {
       if (!entry.isHost) {
         entry.receive(message, true, this.address());
@@ -152,15 +142,11 @@ export class InMemoryTransport implements Transport {
     return Array.from(InMemoryTransport.peersByPeer.values()).some(entry => entry.isHost);
   }
 
-  /**
-   * Call this to simulate a peer leaving.
-   * This should be called by the test when they want to disconnect a peer.
-   */
+  /** Call this to simulate a peer leaving. */
   simulateLeave(): void {
     const playerId = this.playerId;
     if (playerId !== null) {
       this.stop();
-      // Notify all other peers about this peer leaving
       for (const [, entry] of InMemoryTransport.peersByPeer) {
         if (entry.transport.onPeerLeaveCallback) {
           entry.transport.onPeerLeaveCallback(playerId);

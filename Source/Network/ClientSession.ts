@@ -18,9 +18,6 @@ export const JoinRetryIntervalMs = 2_000;
  */
 export const SyncIntervalMs = 5_000;
 
-/**
- * Manages the client side of the game state and communication.
- */
 export class ClientSession {
   private state: Game.PublicState | undefined = undefined;
   private transport: Transport;
@@ -67,7 +64,6 @@ export class ClientSession {
     this.transport.sendToHost(this.pendingJoin);
   }
 
-  /** Keep asking to join until the host answers. */
   private startJoinRetries(): void {
     if (this.joinRetry !== null) {
       return;
@@ -126,7 +122,6 @@ export class ClientSession {
     this.transport.sendToHost({ type: 'Sync' });
   }
 
-  /** Stop the client session */
   stop(): void {
     log('info', 'stopping client session');
     this.stopJoinRetries();
@@ -162,7 +157,6 @@ export class ClientSession {
     }
   }
 
-  /** Send a join message to the host */
   join(playerName: string, look: PlayerLook): void {
     log('info', 'joining as', playerName);
     this.pendingJoin = { type: 'Join', name: playerName, look };
@@ -186,7 +180,6 @@ export class ClientSession {
     this.transport.sendToHost({ type: 'SetLook', playerId: this.playerId, look });
   }
 
-  /** Send an answer submission to the host */
   submitAnswer(text: string): void {
     if (this.playerId === null) {
       // Dropping is safe rather than queueing: the host cannot start a round until
@@ -199,7 +192,6 @@ export class ClientSession {
     this.transport.sendToHost({ type: 'SubmitAnswer', text, playerId: this.playerId });
   }
 
-  /** Send a group rejection to the host */
   rejectGroup(groupId: number): void {
     if (this.playerId === null) {
       log('warn', 'cannot reject group before receiving a playerId');
@@ -216,7 +208,6 @@ export class ClientSession {
     return this.clockOffsetMs;
   }
 
-  /** Get the player ID assigned by the host */
   getPlayerId(): string | null {
     return this.playerId;
   }

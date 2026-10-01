@@ -49,7 +49,6 @@ export function setLogWriter(next: LogWriter): void {
   writer = next;
 }
 
-/** Suppress records below this level. */
 export function setLogLevel(level: LogLevel): void {
   threshold = level;
 }
@@ -60,7 +59,6 @@ export type Logger = (
   ...args: unknown[]
 ) => void;
 
-/** Create a logger bound to a scope name, e.g. createLogger("HostSession"). */
 export function createLogger(scope: string): Logger {
   return (level, message, ...args) => {
     if (levelOrder[level] < levelOrder[threshold]) {

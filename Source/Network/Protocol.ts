@@ -12,9 +12,6 @@ export type ClientMessage =
   | { type: 'RejectGroup'; groupId: number; playerId: PlayerId }
   | { type: 'Sync' };
 
-/**
- * Messages sent from the host to clients.
- */
 export type HostMessage =
   | {
       type: 'State';
@@ -36,9 +33,6 @@ function asRecord(value: unknown): Record<string, unknown> | undefined {
   return { ...value };
 }
 
-/**
- * Type guard for ClientMessage.
- */
 export function isClientMessage(value: unknown): value is ClientMessage {
   const record = asRecord(value);
   if (record === undefined) {
@@ -61,9 +55,6 @@ export function isClientMessage(value: unknown): value is ClientMessage {
   }
 }
 
-/**
- * Type guard for HostMessage.
- */
 export function isHostMessage(value: unknown): value is HostMessage {
   const record = asRecord(value);
   if (record === undefined) {

@@ -10,11 +10,9 @@
  * offset. That is harmless for a countdown measured in tens of seconds.
  */
 export interface ClockSync {
-  /** Milliseconds to add to a host timestamp to get a local one. */
   offsetMs: number;
 }
 
-/** Measure the skew from a freshly received host timestamp. */
 export function measureClockOffset(
   hostNow: number,
   receivedAt: number
@@ -22,7 +20,6 @@ export function measureClockOffset(
   return receivedAt - hostNow;
 }
 
-/** Convert a host timestamp into the equivalent local one. */
 export function hostTimeToLocal(
   hostTimestamp: number,
   offsetMs: number

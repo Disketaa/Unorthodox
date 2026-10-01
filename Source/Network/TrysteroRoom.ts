@@ -12,11 +12,9 @@ export const HelloAction = 'hello';
 export const HostToClientAction = 'hostToClient';
 export const ClientToHostAction = 'clientToHost';
 
-/** Role names exchanged in the hello message. */
 export const HostRole = 'Host';
 export const PlayerRole = 'Player';
 
-/** Callbacks the room wiring reports back through. */
 export interface RoomHandlers {
   /**
    * A protocol message arrived, tagged with the direction it came from and the
@@ -32,7 +30,6 @@ export interface RoomHandlers {
   onHostReady: () => void;
 }
 
-/** The two protocol channels, plus the role announcement channel. */
 export interface RoomActions {
   hostToClient: MessageAction<JsonValue> | null;
   clientToHost: MessageAction<JsonValue> | null;
@@ -119,7 +116,6 @@ export interface RoomPeers {
   onPeerLeave?: ((peerId: string) => void) | null;
 }
 
-/** Wire peer join and leave for the room. */
 function wirePeers(
   room: RoomPeers,
   hello: MessageAction<JsonValue>,

@@ -6,7 +6,7 @@ export interface Transport {
    * the transport knows the peer by on the wire, not the game player id.
    */
   sendToPeer(peerId: string, message: unknown): void;
-  /** Send a message to all players (only host calls this) */
+  /** Only the host calls this. */
   broadcast(message: unknown): void;
   /**
    * Set callback for when a message is received. The peer id is the sender's
@@ -33,7 +33,7 @@ export interface Transport {
   start(roomCode: string, playerName: string, isHost: boolean): void;
   /** Stop the transport and clean up */
   stop(): void;
-  /** Set the player ID for this transport (used for addressing) */
+  /** The game player id, which the host assigns and is never routable on the wire. */
   setPlayerId(playerId: string): void;
   getPlayerId(): string | null;
 }

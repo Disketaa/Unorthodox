@@ -8,10 +8,15 @@ export function assertNever(x: never): never {
   throw new Error(`Unexpected value: ${x}`);
 }
 
-// Types for Content
 export type Topic = string;
 
-// We'll define the Strings interface with the known parts.
+/**
+ * Every piece of UI text, so no screen carries a string literal of its own.
+ *
+ * The sections with no copy yet are typed as `Record<string, never>`, which is
+ * what forces a screen asking for one to be a compile error rather than an
+ * empty label at runtime. Adding a section means adding it here first.
+ */
 export interface Strings {
   lobby: {
     startButton: string;
@@ -19,12 +24,9 @@ export interface Strings {
   writing: {
     timeUp: string;
   };
-  // We'll add other sections as we learn about them.
-  // Using Record<string, never> to ensure these objects have no properties
   reviewing: Record<string, never>;
   scores: Record<string, never>;
   final: Record<string, never>;
 }
 
-// We'll also define the Topics type as an array of strings.
 export type Topics = Topic[];
