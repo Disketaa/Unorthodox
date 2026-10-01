@@ -6,6 +6,9 @@
  * `kept`. The classification is mechanical on purpose: it only proposes, and
  * nothing is rewritten. `stale` exits non-zero so it can gate a commit.
  *
+ * CSS is skipped unless `--css` is passed, and `--css` finds nothing: every
+ * comment in the stylesheets records a design decision.
+ *
  * Usage: npm run comments [-- --css] [-- <path>]
  */
 
@@ -297,13 +300,20 @@ function classify(comment: RawComment, following: string): { verdict: Verdict; r
 
   if (following !== "") {
     const commentWords = words(comment.text);
-    if (commentWords.length >= 2) {
-      const shared = new Set(looseWords(following));
-      const overlap = commentWords.filter((word) => shared.has(word)).length;
-      if (overlap / commentWords.length >= 0.6) {
-        reasons.push("restates-code");
+    const shared = new Set(looseWords(following));
+    const overlap = commentWords.filter((word) => shared.has(word)).length;
+    if (commentWords.length === 1) {
+      // One word over a class selector restates the class: `/* Padding */` above
+      // `.PaddingXs`. The same word above a custom property is a section heading
+      // for a block of them (`/* Layout */` above `--Layout-*`), which is worth
+      // keeping in a long file, so tokens are excluded.
+      if (overlap === 1 && /^\.[A-Za-z]/.test(following)) {
+        reasons.push("restates-class");
         if (verdict !== "stale") verdict = "noisy";
       }
+    } else if (commentWords.length >= 2 && overlap / commentWords.length >= 0.6) {
+      reasons.push("restates-code");
+      if (verdict !== "stale") verdict = "noisy";
     }
   }
 

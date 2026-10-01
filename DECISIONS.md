@@ -48,6 +48,28 @@ whole gallery */` on `.Root` adds nothing and no regex will say so, because deci
 to know what `.Root` is for. That is the class of comment this cannot catch, and it is not
 empty.
 
+## 2026-10-01 — one word is enough to match, but only against a class
+The audit needed `/* Padding */` above `.PaddingXs` and `/** Final ranking. */` above
+`FinalScreen`, and caught neither: the first because the overlap rule required two words
+before it would compare anything, the second because its one matching word out of two is 0.5 and
+the bar was 0.6.
+
+Lowering the bar to 0.5 was tried and reverted. It produced nine findings, and at least three
+were wrong: a test comment explaining why two answers group, a test comment naming the case
+being checked, and `pointsForGroupSize`'s own docstring, which reads "Points awarded to each
+player in a group of the given size" precisely because the summary line above it had said
+"for a group" and lost the per-player distinction. A rule that condemns its own corrections is
+not buying recall, it is buying noise. The bar stays at 0.6.
+
+The single-word rule went in, scoped to CSS class selectors. The same word above a custom
+property is not the same thing: `/* Layout */` above `--Layout-ContentMaxWidth` heads a block
+of tokens in a file three hundred lines long and earns its place, while `/* Padding */` above
+`.PaddingXs` restates a class. Probing both confirmed it fires on the first and stays off the
+second.
+
+It also reports zero findings today, which is the honest state of this: the rules are
+prospective. The comments they would have caught were already gone, removed by hand.
+
 ## 2026-10-01 — the three open questions in the comments, answered instead of deleted
 The audit found three comments that were asking something rather than stating it. A question
 cannot be deleted without answering it first, so each was answered where it stood.
