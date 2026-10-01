@@ -10,6 +10,7 @@ describe('reducer START_GAME action', () => {
         ['p1', { name: 'Alice', look: { character: 'Butterfly', color: 'Coral' }, isOnline: true }],
       ]),
       cumulativeScores: new Map(),
+      pace: 'Standard',
     };
     state = reducer(state, { type: 'START_GAME', topic: 'Test', durationMs: 60000, startedAt: 1000 });
     expect(state.phase).toBe('Writing');

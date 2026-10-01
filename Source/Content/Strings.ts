@@ -36,6 +36,18 @@ export const Strings = {
     roomFull: 'Комната заполнена',
     /** The accessible name of the icon-only control that leaves the room. */
     exit: 'Выйти из комнаты',
+    /**
+     * Says that the host's "*" took effect, since nothing else on screen moves
+     * when only the console does. Only shown while logging is on, so turning it
+     * off needs no announcement.
+     */
+    debugOn: 'Отладка включена',
+    /**
+     * Puts an invented player in the room, so a host can try a full room alone.
+     * Named as what it does to the room, and left in the imperative because it is
+     * something to do rather than a state to read.
+     */
+    addBot: 'Добавь бота',
     /** What the host's control on a player says, naming who it would remove. */
     kick: (name: string) => `Исключить ${name}`,
     /**
@@ -62,11 +74,11 @@ export const Strings = {
         Fast: 'Быстро',
         Standard: 'Обычно',
       },
-      writing: 'Время на ответ',
-      deciding: 'Время на голосование',
-      category: 'Время на выбор темы',
+      writing: 'Ответ',
+      deciding: 'Голосование',
+      category: 'Выбор темы',
       /** A wait in whole seconds, which is the only unit the buttons move in. */
-      seconds: (seconds: number) => `${seconds} с`,
+      seconds: (seconds: number) => `${seconds}с`,
     },
   },
   /**

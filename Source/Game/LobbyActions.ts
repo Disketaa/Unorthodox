@@ -23,6 +23,7 @@ export function handleJoin(state: HostState, action: ActionOf<'JOIN'>): HostStat
     phase: 'Lobby',
     players: newPlayers,
     cumulativeScores: state.cumulativeScores,
+    pace: state.pace,
   };
 }
 
@@ -47,6 +48,7 @@ export function handleSetLook(state: HostState, action: ActionOf<'SET_LOOK'>): H
     phase: 'Lobby',
     players: newPlayers,
     cumulativeScores: state.cumulativeScores,
+    pace: state.pace,
   };
 }
 
@@ -71,6 +73,7 @@ export function handleSetOnline(state: HostState, action: ActionOf<'SET_ONLINE'>
     phase: 'Lobby',
     players: newPlayers,
     cumulativeScores: state.cumulativeScores,
+    pace: state.pace,
   };
 }
 
@@ -94,5 +97,25 @@ export function handleKick(state: HostState, action: ActionOf<'KICK'>): HostStat
     phase: 'Lobby',
     players: newPlayers,
     cumulativeScores: newScores,
+    pace: state.pace,
+  };
+}
+
+/**
+ * The host changing how fast the room plays.
+ *
+ * Lobby only, like the rest of the room's settings: once writing has begun the
+ * durations are the ones the phase was started with, so a pace set mid-game would
+ * promise a round that plays at a length nobody is counting to.
+ */
+export function handleSetPace(state: HostState, action: ActionOf<'SET_PACE'>): HostState {
+  if (state.phase !== 'Lobby' || state.pace === action.pace) {
+    return state;
+  }
+  return {
+    phase: 'Lobby',
+    players: state.players,
+    cumulativeScores: state.cumulativeScores,
+    pace: action.pace,
   };
 }

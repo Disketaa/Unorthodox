@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'preact/hooks';
-import { GameConfig } from '@/Game';
+import { GameConfig, Pace } from '@/Game';
 import { CharacterColor, CharacterId } from '@/Core';
 import { topicAt } from '@/Content';
 import { Session } from '../Session';
@@ -9,6 +9,8 @@ export interface GameActions {
   startGame: () => void;
   nextRound: () => void;
   setLook: (character: CharacterId, color: CharacterColor) => void;
+  setPace: (pace: Pace) => void;
+  addBot: () => void;
   submitAnswer: (text: string) => void;
   rejectGroup: (groupId: number) => void;
   playAgain: () => void;
@@ -41,6 +43,8 @@ export function useGameActions(
     startGame,
     nextRound,
     setLook: (character, color) => session.setLook({ character, color }),
+    setPace: (pace) => session.setPace(pace),
+    addBot: () => session.addBot(),
     submitAnswer: (text: string) => {
       session.submitAnswer(text);
       onSubmitted();

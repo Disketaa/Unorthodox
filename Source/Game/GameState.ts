@@ -1,4 +1,5 @@
 import { PlayerId, PlayerLook } from '@/Core';
+import { Pace } from './GameConfig';
 
 // What the room remembers about one player: who they are, how they look, and
 // whether they are still on the line. Presence is the host's to record, because
@@ -13,6 +14,15 @@ export type LobbyState = {
   phase: 'Lobby';
   players: Map<PlayerId, Player>;
   cumulativeScores: Map<PlayerId, number>; // cumulative scores across rounds
+  /**
+   * The pace the host has set, which every player reads from the public state.
+   *
+   * The host's to change, like the roster, and in the state rather than in the UI so
+   * that a client is told the answer rather than guessing it from a local click. The
+   * phase buttons are drawn for clients too, so a player can see what a pace would
+   * mean before the host picks one, but what the room plays is this field.
+   */
+  pace: Pace;
 };
 
 export type WritingState = {

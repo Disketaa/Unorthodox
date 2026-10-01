@@ -3,6 +3,7 @@ import { isClientMessage, ClientMessage } from './Protocol';
 import { HostRoster } from './HostRoster';
 import { toAction } from './HostIncoming';
 import { startGame, closeWriting, closeReviewing, nextRound } from './HostPhases';
+import { botJoin } from './Bot';
 import * as Game from '@/Game';
 import { PlayerId, PlayerLook, createLogger } from '@/Core';
 
@@ -16,6 +17,8 @@ export class HostSession {
   private transport: Transport;
   private readonly roster = new HostRoster();
   private updateListener: (() => void) | undefined = undefined;
+  /** How many bots this room has been given, which is how the next one is numbered. */
+  private botsAdded = 0;
 
   constructor(transport: Transport) {
     this.transport = transport;
@@ -43,7 +46,7 @@ export class HostSession {
     // The state must exist before the room opens, because a waiting client can
     // answer the moment the host becomes addressable, and messages arriving
     // before the state is ready would be dropped.
-    this.state = { phase: 'Lobby', players: new Map(), cumulativeScores: new Map() };
+    this.state = { phase: 'Lobby', players: new Map(), cumulativeScores: new Map(), pace: 'Standard' };
     // The host plays too, under the reserved `host` id.
     this.roster.addHost(HostPlayerId, hostName);
     this.apply({ type: 'JOIN', playerId: HostPlayerId, name: hostName, look });
@@ -82,6 +85,7 @@ export class HostSession {
     this.state = undefined;
     this.roster.clear();
     this.updateListener = undefined;
+    this.botsAdded = 0;
   }
 
   /** The peerId is the transport address the message arrived from, not a player id. */
@@ -147,6 +151,28 @@ export class HostSession {
   /** The host changing its own character, as the lobby allows until play starts. */
   setOwnLook(look: PlayerLook): void {
     this.apply({ type: 'SET_LOOK', playerId: HostPlayerId, look });
+  }
+
+  /** The host setting how fast the room plays, which every client is then told. */
+  setPace(pace: Game.Pace): void {
+    this.apply({ type: 'SET_PACE', pace });
+  }
+
+  /**
+   * Put an invented player in the room, for the host trying a full room alone.
+   *
+   * A join like any other, so the bot is in the roster and can be voted for and
+   * kicked. It is given a seat of its own rather than claimed from the roster,
+   * because there is no address behind it and nothing to go offline, which also
+   * keeps the room from waiting on an answer that will not be written.
+   */
+  addBot(): void {
+    if (!this.state) return;
+    const action = botJoin(this.state, this.botsAdded + 1, Math.random);
+    if (action) {
+      this.botsAdded += 1;
+      this.apply(action);
+    }
   }
 
   /**

@@ -12,6 +12,7 @@ describe('reducer JOIN action', () => {
       phase: 'Lobby',
       players: new Map(),
       cumulativeScores: new Map(),
+      pace: 'Standard',
     };
     state = reducer(state, { type: 'JOIN', playerId: 'p1', name: 'Alice', look });
     state = reducer(state, { type: 'JOIN', playerId: 'p2', name: 'Bob', look: otherLook });
@@ -32,6 +33,7 @@ describe('reducer SET_LOOK action', () => {
     phase: 'Lobby',
     players: new Map([['p1', { name: 'Alice', look, isOnline: true }]]),
     cumulativeScores: new Map(),
+    pace: 'Standard',
   };
 
   test('changes the character in the lobby', () => {

@@ -1,28 +1,25 @@
 import { Screen } from '@/Design/Primitives';
-import { CharacterPicker, IconButton, RoomCodeBadge } from '@/Design/Components';
-import { CharacterColor, CharacterId, PlayerId } from '@/Core';
+import { CharacterPicker } from '@/Design/Components';
+import { CharacterColor, CharacterId } from '@/Core';
 import { Strings } from '@/Content';
-import { GameConfig, PublicPlayer } from '@/Game';
+import { Pace } from '@/Game';
 import { LobbyCategory } from './LobbyCategory';
 import { LobbyPace } from './LobbyPace';
-import { LobbyRoster } from './LobbyRoster';
-import { LobbyStart } from './LobbyStart';
+import { LobbyRoom, type LobbyRoomProps } from './LobbyRoom';
 
-export interface LobbyScreenProps {
-  roomCode: string;
-  players: readonly PublicPlayer[];
-  /** This device's player, outlined in the roster so it can be found in a full room. */
-  ownPlayerId: PlayerId | null;
+export interface LobbyScreenProps extends LobbyRoomProps {
   /** This player's own name, which titles the character picker. */
   ownPlayerName: string;
   /** This player's own character, once the host has told us which one it kept. */
   ownLook: { character: CharacterId; color: CharacterColor } | undefined;
-  isHost: boolean;
+  /** The pace the room is set to, which only the host can change. */
+  pace: Pace;
   onPickLook: (character: CharacterId, color: CharacterColor) => void;
-  onStart: () => void;
-  onExit: () => void;
-  /** Only the host gets this: the room's way to remove a player. */
-  onKick: (playerId: PlayerId) => void;
+  /**
+   * Asking for a pace. The host's click changes the room; a client's is a local look at
+   * what that pace would mean, and the host's choice is what comes back.
+   */
+  onPickPace: (pace: Pace) => void;
 }
 
 /**
@@ -61,84 +58,37 @@ function LookPicker({
   );
 }
 
-/**
- * Whether the room is ready to start, and whether it is already full.
- *
- * Counted from the players who are actually here: a seat whose owner has dropped
- * is still on the roster, but starting a round would wait on an answer that can no
- * longer arrive, so a room of one live player is a room of one.
- */
-function readiness(players: readonly PublicPlayer[]): {
-  enoughPlayers: boolean;
-  roomFull: boolean;
-} {
-  const hereCount = players.filter((player) => player.isOnline).length;
-  return {
-    enoughPlayers: hereCount >= GameConfig.limits.minPlayers,
-    roomFull: players.length >= GameConfig.limits.maxPlayers,
-  };
-}
-
-/** The room itself: its code, who is in it, and the way to start or wait. */
-function Room({
-  roomCode,
-  players,
-  ownPlayerId,
-  isHost,
-  onPickStart,
-  onKick,
-  onExit,
-}: Pick<
-  LobbyScreenProps,
-  'roomCode' | 'players' | 'ownPlayerId' | 'isHost' | 'onKick' | 'onExit'
-> & { onPickStart: () => void }) {
-  const { enoughPlayers, roomFull } = readiness(players);
-  return (
-    <LobbyCategory
-      title={<RoomCodeBadge code={roomCode} />}
-      action={<IconButton icon="Exit" label={Strings.lobby.exit} onClick={onExit} />}
-    >
-      <LobbyRoster
-        players={players}
-        ownPlayerId={ownPlayerId}
-        isHost={isHost}
-        onKick={onKick}
-      />
-      <LobbyStart
-        enoughPlayers={enoughPlayers}
-        roomFull={roomFull}
-        isHost={isHost}
-        onStart={onPickStart}
-      />
-    </LobbyCategory>
-  );
-}
-
 /** Waiting room: the room code, the roster, and the character picker. */
 export function LobbyScreen({
   roomCode,
   players,
+  pace,
   ownPlayerId,
   ownPlayerName,
   ownLook,
   isHost,
+  debugEnabled,
   onPickLook,
+  onPickPace,
   onStart,
   onExit,
   onKick,
+  onAddBot,
 }: LobbyScreenProps) {
   return (
     <Screen>
-      <Room
+      <LobbyRoom
         roomCode={roomCode}
         players={players}
         ownPlayerId={ownPlayerId}
         isHost={isHost}
-        onPickStart={onStart}
-        onKick={onKick}
+        debugEnabled={debugEnabled}
+        onStart={onStart}
         onExit={onExit}
+        onKick={onKick}
+        onAddBot={onAddBot}
       />
-      <LobbyPace />
+      <LobbyPace pace={pace} onPick={onPickPace} />
       {ownLook !== undefined && (
         <LookPicker
           ownName={ownPlayerName}

@@ -118,9 +118,9 @@
 }
 
 /*
- * The one variant with no status in it, and so the only one that is not a block of
- * colour: a setting the room chose, which is a fact rather than a warning, and four
- * status fills would make it read as one.
+ * The two quiet variants, and the only ones that are not blocks of status colour: a
+ * setting the room chose and a note about this player's own tab, which are facts
+ * rather than warnings, and four status fills would make them read as one.
  *
  * The two greys rather than a border, because a row of hairline frames reads as a
  * form to be filled in and this is a readout.
@@ -128,4 +128,16 @@
 .VariantMuted {
   background: var(--Color-Surface-Hover);
   color: var(--Color-Text-Muted);
+}
+
+/*
+ * The accent, for a note about this player's own session rather than about the room.
+ *
+ * The wash and the ink rather than the tint, because the words on it are body-sized:
+ * the tint is the character body and is not a text step, while the ink is the step
+ * made for exactly this size.
+ */
+.VariantAccent {
+  background: var(--Accent-Wash);
+  color: var(--Color-Accent-Ink);
 }

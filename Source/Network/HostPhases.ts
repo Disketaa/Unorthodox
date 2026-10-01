@@ -58,5 +58,5 @@ export function nextRound(
 }
 
 function emptyLobby(): Game.HostState {
-  return { phase: 'Lobby', players: new Map(), cumulativeScores: new Map() };
+  return { phase: 'Lobby', players: new Map(), cumulativeScores: new Map(), pace: 'Standard' };
 }

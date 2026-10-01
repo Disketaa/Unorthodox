@@ -1,7 +1,7 @@
 import { ComponentChildren } from "preact";
 import styles from "./Banner.module.css";
 
-export type BannerVariant = "Info" | "Success" | "Warning" | "Error" | "Muted";
+export type BannerVariant = "Info" | "Success" | "Warning" | "Error" | "Muted" | "Accent";
 /** Which way the words line up inside the block. */
 export type BannerAlign = "Start" | "Center";
 /**

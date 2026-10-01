@@ -1,5 +1,5 @@
 import { PlayerLook } from '@/Core';
-import { PublicState } from '@/Game';
+import { PublicState, Pace } from '@/Game';
 
 export type SessionRole = 'Host' | 'Player';
 
@@ -24,6 +24,22 @@ export interface Session {
   kick(playerId: string): void;
   join(name: string, look: PlayerLook): void;
   setLook(look: PlayerLook): void;
+  /**
+   * The host setting the room's pace.
+   *
+   * Only the host calls this. A client pressing a pace button is looking at what that
+   * pace would mean and does not ask for it, so there is no message to send and this is
+   * a no-op on the client side — the host's answer arrives in the public state instead.
+   */
+  setPace(pace: Pace): void;
+  /**
+   * Put an invented player in the room, for the host trying a room out alone.
+   *
+   * Only the host calls this, and only while the console is on. The bot joins the
+   * roster like anyone else and nobody is told, because a client asking for a player
+   * to appear is not a thing the room does.
+   */
+  addBot(): void;
   submitAnswer(text: string): void;
   rejectGroup(groupId: number): void;
   startGame(topic: string, durationMs: number): void;

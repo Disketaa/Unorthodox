@@ -29,6 +29,8 @@ function createHostSession(roomCode: string, playerName: string, look: PlayerLoo
     getBlocked: () => undefined,
     join: () => {},
     setLook: (look) => hostSession.setOwnLook(look),
+    setPace: (pace) => hostSession.setPace(pace),
+    addBot: () => hostSession.addBot(),
     submitAnswer: (text) => hostSession.submitOwnAnswer(text.trim()),
     rejectGroup: (groupId) => hostSession.rejectOwnGroup(groupId),
     startGame: (topic, durationMs) => hostSession.startGame(topic, durationMs),
@@ -55,6 +57,11 @@ function createPlayerSession(roomCode: string, playerName: string, look: PlayerL
     getBlocked: () => clientSession.getBlocked(),
     join: () => {},
     setLook: (look) => clientSession.setLook(look),
+    // A client asking for a pace would be two people deciding the same setting, and the
+    // host's is the one that counts. Pressing a button is a local look at the numbers.
+    setPace: () => {},
+    // A client cannot put anybody in the room, least of all itself.
+    addBot: () => {},
     submitAnswer: (text) => clientSession.submitAnswer(text.trim()),
     rejectGroup: (groupId) => clientSession.rejectGroup(groupId),
     startGame: () => {},

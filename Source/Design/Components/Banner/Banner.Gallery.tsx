@@ -29,6 +29,8 @@ export function BannerGallery() {
       <Banner variant="Muted" mark="Clock" value="90 с">
         Время на голосование
       </Banner>
+      <Text variant="Body">Banner Accent</Text>
+      <Banner variant="Accent">Отладка включена</Banner>
     </Stack>
     </Stack>
   );

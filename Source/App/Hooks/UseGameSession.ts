@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { PublicState } from '@/Game';
+import { Pace, PublicState } from '@/Game';
 import { PlayerId, PlayerLook, CharacterColor, CharacterId } from '@/Core';
 import { createSession } from '../SessionFactory';
 import { navigate } from '../Routes';
@@ -40,6 +40,10 @@ export interface GameSessionView extends SessionPhase {
    */
   ownLook: PlayerLook | undefined;
   setLook: (character: CharacterId, color: CharacterColor) => void;
+  /** Asking for a pace. Only the host's changes the room; a client's is a local look. */
+  setPace: (pace: Pace) => void;
+  /** Put an invented player in the room. Only the host's, and only while debugging. */
+  addBot: () => void;
   startGame: () => void;
   submitAnswer: (text: string) => void;
   rejectGroup: (groupId: number) => void;

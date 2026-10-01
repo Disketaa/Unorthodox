@@ -1,12 +1,14 @@
 import { PlayerId, PlayerLook } from '@/Core';
 import { HostState } from './GameState';
 import { scoreRound } from './RoundScoring';
+import type { Pace } from './GameConfig';
 
 export type GameAction =
   | { type: 'JOIN'; playerId: PlayerId; name: string; look: PlayerLook }
   | { type: 'SET_ONLINE'; playerId: PlayerId; isOnline: boolean }
   | { type: 'KICK'; playerId: PlayerId }
   | { type: 'SET_LOOK'; playerId: PlayerId; look: PlayerLook }
+  | { type: 'SET_PACE'; pace: Pace }
   | { type: 'START_GAME'; topic: string; durationMs: number; startedAt: number }
   | { type: 'SUBMIT_ANSWER'; playerId: PlayerId; text: string }
   | { type: 'START_REVIEWING'; startedAt: number; durationMs: number }

@@ -1,4 +1,4 @@
-import { createLogger } from '@/Core';
+import { createLogger, setLogLevel } from '@/Core';
 import { getRelaySockets } from 'trystero';
 
 const log = createLogger('Diagnostics');
@@ -7,11 +7,21 @@ const log = createLogger('Diagnostics');
 const PollIntervalMs = 3_000;
 
 /**
+ * What the host toggled in the lobby, which beats the flags below: a link may
+ * carry ?debug and the host may still want it off, and back the other way. Null
+ * until someone actually toggles, so an untouched session reads its own flags.
+ */
+let override: boolean | null = null;
+
+/**
  * True when debug output was requested. The flag is accepted in the query
  * string, anywhere in the hash, or in localStorage, so that it survives every
  * shape of link the app produces.
  */
 export function isDebugEnabled(): boolean {
+  if (override !== null) {
+    return override;
+  }
   try {
     if (localStorage.getItem('debug') !== null) {
       return true;
@@ -23,6 +33,19 @@ export function isDebugEnabled(): boolean {
     new URLSearchParams(window.location.search).has('debug') ||
     new URLSearchParams(window.location.hash.split('?')[1] ?? '').has('debug')
   );
+}
+
+/**
+ * Turn debug logging on or off for the rest of this session.
+ *
+ * The flag is kept in memory rather than in storage, so leaving the room and
+ * coming back finds the room the way the link left it, and a stray ?debug link
+ * shared around afterwards does not drag the logging along with it.
+ */
+export function setDebugEnabled(enabled: boolean): void {
+  override = enabled;
+  setLogLevel(enabled ? 'debug' : 'info');
+  log(enabled ? 'info' : 'warn', enabled ? 'debug logging on' : 'debug logging off');
 }
 
 /**
