@@ -312,4 +312,9 @@ body {
   --Size-Character-Large: 96px;
   /* The chosen character in the picker, above the rows of choices. */
   --Size-Character-Preview: 160px;
+
+  /* Marks that stand in for a word, as in the exit control. */
+  --Size-Icon-Sm: 16px;
+  --Size-Icon-Md: 20px;
+  --Size-Icon-Lg: 24px;
 }

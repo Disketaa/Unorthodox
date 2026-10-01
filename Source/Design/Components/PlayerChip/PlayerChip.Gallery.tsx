@@ -11,6 +11,8 @@ export function PlayerChipGallery() {
         <PlayerChip name="Bob" character="Ghost" color="Sky" isOnline={false} />
         <PlayerChip name="Charlie" character="Daisy" color="Mint" isHost={true} isOnline={true} />
         <PlayerChip name="Diana" character="Star" color="Violet" isHost={true} isOnline={false} />
+        <PlayerChip name="Eve" character="Butterfly" color="Coral" isSelf={true} />
+        <PlayerChip name="Eve" character="Butterfly" color="Coral" isSelf={true} isHost={true} />
       </Stack>
     </Stack>
   );

@@ -39,6 +39,8 @@ export interface GameSessionView extends SessionPhase {
   rejectGroup: (groupId: number) => void;
   nextRound: () => void;
   playAgain: () => void;
+  /** Leave the room and go back to the entry screen. */
+  exitRoom: () => void;
 }
 
 /**
@@ -71,6 +73,18 @@ function useSessionUpdates(
     session.onHostLeave(() => setHostLeft(true));
     return () => session.stop();
   }, [session]);
+}
+
+/**
+ * Leave the room, by going back to the entry route.
+ *
+ * The hash is the only navigation this app has, and clearing it unmounts the room,
+ * which is what tears the transport down: the session cleanup calls `stop`. Calling
+ * `stop` here as well would leave the host's roster cleared before anyone has read
+ * the last public state.
+ */
+function exitRoom(): void {
+  window.location.hash = '';
 }
 
 /** Read the topic of the phase in view, which identifies the round. */
@@ -119,5 +133,6 @@ export function useGameSession(
     rejectedGroupIds: rejectedIn(marks, topic),
     hostLeft,
     ownLook,
+    exitRoom,
   };
 }

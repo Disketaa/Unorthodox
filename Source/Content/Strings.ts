@@ -32,6 +32,8 @@ export const Strings = {
     notEnoughPlayers: (min: number) => `Нужно минимум ${min} игрока`,
     roomFull: 'Комната заполнена',
     characterHeading: 'Персонаж',
+    /** The accessible name of the icon-only control that leaves the room. */
+    exit: 'Выйти из комнаты',
   },
   /**
    * Names for the character picker.

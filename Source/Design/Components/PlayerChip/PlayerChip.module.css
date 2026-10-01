@@ -9,6 +9,21 @@
   min-height: var(--Size-Character-Small);
 }
 
+/*
+ * The local player's own chip.
+ *
+ * An outline standing off the chip, not a fill: a filled chip would read as a
+ * chosen or disabled control, and the roster is a list, not a set of options.
+ * The accent gold rather than the focus teal, since this is not a focused control
+ * and the gold is the one colour the roster already spends on the host arrow.
+ * The offset keeps the ring clear of the pill's own edge so the shape still reads
+ * as a chip and not as a framed tile.
+ */
+.Self {
+  outline: var(--Border-Width-Default) solid var(--Color-Action-Primary-Background);
+  outline-offset: 2px;
+}
+
 .Name {
   font-size: var(--FontSize-Body);
   color: var(--Color-Text-Default);

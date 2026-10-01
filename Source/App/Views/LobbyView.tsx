@@ -12,10 +12,12 @@ export function LobbyView({ view }: PhaseViewProps) {
     <LobbyScreen
       roomCode={view.roomCode}
       players={players}
+      ownPlayerId={view.playerId}
       ownLook={view.ownLook}
       isHost={view.isHost}
       onPickLook={view.setLook}
       onStart={view.startGame}
+      onExit={view.exitRoom}
     />
   );
 }

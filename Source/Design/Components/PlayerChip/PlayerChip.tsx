@@ -10,6 +10,13 @@ export interface PlayerChipProps {
   index?: number;
   isHost?: boolean;
   isOnline?: boolean;
+  /**
+   * Whether this chip is the player looking at the screen.
+   *
+   * In a full roster nobody can find themselves among a dozen identical chips, so
+   * the local player is outlined and everybody else is not.
+   */
+  isSelf?: boolean;
 }
 
 export function PlayerChip({
@@ -19,9 +26,10 @@ export function PlayerChip({
   index,
   isHost = false,
   isOnline = true,
+  isSelf = false,
 }: PlayerChipProps) {
   return (
-    <div class={styles.Root}>
+    <div class={isSelf ? `${styles.Root} ${styles.Self}` : styles.Root}>
       {isHost && <span class={styles.HostIndicator} />}
       <Character character={character} color={color} size="Small" index={index} />
       <span class={styles.Name}>{name}</span>

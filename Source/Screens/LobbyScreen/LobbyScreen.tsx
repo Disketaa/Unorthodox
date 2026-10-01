@@ -1,10 +1,11 @@
 import { Stack } from '@/Design/Primitives';
 import {
   CharacterPicker,
+  ExitButton,
   PlayerChip,
   RoomCodeBadge,
 } from '@/Design/Components';
-import { CharacterColor, CharacterId } from '@/Core';
+import { CharacterColor, CharacterId, PlayerId } from '@/Core';
 import { Strings } from '@/Content';
 import { GameConfig, PublicPlayer } from '@/Game';
 import { LobbyCategory } from './LobbyCategory';
@@ -13,11 +14,14 @@ import { LobbyStart } from './LobbyStart';
 export interface LobbyScreenProps {
   roomCode: string;
   players: readonly PublicPlayer[];
+  /** This device's player, outlined in the roster so it can be found in a full room. */
+  ownPlayerId: PlayerId | null;
   /** This player's own character, once the host has told us which one it kept. */
   ownLook: { character: CharacterId; color: CharacterColor } | undefined;
   isHost: boolean;
   onPickLook: (character: CharacterId, color: CharacterColor) => void;
   onStart: () => void;
+  onExit: () => void;
 }
 
 /**
@@ -25,7 +29,13 @@ export interface LobbyScreenProps {
  *
  * Kept apart from the screen itself so the screen stays about arranging parts.
  */
-function Roster({ players }: { players: readonly PublicPlayer[] }) {
+function Roster({
+  players,
+  ownPlayerId,
+}: {
+  players: readonly PublicPlayer[];
+  ownPlayerId: PlayerId | null;
+}) {
   return (
     <Stack gap="Sm">
       {players.map((player, index) => (
@@ -36,6 +46,7 @@ function Roster({ players }: { players: readonly PublicPlayer[] }) {
           color={player.look.color}
           index={index}
           isHost={index === 0}
+          isSelf={player.id === ownPlayerId}
         />
       ))}
     </Stack>
@@ -77,10 +88,12 @@ function LookPicker({
 export function LobbyScreen({
   roomCode,
   players,
+  ownPlayerId,
   ownLook,
   isHost,
   onPickLook,
   onStart,
+  onExit,
 }: LobbyScreenProps) {
   const enoughPlayers = players.length >= GameConfig.limits.minPlayers;
   const roomFull = players.length >= GameConfig.limits.maxPlayers;
@@ -90,8 +103,9 @@ export function LobbyScreen({
       <LobbyCategory
         title={Strings.lobby.category}
         subtitle={<RoomCodeBadge code={roomCode} />}
+        action={<ExitButton label={Strings.lobby.exit} onClick={onExit} />}
       >
-        <Roster players={players} />
+        <Roster players={players} ownPlayerId={ownPlayerId} />
         <LobbyStart
           enoughPlayers={enoughPlayers}
           roomFull={roomFull}
