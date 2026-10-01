@@ -29,6 +29,8 @@ export const Strings = {
   lobby: {
     startButton: 'Начать игру',
     waitingForHost: 'Ждём хоста',
+    /** Names the list of players, on the rule that divides it from the room code. */
+    roster: 'Лобби',
     /** Built from the limit, so the hint cannot drift from the actual rule. */
     notEnoughPlayers: (min: number) => `Нужно минимум ${min} игрока`,
     roomFull: 'Комната заполнена',
@@ -66,6 +68,8 @@ Coral: 'Коралл',
     },
     /** Names one character in the row and says what clicking it does. */
     pickCharacter: (name: string) => `${name}, выбрать персонажа`,
+    /** On the rule between the chosen character's drawing and the rows of choices. */
+    customize: 'Кастомизация',
   },
   writing: {
     topicLabel: 'Тема',

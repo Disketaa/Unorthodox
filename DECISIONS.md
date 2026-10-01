@@ -502,3 +502,19 @@ the element altogether, so `thin` was throwing away the width, the borderless th
 ends and leaving a stock bar. A device with no
 pointer gets no bar at all, since there is nothing to drag one with and it would be a permanent strip
 of accent down the side of the page.
+
+The cards are divided by `Separator`, a full-width hairline with a word in it, in the lobby between
+the room code and the roster and in the picker between the chosen character and the rows of choices.
+The word is optional: without one it carries the `separator` role and is a boundary, and with one it
+is not, because a labelled rule announces the name of a line rather than the name of the part below
+it. Each run of the rule is a flex child rather than a border on the word, because a border there
+would make the word a pixel taller than the row and shift everything under it, and because two runs
+either side of a word are what makes it one rule rather than two. The label carries the card's own
+surface behind it, since the card is what has to show through the gap.
+
+The two separators are spaced by the same gap because the roster's outer stack now uses the picker's
+gap and the chips keep their tighter one on an inner stack. A separator takes its spacing from
+whatever it sits in, so leaving the roster packed tight gave two rules dividing the same two things
+at different distances from each other, which is worse than either spacing on its own. The roster
+moved into its own file because adding the rule to the screen pushed it past the line limit, and it
+was already a self-contained part with a single caller.

@@ -30,6 +30,7 @@ const labels = {
     Rose: 'Tint Rose',
   },
   pickCharacter: (name: string) => `Pick ${name}`,
+  customize: 'Customise',
 };
 
 export function CharacterPickerGallery() {

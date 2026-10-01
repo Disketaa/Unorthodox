@@ -1,14 +1,10 @@
 import { Stack } from '@/Design/Primitives';
-import {
-  CharacterPicker,
-  IconButton,
-  PlayerChip,
-  RoomCodeBadge,
-} from '@/Design/Components';
+import { CharacterPicker, IconButton, RoomCodeBadge } from '@/Design/Components';
 import { CharacterColor, CharacterId, PlayerId } from '@/Core';
 import { Strings } from '@/Content';
 import { GameConfig, PublicPlayer } from '@/Game';
 import { LobbyCategory } from './LobbyCategory';
+import { LobbyRoster } from './LobbyRoster';
 import { LobbyStart } from './LobbyStart';
 
 export interface LobbyScreenProps {
@@ -26,43 +22,6 @@ export interface LobbyScreenProps {
   onExit: () => void;
   /** Only the host gets this: the room's way to remove a player. */
   onKick: (playerId: PlayerId) => void;
-}
-
-/**
- * The roster, each player drawn as the character the host has them as.
- *
- * Kept apart from the screen itself so the screen stays about arranging parts.
- */
-function Roster({
-  players,
-  ownPlayerId,
-  isHost,
-  onKick,
-}: {
-  players: readonly PublicPlayer[];
-  ownPlayerId: PlayerId | null;
-  isHost: boolean;
-  onKick: (playerId: PlayerId) => void;
-}) {
-  return (
-    <Stack gap="Sm">
-      {players.map((player, index) => (
-        <PlayerChip
-          key={player.id}
-          name={player.name}
-          character={player.look.character}
-          color={player.look.color}
-          index={index}
-          isHost={index === 0}
-          isOnline={player.isOnline}
-          isSelf={player.id === ownPlayerId}
-          // The host cannot remove itself, so its own chip never offers the mark.
-          onKick={isHost && player.id !== ownPlayerId ? () => onKick(player.id) : undefined}
-          kickLabel={Strings.lobby.kick(player.name)}
-        />
-      ))}
-    </Stack>
-  );
 }
 
 /**
@@ -93,6 +52,7 @@ function LookPicker({
           character: Strings.characters.names,
           color: Strings.characters.colors,
           pickCharacter: Strings.characters.pickCharacter,
+          customize: Strings.characters.customize,
         }}
         onPick={onPick}
       />
@@ -137,7 +97,12 @@ function Room({
       title={<RoomCodeBadge code={roomCode} />}
       action={<IconButton icon="Exit" label={Strings.lobby.exit} onClick={onExit} />}
     >
-      <Roster players={players} ownPlayerId={ownPlayerId} isHost={isHost} onKick={onKick} />
+      <LobbyRoster
+        players={players}
+        ownPlayerId={ownPlayerId}
+        isHost={isHost}
+        onKick={onKick}
+      />
       <LobbyStart
         enoughPlayers={enoughPlayers}
         roomFull={roomFull}

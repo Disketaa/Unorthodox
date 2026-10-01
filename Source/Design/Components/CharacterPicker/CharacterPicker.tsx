@@ -1,5 +1,6 @@
 import { CharacterColor, CharacterId, CharacterColors } from '@/Core';
 import { useState } from 'preact/hooks';
+import { Separator } from '@/Design/Primitives';
 import { Character } from '../Character';
 import { ColorChoice } from './CharacterChoices';
 import { CharacterRow } from './CharacterRow';
@@ -11,6 +12,8 @@ export interface CharacterPickerLabels {
   color: Readonly<Record<CharacterColor, string>>;
   /** Names one character in the row and says what clicking it does. */
   pickCharacter: (name: string) => string;
+  /** The word on the rule between the drawing and the two rows of choices. */
+  customize: string;
 }
 
 export interface CharacterPickerProps {
@@ -25,9 +28,11 @@ export interface CharacterPickerProps {
  *
  * The big drawing is there to answer "what will the room see" at a glance, and the
  * two rows under it are the two decisions, kept the same shape so neither reads as
- * part of the other. A single scrolling strip was the earlier shape: it hid most of
- * the cast, needed a drag to reveal it, and made the character and the tint compete
- * for the same horizontal space.
+ * part of the other. A rule with a word in it divides the two: without it the
+ * drawing reads as the first item in a list of three rather than as the answer
+ * being displayed above the controls that change it. A single scrolling strip was
+ * the earlier shape: it hid most of the cast, needed a drag to reveal it, and made
+ * the character and the tint compete for the same horizontal space.
  */
 export function CharacterPicker({
   character,
@@ -49,6 +54,7 @@ export function CharacterPicker({
   return (
     <div class={styles.Root}>
       <Preview character={character} color={color} pulse={pulse} />
+      <Separator>{labels.customize}</Separator>
       <CharacterRow
         character={character}
         color={color}
