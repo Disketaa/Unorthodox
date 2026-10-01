@@ -20,7 +20,7 @@
  * the control being aimed at and the room keeps its gold for the things it acts on.
  */
 .Root:hover {
-  color: var(--Color-Action-Primary-Background);
+  color: var(--Color-Accent-Ink);
   background: var(--Color-Surface-Hover);
 }
 

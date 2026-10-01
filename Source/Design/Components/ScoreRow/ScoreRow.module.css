@@ -35,7 +35,7 @@
 .Score {
   font-size: var(--FontSize-Lg);
   font-weight: 600;
-  color: var(--Color-Action-Primary-Background);
+  color: var(--Color-Accent-Ink);
   min-width: 24px;
   text-align: right;
 }

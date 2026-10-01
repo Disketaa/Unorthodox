@@ -4,7 +4,9 @@ import { PlayerLook, randomLook } from '@/Core';
 import { GalleryPage } from '@/Dev/ComponentGallery/GalleryPage';
 import { JoinScreen } from '@/Screens';
 import type { JoinScreenProps } from '@/Screens';
+import { AccentProvider } from '@/Design/Accent';
 import { GlyphField, PaperBackground } from '@/Design/Overlays';
+import { useAccent } from './Hooks/UseAccent';
 import { createRoomCode, normalizeRoomCode } from './RoomCode';
 import { loadLook } from './LookStorage';
 import { parseRoute, roomPath, Route } from './Routes';
@@ -89,55 +91,69 @@ function Entry(props: JoinScreenProps) {
   );
 }
 
-export function App() {
-  const route = useHashRoute();
+/**
+ * The entry screen's wiring: the name, the code, and the two ways into a room.
+ *
+ * Split out because all of it belongs to the join screen and none of it to the
+ * accent or the route, and keeping it here is what leaves `App` about which screen
+ * is on rather than about how the entry screen works.
+ */
+function useEntryScreen() {
   const [name, setName] = useState(loadName);
   const [roomCode, setRoomCode] = useState('');
-  // The last character this tab wore, or a fresh roll on a first visit. The host
-  // is what really keeps it: a player who leaves and comes back is given the
-  // character it already had for them, not a new roll. Changing it later is the
-  // lobby's job, so the host can refuse once the game has started.
-  //
-  // Held as state rather than read from storage on each room, because storage is
-  // only read when the page loads. A room that closed and reopened in the same tab
-  // would otherwise start from whatever was rolled at that load rather than from
-  // the character the player has since picked, and only closing the tab would
-  // bring it back.
-  const [look, setLook] = useState<PlayerLook>(() => loadLook() ?? randomLook(Math.random));
-
   const onNameChange = (value: string) => setName(value);
   const onRoomCodeChange = (value: string) => setRoomCode(normalizeRoomCode(value));
-  const onJoin = () => {
+  const enter = (path: string) => {
     saveName(name);
-    window.location.hash = roomPath(normalizeRoomCode(roomCode), 'Player');
+    window.location.hash = path;
   };
-  const onCreate = () => {
-    saveName(name);
-    window.location.hash = roomPath(createRoomCode(), 'Host');
-  };
-
-  if (route.kind === 'Gallery') {
-    return <GalleryPage />;
-  }
-  const nameMissing = name.trim().length === 0;
-  if (route.kind === 'Room' && !nameMissing) {
-    const room: GameRoomProps = {
-      roomCode: route.roomCode,
-      role: route.role,
-      name: name.trim(),
-      look,
-      onLook: setLook,
-    };
-    return <Room {...room} />;
-  }
-
-  const entry: JoinScreenProps = {
+  return {
     name,
     roomCode,
     onNameChange,
     onRoomCodeChange,
-    onJoin,
-    onCreate,
+    onJoin: () => enter(roomPath(normalizeRoomCode(roomCode), 'Player')),
+    onCreate: () => enter(roomPath(createRoomCode(), 'Host')),
   };
-  return <Entry {...entry} />;
+}
+
+export function App() {
+  const route = useHashRoute();
+  const entry = useEntryScreen();
+  const [look, setLook] = useState<PlayerLook>(() => loadLook() ?? randomLook(Math.random));
+  const { accent, onLook: onAccentLook } = useAccent();
+  const onLook = (next: PlayerLook) => {
+    onAccentLook(next);
+    setLook(next);
+  };
+
+  if (route.kind === 'Gallery') {
+    return (
+      <>
+        <AccentProvider color={accent} />
+        <GalleryPage />
+      </>
+    );
+  }
+  if (route.kind === 'Room' && entry.name.trim().length > 0) {
+    const room: GameRoomProps = {
+      roomCode: route.roomCode,
+      role: route.role,
+      name: entry.name.trim(),
+      look,
+      onLook,
+    };
+    return (
+      <>
+        <AccentProvider color={accent} />
+        <Room {...room} />
+      </>
+    );
+  }
+  return (
+    <>
+      <AccentProvider color={accent} />
+      <Entry {...entry} />
+    </>
+  );
 }

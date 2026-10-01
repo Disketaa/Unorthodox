@@ -1,6 +1,6 @@
 /**
- * The display face, used for titles. It is bundled from source rather than a
- * font CDN, so the game does not depend on a third party being reachable.
+   * The display face, used for titles. It is bundled from source rather than a
+   * font CDN, so the game does not depend on a third party being reachable.
  */
 @font-face {
   font-family: 'BlobSpongey';
@@ -11,11 +11,11 @@
 }
 
 /**
- * Base styles.
+   * Base styles.
  *
- * The body font is set here rather than per component, so anything that does
- * not name a font of its own still renders in the game's typeface instead of
- * the browser's default serif.
+   * The body font is set here rather than per component, so anything that does
+   * not name a font of its own still renders in the game's typeface instead of
+   * the browser's default serif.
  */
 *,
 *::before,
@@ -31,61 +31,61 @@ body {
 }
 
 /**
- * The page's own scrollbar, painted in the accent.
+   * The page's own scrollbar, painted in the accent.
  *
- * On `html` rather than `body`, because that is the element that scrolls: the
- * document scrollbar belongs to the viewport, and styling `body` would only
- * reach it where a browser decided to propagate the values up.
+   * On `html` rather than `body`, because that is the element that scrolls: the
+   * document scrollbar belongs to the viewport, and styling `body` would only
+   * reach it where a browser decided to propagate the values up.
  *
- * Two sets of rules, because there are two of everything, and they are kept out
- * of each other's way. The `::-webkit-scrollbar` pseudo-elements are the only way
- * to get a borderless bar with a shaped thumb and a hover state, and they are
- * ignored where they are not understood. The standard `scrollbar-color` is what a
- * browser without them reads, and it is written inside a support query that
- * excludes the browsers with them, because a browser given both does not merge
- * them: it draws the standard-coloured bar with its own widget and drops the
- * pseudo-elements, hover included.
+   * Two sets of rules, because there are two of everything, and they are kept out
+   * of each other's way. The `::-webkit-scrollbar` pseudo-elements are the only way
+   * to get a borderless bar with a shaped thumb and a hover state, and they are
+   * ignored where they are not understood. The standard `scrollbar-color` is what a
+   * browser without them reads, and it is written inside a support query that
+   * excludes the browsers with them, because a browser given both does not merge
+   * them: it draws the standard-coloured bar with its own widget and drops the
+   * pseudo-elements, hover included.
  *
- * Only the resting colour reaches Firefox, because `scrollbar-color` is a pair
- * with no hover state at all: a browser that reads only the standard properties
- * gets the quiet bar and no accent. The hover is the pseudo-elements', and it is
- * worth having the rounded borderless thumb for even where the accent never
- * arrives.
+   * Only the resting colour reaches Firefox, because `scrollbar-color` is a pair
+   * with no hover state at all: a browser that reads only the standard properties
+   * gets the quiet bar and no accent. The hover is the pseudo-elements', and it is
+   * worth having the rounded borderless thumb for even where the accent never
+   * arrives.
  *
- * `scrollbar-width` is left at `auto` on purpose, and that is load-bearing
- * rather than an omission. In Chrome a value of anything but `auto` on that
- * property makes the browser ignore the `::-webkit-scrollbar` rules for the same
- * element altogether, so asking for `thin` there is what silently threw away the
- * width, the borderless thumb and the rounded ends, and left a stock bar painted
- * in the accent. Setting it to `auto` hands the pseudo-elements back to the
- * engines that read them. Firefox is the one browser that reads only the
- * standard pair, and it gets a default-width bar in the accent, which is the
- * right answer there and the reason this is worth the trade.
+   * `scrollbar-width` is left at `auto` on purpose, and that is load-bearing
+   * rather than an omission. In Chrome a value of anything but `auto` on that
+   * property makes the browser ignore the `::-webkit-scrollbar` rules for the same
+   * element altogether, so asking for `thin` there is what silently threw away the
+   * width, the borderless thumb and the rounded ends, and left a stock bar painted
+   * in the accent. Setting it to `auto` hands the pseudo-elements back to the
+   * engines that read them. Firefox is the one browser that reads only the
+   * standard pair, and it gets a default-width bar in the accent, which is the
+   * right answer there and the reason this is worth the trade.
  *
- * No border anywhere, and that is the point: the default thumb carries its own
- * border in some engines and a track border in others, and a border in the
- * accent reads as a hairline of a different colour rather than as an edge of
- * this one. The thumb is a rounded bar of flat colour instead, which is a shape
- * rather than a frame.
+   * No border anywhere, and that is the point: the default thumb carries its own
+   * border in some engines and a track border in others, and a border in the
+   * accent reads as a hairline of a different colour rather than as an edge of
+   * this one. The thumb is a rounded bar of flat colour instead, which is a shape
+   * rather than a frame.
  */
 html {
   scrollbar-width: auto;
 }
 
 /*
- * The standard pair, for the browsers that have no pseudo-elements.
+   * The standard pair, for the browsers that have no pseudo-elements.
  *
- * Behind a `selector()` support query, which is where this has to live. Naming
- * `scrollbar-color` on the element outright is what killed the hover: a browser
- * that reads it draws the bar with its own widget and stops honouring
- * `::-webkit-scrollbar` altogether, hover rules and all, so the accent arrived on
- * the pseudo-element and the standard colour replaced the whole thing. A browser
- * that understands `::-webkit-scrollbar` is precisely the one that must not be
- * given the property, and `selector()` is what can say that.
+   * Behind a `selector()` support query, which is where this has to live. Naming
+   * `scrollbar-color` on the element outright is what killed the hover: a browser
+   * that reads it draws the bar with its own widget and stops honouring
+   * `::-webkit-scrollbar` altogether, hover rules and all, so the accent arrived on
+   * the pseudo-element and the standard colour replaced the whole thing. A browser
+   * that understands `::-webkit-scrollbar` is precisely the one that must not be
+   * given the property, and `selector()` is what can say that.
  *
- * `scrollbar-width` stays on the element above and is not queried: `auto` is the
- * value that hands the pseudo-elements back, and a browser reading it changes
- * nothing about which colour it paints.
+   * `scrollbar-width` stays on the element above and is not queried: `auto` is the
+   * value that hands the pseudo-elements back, and a browser reading it changes
+   * nothing about which colour it paints.
  */
 @supports not selector(::-webkit-scrollbar) {
   html {
@@ -105,8 +105,8 @@ html::-webkit-scrollbar-track {
 }
 
 /*
- * The corners where the two bars meet, which are the track's own background and
- * would otherwise square off the ends of the thumb where it reaches them.
+   * The corners where the two bars meet, which are the track's own background and
+   * would otherwise square off the ends of the thumb where it reaches them.
  */
 html::-webkit-scrollbar-corner {
   background: var(--Scrollbar-Track);
@@ -127,14 +127,14 @@ html::-webkit-scrollbar-thumb:active {
 }
 
 /*
- * No bars at all where the pointer cannot reach one.
+   * No bars at all where the pointer cannot reach one.
  *
- * A touch device has nothing to drag a scrollbar with, so a bar there is a
- * permanent strip of accent down the side of the page that scrolls by itself and
- * cannot be moved. The page still scrolls; only the indicator goes. This is a
- * pointer query rather than a width one, because it is the absence of a pointer
- * that matters and not the size of the screen: a narrow desktop window is still
- * a window someone can drag a scrollbar in.
+   * A touch device has nothing to drag a scrollbar with, so a bar there is a
+   * permanent strip of accent down the side of the page that scrolls by itself and
+   * cannot be moved. The page still scrolls; only the indicator goes. This is a
+   * pointer query rather than a width one, because it is the absence of a pointer
+   * that matters and not the size of the screen: a narrow desktop window is still
+   * a window someone can drag a scrollbar in.
  */
 @media (hover: none) {
   html {
@@ -150,13 +150,13 @@ html::-webkit-scrollbar-thumb:active {
 }
 
 /**
- * The app is designed for a phone. On a wider screen the content is centred in a
- * narrow column rather than stretched, so line lengths stay readable, and it sits
- * in the middle of the viewport so the entry screen is not pinned to the top.
+   * The app is designed for a phone. On a wider screen the content is centred in a
+   * narrow column rather than stretched, so line lengths stay readable, and it sits
+   * in the middle of the viewport so the entry screen is not pinned to the top.
  *
- * `align-items: center` with `min-height` rather than `justify-content`, so a
- * screen taller than the viewport still starts at the top and scrolls instead of
- * being pushed off the top edge.
+   * `align-items: center` with `min-height` rather than `justify-content`, so a
+   * screen taller than the viewport still starts at the top and scrolls instead of
+   * being pushed off the top edge.
  */
 #root {
   display: flex;
@@ -416,31 +416,121 @@ html::-webkit-scrollbar-thumb:active {
    * where the muted grey reads as the control being switched off.
    */
   --Color-Text-Quiet: var(--Color-Neutral-500);
-  /* The game title, matching the create-room button so the two read as a pair. */
-  --Color-Text-Display: var(--Color-Action-Secondary-Background);
-  /* Section headings, in the accent the lobby already spends on its actionables. */
-  --Color-Text-Title: var(--Color-Action-Primary-Background);
+/*
+   * The title and the section headings, in the tint itself.
+   *
+   * The tint, not the darker step beside it. This is a deliberate departure from the
+   * rule the rest of the palette follows, so the numbers are on record rather than
+   * quietly dropped: at the raw tint the eight measure 3.54, 3.53, 3.05, 2.97, 2.61,
+   * 2.50, 2.04 and 1.85 against white, which clears the 3:1 bar for large text on
+   * three of the eight and misses it on the rest. The game title is set at 56px and
+   * the section headings at 24px, both large text, and the choice was made in favour
+   * of the headings looking like the character the player picked.
+   *
+   * `--Accent-Ink` is still the step for body-sized text, borders and focus rings,
+   * where 3:1 is not the bar and this would not be legible.
+   */
+  --Color-Text-Display: var(--Accent-Tint);
+  --Color-Text-Title: var(--Accent-Tint);
   --Color-Text-Inverse: #ffffff;
 
   /*
-   * The accent gold. Its text is ink rather than white: gold is far too light to
-   * carry white type legibly, and the accent is the loudest colour in the game, so
-   * the button beside it has to stay the clearest thing on the screen.
+   * The accent, which is the tint this player chose.
+   *
+   * Declared here as the fallback and overwritten by `AccentProvider` on `:root`,
+   * so a page that somehow loads without the provider still has a whole accent
+   * rather than a transparent button. Yellow is the fallback because it was the
+   * accent before tints could choose it, so it is the one value that cannot look
+   * like a mistake.
+   *
+   * The steps come from `Core/Accents.ts` rather than from here, because they are
+* measured: `Accents.test.ts` holds every pairing to WCAG AA. `ink` is a separate
+   * step from `base` and is not interchangeable with it — at the raw tint the best
+   * of these manages 3.54 against white, so anything drawn as body text or as a
+   * selection border is set in `ink`.
+   */
+  --Accent-Tint: #eeb62e;
+  --Accent-Base: #eeb62e;
+  --Accent-Hover: #f0bd43;
+  --Accent-Active: #f1c558;
+  --Accent-Ink: #8f6d1c;
+  --Accent-Bright: #b58a23;
+  --Accent-Wash: #fdf8ea;
+  --Accent-On: var(--Color-Text-Default);
+
+  /*
+   * The one name components use for the accent when they mean the text step.
+   *
+   * `base` fills a control and `ink` is anything drawn on a light surface: a title,
+   * a score, a border, an outline. Components should not be reaching for `--Accent-Ink`
+   * directly, because the pair of them is the decision and `--Color-Accent-Ink` is
+   * where it is recorded. Reaching past it is how the next control ends up filling
+   * itself with the step meant for text.
+   */
+  --Color-Accent-Ink: var(--Accent-Ink);
+
+  /*
+   * The primary button, in yellow outright whatever the player picked.
+   *
+   * Fixed because it is the button that starts something, and the thing that starts
+   * something should look the same to every player in the room rather than wearing
+   * one person's taste. It also sits directly above the create-room button on the
+   * join screen, and two buttons that changed colour with the picker would make
+   * that stack the only place on the screen where the accent cannot be read.
+   *
+   * The gold ramp the accent started as, so the hover and press steps are the ones
+   * that were there before, and ink clears 8.7:1 on it.
    */
   --Color-Action-Primary-Background: #eeb62e;
   --Color-Action-Primary-Text: var(--Color-Text-Default);
-  --Color-Action-Primary-Hover: #e0a824;
-  --Color-Action-Primary-Active: #cf9a1e;
+  /*
+   * The two filled buttons, hovered and pressed by the same amount.
+   *
+   * One step size for both rather than a ramp per colour, so a pointer moving from
+   * the yellow button to the cyan one crosses the same change of light in both
+   * directions. The two are the only filled buttons that ever sit beside each other,
+   * on the join screen, and a hover only one of them had was reading as the other
+   * being pressed.
+   *
+   * Eight per cent on hover, then twelve per cent more on press — the press step is
+   * measured from the hover, not from the rest, so pressing is always the deeper
+   * change. Twelve is the largest that keeps the cyan's label readable: the cyan is
+   * the darker of the two and decides the limit, falling to 4.67 against ink, where
+   * fourteen would have put it on 4.50 and fifteen under the bar.
+   */
+  --Color-Action-Primary-Hover: #dba72a;
+  --Color-Action-Primary-Active: #c19325;
+
+  --Color-Action-Secondary-Hover: #00adc3;
+  --Color-Action-Secondary-Active: #0098ac;
+
+  /*
+   * The host's crown, in the same yellow and for the same reason: it is a fact about
+   * who is hosting, and a mark that followed the viewer's own accent would name the
+   * person looking at the screen instead of the person running the room.
+   */
+  --Color-Host-Mark: #eeb62e;
 
   /* A deeper teal than the room-code badge, so the two do not read as siblings. */
-  --Color-Action-Secondary-Background: #00838f;
-  --Color-Action-Secondary-Text: #ffffff;
-  --Color-Action-Secondary-Hover: #006064;
-  --Color-Action-Secondary-Active: #005662;
+  /*
+   * The second action, in the info blue rather than a step of the accent.
+   *
+   * Creating a room and joining one are different acts, and in the one place both
+   * appear they sit directly above each other. The accent already belongs to the
+   * player, so spending it twice there would give two identical buttons where the
+   * screen is asking for a choice.
+   *
+   * Cyan was in the palette and unused by anything, which is why it fits here: it is
+   * the one colour in the set that is not a tint, so it cannot be confused with the
+   * accent a player chose or with another player in the roster. Its text is ink,
+   * * which clears 7:1 against it.
+   */
+  --Color-Action-Secondary-Background: var(--Color-Feedback-Info);
+  --Color-Action-Secondary-Text: var(--Color-Text-Default);
 
-  --Color-Action-Ghost-Text: #ff9800;
-  --Color-Action-Ghost-Hover: #fff3e0;
-  --Color-Action-Ghost-Active: #ffe0b2;
+  --Color-Action-Ghost-Text: var(--Accent-Ink);
+  --Color-Action-Ghost-Hover: var(--Accent-Wash);
+  --Color-Action-Ghost-Active: var(--Accent-Wash);
 
   /*
    * Character tints.
@@ -451,10 +541,17 @@ html::-webkit-scrollbar-thumb:active {
    * black ink stays readable on top, and they all hold roughly the same weight
    * against the paper so no player looks more prominent than another.
    */
+  /*
+   * The tints are the raw hues and nothing else, deliberately. They used to take
+   * the accent gold from `--Color-Action-Primary-Background`, which was fine while
+   * the accent was fixed. Now that the accent follows the player's own tint, that
+   * reference would mean picking Red repainted Yellow as well, and the picker would
+   * show a palette that no longer matched the cast. Each tint is spelled out, and
+   * `Core/Accents.ts` holds the same eight values for the ramps.
+   */
   --Color-Character-Coral: #ef6a5a;
   --Color-Character-Amber: #f2a63b;
-  /* The action accent, so a player in yellow wears the game's own gold. */
-  --Color-Character-Yellow: var(--Color-Action-Primary-Background);
+  --Color-Character-Yellow: #eeb62e;
   --Color-Character-Lime: #7cb342;
   --Color-Character-Mint: #26b58a;
   --Color-Character-Sky: #3d9be9;
@@ -466,21 +563,25 @@ html::-webkit-scrollbar-thumb:active {
   --Color-Border-Default: #e0e0e0;
   --Border-Width-Default: 2px;
   /*
-   * The teal of the secondary action rather than the accent gold, so a focused
-   * control is never mistaken for a chosen one: the two states sit side by side in
-   * the picker, and the same colour on both would tell them apart by nothing.
+   * The focus ring, in the accent's text step rather than its fill step, for the
+   * reason `--Color-Text-Title` is: a ring is a line on a light surface and the fill
+   * step cannot be seen there. It is a different token from `--Color-Action-Primary-Background`
+   * on purpose, so a focused control is never mistaken for a chosen one now that
+   * both are the same hue at different steps.
    */
-  --Color-Border-Focus: var(--Color-Action-Secondary-Background);
+  --Color-Border-Focus: var(--Accent-Ink);
   --Color-Border-Error: #e91e63;
 
   --Color-Feedback-Success: #8bc34a;
   /*
-   * The warning tone is a deep step of the accent rather than the orange the
-   * palette started with, so a warning reads as part of this game's colour and not
-   * as a leftover. It is not the accent itself: that is what "go" looks like, and
-   * a warning that shares the button's colour would be saying nothing.
+   * The warning is a fixed amber rather than a step of the accent. It was the
+   * accent's active step, which was a way of saying "part of this game's colour",
+   * and that no longer works: the accent is now whatever the player picked, so a
+   * warning would change colour with the player's taste and stop being a warning
+   * at all. It is also not the accent under any tint, since that is what "go" looks
+   * like and a warning in the same colour as the button would be saying nothing.
    */
-  --Color-Feedback-Warning: var(--Color-Action-Primary-Active);
+  --Color-Feedback-Warning: #cf9a1e;
   --Color-Feedback-Error: #e91e63;
   --Color-Feedback-Info: #00bcd4;
 
@@ -528,37 +629,37 @@ html::-webkit-scrollbar-thumb:active {
 }
 
 /*
- * The drawn cursors, on a device that has a pointer.
+   * The drawn cursors, on a device that has a pointer.
  *
- * `hover: hover` alone is not enough, because a touchscreen laptop reports that it
- * hovers while still being driven by touch, and the player who taps it should not
- * get the drawn arrow. Both have to hold: the device must hover and its primary
- * input must be a fine pointer, which is the mouse or the trackpad rather than a
- * finger.
+   * `hover: hover` alone is not enough, because a touchscreen laptop reports that it
+   * hovers while still being driven by touch, and the player who taps it should not
+   * get the drawn arrow. Both have to hold: the device must hover and its primary
+   * input must be a fine pointer, which is the mouse or the trackpad rather than a
+   * finger.
  *
- * The hotspot is the only part of this that has to be accurate. A cursor image is
- * drawn at whatever size it declares and is never measured, but the hotspot is
- * where the player aims, so being off by more than a pixel or two reads as the
- * game aiming for the wrong answer. Each is the aim point of its own glyph: the
- * arrow's tip, the fingertip, for the barred one, which points nowhere, the
- * top-left of the ring so the whole badge sits below and right of the pointer, and
- * for the I-beam, the middle of the stem, which is where a click lands rather than
- * an edge of the glyph.
+   * The hotspot is the only part of this that has to be accurate. A cursor image is
+   * drawn at whatever size it declares and is never measured, but the hotspot is
+   * where the player aims, so being off by more than a pixel or two reads as the
+   * game aiming for the wrong answer. Each is the aim point of its own glyph: the
+   * arrow's tip, the fingertip, for the barred one, which points nowhere, the
+   * top-left of the ring so the whole badge sits below and right of the pointer, and
+   * for the I-beam, the middle of the stem, which is where a click lands rather than
+   * an edge of the glyph.
  *
- * These are in the pixels of the image as the browser draws it, which is why the
- * size lives in the SVG's own width rather than in a stylesheet: changing that
- * width rescales the drawing, and the hotspot below has to be restated to match.
- * The sizes are linked, and changing one without the others is the way to end up
- * aiming at nothing.
+   * These are in the pixels of the image as the browser draws it, which is why the
+   * size lives in the SVG's own width rather than in a stylesheet: changing that
+   * width rescales the drawing, and the hotspot below has to be restated to match.
+   * The sizes are linked, and changing one without the others is the way to end up
+   * aiming at nothing.
  *
- * Each SVG is a 512-unit viewBox drawn at 32px. Browsers cap a custom cursor at
- * 128px and scale anything larger down, and a hotspot in a scaled cursor then
- * depends on whether a given browser scales it by the same factor. At 32px
- * nothing is ever scaled, so the numbers below are read straight off the image.
+   * Each SVG is a 512-unit viewBox drawn at 32px. Browsers cap a custom cursor at
+   * 128px and scale anything larger down, and a hotspot in a scaled cursor then
+   * depends on whether a given browser scales it by the same factor. At 32px
+   * nothing is ever scaled, so the numbers below are read straight off the image.
  *
- * The trailing keyword is the fallback the browser shows if the image cannot be
- * loaded, which is also what keeps the cursor usable if the SVG is ever missing
- * from the build.
+   * The trailing keyword is the fallback the browser shows if the image cannot be
+   * loaded, which is also what keeps the cursor usable if the SVG is ever missing
+   * from the build.
  */
 @media (hover: hover) and (pointer: fine) {
   :root {

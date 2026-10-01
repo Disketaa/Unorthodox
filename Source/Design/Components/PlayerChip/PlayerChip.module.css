@@ -24,7 +24,7 @@
  * colour the roster already spends on the host arrow.
  */
 .Self {
-  border-color: var(--Color-Action-Primary-Background);
+  border-color: var(--Color-Accent-Ink);
 }
 
 /*
@@ -60,23 +60,16 @@
 }
 
 /*
- * The host's crown, in the same square an icon button occupies, so the end of the
- * chip looks the same whichever mark is there and a kick does not sit at a
- * different distance from the name than a crown does.
+ * In yellow outright, and not the accent, whatever the player picked.
  *
- * A drawn mark rather than a button: the crown says who the host is, and a control
- * the player can focus, hear announced and press for no effect would be a worse way
- * to say it than no control at all. Box, radius and border are the same tokens the
- * icon button uses, which is what keeps them in step without a second copy of them.
+ * The crown is a fact about who is hosting rather than something to aim at, so it
+ * holds its colour permanently instead of waiting for a pointer. It cannot follow
+ * the accent either: every player now wears their own tint, so an accent-coloured
+ * crown would mark whoever is looking at the screen as the host. A fixed yellow
+ * says the same thing to everybody in the room.
  *
- * Painted through a mask rather than embedded, for the same reason as every other
- * mark in the game: the file on disk is a black silhouette and the crown should be
- * the accent the palette says it is. Drawn oversize so the shape fills its box
- * instead of sitting inside the margin the artwork keeps.
- *
- * In the accent outright, where the controls beside it are not: the crown is a fact
- * about who is hosting rather than something to aim at, so it holds its colour
- * permanently instead of waiting for a pointer.
+ * Drawn in the fill step rather than the text one, because it is a mark rather than
+ * text, and it clears 8.7:1 against the chip it sits on.
  */
 .Crown {
   display: inline-flex;
@@ -89,7 +82,7 @@
   background: transparent;
   border: var(--Border-Width-Default) solid transparent;
   border-radius: var(--Radius-Button);
-  color: var(--Color-Action-Primary-Background);
+color: var(--Color-Host-Mark);
 }
 
 .CrownIcon {

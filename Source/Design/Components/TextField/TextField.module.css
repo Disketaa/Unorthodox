@@ -1,6 +1,13 @@
 .Root {
   font-family: var(--FontFamily-Body);
   font-size: var(--FontSize-Md);
+  /*
+   * Bold, because what is typed in a field is an answer the player has committed to
+   * rather than a caption beside one: a name and a room code both have to be read
+   * back out loud to the rest of the table, and they are read at a glance rather
+   * than studied. The room code gains most, being uppercase and all one length.
+   */
+  font-weight: 600;
   color: var(--Color-Text-Default);
   border: none;
   outline: none;
@@ -13,6 +20,12 @@
 }
 
 .Root::placeholder {
+  /*
+   * Back to the body's own weight. A hint in the same bold as a typed answer would
+   * read as something already in the box, which is the one thing a placeholder is
+   * not.
+   */
+  font-weight: 400;
   color: var(--Color-Text-Muted);
 }
 

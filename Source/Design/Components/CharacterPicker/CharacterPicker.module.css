@@ -76,7 +76,7 @@
  * tints it was the one dark thing on the screen.
  */
 .Choice:hover {
-  border-color: var(--Color-Action-Primary-Background);
+  border-color: var(--Color-Accent-Ink);
 }
 
 /*
@@ -97,6 +97,6 @@
  * one kind of control.
  */
 .Chosen {
-  border-color: var(--Color-Action-Primary-Background);
+  border-color: var(--Color-Accent-Ink);
   background: var(--Color-Action-Ghost-Hover);
 }

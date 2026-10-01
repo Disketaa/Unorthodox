@@ -1,0 +1,1 @@
+export { AccentProvider } from './AccentProvider';
