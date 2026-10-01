@@ -9,7 +9,7 @@ import { GlyphField, PaperBackground } from '@/Design/Overlays';
 import { useAccent } from './Hooks/UseAccent';
 import { createRoomCode, normalizeRoomCode } from './RoomCode';
 import { loadLook } from './LookStorage';
-import { parseRoute, roomPath, Route } from './Routes';
+import { navigate, parseRoute, roomPath, Route } from './Routes';
 import { GameRoom } from './GameRoom';
 import type { GameRoomProps } from './GameRoom';
 
@@ -105,7 +105,7 @@ function useEntryScreen() {
   const onRoomCodeChange = (value: string) => setRoomCode(normalizeRoomCode(value));
   const enter = (path: string) => {
     saveName(name);
-    window.location.hash = path;
+    navigate(path);
   };
   return {
     name,

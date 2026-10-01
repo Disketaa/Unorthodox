@@ -3,6 +3,7 @@ import { GameConfig } from '@/Game';
 import { CharacterColor, CharacterId } from '@/Core';
 import { topicAt } from '@/Content';
 import { Session } from '../Session';
+import { navigate } from '../Routes';
 
 export interface GameActions {
   startGame: () => void;
@@ -49,7 +50,7 @@ export function useGameActions(
       onVoted(groupId);
     },
     playAgain: () => {
-      window.location.hash = '#/';
+      navigate('');
     },
   };
 }

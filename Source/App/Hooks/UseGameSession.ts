@@ -2,6 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { PublicState } from '@/Game';
 import { PlayerId, PlayerLook, CharacterColor, CharacterId } from '@/Core';
 import { createSession } from '../SessionFactory';
+import { navigate } from '../Routes';
 import { Session, SessionRole, BlockedReason } from '../Session';
 import { useSessionPhase, SessionPhase } from './UseSessionPhase';
 import { useGameActions } from './UseGameActions';
@@ -83,13 +84,13 @@ function useSessionUpdates(
 /**
  * Leave the room, by going back to the entry route.
  *
- * The hash is the only navigation this app has, and clearing it unmounts the room,
- * which is what tears the transport down: the session cleanup calls `stop`. Calling
- * `stop` here as well would leave the host's roster cleared before anyone has read
- * the last public state.
+ * Navigation is the only lever this app has, and leaving the room route unmounts the
+ * room, which is what tears the transport down: the session cleanup calls `stop`.
+ * Calling `stop` here as well would leave the host's roster cleared before anyone has
+ * read the last public state.
  */
 function exitRoom(): void {
-  window.location.hash = '';
+  navigate('');
 }
 
 /** Read the topic of the phase in view, which identifies the round. */

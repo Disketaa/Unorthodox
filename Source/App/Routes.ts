@@ -56,6 +56,58 @@ function readRole(segment: string | undefined): SessionRole | undefined {
   return segment === 'Host' || segment === 'Player' ? segment : undefined;
 }
 
+/** The first path segment of every route, which is what a stray path is matched on. */
+const RouteRoots = new Set(['Room', 'Gallery']);
+
+/**
+ * Drop path segments left behind by a hand-typed or pasted link.
+ *
+ * Routing is entirely in the fragment, so a path is meaningless to the app, but it
+ * is not harmless: it survives in every link copied afterwards and on GitHub Pages
+ * it turns into a 404 for anyone who opens it. The base directory is unknown to
+ * the app, so the path is cut at the first segment that names a route, which
+ * leaves a deploy path such as `/Unorthodox/` alone and removes `/Room/5978/Host`.
+ *
+ * This runs before the router reads the hash, so a link that carries its route in
+ * both places keeps working and simply loses the copy nobody can use.
+ */
+export function pruneStrayPath(): void {
+  const path = basePath();
+  if (path === window.location.pathname) {
+    return;
+  }
+  window.history.replaceState(null, '', `${path}${window.location.search}${window.location.hash}`);
+}
+
+/** The path with everything from the first route-named segment removed. */
+function basePath(): string {
+  const segments = window.location.pathname.split('/').filter((segment) => segment.length > 0);
+  const stray = segments.findIndex((segment) => RouteRoots.has(segment));
+  const base = stray === -1 ? segments : segments.slice(0, stray);
+  return base.length > 0 ? `/${base.join('/')}/` : '/';
+}
+
 export function roomPath(roomCode: string, role: SessionRole): string {
   return `#/Room/${roomCode}/${role}`;
+}
+
+/**
+ * Move to a route, with an empty path meaning the entry screen.
+ *
+ * Assigning an empty hash leaves a bare `#` in the address bar, which then rides
+ * along in every link copied out of the app. Leaving the root route therefore
+ * drops the fragment through the history API, which keeps the search string and
+ * records an entry so the back button still works.
+ *
+ * The hashchange event is raised by hand because the router listens for it and
+ * the history API does not fire it; a real event is not needed, since the
+ * handler only re-reads `location.hash`.
+ */
+export function navigate(path: string): void {
+  if (path !== '') {
+    window.location.hash = path;
+    return;
+  }
+  window.history.pushState(null, '', `${basePath()}${window.location.search}`);
+  window.dispatchEvent(new Event('hashchange'));
 }
