@@ -11,18 +11,25 @@ const keys = ['*', 'Multiply'];
  * room, so a guest pressing "*" would be logging its own tab and changing nothing
  * anyone else can see.
  *
- * False until the key is first pressed, since a session that arrived with ?debug has
- * nothing to announce about a note the host never asked for.
+ * Seeded from the flag itself rather than from "nobody has pressed the key yet",
+ * because the room unmounts and mounts again whenever the host leaves and comes back
+ * while the flag is still on — and a state that starts as "off" makes that first
+ * press after coming back turn the console off instead of showing the dock that was
+ * already there. One press is one change from where the flag actually is.
+ *
+ * And held to the host on the way out as well as on the way in, since a guest whose
+ * own link carries ?debug would otherwise be shown the host's dock, and the flag it
+ * reads is this device's rather than the room's.
  */
 export function useDebugToggle(host: boolean): {
   debugEnabled: boolean;
   onToggleDebug: () => void;
 } {
-  const [debugEnabled, setDebugState] = useState<boolean | null>(null);
+  const [debugEnabled, setDebugState] = useState(isDebugEnabled);
 
   const onToggleDebug = useCallback(() => {
     setDebugState((current) => {
-      const next = !(current ?? isDebugEnabled());
+      const next = !current;
       setDebugEnabled(next);
       return next;
     });
@@ -43,5 +50,5 @@ export function useDebugToggle(host: boolean): {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [host, onToggleDebug]);
 
-  return { debugEnabled: debugEnabled === true, onToggleDebug };
+  return { debugEnabled: host && debugEnabled, onToggleDebug };
 }
