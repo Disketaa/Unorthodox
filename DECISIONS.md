@@ -407,3 +407,22 @@ Scrolling writes a spread value rather than moving the field along the pointer a
 
 Marks are rolled between two size tokens (13vw and 26vw) rather than all at one width, weighted low so the
 small ones fill the corners and gaps. A mark's width is worked out once on its wrapper as a custom`property, because the mark and the rule positioning it are both in widths of the mark and must not`disagree about its size.
+
+The drawn cursors in `Design/Cursors` ship on a device that has a pointer, and not otherwise.
+`--Cursor-Default`, `--Cursor-Pointer` and `--Cursor-NotAllowed` are the platform's own keywords
+in `:root`, and are only replaced with the drawn images inside `@media (hover: hover) and (pointer:
+fine)`. Deciding this in the token rather than per component is what keeps it in one place: a
+component that writes `cursor: var(--Cursor-Pointer)` gets the finger on a desktop and the system
+hand on a phone without knowing which kind of device it is on. `hover: hover` alone is not enough,
+because a touchscreen laptop reports that it hovers while still being driven by touch, and its
+player should not get a drawn arrow they cannot aim with a finger.
+
+The drawn cursors are applied through `cursor` on the body, which `cursor` inherits from, rather
+than through a `cursor` set per component. That is what makes the arrow reach text, cards and
+images that no component styles at all. Links and fields are then the two that opt back out, a link
+to the pointer and a field to the I-beam, since the arrow points at neither.
+
+Each image is followed by a hotspot and then by the keyword it replaces, so a missing or
+undecodable SVG leaves the platform cursor rather than an invisible pointer. The hotspot values were
+measured from the paths' own geometry rather than assumed at the top-left corner, which the art
+does not use.

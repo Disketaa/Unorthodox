@@ -6,7 +6,7 @@
   background: var(--Color-Surface-Hover);
   border-radius: var(--Radius-Button);
   font-size: var(--FontSize-Body);
-  cursor: pointer;
+  cursor: var(--Cursor-Pointer);
   transition: background var(--Duration-Fast) var(--Easing-Standard);
 }
 

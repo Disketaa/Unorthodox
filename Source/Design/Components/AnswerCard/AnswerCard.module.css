@@ -27,7 +27,7 @@
   border: none;
   color: var(--Color-Feedback-Error);
   font-size: var(--FontSize-Lg);
-  cursor: pointer;
+  cursor: var(--Cursor-Pointer);
   padding: 0;
   line-height: 1;
 }

@@ -328,4 +328,55 @@ body {
   --Size-Icon: 30px;
   /* The smallest thing a finger may be asked to hit. */
   --Size-TouchTarget: 44px;
+
+  /*
+   * The cursors, as the platform's own.
+   *
+   * These are the fallbacks, and on a touch device they are all that is ever
+   * applied: a finger has no cursor to redraw, and shipping the images there
+   * would only cost the download. A device with a real pointer gets the drawn
+   * cursors below, where the swap is declared.
+   */
+  --Cursor-Default: default;
+  --Cursor-Pointer: pointer;
+  --Cursor-NotAllowed: not-allowed;
+}
+
+/*
+ * The drawn cursors, on a device that has a pointer.
+ *
+ * `hover: hover` alone is not enough, because a touchscreen laptop reports that it
+ * hovers while still being driven by touch, and the player who taps it should not
+ * get the drawn arrow. Both have to hold: the device must hover and its primary
+ * input must be a fine pointer, which is the mouse or the trackpad rather than a
+ * finger.
+ *
+ * The hotspot is the only part of this that has to be accurate. A cursor image is
+ * drawn at whatever size it declares and is never measured, but the hotspot is
+ * where the player aims, so being off by more than a pixel or two reads as the
+ * game aiming for the wrong answer. Each is the aim point of its own glyph: the
+ * arrow's tip, the fingertip, and for the barred one, which points nowhere, the
+ * top-left of the ring so the whole badge sits below and right of the pointer.
+ *
+ * These are in the pixels of the image as the browser draws it, which is why the
+ * size lives in the SVG's own width rather than in a stylesheet: changing that
+ * width rescales the drawing, and the hotspot below has to be restated to match.
+ * The three sizes are linked, and changing one without the others is the way to
+ * end up aiming at nothing.
+ *
+ * Each SVG is a 512-unit viewBox drawn at 32px. Browsers cap a custom cursor at
+ * 128px and scale anything larger down, and a hotspot in a scaled cursor then
+ * depends on whether a given browser scales it by the same factor. At 32px
+ * nothing is ever scaled, so the numbers below are read straight off the image.
+ *
+ * The trailing keyword is the fallback the browser shows if the image cannot be
+ * loaded, which is also what keeps the cursor usable if the SVG is ever missing
+ * from the build.
+ */
+@media (hover: hover) and (pointer: fine) {
+  :root {
+    --Cursor-Default: url('../Cursors/Arrow.svg') 4 0, default;
+    --Cursor-Pointer: url('../Cursors/Finger.svg') 12 0, pointer;
+    --Cursor-NotAllowed: url('../Cursors/Unavailable.svg') 2 3, not-allowed;
+  }
 }

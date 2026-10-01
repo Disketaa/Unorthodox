@@ -9,7 +9,7 @@
   border: var(--Border-Width-Default) solid transparent;
   border-radius: var(--Radius-Button);
   color: var(--Color-Text-Quiet);
-  cursor: pointer;
+  cursor: var(--Cursor-Pointer);
   transition:
     color var(--Duration-Fast) var(--Easing-Standard),
     background var(--Duration-Fast) var(--Easing-Standard);

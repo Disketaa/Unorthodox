@@ -41,6 +41,42 @@ textarea {
   outline: none;
 }
 
+/*
+ * The pointer itself.
+ *
+ * Set once on the body so it reaches everything, and left inheriting from there
+ * rather than restated per control: `cursor` is an inherited property, so this
+ * covers the whole document. The value comes from a token rather than being
+ * written here, because the token decides between the drawn cursor and the
+ * platform's own depending on whether there is a pointer at all. Components that
+ * want a different cursor set the same token on themselves.
+ */
+body {
+  cursor: var(--Cursor-Default);
+}
+
+/*
+ * The two controls the arrow would be wrong on.
+ *
+ * A link goes somewhere, so it takes the pointer like any other control, and a
+ * field takes text, so it takes the I-beam. Left to inherit, a link would be
+ * indistinguishable from the text around it and a field would keep the arrow,
+ * which is the one cursor on the screen that never points at what it is for.
+ */
+a {
+  cursor: var(--Cursor-Pointer);
+}
+
+input,
+textarea {
+  cursor: text;
+}
+
+/* A dropdown is picked rather than typed into, so it is a control, not a field. */
+select {
+  cursor: var(--Cursor-Pointer);
+}
+
 button:focus-visible,
 a:focus-visible,
 label:focus-visible,
