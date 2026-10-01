@@ -1,5 +1,42 @@
 ﻿# DECISIONS
 
+## 2026-10-01 — the pace is the host's, and a client's press is only ever a look at it
+`pace` moved into `LobbyState` and out through `PublicLobbyState`, so the room's answer
+travels to every client rather than living in the lobby screen. That is the whole of the
+mechanism and it is the reason for it: a settings card that a client can press but that
+shows a number the room is not playing is worse than no card, and the only way a client
+can be shown the truth is to be told it.
+
+A client pressing a pace button is therefore answered locally and nothing goes on the
+wire. There is no `SetPace` client message at all, which is the guarantee rather than a
+consequence of one — `RoomPace.test.ts` asserts `isClientMessage({type:'SetPace'})` is
+false, so the absence is checked at the gate every message passes rather than by calling
+a method a client does not have. A test that asserted the host merely ignored the
+request would still have passed if a client could ask and the host chose not to answer,
+which is a different and much weaker thing to promise. `Session.setPace` is a no-op on
+the client for the same reason: the UI has one handler and the role decides what it means.
+
+The local preview is dropped whenever the room's pace changes, and that comparison was
+the one place the first two attempts were wrong in ways worth writing down. Keying the
+preview on the pace it was pressed *against* looked equivalent and was not: a client
+previewing Fast against a room on Standard, then the host choosing Standard, leaves the
+room's value unchanged, so `against` still matched and the stale preview survived —
+showing Fast in a room playing Standard, which is the exact failure the state move
+exists to prevent. Comparing against the previous room value directly is what catches
+it, because a change is a change even when it lands on the value that was already there.
+
+The reset is done during render rather than in an effect. An effect would leave a frame
+in which the card shows the host's new numbers while the old button is still filled, and
+setting state while rendering is the documented way to avoid it: the component runs
+again immediately, before paint, with both values in step.
+
+Two paces is not enough to see that second bug from the outside. With only Standard and
+Fast, a client previewing one of them can only be out of step if the host moves to the
+other, which is the case the first version already handled — so the test that failed was
+one asserting a sequence the API cannot produce, and the sequence that does catch it
+(preview the pace the room is already on, then have the host move) is not obvious. Worth
+knowing before a third pace makes this reachable by accident.
+
 ## 2026-10-01 — a screen's containers go in one row or one column, and never two of three
 `Screen` no longer fits as many containers as the width allows. It had one track of
 `auto-fit`, which has exactly two answers for a row of three: three across, or two
