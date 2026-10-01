@@ -48,6 +48,27 @@ export class HostSession {
     this.apply({ type: 'JOIN', playerId: HostPlayerId, name: hostName, look });
     this.transport.setPlayerId(HostPlayerId);
     this.transport.start(roomCode, hostName, true);
+    // Only the host is told about every peer, so presence is recorded here and
+    // travels to the clients in the public state rather than being detected twice.
+    this.transport.onPeerLeave((peerId) => this.markDeparted(peerId));
+  }
+
+  /**
+   * Mark the player behind a departing peer as gone.
+   *
+   * The address is released first, because a peer that reconnects claims a fresh
+   * address for the same seat, and the old one must not be able to mark them gone
+   * a second time after they have already come back.
+   */
+  private markDeparted(peerId: string): void {
+    const playerId = this.roster.seatForPeer(peerId);
+    this.roster.releasePeer(peerId);
+    if (playerId === undefined) {
+      log('warn', 'peer left without a seat', peerId);
+      return;
+    }
+    log('info', 'player went offline', playerId);
+    this.apply({ type: 'SET_ONLINE', playerId, isOnline: false });
   }
 
   stop(): void {
@@ -94,7 +115,7 @@ export class HostSession {
       case 'Join': {
         // A player we already know is the same person coming back, so they keep
         // the seat and the character they had rather than a fresh roll.
-        const playerId = this.roster.claimSeat(message.name);
+        const playerId = this.roster.claimSeat(message.name, peerId);
         const look = resolveLook(this.knownLook(playerId), message.look);
         // Answer the peer the message came from: the game player id is assigned
         // here and never reaches the wire, so it is not routable.

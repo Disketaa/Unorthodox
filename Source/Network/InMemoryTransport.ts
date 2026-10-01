@@ -142,16 +142,21 @@ export class InMemoryTransport implements Transport {
     return Array.from(InMemoryTransport.peersByPeer.values()).some(entry => entry.isHost);
   }
 
-  /** Call this to simulate a peer leaving. */
+  /**
+   * Call this to simulate this peer dropping off the network.
+   *
+   * The others are told in the peer's own transport address, which is what the real
+   * transport reports and what a host resolves to a seat. A player id would mean
+   * nothing here, since the host is what assigns those.
+   */
   simulateLeave(): void {
-    const playerId = this.playerId;
-    if (playerId !== null) {
-      this.stop();
-      for (const [, entry] of InMemoryTransport.peersByPeer) {
-        if (entry.transport.onPeerLeaveCallback) {
-          entry.transport.onPeerLeaveCallback(playerId);
-        }
-      }
+    const address = this.peerAddress;
+    if (address === null) {
+      return;
+    }
+    this.stop();
+    for (const [, entry] of InMemoryTransport.peersByPeer) {
+      entry.transport.onPeerLeaveCallback?.(address);
     }
   }
 }

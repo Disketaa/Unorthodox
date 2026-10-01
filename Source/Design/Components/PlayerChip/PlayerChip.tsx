@@ -9,6 +9,12 @@ export interface PlayerChipProps {
   /** Its place in the roster, so a full lobby ripples rather than popping at once. */
   index?: number;
   isHost?: boolean;
+  /**
+   * Whether the host still has this player on the line.
+   *
+   * A player who dropped is still in the roster, because they may yet come back, so
+   * this dims the name rather than removing the chip.
+   */
   isOnline?: boolean;
   /**
    * Whether this chip is the player looking at the screen.
@@ -29,11 +35,14 @@ export function PlayerChip({
   isSelf = false,
 }: PlayerChipProps) {
   return (
-    <div class={isSelf ? `${styles.Root} ${styles.Self}` : styles.Root}>
+    <div
+      class={`${styles.Root} ${isOnline ? '' : styles.Offline} ${
+        isSelf ? styles.Self : ''
+      }`}
+    >
       {isHost && <span class={styles.HostIndicator} />}
       <Character character={character} color={color} size="Small" index={index} />
       <span class={styles.Name}>{name}</span>
-      <span class={`${styles.Dot} ${isOnline ? styles.Online : styles.Offline}`} />
     </div>
   );
 }

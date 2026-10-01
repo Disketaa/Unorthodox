@@ -7,6 +7,8 @@ export interface PublicPlayer {
   id: PlayerId;
   name: string;
   look: PlayerLook;
+  /** Whether the host still has this player on the line. */
+  isOnline: boolean;
 }
 
 export type PublicLobbyState = {
@@ -79,7 +81,12 @@ function toPublicLobbyState(state: HostState): PublicLobbyState {
   }
   const playersArray: PublicPlayer[] = [];
   state.players.forEach((player, id) => {
-    playersArray.push({ id, name: player.name, look: player.look });
+    playersArray.push({
+      id,
+      name: player.name,
+      look: player.look,
+      isOnline: player.isOnline,
+    });
   });
   return {
     phase: 'Lobby',

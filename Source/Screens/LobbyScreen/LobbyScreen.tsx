@@ -48,6 +48,7 @@ function Roster({
           color={player.look.color}
           index={index}
           isHost={index === 0}
+          isOnline={player.isOnline}
           isSelf={player.id === ownPlayerId}
         />
       ))}

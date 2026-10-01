@@ -4,6 +4,7 @@ import { scoreRound } from './RoundScoring';
 
 export type GameAction =
   | { type: 'JOIN'; playerId: PlayerId; name: string; look: PlayerLook }
+  | { type: 'SET_ONLINE'; playerId: PlayerId; isOnline: boolean }
   | { type: 'SET_LOOK'; playerId: PlayerId; look: PlayerLook }
   | { type: 'START_GAME'; topic: string; durationMs: number; startedAt: number }
   | { type: 'SUBMIT_ANSWER'; playerId: PlayerId; text: string }
@@ -14,43 +15,6 @@ export type GameAction =
   | { type: 'FINAL' };
 
 export type ActionOf<T extends GameAction['type']> = Extract<GameAction, { type: T }>;
-
-export function handleJoin(state: HostState, action: ActionOf<'JOIN'>): HostState {
-  if (state.phase !== 'Lobby') {
-    return state;
-  }
-  const newPlayers = new Map(state.players);
-  newPlayers.set(action.playerId, { name: action.name, look: action.look });
-  return {
-    phase: 'Lobby',
-    players: newPlayers,
-    cumulativeScores: state.cumulativeScores,
-  };
-}
-
-/**
- * Change how a player looks, which the lobby lets them do until the game starts.
- *
- * Once writing begins the look is frozen, so everyone sees the same faces for
- * the rest of the game and a player cannot swap to a different character
- * mid-round.
- */
-export function handleSetLook(state: HostState, action: ActionOf<'SET_LOOK'>): HostState {
-  if (state.phase !== 'Lobby' || !state.players.has(action.playerId)) {
-    return state;
-  }
-  const player = state.players.get(action.playerId);
-  if (player === undefined) {
-    return state;
-  }
-  const newPlayers = new Map(state.players);
-  newPlayers.set(action.playerId, { ...player, look: action.look });
-  return {
-    phase: 'Lobby',
-    players: newPlayers,
-    cumulativeScores: state.cumulativeScores,
-  };
-}
 
 export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>): HostState {
   if (state.phase !== 'Lobby' || state.players.size === 0) {

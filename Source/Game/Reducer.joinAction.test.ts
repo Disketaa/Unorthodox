@@ -30,7 +30,7 @@ describe('reducer JOIN action', () => {
 describe('reducer SET_LOOK action', () => {
   const lobby: HostState = {
     phase: 'Lobby',
-    players: new Map([['p1', { name: 'Alice', look }]]),
+    players: new Map([['p1', { name: 'Alice', look, isOnline: true }]]),
     cumulativeScores: new Map(),
   };
 

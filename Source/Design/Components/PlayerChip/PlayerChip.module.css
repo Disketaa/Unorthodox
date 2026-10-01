@@ -4,44 +4,45 @@
   gap: var(--Space-Sm);
   padding: var(--Space-Sm) var(--Space-Md);
   background: var(--Color-Surface-Hover);
+  /*
+   * The border is transparent rather than absent, because the local player's own chip
+   * is this border recoloured. Drawn on the chip's own edge, so marking yourself never
+   * changes the chip's size and never leaves a gap between the ring and the pill.
+   */
+  border: var(--Border-Width-Default) solid transparent;
   border-radius: var(--Radius-Full);
   /* Keeps the chip the same height whichever character it holds. */
   min-height: var(--Size-Character-Small);
 }
 
 /*
- * The local player's own chip.
+ * The local player, in a room where nobody can otherwise tell which chip is theirs.
  *
- * An outline standing off the chip, not a fill: a filled chip would read as a
- * chosen or disabled control, and the roster is a list, not a set of options.
- * The accent gold rather than the focus teal, since this is not a focused control
- * and the gold is the one colour the roster already spends on the host arrow.
- * The offset keeps the ring clear of the pill's own edge so the shape still reads
- * as a chip and not as a framed tile.
+ * A border rather than a fill: a filled chip would read as a chosen or disabled
+ * control, and the roster is a list, not a set of options. The accent gold rather
+ * than the focus teal, since this is not a focused control and the gold is the one
+ * colour the roster already spends on the host arrow.
  */
 .Self {
-  outline: var(--Border-Width-Default) solid var(--Color-Action-Primary-Background);
-  outline-offset: 2px;
+  border-color: var(--Color-Action-Primary-Background);
+}
+
+/*
+ * A player the host has lost.
+ *
+ * The whole chip is held back rather than the name inside it, so the face, the name
+ * and the host arrow all go quiet together and there is nothing to keep in step.
+ * Nothing is removed: the seat is still theirs and they may be back, and a roster
+ * that loses a row reads as a smaller room rather than as a player who dropped.
+ */
+.Offline {
+  opacity: 0.5;
 }
 
 .Name {
   font-size: var(--FontSize-Body);
+  font-weight: 600;
   color: var(--Color-Text-Default);
-}
-
-.Dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--Color-Neutral-400);
-}
-
-.Online {
-  background: var(--Color-Feedback-Success);
-}
-
-.Offline {
-  background: var(--Color-Neutral-400);
 }
 
 .HostIndicator {

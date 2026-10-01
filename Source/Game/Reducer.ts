@@ -1,7 +1,8 @@
 import { PlayerId } from '@/Core';
 import { HostState } from './GameState';
 import { assertNever } from '@/Core';
-import { GameAction, handleJoin, handleSetLook, handleStartGame, handleSubmitAnswer, handleStartReviewing, handleRejectGroup, handleEndReviewing, handleNextRound, handleFinal } from './GameActions';
+import { GameAction, handleStartGame, handleSubmitAnswer, handleStartReviewing, handleRejectGroup, handleEndReviewing, handleNextRound, handleFinal } from './GameActions';
+import { handleJoin, handleSetLook, handleSetOnline } from './LobbyActions';
 
 export function reducer(
   currentState: HostState | undefined,
@@ -16,6 +17,8 @@ export function reducer(
   switch (action.type) {
     case 'JOIN':
       return handleJoin(state, action);
+    case 'SET_ONLINE':
+      return handleSetOnline(state, action);
     case 'SET_LOOK':
       return handleSetLook(state, action);
     case 'START_GAME':

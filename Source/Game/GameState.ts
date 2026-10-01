@@ -1,9 +1,12 @@
 import { PlayerId, PlayerLook } from '@/Core';
 
-// What the room remembers about one player: who they are and how they look.
+// What the room remembers about one player: who they are, how they look, and
+// whether they are still on the line. Presence is the host's to record, because
+// only the host sees every peer connect and drop.
 export interface Player {
   name: string;
   look: PlayerLook;
+  isOnline: boolean;
 }
 
 export type LobbyState = {
