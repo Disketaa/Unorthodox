@@ -47,24 +47,16 @@
  * would each claim half and end up with a gap between them in the middle of the row.
  *
  * Cut short with an ellipsis rather than wrapped or allowed to push the row wider.
- * A name is whatever someone typed, and on a narrow phone a long one either wrapped
- * the chip to two lines and made the roster ragged, or pushed the marks off the end
- * of the row where nobody could reach them. A name is still there in full for
- * anything that can read it, so it is cut in the drawing rather than in the data.
- *
- * `min-width: 0` is what makes the cut happen at all: a flex item defaults to
- * refusing to shrink below its contents, which is what let a long name push the
- * chip wide instead of being cut.
+ * A name is still there in full for anything that can read it, so it is cut in the
+ * drawing rather than in the data. The cut itself is `Truncate`, shared with every
+ * other place a name is drawn.
  */
 .Name {
+  composes: Truncate from '../../Primitives/Truncate/Truncate.module.css';
   font-size: var(--FontSize-Body);
   font-weight: 600;
   color: var(--Color-Text-Default);
   margin-right: auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /*

@@ -19,15 +19,12 @@
  * being cut.
  */
 .VariantTitle {
+  composes: Truncate from '../Truncate/Truncate.module.css';
   display: block;
-  min-width: 0;
   font-family: var(--FontFamily-Display);
   font-size: var(--FontSize-H1);
   line-height: 1.2;
   color: var(--Color-Text-Title);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /*

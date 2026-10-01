@@ -11,7 +11,7 @@ cuts it off rather than queueing a second copy behind it: a button pressed twice
 not a burst. A refused `play()` promise is swallowed, because a browser blocking playback before
 the first gesture is not a fault to report at the press.
 
-Each press also lands on a different pitch, re-rolled within five semitones of the recorded one.
+Each press also lands on a different pitch, re-rolled within a major third of the recorded one.
 The clip is one recorded note, and replaying it verbatim makes two presses in a row read as a stuck
 sample rather than as two hands.
 
@@ -556,10 +556,12 @@ was already a self-contained part with a single caller.
 A name is cut with an ellipsis wherever it is drawn, never wrapped: in the roster chip, on a score
 row, on an answer card and in a title. A name is whatever someone typed, and on a narrow phone a long
 one either made the row two lines tall, pushed the marks and the controls off the end of it, or
-stretched the card. Every one of those cases needs `min-width: 0` first: a flex item refuses to
-shrink below its contents by default, so without it the ellipsis is never reached. The `Title` variant
-of `Text` also has to become a block, since it is a span and an inline box ignores `overflow`
-entirely. The word on a separator is cut for the same reason and by the same rule, with the runs of
+stretched the card. The four declarations that make a cut are shared as `Truncate`, one CSS module
+composed into all five rules, because the reason for each of them is the same everywhere and the one
+that is easy to leave out decides whether any of the rest does anything: a flex item refuses to
+shrink below its contents by default, so without `min-width: 0` the ellipsis is never reached. The
+`Title` variant of `Text` also has to become a block, since it is a span and an inline box ignores
+`overflow` entirely. The word on a separator is cut for the same reason and by the same rule, with
 the line given `flex: 1 1 0` so they are the ones that give way: a word that wrapped would push the
 two runs apart and turn one rule into two lines and a paragraph. An answer is the exception and wraps
 rather than being cut, because a cut answer is a hidden answer, and the name beside it is what gives

@@ -26,13 +26,10 @@
  * end of the row instead of being cut.
  */
 .Name {
+  composes: Truncate from '../../Primitives/Truncate/Truncate.module.css';
   flex: 1;
-  min-width: 0;
   font-size: var(--FontSize-Body);
   color: var(--Color-Text-Default);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .Score {

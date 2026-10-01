@@ -17,12 +17,9 @@
  * answer and the reject control off the end instead.
  */
 .Player {
+  composes: Truncate from '../../Primitives/Truncate/Truncate.module.css';
   font-weight: 600;
   color: var(--Color-Text-Default);
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /*
