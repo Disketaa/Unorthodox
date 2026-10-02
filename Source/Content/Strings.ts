@@ -136,6 +136,25 @@ Coral: 'Коралл',
     nextRound: 'Следующий раунд',
     waitingForHost: 'Ждём следующий раунд',
   },
+  /**
+   * What the game is doing right now, on the block above the theme bank.
+   *
+   * One sentence per phase and no more: the block says what is happening, the bank below it is
+   * the thing being done, and the player's own card says where they stand. A phase that had more
+   * to say would be a phase with a second thing on the screen.
+   *
+   * The first person rather than the third, because the sentence is about this browser's own
+   * moment — it is the theme in front of them being picked — and a block reading about somebody
+   * else while the player is doing it is one they have to translate.
+   */
+  phase: {
+    choosingTheme: (name: string) => `${name} выбирает тему…`,
+    writing: 'Все пишут ответы…',
+    reviewing: 'Голосуем за ответы…',
+    scores: 'Считаем очки…',
+    final: 'Игра закончена',
+    connecting: 'Подключаемся…',
+  },
   final: {
     headline: 'Итоги',
     playAgain: 'Сыграть ещё раз',

@@ -10,6 +10,7 @@ import { useStartCountdown } from './Hooks/UseStartCountdown';
 import type { GameSessionView } from './Hooks/UseGameSession';
 import { SessionRole, BlockedReason } from './Session';
 import { LobbyView } from './Views/LobbyView';
+import { PhaseInfoView } from './Views/PhaseInfoView';
 import { PlayerCardView } from './Views/PlayerCardView';
 import { ThemeCardsView } from './Views/ThemeCardsView';
 
@@ -46,22 +47,32 @@ function blockedMessage(reason: BlockedReason, roomLimit: number): string {
 }
 
 /**
- * The stage the game plays on: the bar of players at the top, the bank of themes under it.
+ * The stage the game plays on: a note at the top with this player's own card under it, and the
+ * bank of themes under both.
  *
- * A `Stack` filling the height rather than a `Screen`, and the difference is the bar. A
+ * A `Stack` filling the height rather than a `Screen`, and the difference is the bank. A
  * `Screen` is a grid of fixed-width containers, which is right for a page of cards and
  * wrong here: it caps every row at one readable column, so the bank of six was laid out
  * inside a 480px track and the cards came out narrow and against one side.
  *
- * The card is left at the top and the bank centred because they are answering two different
- * questions. The card is where this player stands — it belongs where it can be found without
- * scrolling to look for, which is the top of the game. The bank is the thing being looked at, and
- * six cards facing the player read as an arrangement only when they are in the middle of what
- * is left rather than pushed against the card.
+ * The note and this player's own card stand together at the top, and the bank is centred under
+ * them, because they answer three different questions. The note says what the room is doing, the
+ * bank is the thing being done and the card says where this player stands, so the middle of the
+ * screen belongs to the thing being looked at.
+ *
+ * The two are one stack rather than two rows because they are both about this player: what is
+ * happening to them, and where they stand in it. A note at the top of the screen and a card at
+ * the bottom of it are two things to look for, and the second one is the one a player glances at
+ * in the middle of a round. The gap between them is the connecting screen's, so the block and
+ * whatever sits under it are one step apart wherever in the game that happens to be.
+ *
+ * Both are centred on the same line rather than filling the width: a note and a card stretched
+ * across a screen say they are sections of something, and one of them is a sentence and the other
+ * is a face.
  *
  * The bank is wrapped in `ViewportCenter` rather than centred with `justify-content`, and
  * that is the whole of the difference between "in the middle of the screen" and "in the
- * middle of what the card left". The frame measures the height above itself and gives half of
+ * middle of what the note left". The frame measures the height above itself and gives half of
  * it back, so the bank stays in the middle of the viewport however many things sit at the
  * top of the game and however tall they are.
  *
@@ -75,8 +86,11 @@ function blockedMessage(reason: BlockedReason, roomLimit: number): string {
  */
 function GameScene({ view }: { view: GameSessionView }) {
   return (
-    <Stack align="Stretch" gap="Md" grow clip>
-      <PlayerCardView view={view} />
+    <Stack align="Center" gap="Md" grow clip>
+      <Stack gap="Md" align="Center">
+        <PhaseInfoView view={view} />
+        <PlayerCardView view={view} />
+      </Stack>
       <ViewportCenter>
         <ThemeCardsView roomCode={view.roomCode} />
       </ViewportCenter>
