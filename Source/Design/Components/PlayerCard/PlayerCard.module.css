@@ -1,0 +1,163 @@
+/*
+ * This browser's own seat in the game: a name, a standing and a face.
+ *
+ * A card, where the roster this replaced was a borderless strip. The strip had nothing to mark
+ * the one player reading it — every seat looked like every other seat and the player found
+ * themselves in it by reading sixteen names — so the only mark on it was an accent wash on one
+ * seat of sixteen, which says a thing only to whoever already knows which seat they are.
+ *
+ * Across rather than down, and short: a game screen is a roster and a bank of cards competing
+ * for the same height, and this took a square's worth of the top of the screen to say two words
+ * and a figure. Lying along the top it is a strip, the words read from the left where they are
+ * written, and the face stands at the end of it rather than above it.
+ *
+ * Width is a share of the screen rather than a row's worth of eight seats, because there is one
+ * of these: a card that solved its width for a bar of players is a card sized for a screen full
+ * of people who are not in it.
+ */
+.Root {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--Space-Sm);
+  width: var(--Size-PlayerCardWidth);
+  max-width: 100%;
+  padding: var(--Space-Sm) var(--Space-Md);
+  background: var(--Accent-Wash);
+  border: var(--Border-Width-Default) solid transparent;
+  border-radius: var(--Radius-Card);
+  /*
+   * In the middle of the row it stands in rather than against its edge: a card hanging off one
+   * side of the screen is a card that looks like it was put there rather than part of the
+   * arrangement it sits in.
+   */
+  align-self: center;
+  justify-self: center;
+}
+
+/*
+ * The words, down the left of the card.
+ *
+ * Takes the space the card has and the face takes what it needs, which is what puts the face at
+ * the far end however long the name is: a column of its own rather than two children of the row,
+ * so the name and the figure are one block and the face is one block beside it.
+ */
+.Details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: var(--Space-Xs);
+}
+
+/*
+ * The face, at a size a player recognises across a table.
+ *
+ * The roster's own size for a roster of small seats is not the size for one face with the screen
+ * to itself, and a character is drawn to be looked at rather than to be found among others. A
+ * clamp, because a card on a phone in a hand and a card on a desktop are read from different
+ * distances and neither of them wants the other's face — and the ceiling is what keeps the plank
+ * a plank: a face at the picker's own size would be taller than the two lines of words beside it
+ * and the card would grow to suit it.
+ *
+ * Reached through the card rather than through a size of the character's own: `Character` takes
+ * its size from a variant so that one drawing is the same size everywhere, and this is the one
+ * place it is not.
+ */
+.Root > :last-child {
+  width: var(--Size-PlayerCardCharacter);
+  height: var(--Size-PlayerCardCharacter);
+  flex: none;
+}
+
+/*
+ * The name, with the host's crown after it.
+ *
+ * A row rather than a name on its own, because the crown stands beside the word and a mark in the
+ * flow cannot be beside a name it is not in a line with. Both are pushed to the left edge with
+ * the figure under them, so the card is read from one side rather than from its middle. The row
+ * is stretched across the card with `min-width: 0`, so a name of sixteen characters is cut with
+ * an ellipsis rather than pushing the face off the end of the card.
+ */
+.NameRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  align-self: stretch;
+  min-width: 0;
+  gap: var(--Space-Xs);
+}
+
+/*
+ * The name, cut rather than wrapped, and heavier than a name usually is.
+ *
+ * Cut, because a card is a fixed height and a name that wrapped would make it taller than the
+ * theme bank's share of the screen allows. Heavy, because this is the one name in the game that
+ * is looked up rather than read past: it is the player's own, and the two words beside it are a
+ * figure and a drawing.
+ */
+.Name {
+  composes: Truncate from '../../Primitives/Truncate/Truncate.module.css';
+  flex: 0 1 auto;
+  max-width: 100%;
+  font-size: var(--FontSize-PlayerCardName);
+  font-weight: 600;
+  color: var(--Color-Text-Default);
+  text-align: left;
+}
+
+/*
+ * The host's crown, in the room's yellow.
+ *
+ * Fixed gold rather than the viewer's accent: hosting is a fact the whole room agrees on, and
+ * an accent-coloured crown would follow whoever is looking at the screen.
+ *
+ * It sits still while the face below it sways — a fact about a player that leans is a fact being
+ * doubted — and it has no background of its own, since a filled box behind it reads as a chip
+ * rather than as a mark.
+ */
+.Crown {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--Color-Room-Yellow);
+  pointer-events: none;
+}
+
+.CrownIcon {
+  width: 0.8em;
+  height: 0.8em;
+  background-color: currentColor;
+  mask: url('../../Icons/Crown.svg') center / 100% no-repeat;
+}
+
+/*
+ * The standing, in the room's yellow.
+ *
+ * The same fixed gold as the crown: this is the room's running figure rather than something that
+ * changes colour with whoever is reading it, and a score that followed the viewer's tint would
+ * say the same figure meant different things to different players.
+ *
+ * Figures of one width, so a score going from one digit to two does not shift the name above it.
+ */
+.Score {
+  font-size: var(--FontSize-PlayerCardScore);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  line-height: var(--Size-PlayerCardLine);
+  color: var(--Color-Room-Yellow);
+  text-align: left;
+}
+
+/*
+ * A player the host has lost, held back rather than hidden.
+ *
+ * The same half opacity the lobby's own chip uses, because the card is still theirs and they may
+ * be back. The whole card goes quiet together — face, name and score — so there is nothing left
+ * to keep in step.
+ */
+.Offline {
+  opacity: 0.5;
+}

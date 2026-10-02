@@ -10,7 +10,7 @@ import { useStartCountdown } from './Hooks/UseStartCountdown';
 import type { GameSessionView } from './Hooks/UseGameSession';
 import { SessionRole, BlockedReason } from './Session';
 import { LobbyView } from './Views/LobbyView';
-import { PlayerBarView } from './Views/PlayerBarView';
+import { PlayerCardView } from './Views/PlayerCardView';
 import { ThemeCardsView } from './Views/ThemeCardsView';
 
 export interface GameRoomProps {
@@ -53,17 +53,20 @@ function blockedMessage(reason: BlockedReason, roomLimit: number): string {
  * wrong here: it caps every row at one readable column, so the bank of six was laid out
  * inside a 480px track and the cards came out narrow and against one side.
  *
- * The bar is left at the top and the bank centred because they are answering two different
- * questions. The bar is a roster — it belongs where it can be found without scrolling to
- * look for, which is the top of the game. The bank is the thing being looked at, and six
- * cards facing the player read as an arrangement only when they are in the middle of what
- * is left rather than pushed against the bar.
+ * The card is left at the top and the bank centred because they are answering two different
+ * questions. The card is where this player stands — it belongs where it can be found without
+ * scrolling to look for, which is the top of the game. The bank is the thing being looked at, and
+ * six cards facing the player read as an arrangement only when they are in the middle of what
+ * is left rather than pushed against the card.
  *
  * The bank is wrapped in `ViewportCenter` rather than centred with `justify-content`, and
  * that is the whole of the difference between "in the middle of the screen" and "in the
- * middle of what the bar left". The frame measures the height above itself and gives half of
+ * middle of what the card left". The frame measures the height above itself and gives half of
  * it back, so the bank stays in the middle of the viewport however many things sit at the
  * top of the game and however tall they are.
+ *
+ * The row clips rather than scrolling, so the game is one screen rather than a page — a screen a
+ * player is looking at should not have to be scrolled to see half of what it is offering.
  *
  * The four phase screens that used to stand here are still in `Screens/`, unmounted, and
  * `PhaseScreen` chooses this for every phase after the lobby — so the theme bank is on
@@ -72,8 +75,8 @@ function blockedMessage(reason: BlockedReason, roomLimit: number): string {
  */
 function GameScene({ view }: { view: GameSessionView }) {
   return (
-    <Stack align="Stretch" gap="Md" grow>
-      <PlayerBarView view={view} />
+    <Stack align="Stretch" gap="Md" grow clip>
+      <PlayerCardView view={view} />
       <ViewportCenter>
         <ThemeCardsView roomCode={view.roomCode} />
       </ViewportCenter>

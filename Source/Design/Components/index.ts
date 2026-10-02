@@ -2,7 +2,7 @@ export * from "./Button";
 export * from "./TextField";
 export * from "./Card";
 export * from "./PlayerChip";
-export * from "./PlayerBar";
+export * from "./PlayerCard";
 export * from "./RoomCodeBadge";
 export * from "./Timer";
 export * from "./AnswerCard";
