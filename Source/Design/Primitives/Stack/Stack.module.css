@@ -15,6 +15,18 @@
 }
 
 /*
+ * What is off the bottom of a full-height row is not drawn, and the page does not scroll to it.
+ *
+ * `overflow: hidden` and nothing else: the row already has the height its parent has left, so the
+ * only thing clipping changes is whether the game becomes a page. It is the game's one row — the
+ * card above and the bank of cards below — where scrolling puts half the themes on offer below
+ * the fold on a device held on its side.
+ */
+.Clip {
+  overflow: hidden;
+}
+
+/*
  * Every child one equal share of the row's width.
  *
  * On the children rather than on the row, and with a `0` basis, which is the whole

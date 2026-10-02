@@ -31,6 +31,16 @@ export interface StackProps {
    * same row still scroll when its contents are taller than the room.
    */
   grow?: boolean;
+  /**
+   * Whether the row keeps its contents on the screen rather than letting the page scroll.
+   *
+   * For the one row that is the whole game: the player's own card above and the bank of theme
+   * cards below it are both fixed arrangements, and on a device turned on its side there is not
+   * height for both. Scrolling is the wrong answer for a screen a player is looking at rather
+   * than reading — half the themes on offer end up below the fold, and the card has to be
+   * scrolled back to — so the row clips instead and what does not fit is simply not drawn.
+   */
+  clip?: boolean;
   children?: ComponentChildren;
   padding?: StackSize;
   margin?: StackSize;
@@ -43,6 +53,7 @@ export function Stack({
   justify = "Start",
   fill = "Content",
   grow = false,
+  clip = false,
   children,
   padding,
   margin,
@@ -55,6 +66,7 @@ export function Stack({
     styles[`Justify${justify}`],
     fill === "Even" && styles.FillEven,
     grow && styles.Grow,
+    clip && styles.Clip,
     padding && styles[`Padding${padding}`],
     margin && styles[`Margin${margin}`],
   ]

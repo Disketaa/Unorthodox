@@ -137,7 +137,7 @@ export function ThemeCard({
       }}
     >
       <span class={styles.Initial} aria-hidden="true">{initialOf(name)}</span>
-      <span class={styles.Mark} aria-hidden="true">{index}</span>
+      <span class={styles.Panel}><span class={styles.Mark} aria-hidden="true">{index}</span></span>
       <span class={styles.Noise} aria-hidden="true" />
       <span class={styles.Name}>{name}</span>
       <RoundMeter rounds={rounds} spent={spent} />
