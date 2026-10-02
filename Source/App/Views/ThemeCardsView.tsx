@@ -7,15 +7,14 @@ export interface ThemeCardsViewProps {
   /** The room's code, which is what the deal is rolled from. */
   roomCode: string;
   /**
-   * Which tick has not been played yet, counted from one.
+   * How many of each theme's rounds have been played.
    *
    * Nothing counts rounds yet — the phase screens are still unmounted and no public state
-   * carries a round — so the bank is drawn with its last tick quiet, which is also what a
-   * card shows on its own. It is passed in rather than read from a module that does not
-   * exist yet, so when the round arrives it is one value from the view and nothing on the
-   * cards changes.
+   * carries a round — so the bank is drawn full, which is what a theme nobody has chosen yet
+   * looks like. It is passed in rather than read from a module that does not exist yet, so
+   * when the round arrives it is one value from the view and nothing on the cards changes.
    */
-  pending?: number;
+  spent?: number;
 }
 
 /**
@@ -31,7 +30,7 @@ export interface ThemeCardsViewProps {
  * does not change its code: recomputing it on a render is cheaper than remembering it,
  * and a remembered deal would be a second copy of the answer to keep in step.
  */
-export function ThemeCardsView({ roomCode, pending }: ThemeCardsViewProps) {
+export function ThemeCardsView({ roomCode, spent }: ThemeCardsViewProps) {
   const themes: readonly ThemeId[] = dealThemes(
     randomFor(roomCode),
     GameConfig.themes.cardsPerLobby,
@@ -41,7 +40,7 @@ export function ThemeCardsView({ roomCode, pending }: ThemeCardsViewProps) {
       themes={themes}
       names={Strings.themes.names}
       roundsPerTheme={GameConfig.themes.roundsPerTheme}
-      pending={pending}
+      spent={spent}
     />
   );
 }

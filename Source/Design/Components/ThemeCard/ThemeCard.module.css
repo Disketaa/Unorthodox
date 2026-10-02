@@ -47,9 +47,22 @@
    * reaching the frame.
    */
   padding: var(--Space-ThemeCardPadding);
-  background: var(--Color-Surface-Default);
+  background: var(--Color-Surface-Hover);
   color: var(--Color-Text-Default);
-  border: var(--Border-Width-Default) solid var(--Color-Border-Default);
+  /*
+   * No border, and the surface is one step down rather than the white the rest of the game
+   * draws its cards on.
+   *
+   * The border and the off-white do the same job — both were there to lift the card off the
+   * page — and a card this large does not need both. With the frame gone the rounded corner
+   * and the fill are the whole edge, which is what lets six of them sit on a page of white
+   * paper as six panels rather than as six outlines.
+   *
+   * `--Color-Surface-Hover` and not a lighter grey of its own, because it is the one step the
+   * palette already has for a surface that is not the page's own white, and a second grey
+   * beside it would be a colour nothing else in the game shares.
+   */
+  border: none;
   border-radius: var(--Radius-Card);
   cursor: var(--Cursor-Pointer);
   transition: background var(--Duration-Fast) var(--Easing-Standard),
@@ -60,19 +73,21 @@
 /*
  * The hover, in the theme's own accent.
  *
- * A wash rather than the tint, because the name is read off the card and a raw tint behind
- * a name fails contrast in every one of the eight tints in the palette — the ink step of
- * the same accent is what can be read on its own wash. The border takes the ink because a
- * hairline in the accent is what says the card is the thing under the pointer, which the
- * fill alone does not say on a pale wash.
+ * A wash rather than the tint, because the name is read off the card and a raw tint as a fill
+ * behind a name fails contrast in every one of the eight tints in the palette — the pale step
+ * of the same accent is what can be read on.
  *
- * Both values are written by the component from `Core`, where the accents are measured, so
- * the fallback here is only what a card looks like before it has been written to.
+ * The name and the border take the tint, not the ink: the tint is the accent as the game
+ * draws it everywhere else — the characters are filled with it and the bar's ticks are — and
+ * the ink is the same hue turned down until text can sit on the wash. Using the ink here made
+ * the hovered card a different colour from the rest of the theme it belongs to.
+ *
+ * All three values are written by the component from `Core`, where the accents are measured,
+ * so the fallbacks here are only what a card looks like before it has been written to.
  */
 .Root:hover {
   background: var(--ThemeCard-Wash, var(--Accent-Wash));
-  border-color: var(--ThemeCard-Ink, var(--Accent-Ink));
-  color: var(--ThemeCard-Ink, var(--Accent-Ink));
+  color: var(--ThemeCard-Tint, var(--Accent-Tint));
 }
 
 /*
@@ -104,13 +119,17 @@
 }
 
 /*
- * The focus ring on the card's own border rather than an outline, so the focused card never
- * shows two frames, one inside the other: the border is already there and only its colour
- * changes, which is what `TextField` does for the same reason.
+ * The focus ring on the card itself, since there is no border left to recolour.
+ *
+ * An outline rather than a `border-color` change, the opposite of what this was doing when
+ * the card had a frame: there, recolouring the border kept a focused card from showing two
+ * frames at once. With no frame the ring has to be drawn outside the fill, and an outline
+ * does that without taking any of the card's width, which matters at this size — a focused
+ * card that grew a pixel would be a card out of line with the five beside it.
  */
 .Root:focus-visible {
-  outline: none;
-  border-color: var(--Color-Border-Focus);
+  outline: var(--Border-Width-Default) solid var(--Color-Border-Focus);
+  outline-offset: var(--Border-Width-Default);
 }
 
 /*
@@ -156,7 +175,25 @@
   user-select: none;
   pointer-events: none;
   opacity: var(--Opacity-ThemeCardMark);
-  color: inherit;
+  /*
+   * The card's own quiet grey at rest, not the theme's colour.
+   *
+   * Every other thing on the card that is the theme's own colour is in the tint — the ticks
+   * along the bottom are all of it. This one was inheriting the card's quiet ink too, which
+   * made the bank read as six grey cards with six coloured strips rather than as six themes:
+   * the number is the biggest thing on the card and it was the one thing on it not wearing the
+   * theme.
+   *
+   * Grey rather than a faded tint, and the difference is what makes this read as a number
+   * *behind* the theme. A weaker tint is still the theme's own hue, so it competes with the
+   * ticks and the name because it is the same colour as both; grey is the one colour nothing
+   * else on the card is wearing, so the number sits behind it rather than being part of it.
+   *
+   * It takes the theme's tint under the pointer along with the rest of the hover, so the card
+   * going from a grey number to the theme's own number is one change rather than a recolour on
+   * top of a fade.
+   */
+  color: var(--Color-Text-Quiet);
   transform: scale(1);
   transform-origin: center;
   /*
@@ -178,19 +215,14 @@
  *
  * Blended rather than drawn opaquely, which is the whole of it. A noise tile at any opacity
  * below one is a grey wash unless it is blended, because the tile has grey in its light parts
- * as well as its dark and an unblended one just fogs the card. Multiply lets the tile's darks
- * through to the surface and its lights do nothing, which is what makes a pale card look
- * grained rather than fogged.
+ * as well as its dark and an unblended one just fogs the card.
  *
- * `difference` and not `multiply` or `overlay`, and the card's colour is what decides it. These
- * cards are near-white, and multiply can only darken — over a pale surface it moves a very
- * little per step and reads as no grain. Overlay and `soft-light` are worse: both do almost
- * nothing to a backdrop already at the top of their range, which is exactly where a card's
- * surface is. Difference inverts the tile against what is under it, so the grain shows in
- * the darks and the lights of the surface both.
- *
- * Difference is a violent blend at full strength — it would invert the name's ink too — so
- * the opacities beside it are a twentieth rather than something larger.
+ * Which blend is a question these pale cards answer badly, and it has been answered three
+ * times: `multiply` only darkens, so over a near-white surface it moves a very little per step
+ * and read as no grain; `difference` puts the grain in the darks and the lights both, and is
+ * violent enough at full strength to have to be held at a twentieth; `overlay` is where it
+ * settled. The blend is a token, so none of that needed a code change to try — and the
+ * opacities beside it are tokens too, which is what the next try will move.
  *
  * No `background-size`, and that is deliberate too. The tile is drawn at its own pixels: any
  * reduction of it averages the grain into a flat grey before the browser gets to blend
@@ -225,6 +257,16 @@
 .Root:hover .Noise {
   opacity: var(--Opacity-ThemeCardNoiseHover);
 }
+
+/*
+ * The name takes the tint on hover, and so do the ticks and the number.
+ *
+ * All three the same value rather than the tint here and the ink there: they are the theme's
+ * own colour, and `Accents` gives one of each per theme for exactly this — the tint is the
+ * accent as the game draws it everywhere else, and the ink is the same hue turned down until
+ * text can sit on the pale wash. A hovered card was the only part of a theme wearing the
+ * turned-down version of itself.
+ */
 
 /*
  * The name on the card, which is the whole content of it.
@@ -269,18 +311,23 @@
 }
 
 /*
- * The name and the mark open up together on hover, by the same share.
+ * The name and the mark open up together on hover, each by its own share.
  *
- * The name alone would leave the mark the same size and the panel would stop opening up; the
- * mark alone would swell out from behind a name that did not, which reads as the card growing
- * rather than as the word on it. `font-size` on the name so the text reflows instead of being
- * drawn larger and going soft at the edges.
+ * Both move, because either one alone stops the panel from opening up: the name alone leaves
+ * the mark the same size, and the mark alone swells out from behind a name that did not. Two
+ * shares rather than one because a clipped figure and a line of text cannot both answer to the
+ * same amount — the mark is already larger than the card, so the name's scale is invisible on
+ * it, and it needs four times as much to shift at all inside the crop.
+ *
+ * `font-size` on the name so the text reflows instead of being drawn larger and going soft at
+ * the edges, and `scale` on the mark because there is nothing to reflow in a figure.
  */
 .Root:hover .Name {
   font-size: calc(var(--FontSize-ThemeCard) * var(--Scale-ThemeCardHover));
 }
 
 .Root:hover .Mark {
-  transform: scale(var(--Scale-ThemeCardHover));
+  transform: scale(var(--Scale-ThemeCardMarkHover));
   opacity: var(--Opacity-ThemeCardMarkHover);
+  color: var(--ThemeCard-Tint, var(--Accent-Tint));
 }

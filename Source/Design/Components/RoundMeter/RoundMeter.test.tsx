@@ -4,78 +4,62 @@ import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { RoundMeter } from './RoundMeter';
 
-/** The meter as one role sees it: its ticks, and how many of them are greyed. */
-function meter(rounds: number, pending: number) {
+/** The bar as one role sees it: its ticks, and which of them are spent. */
+function bar(spent?: number, rounds = 10) {
   const container = document.createElement('div');
   document.body.appendChild(container);
   act(() => {
-    render(<RoundMeter rounds={rounds} pending={pending} />, container);
+    render(<RoundMeter rounds={rounds} spent={spent} />, container);
   });
   const root = container.firstElementChild;
   if (root === null) {
-    throw new Error('no meter rendered');
+    throw new Error('no bar rendered');
   }
-  const greyed = [...root.querySelectorAll('span')].filter((tick) =>
-    (tick.getAttribute('class') ?? '').includes('Pending'),
-  );
-  return { root, ticks: root.querySelectorAll('span'), greyed };
+  const ticks = [...root.querySelectorAll('span')];
+  const isSpent = (tick: Element) => (tick.getAttribute('class') ?? '').includes('Spent');
+  return { root, ticks, spentAt: ticks.map((tick, at) => (isSpent(tick) ? at : -1)) };
 }
 
-describe('the round ticks on a card', () => {
+describe('the health bar on a theme card', () => {
   it('draws one tick per round of the theme', () => {
-    // The number of topics the theme answers for, and the length of the row: a card showing
+    // The number of topics the theme answers for, and the length of the bar: a card showing
     // fewer ticks than the theme has rounds says the theme is shorter than it is.
-    expect(meter(10, 1).ticks).toHaveLength(10);
-    expect(meter(3, 1).ticks).toHaveLength(3);
+    expect(bar(0).ticks).toHaveLength(10);
+    expect(bar(0, 3).ticks).toHaveLength(3);
   });
 
-  it('greys exactly the one tick still to play', () => {
-    // Every other tick is the theme's own colour, so a second greyed one would be two
-    // answers to what is left, and none at all would say a theme with nothing to play.
-    expect(meter(10, 1).greyed).toHaveLength(1);
-    expect(meter(10, 7).greyed).toHaveLength(1);
+  it('is full before anything is played', () => {
+    // A theme nobody has chosen yet has all of its rounds, and choosing it is what spends the
+    // first one. A bar that started greyed would say the theme had already been asked things.
+    expect(bar().spentAt.every((at) => at === -1)).toBe(true);
+    expect(bar(0).spentAt.every((at) => at === -1)).toBe(true);
   });
 
-  it('greys the last tick unless it is told otherwise', () => {
-    // A row that fills left to right draws the eye to the tick at the start; a row that
-    // empties from the start draws it to the end, which is the far end of the theme — where
-    // the row is counting to. The last tick is also the only one that can be right without
-    // knowing the room's progress at all.
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-    act(() => {
-      render(<RoundMeter rounds={10} />, container);
-    });
-    const ticks = [...(container.firstElementChild?.querySelectorAll('span') ?? [])];
-    const isPending = (tick: Element) =>
-      (tick.getAttribute('class') ?? '').includes('Pending');
-    expect(ticks.filter(isPending)).toHaveLength(1);
-    expect(ticks.findIndex(isPending)).toBe(9);
+  it('empties from the right, so the spent ticks are the last ones', () => {
+    // The row is a bar that drains rather than one that fills: choosing a theme spends one
+    // tick and it goes at the right end, which is where the eye reads a draining bar from.
+    expect(bar(1).spentAt).toEqual([-1, -1, -1, -1, -1, -1, -1, -1, -1, 9]);
+    expect(bar(3).spentAt).toEqual([-1, -1, -1, -1, -1, -1, -1, 7, 8, 9]);
   });
 
-  it('greys a tick that is still there rather than leaving a hole', () => {
-    // An absent tick reads as one that was missed; the theme has been chosen, so every round
-    // on it is going to happen and this one has simply not happened yet. The row stays ten
-    // long whatever the room has got to.
-    expect(meter(10, 4).ticks).toHaveLength(10);
+  it('empties one tick per round rather than a fraction of the bar', () => {
+    // Ticks rather than one continuous fill: a fill would move by a twentieth of itself per
+    // round instead of by a whole segment, and ten of them also say how many rounds a theme
+    // had in total.
+    expect(bar(1).spentAt.filter((at) => at >= 0)).toHaveLength(1);
+    expect(bar(9).spentAt.filter((at) => at >= 0)).toHaveLength(9);
   });
 
-  it('moves the greyed tick along as rounds are played', () => {
-    // Playing the greyed tick is the whole of what a round advancing looks like here: it
-    // takes the colour of the nine beside it and the next one greys.
-    const position = (pending: number) =>
-      [...meter(10, pending).ticks].findIndex((tick) =>
-        (tick.getAttribute('class') ?? '').includes('Pending'),
-      );
-    expect(position(1)).toBe(0);
-    expect(position(4)).toBe(3);
-    expect(position(10)).toBe(9);
+  it('keeps drawing the spent ticks rather than shortening the bar', () => {
+    // A spent round is still a round this theme had, and a bar that hid them would say the
+    // theme was never as long as it was. What is spent is drawn, not deleted.
+    expect(bar(9).ticks).toHaveLength(10);
   });
 
   it('says nothing at all to a screen reader', () => {
-    // Ten ticks read out as a burst of punctuation, and the tick that matters is the grey
-    // one, which a screen reader cannot see. The card's name is what is announced.
-    expect(meter(10, 4).root.getAttribute('aria-hidden')).toBe('true');
-    expect(meter(10, 4).root.textContent).toBe('');
+    // Ten ticks read out as a burst of punctuation, and the ticks that matter are the grey
+    // ones, which a screen reader cannot see. The card's name is what is announced.
+    expect(bar(4).root.getAttribute('aria-hidden')).toBe('true');
+    expect(bar(4).root.textContent).toBe('');
   });
 });

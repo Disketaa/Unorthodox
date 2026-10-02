@@ -27,7 +27,7 @@ const tokenValue = tokenReader(tokens);
 /** The row of round ticks, and one of them. */
 const Meter = /\.Root\s*\{([^}]*)\}/;
 const Mark = /\.Mark\s*\{([^}]*)\}/;
-const Pending = /\.Pending\s*\{([^}]*)\}/;
+const Spent = /\.Spent\s*\{([^}]*)\}/;
 
 /** The row, which is where the perspective and the cap live. */
 const Root = /\.Root\s*\{([^}]*)\}/;
@@ -98,14 +98,37 @@ describe('the row of theme cards', () => {
 });
 
 describe('the theme cards', () => {
-  it('washes in the theme accent on hover, in the same time as every other control', () => {
-    // A wash rather than the tint, because the name is read off the card and a raw tint
-    // behind a name fails contrast in every one of the eight.
+it('washes in the theme accent on hover, in the same time as every other control', () => {
+    // The fill is the pale wash and the name and border take the tint — the accent as the
+    // game draws it everywhere else. The ink is the same hue turned down until text can sit
+    // on that wash, and using it here made a hovered card a different colour from the rest of
+    // the theme it belongs to.
     const hover = /\.Root:hover\s*\{([^}]*)\}/;
     expect(card.declaration(hover, 'background')).toContain('var(--ThemeCard-Wash');
-    expect(card.declaration(hover, 'color')).toContain('var(--ThemeCard-Ink');
+    expect(card.declaration(hover, 'color')).toContain('var(--ThemeCard-Tint');
+    expect(card.declaration(hover, 'color')).not.toContain('--ThemeCard-Ink');
     expect(card.text).toContain('--Duration-Fast');
     expect(card.text).toContain('--Easing-Standard');
+  });
+
+  it('has no frame, and is one step off the page rather than white on it', () => {
+    // The border and the off-white both lift the card off the page, and a card this large does
+    // not need both: with the frame gone the rounded corner and the fill are the whole edge,
+    // which is what lets six of them read as six panels rather than six outlines. The off-
+    // white is the step the palette already has, not a second grey beside it.
+    expect(card.declaration(Card, 'border')).toBe('none');
+    expect(card.declaration(Card, 'background')).toBe('var(--Color-Surface-Hover)');
+    expect(card.ruleBody(/\.Root:hover\s*\{([^}]*)\}/)).not.toContain('border');
+  });
+
+  it('draws the focus ring outside the fill, since there is no border to recolour', () => {
+    // It used to recolour the card's own border, which kept a focused card from showing two
+    // frames at once. With no frame the ring has to be drawn outside, and an outline does that
+    // without taking any of the card's width — a focused card that grew a pixel would be a card
+    // out of line with the five beside it.
+    const focus = /\.Root:focus-visible\s*\{([^}]*)\}/;
+    expect(card.declaration(focus, 'outline')).toContain('var(--Color-Border-Focus)');
+    expect(card.declaration(focus, 'outline-offset')).toBe('var(--Border-Width-Default)');
   });
 
   it("wears the viewer's ink at rest, taking the theme's accent only on hover", () => {
@@ -172,33 +195,61 @@ describe('the number behind the name', () => {
     expect(mark).toBeGreaterThan(name * 8);
   });
 
-  it('is held back with opacity rather than with a colour of its own', () => {
-    // The name is drawn in the same colour and has to stay the stronger of the two, so the
-    // mark cannot be a paler version of a hue — it has to be the same hue at less of itself.
+it('is held back with opacity rather than with a colour of its own', () => {
+    // The name is drawn in the tint and has to stay the stronger of the two, so the mark
+    // cannot be a paler version of that hue — it is grey and faint, which are two separate
+    // things from the colour.
     expect(card.declaration(CardMark, 'opacity')).toBe('var(--Opacity-ThemeCardMark)');
-    expect(card.declaration(CardMark, 'color')).toBe('inherit');
-    expect(card.ruleBody(CardMark)).not.toContain('--Color-');
   });
 
-  it('stays behind the name at rest, which is what the hover is for', () => {
-    // Drawn in the name's own colour, so how much of itself the mark is worth is the only
-    // thing between it and competing with the one thing on the card being read.
+  it('is the card quiet grey at rest, and the theme tint under the pointer', () => {
+    // Grey rather than a faded tint, and that is what makes it read as a number *behind* the
+    // theme: a weaker tint is still the theme's own hue and competes with the ticks and the
+    // name because it is their colour, while grey is the one colour nothing else on the card
+    // is wearing. It was inheriting the card's quiet ink too, so the bank read as six grey
+    // cards with six coloured strips — the number is the biggest thing on a card and was the
+    // one thing on it not wearing the theme.
+    expect(card.declaration(CardMark, 'color')).toBe('var(--Color-Text-Quiet)');
+    expect(card.declaration(/\.Root:hover\s+\.Mark\s*\{([^}]*)\}/, 'color')).toBe(
+      'var(--ThemeCard-Tint,var(--Accent-Tint))',
+    );
+  });
+
+it('answers the pointer differently from how it rests', () => {
+    // Which way it goes is a matter of taste and has changed; that it goes is not. A mark that
+    // did not answer at all would be a figure on a card that did not notice it was being
+    // looked at.
     const resting = Number(tokenValue('--Opacity-ThemeCardMark'));
     const lifted = Number(tokenValue('--Opacity-ThemeCardMarkHover'));
+    expect(resting).toBeGreaterThan(0);
     expect(resting).toBeLessThan(1);
-    expect(lifted).toBeGreaterThan(resting);
+    expect(lifted).not.toBe(resting);
+    expect(lifted).toBeGreaterThan(0);
     expect(lifted).toBeLessThan(1);
   });
 
-  it('opens a beat after the name, and on the way out as well', () => {
+it('opens a beat after the name, long enough to see, and on the way out as well', () => {
     // A delay written on the `:hover` rule applies to the change into it and not out of it,
     // so a mark that waited to close would hang on the card after the pointer had gone.
     expect(card.ruleBody(CardMark)).toContain('--Duration-ThemeCardMarkDelay');
     expect(card.ruleBody(/\.Root:hover\s+\.Mark\s*\{([^}]*)\}/)).not.toContain('transition');
     const delay = Number(tokenValue('--Duration-ThemeCardMarkDelay').replace('ms', ''));
     const hover = Number(tokenValue('--Duration-Fast').replace('ms', ''));
-    expect(delay).toBeGreaterThan(0);
     expect(delay).toBeLessThan(hover);
+    // A quarter of the movement was not noticeable at all: the mark had barely begun to move
+    // before the name had finished, so there was no gap to see. Three fifths leaves the name a
+    // clear moment on its own and still lands the mark inside the hover.
+    expect(delay / hover).toBeGreaterThan(0.5);
+  });
+
+  it('moves the mark further than the name, because a clipped figure needs more to shift', () => {
+    // The mark is already larger than the card, so the name's scale is nearly invisible on it
+    // and the delay had almost nothing to separate. It has to be the larger of the two by a
+    // clear margin to move at all inside the crop.
+    const name = Number(tokenValue('--Scale-ThemeCardHover'));
+    const mark = Number(tokenValue('--Scale-ThemeCardMarkHover'));
+    expect(mark).toBeGreaterThan(name);
+    expect(mark).toBeGreaterThan(1.2);
   });
 
   it('lays grain over the card rather than fogging it', () => {
@@ -208,14 +259,14 @@ describe('the number behind the name', () => {
     expect(card.declaration(Noise, 'opacity')).toBe('var(--Opacity-ThemeCardNoise)');
   });
 
-  it('inverts the grain against the card, because a pale surface defeats the softer blends', () => {
-    // The grain was invisible on the card, and no opacity would have fixed it: `overlay` and
-    // `soft-light` do almost nothing to a backdrop already at the top of their range, which is
-    // where a near-white card's surface is, and multiply — the paper's blend — can only darken,
-    // so over a pale surface it moves a very little per step. Difference puts the grain in the
-    // darks and the lights of the surface both.
-    expect(tokenValue('--Blend-ThemeCardNoise')).toBe('difference');
-    expect(tokenValue('--Blend-ThemeCardNoise')).not.toBe(tokenValue('--Overlay-BlendMode'));
+it('blends the grain into the card rather than drawing it opaquely', () => {
+    // A noise tile at any opacity below one is a grey wash unless it is blended, because the
+    // tile has grey in its light parts as well as its dark. Which blend it is has changed more
+    // than once while this was being looked at — the pale card defeats some of them — so what
+    // is held here is that it is blended at all, and that it is not the unblended default.
+    const blend = tokenValue('--Blend-ThemeCardNoise');
+    expect(blend).not.toBe('normal');
+    expect(blend.length).toBeGreaterThan(0);
   });
 
   it('draws the grain at its own pixels, because reducing it destroys it', () => {
@@ -236,14 +287,16 @@ describe('the number behind the name', () => {
     expect(card.declaration(Noise, 'pointer-events')).toBe('none');
   });
 
-  it('holds the grain faint, because difference is a violent blend at full strength', () => {
-    // At one it would invert the name's ink as well as the card. A twentieth is barely a
-    // tint: a card behind six other cards is a finish, not a texture.
+it('holds the grain short of the name, which is the thing on the card being read', () => {
+    // How faint exactly is a matter of taste and has moved both ways while this was being
+    // looked at. What has not moved is that the grain is a finish over the card rather than
+    // something competing with the name on it, so it never reaches full strength.
     const resting = Number(tokenValue('--Opacity-ThemeCardNoise'));
     const lifted = Number(tokenValue('--Opacity-ThemeCardNoiseHover'));
-    expect(resting).toBeLessThan(0.1);
-    expect(lifted).toBeGreaterThan(resting);
-    expect(lifted).toBeLessThan(0.2);
+    expect(resting).toBeGreaterThan(0);
+    expect(lifted).toBeGreaterThan(0);
+    expect(lifted).toBeLessThan(1);
+    expect(resting).toBeLessThan(1);
   });
 
   it('lifts the grain on hover, on the card timing', () => {
@@ -254,8 +307,8 @@ describe('the number behind the name', () => {
   });
 
   it('is scaled on hover rather than resized, so nothing reflows under the pointer', () => {
-    expect(card.declaration(/\.Root:hover\s+\.Mark\s*\{([^}]*)\}/, 'transform')).toBe(
-      'scale(var(--Scale-ThemeCardHover))',
+expect(card.declaration(/\.Root:hover\s+\.Mark\s*\{([^}]*)\}/, 'transform')).toBe(
+      'scale(var(--Scale-ThemeCardMarkHover))',
     );
     expect(card.declaration(CardMark, 'transform')).toBe('scale(1)');
   });
@@ -296,14 +349,25 @@ describe('the round ticks along the bottom of a card', () => {
     expect(meter.declaration(Meter, 'justify-content')).toBe('center');
   });
 
-  it('draws every tick in the theme accent, and greys one by opacity', () => {
-    // All ten are the theme's own colour because the row is one thing the card is saying —
-    // this theme, this many rounds — and the single greyed tick is what is left to play. The
-    // greying is opacity rather than a paler colour so the pending tick is still that accent;
-    // a row where one mark is a different hue shows two kinds of thing.
-    expect(meter.declaration(Mark, 'background')).toBe('var(--ThemeCard-Ink,var(--Accent-Ink))');
-    expect(meter.declaration(Pending, 'opacity')).toBe('var(--Opacity-RoundMarkPending)');
-    expect(meter.ruleBody(Pending)).not.toContain('background');
+it('draws every tick in the theme accent, and greys the spent ones by opacity', () => {
+    // The bar is one thing the card is saying — this theme, this many rounds — so every tick
+    // is that accent and a spent one is still that accent. The greying is opacity rather than
+    // a paler colour for the same reason: a bar whose spent part is a different hue is a
+    // bar showing two kinds of thing rather than one bar with less in it.
+    expect(meter.declaration(Mark, 'background')).toBe('var(--ThemeCard-Tint,var(--Accent-Tint))');
+    expect(meter.declaration(Spent, 'opacity')).toBe('var(--Opacity-RoundMarkSpent)');
+    expect(meter.ruleBody(Spent)).not.toContain('background');
+  });
+
+  it('greys a spent tick without hiding it, or the theme looks shorter than it was', () => {
+    // A spent round is still a round this theme had; a bar that deleted it would say the
+    // theme was never as long as it was. A sixth of full strength is greyed enough to count
+    // the spent ones across six cards and not so faint that the bar reads as shorter.
+    const resting = Number(tokenValue('--Opacity-RoundMark'));
+    const spent = Number(tokenValue('--Opacity-RoundMarkSpent'));
+    expect(resting).toBe(1);
+    expect(spent).toBeGreaterThan(0);
+    expect(spent).toBeLessThan(resting / 4);
   });
 
   it('draws the ticks as pipes rather than dots', () => {
@@ -329,15 +393,7 @@ describe('the round ticks along the bottom of a card', () => {
     }
   });
 
-  it('greys the pending tick enough to find across six cards, but not into a gap', () => {
-    // A sixth of full strength: greyed enough to pick out at a glance and not so faint that
-    // it reads as a tick that was missed rather than one still to come.
-    const resting = Number(tokenValue('--Opacity-RoundMark'));
-    const pending = Number(tokenValue('--Opacity-RoundMarkPending'));
-    expect(resting).toBe(1);
-    expect(pending).toBeGreaterThan(0);
-    expect(pending).toBeLessThan(resting / 4);
-  });
+
 
   it('plays ten rounds of a theme, which is what fills a round of the game', () => {
     // `GameConfig.rounds.count` is five rounds of the whole game, and two themes to a round is

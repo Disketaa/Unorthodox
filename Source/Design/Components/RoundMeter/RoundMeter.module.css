@@ -44,23 +44,22 @@
   width: var(--Size-RoundMarkWidth);
   height: var(--Size-RoundMarkHeight);
   border-radius: var(--Radius-RoundMark);
-  background: var(--ThemeCard-Ink, var(--Accent-Ink));
+  background: var(--ThemeCard-Tint, var(--Accent-Tint));
   opacity: var(--Opacity-RoundMark);
   transition: opacity var(--Duration-Fast) var(--Easing-Standard);
 }
 
 /*
- * The tick still to play: the same shape, the same colour, and greyed.
+ * A round already played: the same shape, the same colour, and greyed.
  *
- * Greyed by opacity rather than by a paler colour, because every other tick is the theme's
- * own accent and this one has to still be that accent — a row where one mark is a different
- * hue is a row showing two kinds of thing, and this is the same kind of thing with the room
- * not having got to it yet.
+ * Greyed by opacity rather than by a paler colour, because every tick is the theme's own
+ * accent and a spent one has to still be that accent — a bar where the spent part is a
+ * different hue is a bar showing two kinds of thing rather than one bar with less in it.
  *
- * Faint rather than empty: an absent tick would leave a hole in the row, and a hole reads as
- * a tick that was missed rather than one that is still to come. The theme has been chosen, so
- * every round on it is going to happen; this one has not happened yet.
+ * Faint rather than empty, and that matters more here than it did as a progress marker: the
+ * greyed ticks are still part of the theme and still count towards its ten, so an absent one
+ * would read as a round that does not exist. What is spent is drawn, not deleted.
  */
-.Pending {
-  opacity: var(--Opacity-RoundMarkPending);
+.Spent {
+  opacity: var(--Opacity-RoundMarkSpent);
 }

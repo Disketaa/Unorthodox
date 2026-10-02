@@ -775,10 +775,12 @@ body.PageFade {
    * answers at once; the mark behind it answers a beat later, so the panel looks like it has
    * depth between the word and the surface rather than being one flat image that changed size.
    *
-   * A fraction of `--Duration-Fast`, so it stays in step with the hover rather than becoming
-   * a second, slower movement that lands after the pointer has already left.
+   * Three fifths of `--Duration-Fast`, and the fraction is the point. A delay of a quarter of
+   * the movement was not noticeable at all — the mark had barely begun to move before the name
+   * had finished, so there was no gap to see. Three fifths leaves the name a clear moment on
+   * its own and still lands the mark inside the hover rather than after it.
    */
-  --Duration-ThemeCardMarkDelay: 40ms;
+  --Duration-ThemeCardMarkDelay: 90ms;
   /*
    * How much bigger the name and the mark get under the pointer.
    *
@@ -786,25 +788,36 @@ body.PageFade {
    * the mark behind it — and a second pair of sizes would be four numbers where one ratio
    * says the same thing.
    *
-   * Modest, because the card is already large and its name already fills a good part of it.
-   * Much more than this and the longest name wraps on hover, so a card that was one line
-   * becomes two the moment it is looked at.
-   */
+* Modest, because the card is already large and its name already fills a good part of it.
+    * Much more than this and the longest name wraps on hover, so a card that was one line
+    * becomes two the moment it is looked at.
+    *
+    * The mark's own share is four times this, because 1.12 of a figure that is already
+    * larger than the card and clipped by it moves almost nothing inside the crop — which is
+    * why the delay between the name and the mark was unnoticeable: there was barely a
+    * movement for the gap to separate from. Scaled on its own rather than sharing this, since
+    * a clipped figure and a line of text cannot both answer to the same amount.
+    */
   --Scale-ThemeCardHover: 1.12;
+  --Scale-ThemeCardMarkHover: 1.5;
   /*
-   * How far the mark is held back at rest, and under the pointer.
+* How far the mark is held back at rest, and under the pointer.
    *
-   * A twentieth at rest and twice that under the pointer. The mark is behind the name and
-   * has to stay behind it: it is the panel's substance rather than another thing to read,
-   * and it is drawn in the name's own colour, so how much of itself it is worth is the only
-   * thing standing between it and competing. At this size a card is a hint of a figure under
-   * a word, which is what a large quiet thing behind a name should be.
-   *
-   * By opacity rather than by a paler colour, because the name is drawn in the same colour
-   * and has to stay the stronger of the two. It is the card's own colour at this opacity over
-   * its own surface, so it darkens with the hover rather than sitting on top of it.
-   */
-  --Opacity-ThemeCardMark: 0.05;
+    * Both values are well short of one and they are not ordered against each other: the mark
+    * is a figure on a card, not a highlight, and which way it moves on hover is a matter of
+    * what the card is doing rather than a rule — it greys under the pointer here, and the
+    * scale and the delay do the rest of the work of the card opening up.
+    *
+    * What has to hold at both ends: the mark never competes with the name, which is drawn in
+    * the theme's tint at full strength, and the mark always changes something when the pointer
+    * arrives. A mark that answered nothing would be a figure on a card that did not notice it
+    * was being looked at.
+    *
+    * The mark is grey rather than the theme's own hue at rest, which is what puts it behind
+    * the theme rather than in it: a weaker tint is still the tint, and would compete with the
+    * ticks and the name for being the same colour as both. It takes the tint under the pointer.
+    */
+  --Opacity-ThemeCardMark: 0.15;
   --Opacity-ThemeCardMarkHover: 0.1;
   /*
    * The grain on a theme card: the tile, how big it is drawn, how it blends and how much of
@@ -821,22 +834,19 @@ body.PageFade {
    * is drawn, and a flat grey multiplied over a card is the card: the grain exists in the
    * original pixel size and is destroyed by any reduction of it.
    *
-   * `difference`, which inverts the tile against what is under it and so puts the grain in
-   * the darks *and* the lights of the surface. `multiply` — the paper's blend, and the first
-   * thing tried here — can only darken, so over a near-white card it moves the surface a very
-   * little per step and reads as no grain at all. `overlay` and `soft-light` are worse: both
-   * do almost nothing to a backdrop already at the top of their range, which is exactly where
-   * a card's surface is.
-   *
-   * Difference is a violent blend at full strength — it would invert the name's ink as well
-   * as the card — so the opacities are a twentieth rather than the third multiply wanted. At
-   * that the grain is barely a tint and the card is a finish rather than a texture, which is
-   * the whole of what a card behind six other cards should be.
+   * `overlay`, and which blend this is took three tries on cards this pale. `multiply` — the
+   * paper's blend, and the first thing tried — can only darken, so over a near-white surface it
+   * moves the card a very little per step and read as no grain at all. `difference` puts the
+   * grain in the darks and the lights both and does show, but it is violent enough at full
+   * strength to have been held down to a twentieth, which turned it back into a tint too faint
+   * to see. Overlay is where it settled, at an opacity well short of one: the grain is a
+   * finish over a card, not a texture the card is made of, and the name has to stay the thing
+   * being read through it.
    */
   --Texture-ThemeCardNoise: url('../Overlays/Noise.gif');
-  --Blend-ThemeCardNoise: difference;
-  --Opacity-ThemeCardNoise: 0.05;
-  --Opacity-ThemeCardNoiseHover: 0.1;
+  --Blend-ThemeCardNoise: overlay;
+  --Opacity-ThemeCardNoise: 0.2;
+  --Opacity-ThemeCardNoiseHover: 0.5;
   /*
    * The round ticks along the bottom of a card: how big one is, how far apart they sit, how
    * rounded, and how faint the ones the room is not on are.
@@ -859,16 +869,16 @@ body.PageFade {
   --Radius-RoundMark: 0.075em;
   --Space-RoundMeterGap: 0.09em;
   /*
-   * How strongly each tick is drawn, and how faintly the one still to play.
+   * How strongly each tick is drawn, and how faintly a spent one.
    *
-   * The resting ticks are full strength because they are the theme's own accent and the row
-   * is one thing the card is saying. The pending tick is a sixth of that: greyed enough to
-   * pick out of the row at a glance across six cards, and not so faint that it reads as a
-   * gap — the theme has been chosen, so every round on it is going to happen and this one has
-   * simply not happened yet.
+   * The live ticks are full strength because they are the theme's own accent and the bar is
+   * one thing the card is saying. A spent tick is a sixth of that: greyed enough to count the
+   * spent ones at a glance across six cards, and not so faint that the bar looks shorter
+   * than it is — the spent rounds are still rounds this theme had, and a bar that hid them
+   * would say the theme was never that long.
    */
   --Opacity-RoundMark: 1;
-  --Opacity-RoundMarkPending: 0.16;
+  --Opacity-RoundMarkSpent: 0.16;
   /*
    * How much room a theme name keeps inside its card.
    *

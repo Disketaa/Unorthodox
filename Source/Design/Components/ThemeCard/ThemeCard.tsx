@@ -18,13 +18,13 @@ export interface ThemeCardProps {
    */
   rounds?: number;
   /**
-   * Which tick has not been played yet, counted from one.
+   * How many of the theme's rounds have been played.
    *
-   * A tick and not the round, because that is what the row draws: everything is coloured and
-   * this one is greyed. Left out it is the last one, which is where a row that empties from
-   * the start wants its eye drawn.
+   * A count of what has gone rather than an index of what is next, because the row empties
+   * from the right: after one round it is nine coloured and one grey at the right end. Left
+   * out it is nothing, which is a full bar.
    */
-  pending?: number;
+  spent?: number;
   /**
    * Where this card sits in the bank, counted from one.
    *
@@ -47,6 +47,7 @@ export interface ThemeCardProps {
 const Properties = {
   wash: '--ThemeCard-Wash',
   ink: '--ThemeCard-Ink',
+  tint: '--ThemeCard-Tint',
 } as const;
 
 /**
@@ -89,7 +90,7 @@ export function ThemeCard({
   name,
   index = 1,
   rounds = 10,
-  pending,
+  spent = 0,
   onPick,
   moving = true,
 }: ThemeCardProps) {
@@ -103,6 +104,7 @@ export function ThemeCard({
     const accent = themeAccent(theme);
     node.style.setProperty(Properties.wash, accent.wash);
     node.style.setProperty(Properties.ink, accent.ink);
+    node.style.setProperty(Properties.tint, accent.tint);
   }, [theme, motion]);
 
   const classes = `${styles.Root} ${moving ? styles.Moving : styles.Still}`;
@@ -122,7 +124,7 @@ export function ThemeCard({
       </span>
       <span class={styles.Noise} aria-hidden="true" />
       <span class={styles.Name}>{name}</span>
-      <RoundMeter rounds={rounds} pending={pending} />
+      <RoundMeter rounds={rounds} spent={spent} />
     </button>
   );
 }

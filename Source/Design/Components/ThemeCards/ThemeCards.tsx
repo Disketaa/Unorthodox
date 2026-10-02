@@ -15,15 +15,15 @@ export interface ThemeCardsProps {
   /** How many rounds each theme is played for, from the game's own rules. */
   roundsPerTheme: number;
   /**
-   * Which tick has not been played yet, counted from one.
+   * How many of each theme's rounds have been played.
    *
-   * Left out it is the last tick on every card, which is what a bank of themes that has not
-   * started looks like. Every card carries the same tick, which is why it is here on the bank
-   * rather than on one card: six themes are being played at once and the room is at the same
-   * point in all of them, and a card that took its own would be showing a different tick from
-   * the five beside it.
+   * Left out it is none on every card, which is a bank of full bars — themes nobody has
+   * chosen yet. Every card carries the same count, which is why it is here on the bank rather
+   * than on one card: six themes are being played at once and the room has spent the same
+   * number of rounds on all of them, and a card that took its own would be showing a
+   * different amount of health from the five beside it.
    */
-  pending?: number;
+  spent?: number;
 }
 
 /**
@@ -45,7 +45,7 @@ export interface ThemeCardsProps {
  * them on every resize, and a fresh set each render would be a fresh set of nodes to write
  * to every time anything else on the screen moved.
  */
-export function ThemeCards({ themes, names, onPick, roundsPerTheme, pending }: ThemeCardsProps) {
+export function ThemeCards({ themes, names, onPick, roundsPerTheme, spent }: ThemeCardsProps) {
   const row = useRef<HTMLDivElement>(null);
   const cards = useRef<ReturnType<typeof createRef<HTMLDivElement>>[]>([]);
   if (cards.current.length !== themes.length) {
@@ -62,7 +62,7 @@ export function ThemeCards({ themes, names, onPick, roundsPerTheme, pending }: T
             name={names[theme]}
             index={index + 1}
             rounds={roundsPerTheme}
-            pending={pending}
+            spent={spent}
             onPick={onPick}
           />
         </div>
