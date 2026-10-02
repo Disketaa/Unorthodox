@@ -1,21 +1,27 @@
 /*
- * The theme's rounds as a row of ticks along the bottom of a card.
+ * The theme's rounds as a row of ticks under the theme's name.
  *
  * `justify-content: center` because the card centres its own contents on the cross axis and
  * this is one of them: a row ten marks wide inside a card that narrows would otherwise sit
  * against one side, and six cards of the same width would each leave a different amount of
  * space beside their row.
  *
- * No `margin-top: auto` and no `width: 100%`. The card is a column with the name taking the
- * room above, so this row sits at the bottom on its own — giving it auto margins as well
- * would fight the name's `flex: 1` over the same free space, and stretching it across the
- * card would put the padding back into the centring and undo it.
+ * No `margin-top: auto` and no `width: 100%`. The card is a column that centres its contents
+ * and neither of them grows, so this row falls directly under the name — giving it auto margins
+ * as well would pull it back down to the bottom edge, and stretching it across the card would
+ * put the card's padding back into the centring and undo it.
+ *
+ * The negative top margin is what closes the gap between the word and the ticks. The card
+ * pads its own contents, so the row starts a full inset below the name's baseline rather than
+ * just under it; the row is the second line of one thing being read, and a line has leading,
+ * not a gap the size of the panel's margin.
  */
 .Root {
   display: flex;
   justify-content: center;
   gap: var(--Space-RoundMeterGap);
   align-items: center;
+  margin-top: calc(-1 * var(--Space-ThemeCardPadding) / 2);
   /*
    * The name's size, so the ticks below are in `em` of something that tracks the card.
    *

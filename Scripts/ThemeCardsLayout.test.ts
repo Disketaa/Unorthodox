@@ -38,6 +38,8 @@ const Slot = /\.Slot\s*\{([^}]*)\}/;
 /** The card itself, and what is layered on it. */
 const Card = /\.Root\s*\{([^}]*)\}/;
 const CardMark = /\.Mark\s*\{([^}]*)\}/;
+const Initial = /\.Initial\s*\{([^}]*)\}/;
+const InitialHover = /\.Root:hover \.Initial\s*\{([^}]*)\}/;
 const Noise = /\.Noise\s*\{([^}]*)\}/;
 const Name = /\.Name\s*\{([^}]*)\}/;
 
@@ -58,7 +60,7 @@ describe('the row of theme cards', () => {
 
   it('caps the row at three cards, so the bank is never a row of four over a pair', () => {
     // Six fixed-width cards fit easily across a desktop, and then the fourth starts a
-    // second row by itself — the arrangement the bank was written to avoid. The cap is on
+    // second row by itself вЂ” the arrangement the bank was written to avoid. The cap is on
     // the row's width rather than on the window, so the fourth always wraps.
     expect(sheet.declaration(Root, 'max-width')).toBe('var(--Layout-ThemeCardsMaxWidth)');
     expect(GameConfig.themes.cardsPerLobby).toBe(6);
@@ -99,7 +101,7 @@ describe('the row of theme cards', () => {
 
 describe('the theme cards', () => {
 it('washes in the theme accent on hover, in the same time as every other control', () => {
-    // The fill is the pale wash and the name and border take the tint — the accent as the
+    // The fill is the pale wash and the name and border take the tint вЂ” the accent as the
     // game draws it everywhere else. The ink is the same hue turned down until text can sit
     // on that wash, and using it here made a hovered card a different colour from the rest of
     // the theme it belongs to.
@@ -124,7 +126,7 @@ it('washes in the theme accent on hover, in the same time as every other control
   it('draws the focus ring outside the fill, since there is no border to recolour', () => {
     // It used to recolour the card's own border, which kept a focused card from showing two
     // frames at once. With no frame the ring has to be drawn outside, and an outline does that
-    // without taking any of the card's width — a focused card that grew a pixel would be a card
+    // without taking any of the card's width вЂ” a focused card that grew a pixel would be a card
     // out of line with the five beside it.
     const focus = /\.Root:focus-visible\s*\{([^}]*)\}/;
     expect(card.declaration(focus, 'outline')).toContain('var(--Color-Border-Focus)');
@@ -147,22 +149,37 @@ it('washes in the theme accent on hover, in the same time as every other control
     expect(card.ruleBody(/\.Root:active\s*\{([^}]*)\}/)).not.toContain('transform');
   });
 
-  it('rides the shared sway rather than a movement of its own', () => {
-    // Composed, so a theme card and a character are the same movement instead of two that
-    // happen to agree. A bank of six still cards is a menu; six that shift their weight is
-    // a hand being held out.
-    expect(card.text).toContain('Sway.module.css');
-    expect(card.declaration(/\.Moving\s*\{([^}]*)\}/, 'composes')).toContain(
-      'Movingfrom\'../../Primitives/Sway/Sway.module.css\'',
+it('draws the theme initial as one letter in a pale grey, at full strength', () => {
+    // The one thing on the card that says which theme this is without being the name. Grey
+    // rather than any step of the accent: the tint is what the ticks and the hovered name are
+    // drawn in, so a corner letter in it would compete with both, and the ink is dark enough
+    // to read as a second label. A pale step rather than the grey the number behind the name
+    // wears, because that one is already on the card. It answers the pointer with the theme's
+    // wash: the card has already gone to the wash under it, so a corner letter left in the grey
+    // would be the one thing on the card still at rest — and the darkened accent rather than the
+    // wash, since a letter in the wash would be the one thing on the card that did not answer.
+    // At full strength rather than faded, because a corner letter faded is a mark that is
+    // neither the name nor the theme.
+    expect(card.declaration(Initial, 'color')).toBe('var(--Color-Neutral-300)');
+    expect(card.declaration(InitialHover, 'color').replace(/\s+/g, '')).toBe(
+      'var(--ThemeCard-Ink,var(--Accent-Ink))',
     );
-    expect(card.declaration(/\.Still\s*\{([^}]*)\}/, 'composes')).toContain(
-      'Stillfrom\'../../Primitives/Sway/Sway.module.css\'',
+    expect(card.declaration(Initial, 'pointer-events')).toBe('none');
+  });
+
+  it('puts the initial in the card corner at a share of the card, so it is the same mark everywhere', () => {
+    // A letter in the corner is a mark printed on the card the way a catalogue entry prints
+    // one, not a figure the card is showing, so it is held by the card's own padding rather
+    // than pushed past the centre. A share of the width for its size, so a card that narrows on
+    // a phone gets a letter that narrows with it.
+    expect(card.declaration(Initial, 'top')).toBe('var(--Space-ThemeCardPadding)');
+    expect(card.declaration(Initial, 'left')).toBe('var(--Space-ThemeCardPadding)');
+    expect(card.declaration(Initial, 'font-size')).toBe('var(--FontSize-ThemeCardInitial)');
+    expect(tokenValue('--FontSize-ThemeCardInitial').replace(/\s+/g, '')).toBe(
+      'calc(var(--Size-ThemeCardWidth)*0.0775)',
     );
   });
-});
-
-describe('the number behind the name', () => {
-  it('is one figure, cut off by the card, and not a second thing written on it', () => {
+it('is one figure, cut off by the card, and not a second thing written on it', () => {
     // A single number is the panel's substance; a name repeated behind the name competes with
     // it, and the name is what the card is for.
     expect(card.declaration(CardMark, 'position')).toBe('absolute');
@@ -197,7 +214,7 @@ describe('the number behind the name', () => {
 
 it('is held back with opacity rather than with a colour of its own', () => {
     // The name is drawn in the tint and has to stay the stronger of the two, so the mark
-    // cannot be a paler version of that hue — it is grey and faint, which are two separate
+    // cannot be a paler version of that hue вЂ” it is grey and faint, which are two separate
     // things from the colour.
     expect(card.declaration(CardMark, 'opacity')).toBe('var(--Opacity-ThemeCardMark)');
   });
@@ -207,7 +224,7 @@ it('is held back with opacity rather than with a colour of its own', () => {
     // theme: a weaker tint is still the theme's own hue and competes with the ticks and the
     // name because it is their colour, while grey is the one colour nothing else on the card
     // is wearing. It was inheriting the card's quiet ink too, so the bank read as six grey
-    // cards with six coloured strips — the number is the biggest thing on a card and was the
+    // cards with six coloured strips вЂ” the number is the biggest thing on a card and was the
     // one thing on it not wearing the theme.
     expect(card.declaration(CardMark, 'color')).toBe('var(--Color-Text-Quiet)');
     expect(card.declaration(/\.Root:hover\s+\.Mark\s*\{([^}]*)\}/, 'color')).toBe(
@@ -262,7 +279,7 @@ it('opens a beat after the name, long enough to see, and on the way out as well'
 it('blends the grain into the card rather than drawing it opaquely', () => {
     // A noise tile at any opacity below one is a grey wash unless it is blended, because the
     // tile has grey in its light parts as well as its dark. Which blend it is has changed more
-    // than once while this was being looked at — the pale card defeats some of them — so what
+    // than once while this was being looked at вЂ” the pale card defeats some of them вЂ” so what
     // is held here is that it is blended at all, and that it is not the unblended default.
     const blend = tokenValue('--Blend-ThemeCardNoise');
     expect(blend).not.toBe('normal');
@@ -280,7 +297,7 @@ it('blends the grain into the card rather than drawing it opaquely', () => {
   it('puts the grain over the name, the way a printed surface does', () => {
     // Clean type on a grained background looks like a screenshot of a card rather than a
     // card, and it is `pointer-events: none` because it covers the whole of the thing being
-    // pressed — an overlay that ate the pointer would make half the card dead.
+    // pressed вЂ” an overlay that ate the pointer would make half the card dead.
     expect(Number(card.declaration(Noise, 'z-index'))).toBeGreaterThan(
       Number(card.declaration(Name, 'z-index')),
     );
@@ -321,36 +338,45 @@ expect(card.declaration(/\.Root:hover\s+\.Mark\s*\{([^}]*)\}/, 'transform')).toB
 });
 
 describe('the round ticks along the bottom of a card', () => {
-  it('sits on the bottom edge, so six cards in a bank line their ticks up', () => {
-    // `margin-top: auto` rather than the row following the name: the name is centred by the
-    // card's own flex, so a row placed after it would sit wherever the name happened to end.
-    // The card is a column with the name taking the room above, so the row lands at the
-    // bottom on its own. Auto margins as well would fight the name's `flex: 1` over the same
-    // free space, and stretching across the card would put the padding back into the
-    // centring and undo it.
-    expect(meter.declares(Meter, 'margin-top')).toBe(false);
-    expect(meter.declares(Meter, 'width')).toBe(false);
+it('sits directly under the name, as the second line of one thing', () => {
+    // The card centres the name and the bar together as a column. Neither may grow, or one of
+    // them takes the room and leaves the other against an edge вЂ” a growing name pinned the bar
+    // to the bottom of the card with the word centred in whatever was left over, which read as
+    // a centred name and a bottom-aligned bar rather than one thing read downwards.
     expect(card.declaration(Card, 'flex-direction')).toBe('column');
-    expect(card.declaration(Name, 'flex')).toBe('11auto');
+    expect(card.declaration(Card, 'justify-content')).toBe('center');
+    expect(card.declaration(Name, 'flex')).toBe('00auto');
   });
 
-  it('insets the card once, rather than the name and the ticks each holding their own', () => {
+  it('pulls the bar back up towards the name, and no further', () => {
+    // `margin-top: auto` would put it back at the bottom edge. What closes the gap instead is
+    // half the card's own padding taken back off the top: the card pads its contents, so the
+    // row otherwise starts a whole inset below the word rather than just under it. Half,
+    // because the bar is the second line of one thing being read and a line has leading вЂ” the
+    // padding is a margin around the pair, not a gap between the two lines of it.
+    expect(meter.declares(Meter, 'margin-top')).toBe(true);
+    expect(meter.declaration(Meter, 'margin-top')).toBe(
+      'calc(-1*var(--Space-ThemeCardPadding)/2)',
+    );
+    expect(meter.declares(Meter, 'width')).toBe(false);
+  });
+
+  it('insets the card once, rather than the name and the bar each holding their own', () => {
     // Two numbers saying one thing put the card's contents in by different amounts at the top
-    // and the bottom, and left the ticks' row as the only thing on the card touching its
-    // edges. One inset on the card puts both in the same place.
+    // and the bottom. One inset on the card puts both in the same place.
     expect(card.declaration(Card, 'padding')).toBe('var(--Space-ThemeCardPadding)');
     expect(meter.declares(Meter, 'padding')).toBe(false);
   });
 
   it('centres the row rather than letting the card padding push it aside', () => {
-    // The leftover width does not divide evenly between two cards of the same width — a name
+    // The leftover width does not divide evenly between two cards of the same width вЂ” a name
     // wrapping to two lines on one card and not the next leaves that card's row off to one
     // side, and a bank of six with rows at different places is not a bank.
     expect(meter.declaration(Meter, 'justify-content')).toBe('center');
   });
 
 it('draws every tick in the theme accent, and greys the spent ones by opacity', () => {
-    // The bar is one thing the card is saying — this theme, this many rounds — so every tick
+    // The bar is one thing the card is saying вЂ” this theme, this many rounds вЂ” so every tick
     // is that accent and a spent one is still that accent. The greying is opacity rather than
     // a paler colour for the same reason: a bar whose spent part is a different hue is a
     // bar showing two kinds of thing rather than one bar with less in it.
@@ -380,7 +406,7 @@ it('draws every tick in the theme accent, and greys the spent ones by opacity', 
 
   it('sizes the ticks against the name, so the row scales with the card', () => {
     // `em` needs a font size to be a proportion of, and the row would otherwise measure its
-    // ticks against whatever the page inherited — the same marks a different width on the
+    // ticks against whatever the page inherited вЂ” the same marks a different width on the
     // lobby and on the game. The name's size is already a share of the card's width.
     expect(meter.declaration(Meter, 'font-size')).toBe('var(--FontSize-ThemeCard)');
     for (const token of [

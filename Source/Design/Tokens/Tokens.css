@@ -713,6 +713,19 @@ body.PageFade {
    * across the whole of it. The count is the same two-per-row floor the layout test holds
    * the stylesheet to.
    */
+/*
+   * How big the theme's own initial is on the card.
+   *
+   * A share of the card's width rather than a length, so it is the same fraction of a narrow
+   * card as of a wide one: the card narrows on a phone to fit two across, and a flat size
+   * would be a letter in the corner on one screen and a letter filling the card on another.
+   *
+   * A mark in the corner rather than the card's substance: roughly a sixth of the width, which is
+   * a letter you read without reading it — enough to say which theme this is, small enough that
+   * the name stays the thing on the card being read.
+   */
+  --FontSize-ThemeCardInitial: calc(var(--Size-ThemeCardWidth) * 0.0775);
+
   --Size-ThemeCardWidth: min(
     320px,
     calc(
@@ -817,7 +830,7 @@ body.PageFade {
     * the theme rather than in it: a weaker tint is still the tint, and would compete with the
     * ticks and the name for being the same colour as both. It takes the tint under the pointer.
     */
-  --Opacity-ThemeCardMark: 0.15;
+  --Opacity-ThemeCardMark: 0.075;
   --Opacity-ThemeCardMarkHover: 0.1;
   /*
    * The grain on a theme card: the tile, how big it is drawn, how it blends and how much of

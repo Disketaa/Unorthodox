@@ -43,6 +43,23 @@ export interface ThemeCardProps {
   moving?: boolean;
 }
 
+/**
+ * The theme's own first letter, as the card's substance.
+ *
+ * One letter rather than a word, and it is not there to abbreviate the name — the name is right
+ * there under it and is the thing being read. It is there because a card with a name on it and
+ * nothing else is a label: a big letter in the theme's own colour says what the panel is about
+ * the way a dictionary's do, and it is what makes six cards six themes rather than six labels.
+ *
+ * Taken from the name as the player sees it rather than from the catalogue, so it follows the
+ * language: a theme whose name is written in Russian on this device opens with the Russian
+ * letter, and a card whose name began with a combining mark would open on its base character
+ * rather than on half a glyph.
+ */
+function initialOf(name: string) {
+  return [...name.trim()][0] ?? '';
+}
+
 /** The custom properties the stylesheet reads the theme's own accent out of. */
 const Properties = {
   wash: '--ThemeCard-Wash',
@@ -119,9 +136,8 @@ export function ThemeCard({
         onPick?.(theme);
       }}
     >
-      <span class={styles.Mark} aria-hidden="true">
-        {index}
-      </span>
+      <span class={styles.Initial} aria-hidden="true">{initialOf(name)}</span>
+      <span class={styles.Mark} aria-hidden="true">{index}</span>
       <span class={styles.Noise} aria-hidden="true" />
       <span class={styles.Name}>{name}</span>
       <RoundMeter rounds={rounds} spent={spent} />
