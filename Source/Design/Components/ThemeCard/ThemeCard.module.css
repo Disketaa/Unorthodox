@@ -3,7 +3,7 @@
  *
  * The frame is re-declared rather than taken from `Card` because the card has to be the
  * thing the wash lands on. `Card` paints an opaque surface of its own and takes no
- * `className`, so a button wrapped in one would hide the hover underneath it вЂ” the one
+ * `className`, so a button wrapped in one would hide the hover underneath it в— the one
  * place in the design system where a surface is written out again. Same tokens, same
  * radius, same padding, so it reads as the same family as every other card.
  *
@@ -27,7 +27,7 @@
    *
    * The card is the only thing that knows the shape of its own contents, so it is the card
    * that arranges them: the name takes the room above the ticks and the ticks take what they
-   * need at the bottom. As a row вЂ” the default вЂ” the name and the row of ticks were two
+   * need at the bottom. As a row в— the default в— the name and the row of ticks were two
    * items side by side, and the row was pushed wherever the name's width happened to end.
    */
   display: flex;
@@ -42,8 +42,8 @@
    * It was zero and the name and the ticks each held their own inset, which was two numbers
    * saying one thing: a card whose contents were inset by different amounts at the top and
    * the bottom, and where the ticks' row was the only thing on the card touching its edges.
-   * One inset on the card puts both in the same place вЂ” the name's own stays, because it is
-   * the name and it wraps вЂ” and the ticks' goes, because they are the thing that was
+   * One inset on the card puts both in the same place в— the name's own stays, because it is
+   * the name and it wraps в— and the ticks' goes, because they are the thing that was
    * reaching the frame.
    */
   padding: var(--Space-ThemeCardPadding);
@@ -53,8 +53,8 @@
    * No border, and the surface is one step down rather than the white the rest of the game
    * draws its cards on.
    *
-   * The border and the off-white do the same job вЂ” both were there to lift the card off the
-   * page вЂ” and a card this large does not need both. With the frame gone the rounded corner
+   * The border and the off-white do the same job в— both were there to lift the card off the
+   * page в— and a card this large does not need both. With the frame gone the rounded corner
    * and the fill are the whole edge, which is what lets six of them sit on a page of white
    * paper as six panels rather than as six outlines.
    *
@@ -74,11 +74,11 @@
  * The hover, in the theme's own accent.
  *
  * A wash rather than the tint, because the name is read off the card and a raw tint as a fill
- * behind a name fails contrast in every one of the eight tints in the palette вЂ” the pale step
+ * behind a name fails contrast in every one of the eight tints in the palette — the pale step
  * of the same accent is what can be read on.
  *
  * The name and the border take the tint, not the ink: the tint is the accent as the game
- * draws it everywhere else вЂ” the characters are filled with it and the bar's ticks are вЂ” and
+ * draws it everywhere else — the characters are filled with it and the bar's ticks are — and
  * the ink is the same hue turned down until text can sit on the wash. Using the ink here made
  * the hovered card a different colour from the rest of the theme it belongs to.
  *
@@ -109,7 +109,7 @@
  * The press, as a scale on `scale` rather than on `transform`.
  *
  * The sway animates `transform` on this same node, and an animation outranks a transition
- * on the same property вЂ” so a press written on `transform` would shrink the card on the
+ * on the same property в— so a press written on `transform` would shrink the card on the
  * first frame and then stop, because the sway took the property back. `scale` is a
  * separate property and composes with it, which is the same arrangement the bar's crown uses
  * to centre itself under the same movement.
@@ -124,7 +124,7 @@
  * An outline rather than a `border-color` change, the opposite of what this was doing when
  * the card had a frame: there, recolouring the border kept a focused card from showing two
  * frames at once. With no frame the ring has to be drawn outside the fill, and an outline
- * does that without taking any of the card's width, which matters at this size вЂ” a focused
+ * does that without taking any of the card's width, which matters at this size в— a focused
  * card that grew a pixel would be a card out of line with the five beside it.
  */
 .Root:focus-visible {
@@ -138,7 +138,7 @@
  * Taken out of the flow and pushed past the bottom right corner, which is the whole of it: a
  * figure set to fill the panel and then clipped reads as something the card is showing rather
  * than as a number that happens to fit on it, and a corner is what leaves most of it showing
- * while still cutting it вЂ” centred, it would be a figure inside a card.
+ * while still cutting it в— centred, it would be a figure inside a card.
  *
  * The offset is a share of the figure's own size rather than a length, so it holds when the
  * figure grows with the card: a fixed inset would put the figure back inside the card on the
@@ -148,10 +148,9 @@
  * it and nothing else is a label, and the bank is being held out at the player rather than
  * listed.
  *
- * In the card's own colour at a low opacity rather than in a second one, so it darkens with
- * the surface instead of sitting on it вЂ” `inherit` is the card's colour, which takes the
- * theme's ink on hover. An opacity and not a paler colour, because the name is the same
- * colour and has to stay the stronger of the two.
+* In the card's quiet grey at a low opacity rather than in the theme's own colour, so it
+ * darkens with the surface instead of sitting on it. An opacity and not a paler colour,
+ * because the name takes the same hue on hover and has to stay the stronger of the two.
  *
  * Not selectable, not announced, and scaled rather than resized on hover: one figure has no
  * wrap to reflow, but a scale still keeps it off the layout path and it is the same property
@@ -178,7 +177,7 @@
   /*
    * The card's own quiet grey at rest, not the theme's colour.
    *
-   * Every other thing on the card that is the theme's own colour is in the tint вЂ” the ticks
+   * Every other thing on the card that is the theme's own colour is in the tint в— the ticks
    * along the bottom are all of it. This one was inheriting the card's quiet ink too, which
    * made the bank read as six grey cards with six coloured strips rather than as six themes:
    * the number is the biggest thing on the card and it was the one thing on it not wearing the
@@ -269,7 +268,7 @@
  * times: `multiply` only darkens, so over a near-white surface it moves a very little per step
  * and read as no grain; `difference` puts the grain in the darks and the lights both, and is
  * violent enough at full strength to have to be held at a twentieth; `overlay` is where it
- * settled. The blend is a token, so none of that needed a code change to try вЂ” and the
+ * settled. The blend is a token, so none of that needed a code change to try в— and the
  * opacities beside it are tokens too, which is what the next try will move.
  *
  * No `background-size`, and that is deliberate too. The tile is drawn at its own pixels: any
@@ -310,7 +309,7 @@
  * The name takes the tint on hover, and so do the ticks and the number.
  *
  * All three the same value rather than the tint here and the ink there: they are the theme's
- * own colour, and `Accents` gives one of each per theme for exactly this вЂ” the tint is the
+ * own colour, and `Accents` gives one of each per theme for exactly this в— the tint is the
  * accent as the game draws it everywhere else, and the ink is the same hue turned down until
  * text can sit on the pale wash. A hovered card was the only part of a theme wearing the
  * turned-down version of itself.
@@ -346,7 +345,7 @@
    * Not growing, which is the whole of the bar sitting under the word.
    *
    * This was `flex: 1`, so the name took every pixel above the bar and the bar was left at the
-   * bottom of the card with the word centred in whatever was left over вЂ” which looked like a
+   * bottom of the card with the word centred in whatever was left over в— which looked like a
    * centred name and a bottom-aligned bar rather than one thing read downwards. The card's own
    * `justify-content: center` centres the two of them together once neither of them grows, and
    * the bar falls directly under the name with the same gap whichever way the name wraps.
@@ -372,7 +371,7 @@
  * Both move, because either one alone stops the panel from opening up: the name alone leaves
  * the mark the same size, and the mark alone swells out from behind a name that did not. Two
  * shares rather than one because a clipped figure and a line of text cannot both answer to the
- * same amount вЂ” the mark is already larger than the card, so the name's scale is invisible on
+ * same amount в— the mark is already larger than the card, so the name's scale is invisible on
  * it, and it needs four times as much to shift at all inside the crop.
  *
  * `font-size` on the name so the text reflows instead of being drawn larger and going soft at

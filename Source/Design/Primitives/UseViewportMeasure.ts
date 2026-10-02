@@ -4,12 +4,9 @@ import { useEffect } from 'preact/hooks';
 /**
  * Runs a measurement now and again whenever the window is resized.
  *
- * Both of the things in the game that measure themselves do it the same way — once on mount,
- * then on every `resize`, then not at all. A theme card's turn is a fact about where the
- * card is on the screen, and a block centred in the viewport is a fact about how much room
- * is above it; both change when the window does, and neither changes when anything else on
- * the page does. Measuring only on mount is right for a static layout and wrong for both of
- * these.
+ * A block centred in the viewport is a fact about how much room is above it, which changes when
+ * the window does and not when anything else on the page does; measuring only on mount is right
+ * for a static layout and wrong for that.
  *
  * The listener is taken from the node's own document rather than a global, so a card measured
  * in a document with no window — a test, a server render — simply never measures again

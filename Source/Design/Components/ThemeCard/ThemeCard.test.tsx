@@ -19,9 +19,9 @@ function card(theme: ThemeId = 'Internet', index?: number) {
   if (button === null) {
     throw new Error('no card rendered');
   }
-  // The number rather than the first hidden node: the punched holes, the grain and the tick row
-  // are hidden too, and the holes come first in the markup carrying a column of bullets. The
-  // figure is the hidden node whose text is a digit, which is the mark and nothing else.
+  // The number rather than the first hidden node: the corner initial, the grain and the tick
+  // row are hidden too. The figure is the hidden node whose text is a digit, which is the mark
+  // and nothing else.
   const mark = [...container.querySelectorAll('[aria-hidden="true"]')].find((node) =>
     /^\d$/.test(node.textContent ?? ''),
   );
@@ -54,7 +54,9 @@ describe('one theme card', () => {
     // panel that says which theme this is without being the name. Taken from the name rather
     // than from the catalogue, so it follows the language — and `hidden`, because a letter in
     // front of the name would be announced as part of it.
-    const initial = card().button.firstElementChild;
+    // The initial comes first in the markup and the grain carries nothing, so the letter is the
+    // first hidden node rather than the one before it.
+    const initial = card().button.querySelectorAll('[aria-hidden="true"]')[0];
     expect(initial?.getAttribute('aria-hidden')).toBe('true');
     expect(initial?.textContent).toBe('И');
   });

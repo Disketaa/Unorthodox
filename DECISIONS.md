@@ -1224,3 +1224,7 @@ re-renders as often as its data changes, and a countdown or a vote would have th
 the player's hands. It is removed and put back rather than left on, since an animation only runs when
 its name is newly applied. Its own `--Duration-PageEnter` rather than one of the three durations,
 because a whole page arriving at the speed of a button answering a touch reads as a flash.
+
+## 2026-10-02 — the theme card bank lies flat, and the cards lean towards nothing
+
+The bank was a ring of panels: one `perspective` on the row, and each card turned by an angle measured from where it sat on the screen (`CardTurn.ts`, `UseCardTurns.ts`, `--Perspective-ThemeCards`, `--Angle-ThemeCardYaw`, `--Angle-ThemeCardPitch`). It needed a measurement per card on every window resize, and what it bought was six cards that had to be looked at rather than read. A pointer tilt on top of it, leaning the card towards the cursor, was tried and dropped for the same reason and for a second one: the sway already animates `transform` on the card's own node, so any lean written there holds for one frame and then stops. The arrangement that survives without the measuring is kept — cards of one width, three across, the fourth wrapping — and the card keeps its own idle sway, which is the lean the design already had.

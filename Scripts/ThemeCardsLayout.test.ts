@@ -3,15 +3,13 @@ import { readFileSync } from 'node:fs';
 import { stylesheet, tokenReader } from './Stylesheet';
 import { GameConfig } from '../Source/Game';
 import { ThemeIds, dealThemes, createRandom, randomFor } from '../Source/Core';
-import { turnFor } from '../Source/Design/Components/ThemeCards/CardTurn';
 
 /**
  * The bank of theme cards, read from the stylesheet and the token file.
  *
- * Out here for the reason `Scripts/PlayerBarLayout.test.ts` is: happy-dom does not lay
- * out a flex row and does not compose a 3D transform, so a rendered `ThemeCards` says
- * nothing about which card is turned or how far the vanishing point is. The turn itself
- * is arithmetic and is tested as arithmetic, below.
+ * Out here for the reason `Scripts/PlayerBarLayout.test.ts` is: happy-dom does not lay out
+ * a flex row, so a rendered `ThemeCards` says nothing about how wide the bank gets or how
+ * many cards fit across it.
  */
 const sheet = stylesheet('../Source/Design/Components/ThemeCards/ThemeCards.module.css');
 const card = stylesheet('../Source/Design/Components/ThemeCard/ThemeCard.module.css');
@@ -29,10 +27,10 @@ const Meter = /\.Root\s*\{([^}]*)\}/;
 const Mark = /\.Mark\s*\{([^}]*)\}/;
 const Spent = /\.Spent\s*\{([^}]*)\}/;
 
-/** The row, which is where the perspective and the cap live. */
+/** The row, which is where the cap on how wide the bank gets lives. */
 const Root = /\.Root\s*\{([^}]*)\}/;
 
-/** One card's slot, which is where the measured turn is applied. */
+/** One card's slot, which is where the card's shape is declared. */
 const Slot = /\.Slot\s*\{([^}]*)\}/;
 
 /** The card itself, and what is layered on it. */
@@ -44,64 +42,41 @@ const Noise = /\.Noise\s*\{([^}]*)\}/;
 const Name = /\.Name\s*\{([^}]*)\}/;
 
 describe('the row of theme cards', () => {
-  it('views the cards from one vanishing point rather than six', () => {
-    // A `perspective` per card would give every card its own viewpoint, and six cards
-    // would fan out from six different places instead of lying on one table.
-    expect(sheet.declaration(Root, 'perspective')).toBe('var(--Perspective-ThemeCards)');
-  });
-
-  it('wraps onto a second row rather than scrolling, as the bar of players does', () => {
-    // A card too narrow for its own name is a card nobody can read, and a bank the player
-    // has to swipe sideways is a bank they never see whole.
-    expect(sheet.declaration(Root, 'display')).toBe('flex');
+  it('wraps into rows of three rather than scrolling sideways', () => {
+    // A bank the player has to swipe is a bank they never see whole, so the row wraps instead
+    // and the cap is what makes it three and three rather than four and two.
     expect(sheet.declaration(Root, 'flex-wrap')).toBe('wrap');
-    expect(sheet.flat).not.toContain('overflow-x');
-  });
-
-  it('caps the row at three cards, so the bank is never a row of four over a pair', () => {
-    // Six fixed-width cards fit easily across a desktop, and then the fourth starts a
-    // second row by itself вЂ” the arrangement the bank was written to avoid. The cap is on
-    // the row's width rather than on the window, so the fourth always wraps.
+    expect(sheet.declaration(Root, 'gap')).toBe('var(--Space-ThemeCardsGap)');
     expect(sheet.declaration(Root, 'max-width')).toBe('var(--Layout-ThemeCardsMaxWidth)');
-    expect(GameConfig.themes.cardsPerLobby).toBe(6);
-    expect(tokenValue('--Layout-ThemeCardsMaxWidth').replace(/\s+/g, '')).toBe(
-      'calc(3*var(--Size-ThemeCardWidth)+2*var(--Space-ThemeCardsGap))',
-    );
   });
 
-  it('gives every card the same width, so the bank reads as six equal panels', () => {
-    // Cards that grew to fill the row would each be a slightly different size, and an
-    // arrangement of six things is only an arrangement if the six match.
+  it('gives every card the same width, so the six read as one bank', () => {
+    // A card that grew to fill whatever room it had would be a slightly different size from
+    // its neighbours, and six panels that do not match are not a bank.
     expect(sheet.declaration(Slot, 'flex')).toBe('00var(--Size-ThemeCardWidth)');
     expect(sheet.declaration(Slot, 'width')).toBe('var(--Size-ThemeCardWidth)');
   });
 
-  it('takes the shape of a card from its width, so a narrower card is shorter too', () => {
-    // A height as well would be a second number free to disagree with the width, and the
-    // six would stop being six matching panels on whichever screen they disagreed.
+  it('takes the card shape from the slot, so the card knows nothing about its own size', () => {
+    // The ratio is the grid's business and is declared on the node the grid owns; a card
+    // taller or wider than the grid meant would be a card out of line with the five beside it.
     expect(sheet.declaration(Slot, 'aspect-ratio')).toBe('var(--Ratio-ThemeCard)');
     expect(card.declares(Name, 'height')).toBe(false);
   });
 
-  it('turns each card about its own centre, which is what closes the row on a point', () => {
-    // A slot turned about its outside edge swings away from the middle instead of towards
-    // it, so the row opens out rather than closing in.
-    expect(sheet.declaration(Slot, 'transform-origin')).toBe('center');
-  });
-
-  it('turns the card by what the measurement wrote, not by a position in the row', () => {
-    // Six fixed angles would be right at one window size and wrong at every other, since
-    // a card's distance from the middle of the screen moves with the window.
-    expect(sheet.declaration(Slot, 'transform')).toBe(
-      'rotateY(var(--ThemeCard-Yaw,0deg))rotateX(var(--ThemeCard-Pitch,0deg))',
-    );
-    expect(sheet.text).not.toContain('nth-child');
+  it('lays the cards flat, with nothing turning them towards the middle of the screen', () => {
+    // The row was a ring of panels and needed a measurement per card on every resize to keep
+    // it; a card that has to be measured before it can be looked at is a card that is not read.
+    expect(sheet.declares(Root, 'perspective')).toBe(false);
+    expect(sheet.declares(Slot, 'transform')).toBe(false);
+    expect(card.declares(Card, 'perspective')).toBe(false);
+    expect(card.declares(Card, 'rotate')).toBe(false);
   });
 });
 
 describe('the theme cards', () => {
 it('washes in the theme accent on hover, in the same time as every other control', () => {
-    // The fill is the pale wash and the name and border take the tint вЂ” the accent as the
+    // The fill is the pale wash and the name and border take the tint в— the accent as the
     // game draws it everywhere else. The ink is the same hue turned down until text can sit
     // on that wash, and using it here made a hovered card a different colour from the rest of
     // the theme it belongs to.
@@ -126,7 +101,7 @@ it('washes in the theme accent on hover, in the same time as every other control
   it('draws the focus ring outside the fill, since there is no border to recolour', () => {
     // It used to recolour the card's own border, which kept a focused card from showing two
     // frames at once. With no frame the ring has to be drawn outside, and an outline does that
-    // without taking any of the card's width вЂ” a focused card that grew a pixel would be a card
+    // without taking any of the card's width в— a focused card that grew a pixel would be a card
     // out of line with the five beside it.
     const focus = /\.Root:focus-visible\s*\{([^}]*)\}/;
     expect(card.declaration(focus, 'outline')).toContain('var(--Color-Border-Focus)');
@@ -214,7 +189,7 @@ it('is one figure, cut off by the card, and not a second thing written on it', (
 
 it('is held back with opacity rather than with a colour of its own', () => {
     // The name is drawn in the tint and has to stay the stronger of the two, so the mark
-    // cannot be a paler version of that hue вЂ” it is grey and faint, which are two separate
+    // cannot be a paler version of that hue в— it is grey and faint, which are two separate
     // things from the colour.
     expect(card.declaration(CardMark, 'opacity')).toBe('var(--Opacity-ThemeCardMark)');
   });
@@ -224,7 +199,7 @@ it('is held back with opacity rather than with a colour of its own', () => {
     // theme: a weaker tint is still the theme's own hue and competes with the ticks and the
     // name because it is their colour, while grey is the one colour nothing else on the card
     // is wearing. It was inheriting the card's quiet ink too, so the bank read as six grey
-    // cards with six coloured strips вЂ” the number is the biggest thing on a card and was the
+    // cards with six coloured strips в— the number is the biggest thing on a card and was the
     // one thing on it not wearing the theme.
     expect(card.declaration(CardMark, 'color')).toBe('var(--Color-Text-Quiet)');
     expect(card.declaration(/\.Root:hover\s+\.Mark\s*\{([^}]*)\}/, 'color')).toBe(
@@ -279,7 +254,7 @@ it('opens a beat after the name, long enough to see, and on the way out as well'
 it('blends the grain into the card rather than drawing it opaquely', () => {
     // A noise tile at any opacity below one is a grey wash unless it is blended, because the
     // tile has grey in its light parts as well as its dark. Which blend it is has changed more
-    // than once while this was being looked at вЂ” the pale card defeats some of them вЂ” so what
+    // than once while this was being looked at в— the pale card defeats some of them в— so what
     // is held here is that it is blended at all, and that it is not the unblended default.
     const blend = tokenValue('--Blend-ThemeCardNoise');
     expect(blend).not.toBe('normal');
@@ -297,7 +272,7 @@ it('blends the grain into the card rather than drawing it opaquely', () => {
   it('puts the grain over the name, the way a printed surface does', () => {
     // Clean type on a grained background looks like a screenshot of a card rather than a
     // card, and it is `pointer-events: none` because it covers the whole of the thing being
-    // pressed вЂ” an overlay that ate the pointer would make half the card dead.
+    // pressed в— an overlay that ate the pointer would make half the card dead.
     expect(Number(card.declaration(Noise, 'z-index'))).toBeGreaterThan(
       Number(card.declaration(Name, 'z-index')),
     );
@@ -340,7 +315,7 @@ expect(card.declaration(/\.Root:hover\s+\.Mark\s*\{([^}]*)\}/, 'transform')).toB
 describe('the round ticks along the bottom of a card', () => {
 it('sits directly under the name, as the second line of one thing', () => {
     // The card centres the name and the bar together as a column. Neither may grow, or one of
-    // them takes the room and leaves the other against an edge вЂ” a growing name pinned the bar
+    // them takes the room and leaves the other against an edge в— a growing name pinned the bar
     // to the bottom of the card with the word centred in whatever was left over, which read as
     // a centred name and a bottom-aligned bar rather than one thing read downwards.
     expect(card.declaration(Card, 'flex-direction')).toBe('column');
@@ -352,7 +327,7 @@ it('sits directly under the name, as the second line of one thing', () => {
     // `margin-top: auto` would put it back at the bottom edge. What closes the gap instead is
     // half the card's own padding taken back off the top: the card pads its contents, so the
     // row otherwise starts a whole inset below the word rather than just under it. Half,
-    // because the bar is the second line of one thing being read and a line has leading вЂ” the
+    // because the bar is the second line of one thing being read and a line has leading в— the
     // padding is a margin around the pair, not a gap between the two lines of it.
     expect(meter.declares(Meter, 'margin-top')).toBe(true);
     expect(meter.declaration(Meter, 'margin-top')).toBe(
@@ -369,14 +344,14 @@ it('sits directly under the name, as the second line of one thing', () => {
   });
 
   it('centres the row rather than letting the card padding push it aside', () => {
-    // The leftover width does not divide evenly between two cards of the same width вЂ” a name
+    // The leftover width does not divide evenly between two cards of the same width в— a name
     // wrapping to two lines on one card and not the next leaves that card's row off to one
     // side, and a bank of six with rows at different places is not a bank.
     expect(meter.declaration(Meter, 'justify-content')).toBe('center');
   });
 
 it('draws every tick in the theme accent, and greys the spent ones by opacity', () => {
-    // The bar is one thing the card is saying вЂ” this theme, this many rounds вЂ” so every tick
+    // The bar is one thing the card is saying в— this theme, this many rounds в— so every tick
     // is that accent and a spent one is still that accent. The greying is opacity rather than
     // a paler colour for the same reason: a bar whose spent part is a different hue is a
     // bar showing two kinds of thing rather than one bar with less in it.
@@ -406,7 +381,7 @@ it('draws every tick in the theme accent, and greys the spent ones by opacity', 
 
   it('sizes the ticks against the name, so the row scales with the card', () => {
     // `em` needs a font size to be a proportion of, and the row would otherwise measure its
-    // ticks against whatever the page inherited вЂ” the same marks a different width on the
+    // ticks against whatever the page inherited в— the same marks a different width on the
     // lobby and on the game. The name's size is already a share of the card's width.
     expect(meter.declaration(Meter, 'font-size')).toBe('var(--FontSize-ThemeCard)');
     for (const token of [
@@ -419,8 +394,6 @@ it('draws every tick in the theme accent, and greys the spent ones by opacity', 
     }
   });
 
-
-
   it('plays ten rounds of a theme, which is what fills a round of the game', () => {
     // `GameConfig.rounds.count` is five rounds of the whole game, and two themes to a round is
     // what fills it: ten topics across the themes on offer, which is a set of themes big
@@ -431,21 +404,6 @@ it('draws every tick in the theme accent, and greys the spent ones by opacity', 
 });
 
 describe('the tokens behind the bank', () => {
-  it('turns the cards further sideways than it tips them', () => {
-    // Equal angles read as six panels lying flat, which is not what a bank of screens does.
-    const yaw = Number(tokenValue('--Angle-ThemeCardYaw').replace('deg', ''));
-    const pitch = Number(tokenValue('--Angle-ThemeCardPitch').replace('deg', ''));
-    expect(yaw).toBeGreaterThan(pitch);
-  });
-
-  it('keeps every card a similar size, which is what a long perspective is for', () => {
-    // A short one turns the middle card least and shrinks the outer ones hard, so the row
-    // would have a subject it never asked for.
-    const distance = Number(tokenValue('--Perspective-ThemeCards').replace('px', ''));
-    const width = Number(tokenValue('--Layout-ContainerMaxWidth').replace('px', ''));
-    expect(distance).toBeGreaterThan(width * 2);
-  });
-
   it('holds a card wider than it is tall, so six of them read as panels and not columns', () => {
     const ratio = tokenValue('--Ratio-ThemeCard').split('/').map(Number);
     expect(ratio[0]).toBeGreaterThan(ratio[1] as number);
@@ -461,50 +419,10 @@ describe('the tokens behind the bank', () => {
   });
 
   it('keeps the name off the frame of its own card', () => {
-    // At zero the longest word touches the edge, and on a turned card that edge is the most
-    // visible one there is.
+// At zero the longest word touches the edge, and the edge is the one part of a card that
+    // is never looked at until something is in the way.
     expect(Number(tokenValue('--Space-ThemeCardPadding').replace('px', ''))).toBeGreaterThan(0);
     expect(card.declaration(Name, 'padding')).toBe('var(--Space-ThemeCardPadding)');
-  });
-});
-
-describe('the turn of one card', () => {
-  const Yaw = Number(tokenValue('--Angle-ThemeCardYaw').replace('deg', ''));
-
-  it('leaves a card dead centre unturned', () => {
-    expect(turnFor(0, 1000, Yaw)).toBe(0);
-  });
-
-  it('turns the two sides opposite ways, which is what makes it a bank', () => {
-    // Both cards are the same distance out, so the same magnitude and the opposite sign.
-    expect(turnFor(-300, 1000, Yaw)).toBeCloseTo(-turnFor(300, 1000, Yaw), 5);
-  });
-
-  it('turns each card towards the middle, as a fan of cards is held out', () => {
-    // A positive `rotateY` brings a card's left edge towards the viewer, so a card right of
-    // the middle takes the positive one. The other sign leans the bank away from the player,
-    // which is a ring of panels turned towards the room rather than six cards held out.
-    expect(turnFor(300, 1000, Yaw)).toBeGreaterThan(0);
-    expect(turnFor(-300, 1000, Yaw)).toBeLessThan(0);
-  });
-
-  it('turns a card further out further, so the angle follows the window', () => {
-    // The whole reason the turn is measured: the same card is 300px from the middle on a
-    // phone and 700 on a desktop, and it has to turn differently on each.
-    expect(Math.abs(turnFor(700, 2000, Yaw))).toBeGreaterThan(Math.abs(turnFor(300, 2000, Yaw)));
-  });
-
-  it('never turns a card past the angle the token declares', () => {
-    // A card further off screen than the viewport is half-width is at the edge of it, and
-    // is held at the full turn rather than continuing past it.
-    expect(turnFor(5000, 1000, Yaw)).toBe(Yaw);
-    expect(turnFor(-5000, 1000, Yaw)).toBe(-Yaw);
-  });
-
-  it('turns nothing when there is no window to measure against', () => {
-    // Dividing by a zero half-width is a card pointing at the ceiling; this is what a page
-    // rendered before it has a size looks like instead.
-    expect(turnFor(300, 0, Yaw)).toBe(0);
   });
 });
 

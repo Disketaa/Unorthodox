@@ -677,24 +677,6 @@ body.PageFade {
   --FontSize-Display: var(--FontSize-4xl);
 
   /*
-   * The fan of theme cards, and how hard it is turned.
-   *
-   * Three tokens because three different things are being tuned, and they do not want
-   * to move together: the distance the cards are viewed from, the turn about the
-   * vertical axis, and the lean about the horizontal one. The yaw is the larger of the
-   * two on purpose — a fan of cards on a table turns more sideways than it lies down,
-   * and at equal angles the outer cards read as lying flat rather than as being held
-   * out towards the player.
-   *
-   * The perspective is long rather than short. A short one is a strong effect: the outer
-   * cards shrink hard and the middle one is barely turned, which draws the eye to the
-   * middle card as the subject. A long one turns every card by nearly the same amount
-   * and keeps their sizes close, so the six read as one hand.
-   */
-  --Perspective-ThemeCards: 1400px;
-  --Angle-ThemeCardYaw: 54deg;
-  --Angle-ThemeCardPitch: 30deg;
-  /*
    * How wide one theme card is, and the shape it keeps.
    *
    * Landscape on purpose: the names are one or two words, so a card taller than it is
