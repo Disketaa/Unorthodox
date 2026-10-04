@@ -9,15 +9,14 @@ export type Route =
 /**
  * Hash routing, because GitHub Pages does not rewrite SPA paths.
  *
- * A room link carries the code and nothing else. It used to carry the role too,
- * and that was a hole rather than a convenience: a link that says who is
- * hosting is a link anyone can edit, and one word changed in the address is the
- * app opening as the host of somebody else's room. What this device may do with
- * a room is remembered instead — see `RoomOwnership`.
+ * A room link carries the code and nothing else. It used to carry the role too, and that was a
+ * hole rather than a convenience: a link that says who is hosting is a link anyone can edit,
+ * and one word changed in the address is the app opening as the host of somebody else's room.
+ * What this device may do with a room is remembered instead — see `RoomOwnership`.
  *
- * The hash is percent-encoded by the browser, and room codes are Cyrillic, so
- * the segments are decoded before reading. A malformed escape sequence falls
- * back to the raw text rather than throwing, which would leave a blank page.
+ * The hash is percent-encoded by the browser, and room codes are Cyrillic, so the segments are
+ * decoded before reading. A malformed escape sequence falls back to the raw text rather than
+ * throwing, which would leave a blank page.
  */
 export function parseRoute(hash: string): Route {
   const segments = decodeSegments(hash);
@@ -65,15 +64,14 @@ const RouteRoots = new Set(['Room', 'Gallery']);
 /**
  * Drop path segments left behind by a hand-typed or pasted link.
  *
- * Routing is entirely in the fragment, so a path is meaningless to the app, but
- * it is not harmless: it survives in every link copied afterwards and on GitHub
- * Pages it turns into a 404 for anyone who opens it. The base directory is
- * unknown to the app, so the path is cut at the first segment that names a
- * route, which leaves a deploy path such as `/Unorthodox/` alone and removes
- * `/Room/5978/Host`.
+ * Routing is entirely in the fragment, so a path is meaningless to the app, but it is not
+ * harmless: it survives in every link copied afterwards and on GitHub Pages it turns into a 404
+ * for anyone who opens it. The base directory is unknown to the app, so the path is cut at the
+ * first segment that names a route, which leaves a deploy path such as `/Unorthodox/` alone and
+ * removes `/Room/5978/Host`.
  *
- * This runs before the router reads the hash, so a link that carries its route
- * in both places keeps working and simply loses the copy nobody can use.
+ * This runs before the router reads the hash, so a link that carries its route in both places
+ * keeps working and simply loses the copy nobody can use.
  */
 export function pruneStrayPath(): void {
   const path = basePath();
@@ -99,14 +97,14 @@ export function roomPath(roomCode: string): string {
 /**
  * Move to a route, with an empty path meaning the entry screen.
  *
- * Assigning an empty hash leaves a bare `#` in the address bar, which then
- * rides along in every link copied out of the app. Leaving the root route
- * therefore drops the fragment through the history API, which keeps the search
- * string and records an entry so the back button still works.
+ * Assigning an empty hash leaves a bare `#` in the address bar, which then rides along in every
+ * link copied out of the app. Leaving the root route therefore drops the fragment through the
+ * history API, which keeps the search string and records an entry so the back button still
+ * works.
  *
- * The hashchange event is raised by hand because the router listens for it and
- * the history API does not fire it; a real event is not needed, since the
- * handler only re-reads `location.hash`.
+ * The hashchange event is raised by hand because the router listens for it and the history API
+ * does not fire it; a real event is not needed, since the handler only re-reads
+ * `location.hash`.
  */
 export function navigate(path: string): void {
   if (path !== '') {

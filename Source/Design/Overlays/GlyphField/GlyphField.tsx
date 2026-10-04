@@ -11,12 +11,7 @@ interface Field {
   right: Glyph[];
 }
 
-/**
- * One seed decides the whole field, both bands.
- *
- * The bands are mirror images rather than two of anything, so one arrangement
- * describes both.
- */
+/** One seed decides the whole field, both bands. The bands are mirror images rather than two of anything, so one arrangement describes both. */
 function rollField(): Field {
   const seed = Seeds[Math.floor(Math.random() * Seeds.length)] ?? Seeds[0];
   const random = createRandom(seed);
@@ -24,12 +19,10 @@ function rollField(): Field {
 }
 
 /**
- * Oversized marks down the left and right margins, leaving the middle clear for
- * the game.
+ * Oversized marks down the left and right margins, leaving the middle clear for the game.
  *
- * The clearance is not a guess: each band is exactly the space the content
- * column does not use, so the marks cannot reach the text however narrow the
- * screen gets.
+ * The clearance is not a guess: each band is exactly the space the content column does not use,
+ * so the marks cannot reach the text however narrow the screen gets.
  */
 export function GlyphField() {
   const parallax = useGlyphParallax();

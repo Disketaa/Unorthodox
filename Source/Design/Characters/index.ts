@@ -12,13 +12,13 @@ import { Star } from './Star';
 /**
  * The drawing for each character, keyed by id.
  *
- * The mapping is spelled out rather than globbed so a character missing from
- * the catalogue is a build error rather than a blank space at runtime.
+ * The mapping is spelled out rather than globbed so a character missing from the catalogue is a
+ * build error rather than a blank space at runtime.
  *
- * Each drawing is inline SVG rather than an image file, because tinting has to
- * be a fill on the body while the black linework stays on top, and a CSS mask
- * cannot keep one over the other. That is why every character file exports a
- * component and why none of them carries an `import` of an image.
+ * Each drawing is inline SVG rather than an image file, because tinting has to be a fill on the
+ * body while the black linework stays on top, and a CSS mask cannot keep one over the other.
+ * That is why every character file exports a component and why none of them carries an `import`
+ * of an image.
  */
 const ArtByCharacter: Record<CharacterId, () => VNode> = {
   Butterfly,

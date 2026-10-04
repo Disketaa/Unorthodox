@@ -33,9 +33,8 @@ function joinLobby(): Fixture {
 /**
  * Drop the first client, then bring them back under the same name.
  *
- * The drop is what frees the name: a second client arriving while the first is
- * still connected would be refused, which is the rule about duplicate names
- * rather than a return.
+ * The drop is what frees the name: a second client arriving while the first is still connected
+ * would be refused, which is the rule about duplicate names rather than a return.
  */
 function dropAndRejoinFirstClient(fixture: Fixture): ClientSession {
   fixture.clientTransports[0].simulateLeave();
@@ -46,10 +45,10 @@ function dropAndRejoinFirstClient(fixture: Fixture): ClientSession {
 }
 
 /**
- * Start a round and answer for everyone except the first client, who is left
- * silent on purpose: the host's closing of a phase is driven by the answers it
- * has, so the question every test here asks is whether that one missing answer
- * still counts. The first client is the one under test, never the answerer.
+ * Start a round and answer for everyone except the first client, who is left silent on purpose:
+ * the host's closing of a phase is driven by the answers it has, so the question every test
+ * here asks is whether that one missing answer still counts. The first client is the one under
+ * test, never the answerer.
  */
 function startRoundMissingFirstAnswer(fixture: Fixture): void {
   fixture.hostSession.startGame('Test topic', 1000);

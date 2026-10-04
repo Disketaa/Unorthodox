@@ -24,11 +24,10 @@ export type PublicLobbyState = {
   /**
    * The pace the host has set.
    *
-   * Sent to every client rather than kept on the host, because the settings
-   * card is drawn for clients too and a card showing one pace while the room
-   * plays another is worse than no card. A client may press the buttons to see
-   * what a pace would mean, but what it reads back afterwards is this field and
-   * not its own click.
+   * Sent to every client rather than kept on the host, because the settings card is drawn for
+   * clients too and a card showing one pace while the room plays another is worse than no card.
+   * A client may press the buttons to see what a pace would mean, but what it reads back
+   * afterwards is this field and not its own click.
    */
   pace: Pace;
 };
@@ -38,9 +37,9 @@ export type PublicWritingState = {
   topic: string;
   durationMs: number;
   /**
-   * When the host started this phase, on the host's clock. Clients must count
-   * down from this rather than from when they received the message, otherwise a
-   * client that was away when the phase began shows the full time again.
+   * When the host started this phase, on the host's clock. Clients must count down from this
+   * rather than from when they received the message, otherwise a client that was away when the
+   * phase began shows the full time again.
    */
   startedAt: number;
   /** Counts toward the phase, never the answer text: Writing hides answers from clients. */

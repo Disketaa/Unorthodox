@@ -15,8 +15,8 @@ export interface ScoreRowProps {
 /**
  * One player in the standings.
  *
- * The character holds still here: these rows are re-ordered as the scores land,
- * so a sway on top of that movement is noise rather than character.
+ * The character holds still here: these rows are re-ordered as the scores land, so a sway on
+ * top of that movement is noise rather than character.
  */
 export function ScoreRow({ playerName, character, color, score, rank, index }: ScoreRowProps) {
   return (

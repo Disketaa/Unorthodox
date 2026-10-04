@@ -42,8 +42,8 @@ type Received = { message: JsonValue; fromHost: boolean; peerId: string };
 /**
  * Build a room for a host or a client.
  *
- * Both protocol channels are always created, matching the real transport, and
- * wiring is deferred so a test can inspect what got subscribed.
+ * Both protocol channels are always created, matching the real transport, and wiring is
+ * deferred so a test can inspect what got subscribed.
  */
 export function setup(isHost: boolean) {  const room: FakeRoom = {};
   const hostToClient = new FakeAction();

@@ -1,9 +1,9 @@
 /**
  * Which rooms this browser is the host of.
  *
- * The role is not in the link, because a link that says who is hosting is a
- * link anyone can edit. The room code is all a link carries, so what this
- * device may do with it is remembered here.
+ * The role is not in the link, because a link that says who is hosting is a link anyone can
+ * edit. The room code is all a link carries, so what this device may do with it is remembered
+ * here.
  */
 
 const KeyPrefix = 'unorthodox.hosting.';

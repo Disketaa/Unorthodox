@@ -1,9 +1,9 @@
 /**
  * Colour maths, enough to check that two colours can be read together.
  *
- * WCAG 2.1 relative luminance and contrast ratio, on six-digit hex only. That
- * is all the palette needs: every token in this project is a flat hex, and a
- * fuller parser would be solving a problem the colours here do not have.
+ * WCAG 2.1 relative luminance and contrast ratio, on six-digit hex only. That is all the
+ * palette needs: every token in this project is a flat hex, and a fuller parser would be
+ * solving a problem the colours here do not have.
  */
 
 /** One colour, split into the channels the ratios are computed from. */
@@ -55,10 +55,9 @@ function linear(channel: number): number {
 /**
  * Relative luminance, 0 for black and 1 for white.
  *
- * The sRGB values are linearised first, because brightness on a screen is not
- * linear in the stored number: #808080 is nowhere near half as bright as white.
- * Skipping that step is what makes a hand-rolled ratio say a mid grey passes
- * against white when it does not.
+ * The sRGB values are linearised first, because brightness on a screen is not linear in the
+ * stored number: #808080 is nowhere near half as bright as white. Skipping that step is what
+ * makes a hand-rolled ratio say a mid grey passes against white when it does not.
  */
 export function luminance(color: Rgb): number {
   return 0.2126 * linear(color.r) + 0.7152 * linear(color.g) + 0.0722 * linear(color.b);
@@ -76,9 +75,9 @@ export function contrastRatio(a: Rgb, b: Rgb): number {
 /**
  * Whether a colour can carry text, and which text.
  *
- * Body text wants 4.5 and large text wants 3, so a step that clears 4.5 against
- * one of ink or white can be used either way; a step between the two is a
- * background that has to go dark before it can hold type.
+ * Body text wants 4.5 and large text wants 3, so a step that clears 4.5 against one of ink or
+ * white can be used either way; a step between the two is a background that has to go dark
+ * before it can hold type.
  */
 export interface Readable {
   /** Ink is the dark text, white the light one; exactly one is legible here. */
@@ -89,8 +88,8 @@ export interface Readable {
 /**
  * Which of two candidates reads on this background.
  *
- * `Ink` and `White` are passed in rather than hardcoded so the caller decides
- * what its own text colours are; this only compares them.
+ * `Ink` and `White` are passed in rather than hardcoded so the caller decides what its own text
+ * colours are; this only compares them.
  */
 export function readableOn(background: Rgb, ink: Rgb, white: Rgb, minimum = 4.5): Readable {
   return {

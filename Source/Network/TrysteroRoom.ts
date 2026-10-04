@@ -57,11 +57,11 @@ function createHostPeerState(onFirstKnown: () => void): HostPeerState {
 /**
  * Announce our own role to everyone in the room.
  *
- * This is broadcast rather than sent to a single peer on purpose: `onPeerJoin`
- * fires on both sides of a new connection, so a broadcast from each side
- * guarantees that whoever arrived second learns who the host is. Targeting only
- * the joining peer would still deadlock when the host joined first, because the
- * host never sees a join event for a client that is already present.
+ * This is broadcast rather than sent to a single peer on purpose: `onPeerJoin` fires on both
+ * sides of a new connection, so a broadcast from each side guarantees that whoever arrived
+ * second learns who the host is. Targeting only the joining peer would still deadlock when the
+ * host joined first, because the host never sees a join event for a client that is already
+ * present.
  */
 function announceRole(
   hello: MessageAction<JsonValue>,
@@ -89,10 +89,9 @@ function wireHello(hello: MessageAction<JsonValue>, hostPeer: HostPeerState, isH
 /**
  * Wire the directional protocol actions.
  *
- * Every peer creates both channels, but only listens to the one carrying
- * traffic in its own direction: the host reads what clients send, the client
- * reads what the host sends. Listening to both would feed a peer its own
- * messages back.
+ * Every peer creates both channels, but only listens to the one carrying traffic in its own
+ * direction: the host reads what clients send, the client reads what the host sends. Listening
+ * to both would feed a peer its own messages back.
  */
 function wireActions(actions: RoomActions, handlers: RoomHandlers, isHost: boolean): void {
   const inbound = isHost ? actions.clientToHost : actions.hostToClient;
@@ -143,13 +142,12 @@ function wirePeers(
 /**
  * Wire up peer lifecycle, role exchange and message delivery for a joined room.
  *
- * Every peer announces its role to the whole room on every peer join, so the
- * handshake does not depend on which side arrived first.
+ * Every peer announces its role to the whole room on every peer join, so the handshake does not
+ * depend on which side arrived first.
  *
- * Both protocol directions are created on every peer, because a trystero action
- * is a topic: a peer only receives messages on a channel it created itself.
- * Creating just the sending direction leaves the far end unsubscribed, so its
- * messages are dropped without a trace.
+ * Both protocol directions are created on every peer, because a trystero action is a topic: a
+ * peer only receives messages on a channel it created itself. Creating just the sending
+ * direction leaves the far end unsubscribed, so its messages are dropped without a trace.
  */
 export function openRoom(options: {
   appId: string;

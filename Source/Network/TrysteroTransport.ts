@@ -160,8 +160,8 @@ export class TrysteroTransport implements Transport {
   /**
    * Whether the host has announced itself over an open peer connection.
    *
-   * Until the hello handshake completes there is no address to send to, so this
-   * is the only honest answer to "has my join gone out yet".
+   * Until the hello handshake completes there is no address to send to, so this is the only
+   * honest answer to "has my join gone out yet".
    */
   isHostAddressable(): boolean {
     return !this.isHost && this.hostPeerId !== null;

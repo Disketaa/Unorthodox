@@ -3,9 +3,8 @@ import { GameConfig } from '@/Game';
 /**
  * Room codes are four digits.
  *
- * Digits are easier to read out loud and to type on a phone keyboard than
- * letters, and there is nothing to confuse with each other the way letters such
- * as O and 0 are.
+ * Digits are easier to read out loud and to type on a phone keyboard than letters, and there is
+ * nothing to confuse with each other the way letters such as O and 0 are.
  */
 const roomAlphabet = '0123456789';
 

@@ -15,21 +15,18 @@ export interface IconButtonProps {
 }
 
 /**
- * A button carrying nothing but a mark, with the name in the label rather than
- * in the drawing.
+ * A button carrying nothing but a mark, with the name in the label rather than in the drawing.
  *
- * The mark is a span rather than an image element so the icon file stays where
- * the rest of the artwork is, and is painted through a mask: every icon on disk
- * is a black silhouette, and a mask is what lets one file serve a mark in any
- * colour.
+ * The mark is a span rather than an image element so the icon file stays where the rest of the
+ * artwork is, and is painted through a mask: every icon on disk is a black silhouette, and a
+ * mask is what lets one file serve a mark in any colour.
  *
- * Held back until the pointer is on it, then the accent: nothing in the room
- * should spend the accent on itself, so the colour is spent on the thing being
- * aimed at.
+ * Held back until the pointer is on it, then the accent: nothing in the room should spend the
+ * accent on itself, so the colour is spent on the thing being aimed at.
  *
- * A rounded square rather than a circle, because a circle is a shape the eye
- * reads as a control on its own, and these sit inside a chip or beside a title
- * where the box is already the control.
+ * A rounded square rather than a circle, because a circle is a shape the eye reads as a control
+ * on its own, and these sit inside a chip or beside a title where the box is already the
+ * control.
  */
 export function IconButton({
   icon,

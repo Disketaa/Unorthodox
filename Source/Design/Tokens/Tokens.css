@@ -394,7 +394,6 @@ body.PageFade {
    *
    * A floor under each through `max`, not a breakpoint: a bare share collapses the field on a phone.
    */
-   */
   --Glyph-MarkWidthMin: max(16vw, 120px);
   --Glyph-MarkWidthMax: max(32vw, 240px);
 

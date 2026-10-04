@@ -13,8 +13,8 @@ export interface ScoredGroup {
 /**
  * Mark a group rejected when a strict majority of its own authors rejected it.
  *
- * The bar is the group's own authors rather than the whole room, so a group of
- * two cannot be killed by one voter out of ten.
+ * The bar is the group's own authors rather than the whole room, so a group of two cannot be
+ * killed by one voter out of ten.
  */
 export function toScoredGroups(state: ReviewingState): ScoredGroup[] {
   return groupAnswersWithPlayers(state.answers).map(group => {
@@ -29,8 +29,8 @@ export function toScoredGroups(state: ReviewingState): ScoredGroup[] {
 /**
  * Points for this round, with the running totals carried forward.
  *
- * Returns both, so the caller does not have to add the round onto the totals by
- * hand and risk losing a player who scored nothing.
+ * Returns both, so the caller does not have to add the round onto the totals by hand and risk
+ * losing a player who scored nothing.
  */
 export function scoreRound(
   state: ReviewingState,

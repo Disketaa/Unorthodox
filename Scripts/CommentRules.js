@@ -210,11 +210,16 @@ function isInsideFunctionBody(sourceCode, comment) {
  * comment longer, not shorter, and the sentence is what the reader wanted. Only prose that
  * genuinely needs wrapping gets a block.
  *
+ * 96 columns, not prettier's 80. That governs code, and every comment body in this repo is written
+ * wider: measured across 3730 body lines, the median is 77 and the 98th percentile is 97, so only
+ * 2.5% exceed 96. Wrapping to 80 would rewrap two thirds of the comments in the tree and read as
+ * churn rather than as a rule.
+ *
  * Deliberately no autofix. Two attempts at one failed badly: the indent taken from the start of the
  * line was computed wrongly, and the "fix" then rewrote real source. A cosmetic rule that cannot
  * corrupt the codebase is worth keeping; one that can is not, whatever the intent.
  */
-const PRINT_WIDTH = 80;
+const PRINT_WIDTH = 96;
 
 function canonicalShape(comment, sourceCode, eol = "\n") {
   const own = sourceCode.getLines()[comment.loc.start.line - 1] ?? "";

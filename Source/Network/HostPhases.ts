@@ -6,8 +6,8 @@ const log = createLogger('HostPhases');
 /**
  * The actions that move the game between phases.
  *
- * Split out of the session so the rules about when a phase may end sit in one
- * place: each method here is the only thing that can trigger its transition.
+ * Split out of the session so the rules about when a phase may end sit in one place: each
+ * method here is the only thing that can trigger its transition.
  */
 export function startGame(state: Game.HostState | undefined, topic: string, durationMs: number): Game.HostState {
   if (state?.phase !== 'Lobby') {

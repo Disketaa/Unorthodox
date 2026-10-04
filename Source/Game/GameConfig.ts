@@ -1,9 +1,8 @@
 /**
  * The paces a room can be set to, as the three times a player waits through.
  *
- * `Standard` is written from `timing` rather than as three numbers of its own,
- * so the pace the room is not using cannot drift away from the durations the
- * game actually runs on.
+ * `Standard` is written from `timing` rather than as three numbers of its own, so the pace the
+ * room is not using cannot drift away from the durations the game actually runs on.
  */
 export type Pace = 'Fast' | 'Standard';
 
@@ -25,17 +24,15 @@ const timing = {
   /**
    * The count-in before the first round, and the writing time it is added to.
    *
-   * The room's writing phase is this much longer than the pace says, so the
-   * count-in is time the players get rather than time taken from them: the
-   * phase starts when the host presses Start, the numbers are up while it is
-   * under way, and everybody has the full duration waiting for them once they
-   * are gone.
+   * The room's writing phase is this much longer than the pace says, so the count-in is time
+   * the players get rather than time taken from them: the phase starts when the host presses
+   * Start, the numbers are up while it is under way, and everybody has the full duration
+   * waiting for them once they are gone.
    *
-   * Two parts rather than one. The shade comes up first and the numbers follow
-   * it, so the first number is not already half faded by the time the room can
-   * see anything at all. `startVeilMs` is the shade coming up,
-   * `startCountdownMs` is the three numbers over it, and both are inside the
-   * writing phase rather than in front of it.
+   * Two parts rather than one. The shade comes up first and the numbers follow it, so the first
+   * number is not already half faded by the time the room can see anything at all.
+   * `startVeilMs` is the shade coming up, `startCountdownMs` is the three numbers over it, and
+   * both are inside the writing phase rather than in front of it.
    */
   startVeilMs: 300,
   startCountdownMs: 3000,
@@ -67,21 +64,20 @@ export const GameConfig = {
     /**
      * How many themes a lobby is offered at once.
      *
-     * Six because they are drawn three across and two down, and the bank of
-     * theme cards is written for that shape: the turn is measured per card, but
-     * the row is capped at three cards wide, so a different count would be a
-     * different arrangement rather than a longer or shorter one.
+     * Six because they are drawn three across and two down, and the bank of theme cards is
+     * written for that shape: the turn is measured per card, but the row is capped at three
+     * cards wide, so a different count would be a different arrangement rather than a longer or
+     * shorter one.
      */
     cardsPerLobby: 6,
     /**
      * How many rounds a theme is played for.
      *
-     * The number of ticks along the bottom of a card, and the number of topics
-     * the theme has to answer for. Ten because that is what the room is sized
-     * for: `rounds.count` is five rounds of the whole game, and two themes to a
-     * round is what fills it — ten topics across the two themes on offer, which
-     * is a set of themes big enough that the cards are a choice rather than a
-     * formality.
+     * The number of ticks along the bottom of a card, and the number of topics the theme has to
+     * answer for. Ten because that is what the room is sized for: `rounds.count` is five rounds
+     * of the whole game, and two themes to a round is what fills it — ten topics across the two
+     * themes on offer, which is a set of themes big enough that the cards are a choice rather
+     * than a formality.
      */
     roundsPerTheme: 10,
   },
@@ -93,11 +89,10 @@ export const GameConfig = {
     /**
      * How many players a room holds.
      *
-     * The bar of players across the top of a game holds this many, so the room
-     * and the bar are the same size and nothing is ever dropped from one and
-     * kept in the other. Sixteen is wide for a party game and narrow for a
-     * phone: it is what the bar can draw without a player's face becoming a
-     * thumbnail.
+     * The bar of players across the top of a game holds this many, so the room and the bar are
+     * the same size and nothing is ever dropped from one and kept in the other. Sixteen is wide
+     * for a party game and narrow for a phone: it is what the bar can draw without a player's
+     * face becoming a thumbnail.
      */
     maxPlayers: 16,
   },

@@ -7,17 +7,13 @@ const log = createLogger('Diagnostics');
 const PollIntervalMs = 3_000;
 
 /**
- * What the host toggled in the lobby, which beats the flags below: a link may
- * carry ?debug and the host may still want it off, and back the other way. Null
- * until someone actually toggles, so an untouched session reads its own flags.
+ * What the host toggled in the lobby, which beats the flags below: a link may carry ?debug and
+ * the host may still want it off, and back the other way. Null until someone actually toggles,
+ * so an untouched session reads its own flags.
  */
 let override: boolean | null = null;
 
-/**
- * True when debug output was requested. The flag is accepted in the query
- * string, anywhere in the hash, or in localStorage, so that it survives every
- * shape of link the app produces.
- */
+/** True when debug output was requested. The flag is accepted in the query string, anywhere in the hash, or in localStorage, so that it survives every shape of link the app produces. */
 export function isDebugEnabled(): boolean {
   if (override !== null) {
     return override;
@@ -38,9 +34,8 @@ export function isDebugEnabled(): boolean {
 /**
  * Turn debug logging on or off for the rest of this session.
  *
- * Kept in memory rather than storage, so leaving and rejoining finds the room
- * the way the link left it and a stray `?debug` link shared afterwards does not
- * drag the logging along.
+ * Kept in memory rather than storage, so leaving and rejoining finds the room the way the link
+ * left it and a stray `?debug` link shared afterwards does not drag the logging along.
  */
 export function setDebugEnabled(enabled: boolean): void {
   override = enabled;
@@ -51,8 +46,8 @@ export function setDebugEnabled(enabled: boolean): void {
 /**
  * Read the relay socket table from the installed trystero nostr strategy.
  *
- * The table maps a relay URL to the live `WebSocket` for it, so a missing entry
- * means the relay has not been dialled yet, or has been dropped for good.
+ * The table maps a relay URL to the live `WebSocket` for it, so a missing entry means the relay
+ * has not been dialled yet, or has been dropped for good.
  */
 function relayStates(): Record<string, string> {
   const states: Record<string, string> = {};
@@ -88,12 +83,10 @@ function peerStates(getPeers: () => Record<string, RTCPeerConnection>): Record<s
 }
 
 /**
- * Last state reported for each relay, so a change is logged once instead of on
- * every tick.
+ * Last state reported for each relay, so a change is logged once instead of on every tick.
  *
- * Trystero retires a relay permanently once its reconnect backoff runs out, so
- * one going from open to closed never comes back this session and is worth
- * saying out loud.
+ * Trystero retires a relay permanently once its reconnect backoff runs out, so one going from
+ * open to closed never comes back this session and is worth saying out loud.
  */
 const lastRelayState = new Map<string, string>();
 
@@ -140,8 +133,8 @@ function reportIceGathering(getPeers: () => Record<string, RTCPeerConnection>): 
 /**
  * Start periodic connection logging.
  *
- * All of it is written at `info` so it is visible without any extra flag, since
- * a silent connection is the failure mode that matters most here.
+ * All of it is written at `info` so it is visible without any extra flag, since a silent
+ * connection is the failure mode that matters most here.
  */
 export function startDiagnostics(getPeers: () => Record<string, RTCPeerConnection>): () => void {
   const build = document.querySelector('script[src*="assets/index-"]')?.getAttribute('src') ?? 'unknown';

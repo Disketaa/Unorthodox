@@ -23,9 +23,8 @@ export function toPayload(message: unknown): JsonValue | undefined {
 /**
  * Prepare a message for the wire, returning undefined when it cannot be sent.
  *
- * Trystero only carries structured-clone or JSON payloads, so rejecting
- * anything else here drops a bad message once with a reason, instead of failing
- * deep inside the library.
+ * Trystero only carries structured-clone or JSON payloads, so rejecting anything else here
+ * drops a bad message once with a reason, instead of failing deep inside the library.
  */
 export function preparePayload(
   message: unknown,

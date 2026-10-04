@@ -4,17 +4,16 @@ import type { PlayerId } from '@/Core';
 /**
  * The host's game state, as plain data and back again.
  *
- * Split from the storage that holds it, so a round's shape can be checked
- * without a tab. Written out per phase and read back field by field, because a
- * cast promises a shape nothing checked.
+ * Split from the storage that holds it, so a round's shape can be checked without a tab.
+ * Written out per phase and read back field by field, because a cast promises a shape nothing
+ * checked.
  */
 
 /**
  * Plain data as name/value pairs, so a value can be read without a cast.
  *
- * `Object.entries` is what makes this possible: it reads an object of unknown
- * shape where reading a property off the unknown would need a cast to say what
- * it was.
+ * `Object.entries` is what makes this possible: it reads an object of unknown shape where
+ * reading a property off the unknown would need a cast to say what it was.
  */
 type Fields = Map<string, unknown>;
 
@@ -40,9 +39,8 @@ function rawPairs(fields: Fields, name: string): unknown[] {
 /**
  * A stored list of pairs back as a map, dropping anything that is not one.
  *
- * Guarded rather than cast, because what is in storage was written by an older
- * version of this file or by nothing at all, and an entry that does not look
- * like what it claims is not a seat.
+ * Guarded rather than cast, because what is in storage was written by an older version of this
+ * file or by nothing at all, and an entry that does not look like what it claims is not a seat.
  */
 function toMap<V>(
   pairs: readonly unknown[],

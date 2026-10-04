@@ -36,9 +36,9 @@ export interface GameSessionView extends SessionPhase {
   /**
    * This player's own character, as the host has it.
    *
-   * Not the roll made on this device: a player who closes the tab and comes
-   * back is given the character the host kept for them, so the picker shows
-   * what the rest of the room actually sees.
+   * Not the roll made on this device: a player who closes the tab and comes back is given the
+   * character the host kept for them, so the picker shows what the rest of the room actually
+   * sees.
    */
   ownLook: PlayerLook | undefined;
   setLook: (character: CharacterId, color: CharacterColor) => void;
@@ -58,8 +58,8 @@ export interface GameSessionView extends SessionPhase {
 /**
  * This player's own character, once the host has said which one it kept.
  *
- * Nothing before the host has answered: a player with no id yet is not in the
- * roster, so there is no character that the rest of the room is seeing yet.
+ * Nothing before the host has answered: a player with no id yet is not in the roster, so there
+ * is no character that the rest of the room is seeing yet.
  */
 function ownLookFor(
   playerId: PlayerId | null,
@@ -71,9 +71,9 @@ function ownLookFor(
 /**
  * Keep the component rendering when the session has news.
  *
- * The session is a plain object with no state of its own, so a re-render is
- * what makes a new public state visible. The cleanup stops the session, so a
- * route change tears the transport down rather than leaving it listening.
+ * The session is a plain object with no state of its own, so a re-render is what makes a new
+ * public state visible. The cleanup stops the session, so a route change tears the transport
+ * down rather than leaving it listening.
  */
 function useSessionUpdates(
   session: Session,
@@ -90,10 +90,9 @@ function useSessionUpdates(
 /**
  * Leave the room, by going back to the entry route.
  *
- * Navigation is the only lever this app has, and leaving the room route
- * unmounts the room, which is what tears the transport down: the session
- * cleanup calls `stop`. Calling `stop` here as well would leave the host's
- * roster cleared before anyone has read the last public state.
+ * Navigation is the only lever this app has, and leaving the room route unmounts the room,
+ * which is what tears the transport down: the session cleanup calls `stop`. Calling `stop` here
+ * as well would leave the host's roster cleared before anyone has read the last public state.
  */
 function exitRoom(): void {
   navigate('');
@@ -107,10 +106,9 @@ function readTopic(publicState: PublicState | undefined): string | null {
 /**
  * The marks this player has made in a round, and the actions that make them.
  *
- * Each mark is stamped with the round it was made in, which is why this holds
- * state at all: a player who answers and is then shown the next round must stop
- * counting as having answered, and only the round a mark belongs to can say
- * that.
+ * Each mark is stamped with the round it was made in, which is why this holds state at all: a
+ * player who answers and is then shown the next round must stop counting as having answered,
+ * and only the round a mark belongs to can say that.
  */
 function useRoundMarks(
   session: Session,

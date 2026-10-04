@@ -1,26 +1,24 @@
 /**
  * How quickly the field catches up with the target, per 60th of a second.
  *
- * Low enough that the field trails the scroll rather than sitting on it,
- * smoothed against real elapsed time so the lag is the same flicked or crawled.
+ * Low enough that the field trails the scroll rather than sitting on it, smoothed against real
+ * elapsed time so the lag is the same flicked or crawled.
  */
 const CatchUp = 0.06;
 
 /**
- * How much page scroll counts as the field having spread all the way, in
- * pixels.
+ * How much page scroll counts as the field having spread all the way, in pixels.
  *
- * A length rather than a share, because a share of the page grows without limit
- * and would carry the marks off the screen entirely.
+ * A length rather than a share, because a share of the page grows without limit and would carry
+ * the marks off the screen entirely.
  */
 const ScrollRangePx = 420;
 
 /**
  * How far the field may travel from its resting place, in pixels.
  *
- * Large, because scroll is the only thing that moves this field and it has to
- * read as the field travelling with the page rather than wallpaper pinned to
- * the screen.
+ * Large, because scroll is the only thing that moves this field and it has to read as the field
+ * travelling with the page rather than wallpaper pinned to the screen.
  */
 const SpreadMaxPx = 240;
 
@@ -45,9 +43,9 @@ function bound(value: number, range: number, cap: number): number {
 /**
  * How far the page is pinched, as a plain ratio.
  *
- * Pinch only, and deliberately not browser zoom: a browser does not report its
- * zoom, so inferring it would make the field depend on the zoom the player
- * happened to be using when the page opened.
+ * Pinch only, and deliberately not browser zoom: a browser does not report its zoom, so
+ * inferring it would make the field depend on the zoom the player happened to be using when the
+ * page opened.
  */
 const MaxPinch = 2;
 
@@ -62,9 +60,9 @@ function readZoom(): number {
 /**
  * Drives the shared parallax offset, frame by frame.
  *
- * One loop for the whole field. Scroll is read on the frame rather than
- * subscribed to, so a flick-scroll cannot produce a fast field, and writes
- * happen on a frame the browser is painting.
+ * One loop for the whole field. Scroll is read on the frame rather than subscribed to, so a
+ * flick-scroll cannot produce a fast field, and writes happen on a frame the browser is
+ * painting.
  */
 export function startGlyphParallax(node: HTMLDivElement): GlyphParallaxDriver {
   let previous = performance.now();

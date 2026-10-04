@@ -1,9 +1,9 @@
 /**
  * The cast of characters a player can be drawn as, and the tints they can wear.
  *
- * These live in Core because they are shared vocabulary: Design renders them,
- * Game stores them in the roster, and Network carries them. Nothing here knows
- * how a character is drawn, only which ones exist.
+ * These live in Core because they are shared vocabulary: Design renders them, Game stores them
+ * in the roster, and Network carries them. Nothing here knows how a character is drawn, only
+ * which ones exist.
  */
 export const CharacterIds = [
   'Butterfly',
@@ -40,8 +40,8 @@ export interface PlayerLook {
 /**
  * Pick a random look, so every player lands on a different face.
  *
- * The randomness is injected rather than reached for, so the choice is testable
- * and this module stays free of ambient state.
+ * The randomness is injected rather than reached for, so the choice is testable and this module
+ * stays free of ambient state.
  */
 export function randomLook(random: () => number): PlayerLook {
   const character = CharacterIds[Math.floor(random() * CharacterIds.length)];

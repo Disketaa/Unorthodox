@@ -1,8 +1,4 @@
-/**
- * The browser is the point of this file: a refusal is answered by a message and
- * a retry loop, and neither runs without the timers and storage the environment
- * provides.
- */
+/** The browser is the point of this file: a refusal is answered by a message and a retry loop, and neither runs without the timers and storage the environment provides. */
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { InMemoryTransport } from './InMemoryTransport';
@@ -22,8 +18,8 @@ const Full = () => GameConfig.limits.maxPlayers;
 /**
  * A room holding `count` seats before anybody new arrives.
  *
- * The seats are real joins rather than invented ones, because a seat is what
- * the room counts and a roster nobody claimed is not one.
+ * The seats are real joins rather than invented ones, because a seat is what the room counts
+ * and a roster nobody claimed is not one.
  */
 function roomHolding(count: number): HostSession {
   const host = new HostSession(new InMemoryTransport());

@@ -1,7 +1,7 @@
 /**
- * The browser environment is the point of this file: a refresh is defined by
- * the browser's own storage surviving it, and without a `localStorage` there is
- * nothing for the client id to come back in.
+ * The browser environment is the point of this file: a refresh is defined by the browser's own
+ * storage surviving it, and without a `localStorage` there is nothing for the client id to come
+ * back in.
  */
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -37,11 +37,10 @@ function annReturns(): ClientSession {
 /**
  * A returning player must get their seat back.
  *
- * The name is the only handle the room has for a player, so a refresh is a new
- * connection claiming a name the room already knows. If the host is still
- * holding that name as taken, the returning player is refused and the seat is
- * never recovered — the room is then permanently short a player it is still
- * waiting on, and no route back in exists for that name at all.
+ * The name is the only handle the room has for a player, so a refresh is a new connection
+ * claiming a name the room already knows. If the host is still holding that name as taken, the
+ * returning player is refused and the seat is never recovered — the room is then permanently
+ * short a player it is still waiting on, and no route back in exists for that name at all.
  */
 describe('a player who refreshes', () => {
   beforeEach(() => {

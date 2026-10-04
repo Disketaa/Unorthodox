@@ -1,8 +1,4 @@
-/**
- * The browser is the point of this file: a refresh is defined by the storage
- * behind it surviving, and without a `localStorage` there is nothing for the
- * browser id to come back in.
- */
+/** The browser is the point of this file: a refresh is defined by the storage behind it surviving, and without a `localStorage` there is nothing for the browser id to come back in. */
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { InMemoryTransport } from './InMemoryTransport';
@@ -19,9 +15,9 @@ const clientLook: PlayerLook = { character: 'Ghost', color: 'Sky' };
 /**
  * A room one round in, with Ann in it.
  *
- * The start is what makes this file different from `ReturningPlayer.test.ts`:
- * the room has left the lobby, so every decision about who may be in it is made
- * from the seats rather than from the phase.
+ * The start is what makes this file different from `ReturningPlayer.test.ts`: the room has left
+ * the lobby, so every decision about who may be in it is made from the seats rather than from
+ * the phase.
  */
 function roomOneRoundIn(): HostSession {
   const host = new HostSession(new InMemoryTransport());

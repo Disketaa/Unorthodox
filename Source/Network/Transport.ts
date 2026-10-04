@@ -10,17 +10,17 @@ export interface Transport {
   /** Set callback for when a peer leaves */
   onPeerLeave(callback: (playerId: string) => void): void;
   /**
-   * Set callback for when the host first becomes addressable, so a message held
-   * back for lack of a route can be sent straight away rather than on the next
-   * retry. Only clients receive this.
+   * Set callback for when the host first becomes addressable, so a message held back for lack
+   * of a route can be sent straight away rather than on the next retry. Only clients receive
+   * this.
    */
   onHostReady(callback: () => void): void;
   /**
    * Whether the host can actually be addressed right now.
    *
-   * A client cannot reach the host until it has answered, so asking this is how
-   * a caller tells "sent" apart from "queued for later", instead of assuming a
-   * send went out. Hosts report false, since they address clients directly.
+   * A client cannot reach the host until it has answered, so asking this is how a caller tells
+   * "sent" apart from "queued for later", instead of assuming a send went out. Hosts report
+   * false, since they address clients directly.
    */
   isHostAddressable(): boolean;
   /** Start the transport. This is where it learns whether it is the host. */

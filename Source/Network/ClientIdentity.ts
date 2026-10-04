@@ -1,10 +1,8 @@
 /**
- * A stable id for this browser, so the room can tell a returning player from an
- * impostor.
+ * A stable id for this browser, so the room can tell a returning player from an impostor.
  *
- * A name alone can only say "somebody using this name is here", so the room
- * waits for the old connection to be reported gone — and notices are lost,
- * leaving that name locked out for good.
+ * A name alone can only say "somebody using this name is here", so the room waits for the old
+ * connection to be reported gone — and notices are lost, leaving that name locked out for good.
  */
 const ClientIdKey = 'unorthodox.clientId';
 
@@ -20,9 +18,9 @@ function randomId(): string {
 /**
  * This browser's id, minted on first use and kept from then on.
  *
- * Held in a module variable as well as in storage, and that is a requirement
- * rather than a cache: the join is re-sent until answered, so a new id per call
- * would be refused by its own retry.
+ * Held in a module variable as well as in storage, and that is a requirement rather than a
+ * cache: the join is re-sent until answered, so a new id per call would be refused by its own
+ * retry.
  */
 export function clientId(): string {
   if (minted !== null) {
@@ -46,9 +44,8 @@ export function clientId(): string {
 /**
  * Drop the stored id, so the next call mints a different one.
  *
- * For tests standing in for a second browser: two players under one name are
- * the case this id exists to tell apart, and a test cannot give them separate
- * browsers any other way.
+ * For tests standing in for a second browser: two players under one name are the case this id
+ * exists to tell apart, and a test cannot give them separate browsers any other way.
  */
 export function forgetClientId(): void {
   minted = null;

@@ -13,9 +13,9 @@ export type Topic = string;
 /**
  * Every piece of UI text, so no screen carries a string literal of its own.
  *
- * The sections with no copy yet are typed as `Record<string, never>`, which is
- * what forces a screen asking for one to be a compile error rather than an
- * empty label at runtime. Adding a section means adding it here first.
+ * The sections with no copy yet are typed as `Record<string, never>`, which is what forces a
+ * screen asking for one to be a compile error rather than an empty label at runtime. Adding a
+ * section means adding it here first.
  */
 export interface Strings {
   lobby: {

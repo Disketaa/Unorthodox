@@ -21,9 +21,9 @@ export interface LobbyRoomProps {
 /**
  * Whether the room is ready to start, and whether it is already full.
  *
- * Counted from the players who are actually here: a seat whose owner has
- * dropped is still on the roster, but starting a round would wait on an answer
- * that can no longer arrive, so a room of one live player is a room of one.
+ * Counted from the players who are actually here: a seat whose owner has dropped is still on
+ * the roster, but starting a round would wait on an answer that can no longer arrive, so a room
+ * of one live player is a room of one.
  */
 function readiness(players: readonly PublicPlayer[]): {
   enoughPlayers: boolean;
@@ -39,9 +39,8 @@ function readiness(players: readonly PublicPlayer[]): {
 /**
  * Whether there is a seat left for one more player.
  *
- * Exported because the host's dock asks the same question about its own button,
- * and two answers to "is the room full" is one more than this screen should
- * have.
+ * Exported because the host's dock asks the same question about its own button, and two answers
+ * to "is the room full" is one more than this screen should have.
  */
 export function hasRoomFor(players: readonly PublicPlayer[]): boolean {
   return players.length < GameConfig.limits.maxPlayers;

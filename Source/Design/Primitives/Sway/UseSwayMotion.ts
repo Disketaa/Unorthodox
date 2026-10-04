@@ -3,11 +3,8 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 /**
  * A thing on screen that rocks from side to side, the way someone standing shifts their weight.
  *
- * This is the characters' idle movement, lifted out of `Character`. A hook and a stylesheet rather
- * than a component, because the node it writes to must be the one already carrying the layout.
- *
- * Generic over the element rather than fixed to a span: the characters ride a span and a theme card
- * rides a button, and a ref typed to one is a cast away at the other.
+ * This is the characters' idle movement, lifted out of `Character`. A hook rather than a
+ * component: the node it writes to must be the one carrying the layout already.
  */
 export interface IdleMotion {
   tilt: number;
@@ -22,46 +19,30 @@ export interface IdleMotion {
 /** The resting lean, in degrees either way. */
 const MaxTiltDeg = 2;
 
-/**
- * How far it bobs, in pixels. Barely there on purpose: a thing that hops reads as
- * bouncing, and a screen of them is busy rather than alive. The life comes from the
- * swing instead, which is a slower movement the eye reads as shifting weight.
- */
+/** How far it bobs, in pixels. Barely there on purpose: a thing that hops reads as bouncing, and a screen of them is busy rather than alive. The life comes from the swing instead. */
 const MaxRangePx = 1;
 
 /**
- * How far it swings sideways, in pixels. This is the movement that carries it, and it
- * is only a pixel or so: enough that the weight shift is there if you watch for it,
- * small enough that a row of nine reads as settled rather than as twitching. Anything
- * more and the lobby draws the eye to the artwork instead of to the room code.
+ * How far it swings sideways, in pixels. The movement that carries it, and only about a pixel.
  *
- * Absolute rather than a share of the thing's own size, so a small character and the
- * game's name swing the same distance. They are the same movement, and a movement
- * that scaled with its subject would be a second one wearing the first's numbers.
+ * Absolute rather than a share of the thing's own size, so a small character and the game's
+ * name swing the same distance.
  */
 const MaxSwayPx = 1.5;
 
-/**
- * Slow, because a swing that repeats quickly reads as a vibration rather than as
- * someone shifting their weight. The ends stay well short of a twitch.
- */
+/** Slow, because a swing that repeats quickly reads as a vibration rather than as weight shifting. */
 const MinDurationS = 2.4;
 const MaxDurationS = 4.8;
 
-/**
- * Few steps, because the swing is already a slow movement and a fine-grained one
- * would smooth it back into a tween. Two or three reads as a held pose on the turn,
- * which is what makes it look drawn.
- */
+/** Few steps, because the swing is already a slow movement and a fine-grained one would smooth it back into a tween. Two or three reads as a held pose on the turn. */
 const MinSteps = 2;
 const MaxSteps = 3;
 
 /**
- * The four ways a stepped timing can land. Which one a movement gets changes whether
- * it snaps on arrival or on departure, which is a lot of the character of it.
+ * The four ways a stepped timing lands: which one snaps on arrival rather than on departure.
  *
- * Exported because the sway and a character's arrival are both stepped movements and
- * should snap the same set of ways; a second list would be a second set of habits.
+ * Exported because the sway and a character's arrival are both stepped and should snap the same
+ * ways; a second list would be a second set of habits.
  */
 const TimingChoices = ['jump-none', 'jump-start', 'jump-end', 'jump-both'] as const;
 
@@ -83,11 +64,8 @@ export function rollTiming(): string {
 /**
  * One thing's idle motion, rolled fresh.
  *
- * A row of them only looks alive if no two agree: each gets its own resting lean,
- * swing width, tempo, step count and place in the cycle, so they move like a crowd
- * rather than like one item copied nine times. Held in state rather than recomputed,
- * so a thing keeps its own motion for as long as it is on screen and does not twitch
- * when something else re-renders.
+ * A row of them only looks alive if no two agree: each gets its own lean, swing width, tempo,
+ * step count and place in the cycle. Held in state so a thing does not twitch on a re-render.
  */
 function rollIdle(): IdleMotion {
   return {
@@ -114,15 +92,10 @@ function idleProperties(motion: IdleMotion): [string, string][] {
 }
 
 /**
- * A ref for the element that carries the sway, with the rolled values written onto it
- * as custom properties.
+ * A ref for the element that carries the sway, with the rolled values written onto it.
  *
- * The values change once per thing and cannot be known in CSS, and a style prop is not
- * allowed, so they are set on the node the way the paper overlay sets its own drift.
- * Expressed as finished values rather than numbers, so the stylesheet still decides
- * what they mean. The timings are passed as whole `steps()` calls because the build
- * strips a `var()` used *inside* the function, which would leave an invalid timing
- * function and silently cancel the animation.
+ * The values change once per thing and cannot be known in CSS, and a style prop is not allowed.
+ * The timings go over as whole `steps()` calls because the build strips a `var()` used inside.
  */
 export function useSwayMotion<T extends HTMLElement>(): { current: T | null } {
   const ref = useRef<T>(null);

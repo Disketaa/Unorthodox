@@ -17,11 +17,7 @@ type Fixture = {
   clientTransports: InMemoryTransport[];
 };
 
-/**
- * The host and three clients in the lobby, with the transports handed back so a
- * test can take one of them off the network and watch what the room makes of
- * it.
- */
+/** The host and three clients in the lobby, with the transports handed back so a test can take one of them off the network and watch what the room makes of it. */
 function joinLobby(): Fixture {
   const hostSession = new HostSession(new InMemoryTransport());
   hostSession.start(roomCode, hostName, look);

@@ -14,9 +14,9 @@ pruneStrayPath();
 void preloadSounds();
 
 /**
- * Debug logging is opt-in via ?debug, so the noisy connection tracing stays out
- * of the way during normal play. The flag is read from the query string, from
- * the hash and from localStorage, so it works wherever the ?debug ended up.
+ * Debug logging is opt-in via ?debug, so the noisy connection tracing stays out of the way
+ * during normal play. The flag is read from the query string, from the hash and from
+ * localStorage, so it works wherever the ?debug ended up.
  */
 if (isDebugEnabled()) {
   setLogLevel('debug');

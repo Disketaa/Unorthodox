@@ -4,11 +4,11 @@ import { Stack, Text } from '@/Design/Primitives';
 /**
  * The centring, with something above it.
  *
- * The whole of the primitive is invisible without a sibling above, so the
- * gallery has to have one: a `ViewportCenter` on its own is an ordinary centred
- * box and shows nothing at all. Resize the window and the block stays in the
- * middle of the screen while the thing above it changes height — which is the
- * property, and the reason it measures rather than counting siblings.
+ * The whole of the primitive is invisible without a sibling above, so the gallery has to have
+ * one: a `ViewportCenter` on its own is an ordinary centred box and shows nothing at all.
+ * Resize the window and the block stays in the middle of the screen while the thing above it
+ * changes height — which is the property, and the reason it measures rather than counting
+ * siblings.
  */
 export function ViewportCenterGallery() {
   return (

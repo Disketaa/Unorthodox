@@ -13,22 +13,22 @@ export interface PlayerChipProps {
   /**
    * Whether the host still has this player on the line.
    *
-   * A player who dropped is still in the roster, because they may yet come
-   * back, so this dims the name rather than removing the chip.
+   * A player who dropped is still in the roster, because they may yet come back, so this dims
+   * the name rather than removing the chip.
    */
   isOnline?: boolean;
   /**
    * Whether this chip is the player looking at the screen.
    *
-   * In a full roster nobody can find themselves among a dozen identical chips,
-   * so the local player is outlined and everybody else is not.
+   * In a full roster nobody can find themselves among a dozen identical chips, so the local
+   * player is outlined and everybody else is not.
    */
   isSelf?: boolean;
   /**
    * When given, the host is offered a way to remove this player.
    *
-   * Only the host's own roster passes it, so a kick can never appear on the
-   * chip of the player who would be removing themselves.
+   * Only the host's own roster passes it, so a kick can never appear on the chip of the player
+   * who would be removing themselves.
    */
   onKick?: () => void;
   /** What the kick says, for anyone who cannot see the mark. */
