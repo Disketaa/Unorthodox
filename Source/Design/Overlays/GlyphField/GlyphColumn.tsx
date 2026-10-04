@@ -4,10 +4,11 @@ import styles from './GlyphColumn.module.css';
 /**
  * Writes one mark's rolled values onto its node.
  *
- * Custom properties rather than a style prop, the way the paper overlay sets its
- * own drift: the component keeps a closed API and the stylesheet still decides
- * what each value means. Only unitless numbers and percentages cross this
- * boundary; every length, including a mark's size, comes from `Tokens.css`.
+ * Custom properties rather than a style prop, the way the paper overlay sets
+ * its own drift: the component keeps a closed API and the stylesheet still
+ * decides what each value means. Only unitless numbers and percentages cross
+ * this boundary; every length, including a mark's size, comes from
+ * `Tokens.css`.
  */
 function applyGlyph(node: HTMLSpanElement, glyph: Glyph): void {
   const properties: [string, string][] = [

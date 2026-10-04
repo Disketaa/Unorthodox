@@ -1,9 +1,9 @@
 /**
  * Colour maths, enough to check that two colours can be read together.
  *
- * WCAG 2.1 relative luminance and contrast ratio, on six-digit hex only. That is
- * all the palette needs: every token in this project is a flat hex, and a fuller
- * parser would be solving a problem the colours here do not have.
+ * WCAG 2.1 relative luminance and contrast ratio, on six-digit hex only. That
+ * is all the palette needs: every token in this project is a flat hex, and a
+ * fuller parser would be solving a problem the colours here do not have.
  */
 
 /** One colour, split into the channels the ratios are computed from. */

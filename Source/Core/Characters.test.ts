@@ -7,11 +7,9 @@ import {
 } from './Characters';
 
 describe('the cast and the palette', () => {
-  /**
-   * The picker lays the cast and the palette out as two rows of the same shape, all
-   * eight on one line, so an equal count is what keeps the two grids the same control
-   * rather than one of them trailing an empty cell.
-   */
+  // The picker lays the cast and the palette out as two rows of the same shape, all eight on
+  // one line, so an equal count is what keeps the two grids the same control rather than one of
+  // them trailing an empty cell.
   it('has as many tints as there are characters', () => {
     expect(CharacterColors.length).toBe(CharacterIds.length);
   });

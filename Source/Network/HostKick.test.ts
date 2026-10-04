@@ -93,11 +93,7 @@ describe('the host kicking a player', () => {
   });
 });
 
-/*
- * A kick changes what the room is waiting for: the removed player's seat is gone,
- * so a round must close on the answers of whoever is left rather than hang on
- * someone who was just thrown out of it.
- */
+/** A removed player's seat is gone, so the round must close on whoever is left rather than hang on an answer that will never arrive. */
 describe('the room after a kick', () => {
   beforeEach(() => {
     InMemoryTransport.resetPeers();

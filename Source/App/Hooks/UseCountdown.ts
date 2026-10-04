@@ -9,9 +9,9 @@ import { GameConfig } from '@/Game';
  * a client that joined late, or was suspended and caught up, the full duration
  * again while everyone else was near the end.
  *
- * `active` stops the tick for a phase that has no clock to read, so a caller that
- * only wants a countdown while one phase is on is not waking the tab ten times a
- * second for the rest of the game to read a zero it already knows.
+ * `active` stops the tick for a phase that has no clock to read, so a caller
+ * that only wants a countdown while one phase is on is not waking the tab ten
+ * times a second for the rest of the game to read a zero it already knows.
  */
 export function useCountdown(
   durationMs: number,

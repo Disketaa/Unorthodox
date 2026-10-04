@@ -9,7 +9,7 @@ import {
 import { PlayerId, PlayerLook, assertNever } from '@/Core';
 import type { Pace } from './GameConfig';
 
-// What a client is told about one player.
+/** What a client is told about one player. */
 export interface PublicPlayer {
   id: PlayerId;
   name: string;
@@ -24,10 +24,11 @@ export type PublicLobbyState = {
   /**
    * The pace the host has set.
    *
-   * Sent to every client rather than kept on the host, because the settings card is
-   * drawn for clients too and a card showing one pace while the room plays another is
-   * worse than no card. A client may press the buttons to see what a pace would mean,
-   * but what it reads back afterwards is this field and not its own click.
+   * Sent to every client rather than kept on the host, because the settings
+   * card is drawn for clients too and a card showing one pace while the room
+   * plays another is worse than no card. A client may press the buttons to see
+   * what a pace would mean, but what it reads back afterwards is this field and
+   * not its own click.
    */
   pace: Pace;
 };
@@ -42,7 +43,8 @@ export type PublicWritingState = {
    * client that was away when the phase began shows the full time again.
    */
   startedAt: number;
-  submittedCount: number; // number of answers submitted so far
+  /** Counts toward the phase, never the answer text: Writing hides answers from clients. */
+  submittedCount: number;
   players: PublicPlayer[];
 };
 

@@ -3,10 +3,7 @@ import { Transport } from './Transport';
 /** Counter behind the generated peer addresses, so tests get unique addresses. */
 let nextPeerAddress = 0;
 
-/**
- * In-memory transport for testing without network.
- * All peers share the same transport instance via a static broker.
- */
+/** In-memory transport for testing without network. All peers share the same transport instance via a static broker. */
 export class InMemoryTransport implements Transport {
   private static peersByPeer = new Map<string, {
     transport: InMemoryTransport;
@@ -145,9 +142,9 @@ export class InMemoryTransport implements Transport {
   /**
    * Call this to simulate this peer dropping off the network.
    *
-   * The others are told in the peer's own transport address, which is what the real
-   * transport reports and what a host resolves to a seat. A player id would mean
-   * nothing here, since the host is what assigns those.
+   * The others are told in the peer's own transport address, which is what the
+   * real transport reports and what a host resolves to a seat. A player id
+   * would mean nothing here, since the host is what assigns those.
    */
   simulateLeave(): void {
     const address = this.peerAddress;

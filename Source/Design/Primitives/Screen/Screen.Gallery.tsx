@@ -7,9 +7,10 @@ interface DemoProps {
   vertical: ScreenVertical;
   align: ScreenAlign;
   /**
-   * Whether the first container is the wordmark. It is a third of the height of the
-   * others, which is the whole reason `align` exists: it is the one arrangement on the
-   * page where the difference between the two alignments is impossible to miss.
+   * Whether the first container is the wordmark. It is a third of the height of
+   * the others, which is the whole reason `align` exists: it is the one
+   * arrangement on the page where the difference between the two alignments is
+   * impossible to miss.
    */
   wordmark?: boolean;
   /** Extra containers, which is what shows the cap doing its work. */
@@ -50,15 +51,15 @@ function Demo({ caption, vertical, align, wordmark, spare }: DemoProps) {
 }
 
 /**
- * Three arrangements rather than one per combination: each fills the viewport, because
- * filling the viewport is what lets `Top` and `Center` differ at all, so a gallery of
- * every combination is a screen of scrolling per pair of them.
+ * Three arrangements rather than one per combination: each fills the viewport,
+ * because filling the viewport is what lets `Top` and `Center` differ at all,
+ * so a gallery of every combination is a screen of scrolling per pair of them.
  *
- * Resize the window to see it. The last two go one, two, then three across, and their
- * fourth container wraps to a line of its own. `align` is only visible once two
- * containers are side by side: the second lines them up by the top edge and the third
- * centres them against one another, which is the difference between a wordmark floating
- * beside a menu and sitting in the middle of it.
+ * Resize the window to see it. The last two go one, two, then three across, and
+ * their fourth container wraps to a line of its own. `align` is only visible
+ * once two containers are side by side: the second lines them up by the top
+ * edge and the third centres them against one another, which is the difference
+ * between a wordmark floating beside a menu and sitting in the middle of it.
  */
 export function ScreenGallery() {
   return (

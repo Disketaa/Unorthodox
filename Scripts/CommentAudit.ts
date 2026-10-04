@@ -30,6 +30,8 @@ interface RawComment {
   readonly endLine: number;
   readonly text: string;
   readonly block: boolean;
+  /** Content lines: blank lines and bare gutter stars are free, as in `CommentRules.js`. */
+  readonly lines: number;
   /** A `//` after code on the same line, annotating that code rather than the next. */
   readonly trailing: boolean;
 }
@@ -185,6 +187,7 @@ function collectComments(source: string, isCss: boolean): RawComment[] {
             endLine: lineNumber,
             text: line.slice(column + 2).trim(),
             block: false,
+            lines: 1,
             trailing: line.slice(0, column).trim() !== "",
           });
         }
@@ -212,6 +215,14 @@ function collectComments(source: string, isCss: boolean): RawComment[] {
   return mergeParagraphs(found.filter((comment) => comment.text.length > 0));
 }
 
+/** Blank lines and bare gutter stars carry nothing, so they do not spend the budget. */
+function countContentLines(text: string): number {
+  return text
+    .split("\n")
+    .map((line) => line.replace(/^\s*\*[ \t]?/, ""))
+    .filter((line) => line.trim() !== "").length;
+}
+
 /** Strip the leading `*` gutter from each line of a doc comment. */
 function makeBlock(startLine: number, endLine: number, buffer: readonly string[]): RawComment {
   const text = buffer
@@ -220,7 +231,14 @@ function makeBlock(startLine: number, endLine: number, buffer: readonly string[]
     .replace(/^\s*\n/, "")
     .replace(/\n\s*$/, "")
     .trim();
-  return { line: startLine, endLine, text, block: true, trailing: false };
+  return {
+    line: startLine,
+    endLine: endLine,
+    text,
+    block: true,
+    lines: countContentLines(text),
+    trailing: false,
+  };
 }
 
 /**
@@ -248,6 +266,7 @@ function mergeParagraphs(comments: readonly RawComment[]): RawComment[] {
         endLine: comment.endLine,
         text: `${previous.text} ${comment.text}`.trim(),
         block: false,
+        lines: previous.lines + comment.lines,
         trailing: false,
       };
       continue;
@@ -332,6 +351,27 @@ function walk(directory: string, into: string[]): void {
   }
 }
 
+/**
+ * The stylesheet line budget. TypeScript has none here on purpose: `npm run lint` owns that rule
+ * through `comments/max-lines`, and two gates judging the same comment is how the two drift apart.
+ * CSS is not linted by ESLint, so this script is its only enforcement.
+ *
+ * Five, rather than the three TypeScript gets, and the reason is who is reading. A comment in a
+ * stylesheet is usually the specification — a token scale, a variant pair — and there is no name, type
+ * or signature for it to explain itself through. Three lines cannot hold a decision and its
+ * consequence, so the essays get deleted and the reasoning goes to `DECISIONS.md`.
+ *
+ * It is not eight either. Measured across the 39 stylesheets: 208 comments averaging seven content
+ * lines. A longer comment costs an agent more than it returns, because the facts are buried and the
+ * narrative around them goes stale without anyone noticing. Five keeps every "this value looks
+ * wrong but is not" note — the ones that stop a reader tidying it away — and pushes the rest out.
+ */
+const CSS_LINE_BUDGET = 5;
+
+function overCssBudget(comment: RawComment): boolean {
+  return comment.lines > CSS_LINE_BUDGET;
+}
+
 function main(): void {
   const args = process.argv.slice(2);
   const target = args.find((argument) => !argument.startsWith("--")) ?? ROOT;
@@ -349,12 +389,13 @@ function main(): void {
     const source = readFileSync(file, "utf8");
     for (const comment of collectComments(source, isCss)) {
       const { verdict, reasons } = classify(comment, followingCode(source, comment));
-      if (verdict === "kept") continue;
+      const overBy = isCss && overCssBudget(comment);
+      if (verdict === "kept" && !overBy) continue;
       findings.push({
         file: relative(process.cwd(), file).split(sep).join("/"),
         line: comment.line,
-        verdict,
-        reasons,
+        verdict: verdict === "kept" ? "stale" : verdict,
+        reasons: verdict === "kept" ? ["over-budget"] : reasons,
         text: comment.text.replace(/\s+/g, " ").trim().slice(0, 90),
       });
     }

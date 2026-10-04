@@ -9,7 +9,8 @@ import { GameConfig } from '@/Game';
  */
 const roomAlphabet = '0123456789';
 
-/** Uppercase a typed code and drop everything that is not a room letter. */export function normalizeRoomCode(value: string): string {
+/** Uppercase a typed code and drop everything that is not a room letter. */
+export function normalizeRoomCode(value: string): string {
   const upper = value.toUpperCase();
   let result = '';
   for (const character of upper) {

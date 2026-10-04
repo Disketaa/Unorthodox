@@ -10,24 +10,19 @@ export interface CharacterProps {
   character: CharacterId;
   color: CharacterColor;
   size?: CharacterSize;
-  /**
-   * Whether the character idles. On by default, since a still character is the
-   * odd one out; off for rows that are changing anyway.
-   */
+  /** Whether the character idles. On by default, since a still character is the odd one out; off for rows that are changing anyway. */
   moving?: boolean;
   /**
    * Plays the reaction squash. Change the value to react again, so clicking the
    * same character twice plays the pop twice.
    *
    * Deliberately not a boolean. A boolean would also change when a character is
-   * *un*chosen, and the character that lost the choice would pop as though it had
-   * been picked. Holding a per-character count that only ever goes up means the
-   * character you chose reacts, and only it.
+   * *un*chosen, and the character that lost the choice would pop as though it
+   * had been picked. Holding a per-character count that only ever goes up means
+   * the character you chose reacts, and only it.
    */
   pulse?: number;
-  /**
-   * Its place in a row, so a row of reactions ripples rather than firing at once.
-   */
+  /** Its place in a row, so a row of reactions ripples rather than firing at once. */
   index?: number;
 }
 

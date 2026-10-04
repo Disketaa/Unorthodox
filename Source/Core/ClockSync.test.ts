@@ -22,7 +22,7 @@ describe('Clock sync', () => {
 });
 
 describe('Countdown after a late catch-up', () => {
-  /** The countdown formula, mirroring useCountdown without a DOM. */
+  // The countdown formula, mirroring useCountdown without a DOM.
   function remaining(
     durationMs: number,
     startedAtHost: number,

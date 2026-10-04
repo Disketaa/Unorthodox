@@ -39,7 +39,7 @@
   animation: SwayBob 3s var(--Sway-Timing, steps(2, jump-none)) infinite;
   /*
    * A negative delay starts it partway into its cycle, which is what desynchronises
- * them. Without it everything in a row would move in lockstep, which looks mechanical.
+   * them. Without it everything in a row would move in lockstep, which looks mechanical.
    */
   animation-delay: calc(var(--Sway-Duration, 3s) * var(--Sway-Offset, 0) * -1);
 }

@@ -16,10 +16,10 @@ export interface JoinScreenProps {
 /**
  * Enter tries to join, from either field.
  *
- * The room code is what a player has just typed or read off someone else's screen,
- * and on a phone the keyboard's return key is the only key under the thumb: making
- * it join is what stops the code being retyped. A focused button is left to its own
- * click, or the press would be counted twice.
+ * The room code is what a player has just typed or read off someone else's
+ * screen, and on a phone the keyboard's return key is the only key under the
+ * thumb: making it join is what stops the code being retyped. A focused button
+ * is left to its own click, or the press would be counted twice.
  */
 function joinsOnEnter(event: KeyboardEvent, submitJoin: () => void): void {
   if (event.key !== 'Enter') {

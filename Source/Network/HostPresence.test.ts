@@ -18,8 +18,9 @@ type Fixture = {
 };
 
 /**
- * The host and three clients in the lobby, with the transports handed back so a test
- * can take one of them off the network and watch what the room makes of it.
+ * The host and three clients in the lobby, with the transports handed back so a
+ * test can take one of them off the network and watch what the room makes of
+ * it.
  */
 function joinLobby(): Fixture {
   const hostSession = new HostSession(new InMemoryTransport());
@@ -144,7 +145,7 @@ describe('a player who comes back', () => {
     InMemoryTransport.resetPeers();
   });
 
-  /** Drop the first client, then bring them back under the same name. */
+  // Drop the first client, then bring them back under the same name.
   function dropAndRejoinFirstClient(fixture: Fixture): void {
     fixture.clientTransports[0].simulateLeave();
     const rejoined = new ClientSession(new InMemoryTransport());

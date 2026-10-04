@@ -16,8 +16,9 @@ export interface LobbyScreenProps extends LobbyRoomProps {
   pace: Pace;
   onPickLook: (character: CharacterId, color: CharacterColor) => void;
   /**
-   * Asking for a pace. The host's click changes the room; a client's is a local look at
-   * what that pace would mean, and the host's choice is what comes back.
+   * Asking for a pace. The host's click changes the room; a client's is a local
+   * look at what that pace would mean, and the host's choice is what comes
+   * back.
    */
   onPickPace: (pace: Pace) => void;
 }
@@ -26,11 +27,11 @@ export interface LobbyScreenProps extends LobbyRoomProps {
  * The picker for this player's own character.
  *
  * In a card, so the whole editing area reads as one thing against the roster
- * above and the start button below. Titled with the player's own name, which is what
- * the rest of the room calls them: a card headed by their name reads as their sheet
- * of paper rather than as a settings panel. Hidden until the host has said which
- * character it kept for us, so the picker never shows a character that the rest of
- * the room is not seeing.
+ * above and the start button below. Titled with the player's own name, which is
+ * what the rest of the room calls them: a card headed by their name reads as
+ * their sheet of paper rather than as a settings panel. Hidden until the host
+ * has said which character it kept for us, so the picker never shows a
+ * character that the rest of the room is not seeing.
  */
 function LookPicker({
   ownName,

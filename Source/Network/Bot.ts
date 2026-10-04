@@ -8,19 +8,17 @@ const log = createLogger('Bot');
 /**
  * A player the host invents, for trying a room out with nobody else in it.
  *
- * Debug only, behind the "*" that turns the console on: a bot that got into a real
- * room would be a player nobody asked for and nobody could explain. It joins like
- * anyone else and can be voted for and kicked, but it never answers and nothing
- * waits on it, so a round plays out to the clock with the seat merely sitting there.
+ * Debug only, behind the `*` that turns the console on: a bot that got into a
+ * real room would be a player nobody asked for. It joins like anyone else but
+ * never answers and nothing waits on it.
  */
 
 /**
  * The names a bot goes by, rolled at random like everything else about it.
  *
- * Written to stress the bar rather than to sound like a room: a name that has to be cut
- * with an ellipsis, one in another script, one the glyph field can have, one in caps and
- * one letter are all here because the bar's slot has to survive a real name rather than
- * only the tidy ones, and a bot is the only player nobody has to type.
+ * Written to stress the bar rather than to sound like a room: truncated,
+ * non-Latin, one letter, emoji, caps. The bar's slot has to survive a real
+ * name, and a bot is the only player nobody types.
  */
 const names = [
   'Аня',
@@ -75,9 +73,9 @@ interface Bot {
 /**
  * A name nothing else in the room is using.
  *
- * The room treats a name as the identity of a seat, so a bot joining under a taken
- * name would land on somebody's chair. Once the names run out the suffix takes over,
- * since a bot called `Аня 3` is still a stranger.
+ * The room treats a name as the identity of a seat, so a bot joining under a
+ * taken name would land on somebody's chair. Once the names run out the suffix
+ * takes over.
  */
 function freeName(random: Random, taken: readonly string[]): string {
   for (let attempt = 0; attempt < names.length; attempt += 1) {
@@ -90,20 +88,20 @@ function freeName(random: Random, taken: readonly string[]): string {
 /**
  * The number out of a bot's seat, or zero for anything that is not a bot.
  *
- * Counted from the room rather than remembered, because the room is what survives a
- * refresh of the host and a counter would not.
+ * Counted from the room rather than remembered, because the room is what
+ * survives a refresh of the host and a counter would not.
  */
 export function botNumber(playerId: PlayerId): number {
   return playerId.startsWith(BotIdPrefix) ? Number(playerId.slice(BotIdPrefix.length)) || 0 : 0;
 }
 
 /**
- * How many bots are already in the room, so the next one is not handed a taken seat.
+ * How many bots are already in the room, so the next one is not handed a taken
+ * seat.
  *
- * Counted from the roster rather than from the lobby alone, because that is where a
- * resumed room keeps them: a host that refreshes four rounds in has no counter left to
- * count with, and a bot handed a seat that is taken would be two players wearing one
- * name.
+ * Counted from the roster rather than the lobby, because that is where a
+ * resumed room keeps them: a bot handed a taken seat would be two players
+ * wearing one name.
  */
 export function botsIn(state: HostState): number {
   return [...state.players.keys()].reduce((highest, id) => Math.max(highest, botNumber(id)), 0);
@@ -121,8 +119,8 @@ function createBot(id: number, random: Random, taken: readonly string[]): Bot {
 /**
  * The join that puts one bot in the lobby, or nothing at all.
  *
- * Nothing rather than a join for a full room, since a bot past the last seat is a
- * roster longer than the room allows and a Start button nobody can trust.
+ * Nothing rather than a join for a full room, since a bot past the last seat is
+ * a roster longer than the room allows and a Start button nobody can trust.
  */
 export function botJoin(
   state: HostState,

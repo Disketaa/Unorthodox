@@ -8,10 +8,10 @@ import type { SessionPhase } from './UseSessionPhase';
 /**
  * How far apart the count-in's notes are, in semitones.
  *
- * Two steps from the first number to the last, which puts the last note a quarter
- * above the first: three notes a listener can put in order, and the last one saying
- * "now". A fifth would have been the start of a different tune rather than the end of
- * this one.
+ * Two steps from the first number to the last, which puts the last note a
+ * quarter above the first: three notes a listener can put in order, and the
+ * last one saying "now". A fifth would have been the start of a different tune
+ * rather than the end of this one.
  */
 const PitchStepSemitones = 2;
 
@@ -37,23 +37,25 @@ function countInMs(): number {
 /**
  * Where this device is in the count-in, once the room has started writing.
  *
- * Counted on this device's own clock from the moment it heard about the phase, not on
- * the host's from the moment the host pressed Start. A count read off the host's clock
- * is a count shared between devices by the length of the message that announced it: a
- * phone that was a second late to the news joined the count a second in, and watched
- * it begin at two. Nothing about a count-in needs two phones looking at the same
- * number for the same instant — what needs that is the clock that ends the round, and
- * that one still belongs to the host.
+ * Counted on this device's own clock from the moment it heard about the phase,
+ * not on the host's from the moment the host pressed Start. A count read off
+ * the host's clock is a count shared between devices by the length of the
+ * message that announced it: a phone that was a second late to the news joined
+ * the count a second in, and watched it begin at two. Nothing about a count-in
+ * needs two phones looking at the same number for the same instant — what needs
+ * that is the clock that ends the round, and that one still belongs to the
+ * host.
  *
- * Counted only by a device that has not seen this room do it already, which is what
- * tells a player arriving late apart from a player who refreshed mid-round: both land
- * in the middle of a writing phase, and only one of them was there for the start. It
- * also keeps the count out of every later round, where the players are already writing
- * and a count-in would take the first seconds of every answer from them.
+ * Counted only by a device that has not seen this room do it already, which is
+ * what tells a player arriving late apart from a player who refreshed
+ * mid-round: both land in the middle of a writing phase, and only one of them
+ * was there for the start. It also keeps the count out of every later round,
+ * where the players are already writing and a count-in would take the first
+ * seconds of every answer from them.
  *
- * The note goes on the number changing rather than on a timer of its own, so a tab
- * that was throttled while it was hidden plays one note rather than a burst of the
- * three it missed, and it climbs with the count rather than wobbling.
+ * The note goes on the number changing rather than on a timer of its own, so a
+ * tab that was throttled while it was hidden plays one note rather than a burst
+ * of the three it missed, and it climbs with the count rather than wobbling.
  */
 export function useStartCountdown(phase: SessionPhase, roomCode: string): StartCount {
   const countedRef = useRef(hasCountedIn(roomCode));

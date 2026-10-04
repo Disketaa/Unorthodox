@@ -1,6 +1,6 @@
 /**
-   * The display face, used for titles. It is bundled from source rather than a
-   * font CDN, so the game does not depend on a third party being reachable.
+ * The display face, used for titles. It is bundled from source rather than a font CDN,
+ * so the game does not depend on a third party being reachable.
  */
 @font-face {
   font-family: 'BlobSpongey';
@@ -11,11 +11,11 @@
 }
 
 /**
-   * Base styles.
+ * Base styles.
  *
-   * The body font is set here rather than per component, so anything that does
-   * not name a font of its own still renders in the game's typeface instead of
-   * the browser's default serif.
+ * The body font is set here rather than per component, so anything that does
+ * not name a font of its own still renders in the game's typeface instead of
+ * the browser's default serif.
  */
 *,
 *::before,
@@ -31,61 +31,26 @@ body {
 }
 
 /**
-   * The page's own scrollbar, painted in the accent.
+ * The page's own scrollbar, painted in the accent.
  *
-   * On `html` rather than `body`, because that is the element that scrolls: the
-   * document scrollbar belongs to the viewport, and styling `body` would only
-   * reach it where a browser decided to propagate the values up.
+ * `scrollbar-width: auto` is load-bearing, not an omission. In Chrome any other value makes the
+ * browser ignore `::-webkit-scrollbar` here altogether, which silently threw away the width, the
+ * borderless thumb and the rounded ends.
  *
-   * Two sets of rules, because there are two of everything, and they are kept out
-   * of each other's way. The `::-webkit-scrollbar` pseudo-elements are the only way
-   * to get a borderless bar with a shaped thumb and a hover state, and they are
-   * ignored where they are not understood. The standard `scrollbar-color` is what a
-   * browser without them reads, and it is written inside a support query that
-   * excludes the browsers with them, because a browser given both does not merge
-   * them: it draws the standard-coloured bar with its own widget and drops the
-   * pseudo-elements, hover included.
- *
-   * Only the resting colour reaches Firefox, because `scrollbar-color` is a pair
-   * with no hover state at all: a browser that reads only the standard properties
-   * gets the quiet bar and no accent. The hover is the pseudo-elements', and it is
-   * worth having the rounded borderless thumb for even where the accent never
-   * arrives.
- *
-   * `scrollbar-width` is left at `auto` on purpose, and that is load-bearing
-   * rather than an omission. In Chrome a value of anything but `auto` on that
-   * property makes the browser ignore the `::-webkit-scrollbar` rules for the same
-   * element altogether, so asking for `thin` there is what silently threw away the
-   * width, the borderless thumb and the rounded ends, and left a stock bar painted
-   * in the accent. Setting it to `auto` hands the pseudo-elements back to the
-   * engines that read them. Firefox is the one browser that reads only the
-   * standard pair, and it gets a default-width bar in the accent, which is the
-   * right answer there and the reason this is worth the trade.
- *
-   * No border anywhere, and that is the point: the default thumb carries its own
-   * border in some engines and a track border in others, and a border in the
-   * accent reads as a hairline of a different colour rather than as an edge of
-   * this one. The thumb is a rounded bar of flat colour instead, which is a shape
-   * rather than a frame.
+ * On `html` because that is the element that scrolls, and no border anywhere.
  */
 html {
   scrollbar-width: auto;
 }
 
 /*
-   * The standard pair, for the browsers that have no pseudo-elements.
+ * The standard pair, for the browsers that have no pseudo-elements.
  *
-   * Behind a `selector()` support query, which is where this has to live. Naming
-   * `scrollbar-color` on the element outright is what killed the hover: a browser
-   * that reads it draws the bar with its own widget and stops honouring
-   * `::-webkit-scrollbar` altogether, hover rules and all, so the accent arrived on
-   * the pseudo-element and the standard colour replaced the whole thing. A browser
-   * that understands `::-webkit-scrollbar` is precisely the one that must not be
-   * given the property, and `selector()` is what can say that.
+ * Behind a `selector()` support query, which is where this has to live. Naming
+ * `scrollbar-color` on the element outright is what killed the hover: a browser that reads it
+ * draws its own widget and stops honouring `::-webkit-scrollbar` altogether.
  *
-   * `scrollbar-width` stays on the element above and is not queried: `auto` is the
-   * value that hands the pseudo-elements back, and a browser reading it changes
-   * nothing about which colour it paints.
+ * Firefox gets no hover, because `scrollbar-color` is a pair with no hover state.
  */
 @supports not selector(::-webkit-scrollbar) {
   html {
@@ -105,8 +70,8 @@ html::-webkit-scrollbar-track {
 }
 
 /*
-   * The corners where the two bars meet, which are the track's own background and
-   * would otherwise square off the ends of the thumb where it reaches them.
+ * The corners where the two bars meet, which are the track's own background and
+ * would otherwise square off the ends of the thumb where it reaches them.
  */
 html::-webkit-scrollbar-corner {
   background: var(--Scrollbar-Track);
@@ -127,14 +92,11 @@ html::-webkit-scrollbar-thumb:active {
 }
 
 /*
-   * No bars at all where the pointer cannot reach one.
+ * No bars at all where the pointer cannot reach one.
  *
-   * A touch device has nothing to drag a scrollbar with, so a bar there is a
-   * permanent strip of accent down the side of the page that scrolls by itself and
-   * cannot be moved. The page still scrolls; only the indicator goes. This is a
-   * pointer query rather than a width one, because it is the absence of a pointer
-   * that matters and not the size of the screen: a narrow desktop window is still
-   * a window someone can drag a scrollbar in.
+ * A touch device has nothing to drag a scrollbar with, so a bar there is a permanent strip of
+ * accent that scrolls by itself and cannot be moved. A pointer query, not a width one: a narrow
+ * desktop window is still a window someone can drag a scrollbar in.
  */
 @media (hover: none) {
   html {
@@ -152,14 +114,11 @@ html::-webkit-scrollbar-thumb:active {
 /*
  * One fade for every page, on the body rather than on a screen.
  *
- * The body is the only element every page shares, and the only one an opacity
- * reaches the fixed overlay layers through, so a fade declared on a screen or on
- * `#root` would arrive without the marks and the paper and read as content drawn
- * onto an already-lit page.
+ * The body is the only element every page shares, and the only one an opacity reaches the
+ * fixed overlay layers through, so a fade declared on a screen arrives without the marks and
+ * the paper.
  *
- * `both` fill, so the page holds its finished state rather than snapping back to
- * nothing when the animation is dropped, and decelerate easing, so the page
- * arrives quickly and settles rather than drifting up over the whole duration.
+ * `both` fill, so the page holds its finished state when the animation is dropped.
  */
 @keyframes PageFade {
   from {
@@ -177,22 +136,13 @@ body.PageFade {
 }
 
 /**
-   * The page the screen is laid out on.
-   *
-   * Only the padding and the fill are here. The column's width, its centring in the
-   * viewport and whether the screen sits in the middle of it or at its top all belong
-   * to the `Screen` primitive, because they are decided per screen: the entry screen
-   * is one short block worth centring, and the lobby is a page of controls that
-   * belongs at the top. Setting any of them here would decide it for every screen at
-   * once.
-   *
-   * `min-height` rather than `height`, so a screen taller than the viewport starts at
-   * the top and scrolls instead of being squeezed into the fold.
-   *
-   * The column, so `Screen` can take the height this has left over. It cannot ask for
-   * `100dvh` itself: this element is that tall including its padding, so a child of
-   * the same height would overflow it by the padding and every screen would scroll
-   * whether it fitted or not.
+ * The page the screen is laid out on.
+ *
+ * Only the padding and the fill are here. The column's width and its centring belong to the
+ * `Screen` primitive, because they are decided per screen: the entry screen is worth centring,
+ * and the lobby is a page of controls belonging at the top.
+ *
+ * `min-height` rather than `height`, so a screen taller than the viewport scrolls.
  */
 #root {
   display: flex;
@@ -300,11 +250,9 @@ body.PageFade {
   /*
    * How long one turn of a looping mark takes.
    *
-   * Its own duration rather than one of the three above, because those are sized
-   * to a movement that ends: a loop read at `Fast` is a blur and read at `Slow`
-   * is a second of dead air between each pass. A little under a second puts two
-   * or three turns on the screen at once, which is what makes a spinner read as
-   * continuous rather than as a thing that keeps restarting.
+   * Its own duration rather than one of the three above, because those are sized to a movement
+   * that ends: a loop read at `Fast` is a blur and at `Slow` is dead air between passes. Two or
+   * three turns on screen at once is what makes a spinner read as continuous.
    */
   --Duration-Spin: 900ms;
   /*
@@ -330,27 +278,22 @@ body.PageFade {
   /*
    * How long the shade over the room takes to come up before the count starts.
    *
-   * The time the numbers are given to is not time they spend getting there, so this is
-   * a second length rather than part of the count: `GameConfig.timing.startVeilMs`
-   * holds the same number for the code that decides when the first number belongs on
-   * screen, and `Scripts/CountVeil.test.ts` fails rather than letting the two drift.
+   * Not part of the count: `GameConfig.timing.startVeilMs` holds the same number for the code
+   * that decides when the first number belongs on screen, and `Scripts/CountVeil.test.ts` fails
+   * rather than letting the two drift.
    *
-   * Under half a second, because the shade has one job and this is not a wait the room
-   * is meant to sit through: long enough to arrive rather than snap on, short enough
-   * that pressing Start feels like it did something.
+   * Under half a second, because this is not a wait the room is meant to sit through.
    */
   --Duration-CountVeil: 300ms;
 
   /*
-   * How long the pop takes, how far it squashes, and how far apart two
-   * appearances in a row wait.
+   * How long the pop takes, how far it squashes, and how far apart two appearances in a row wait.
    *
-   * One duration and one squash for every reaction, whether a character is
-   * arriving or reacting to being chosen, so the two are unmistakably the same
-   * movement. Over-tall rather than over-wide, the way something squashed springs
-   * back vertically. The stagger is small enough that the last character in a row
-   * has not finished before the first is well underway, and large enough that
-   * the row reads as a wave rather than a flash.
+   * One duration and one squash for every reaction, whether a character is arriving or reacting
+   * to being chosen, so the two are unmistakably the same movement.
+   *
+   * Over-tall rather than over-wide, the way something squashed springs back vertically. The
+   * stagger is small enough that the last character has not finished before the first is underway.
    */
   --Duration-Pop: 380ms;
   --Pop-Squash: 110%;
@@ -377,23 +320,11 @@ body.PageFade {
   /*
    * The scrollbar, answering the pointer the way an icon button does.
    *
-   * Barely there at rest and accent on hover, which is the icon button's arrangement
-   * exactly, and for the same reason: the scrollbar is the one piece of the
-   * interface the browser paints rather than the game, and left alone it is the
-   * only grey on the page belonging to neither the palette nor the paper. Idle in
-   * the quiet tone it belongs to the page, and arriving in the accent on hover
-   * it says the same thing every other control says, that this is the thing the
-   * pointer is on. Accent at rest would spend the room's gold on something that
-   * is not being acted on.
+   * Barely there at rest and accent on hover, which is the icon button's arrangement exactly. Left
+   * alone the scrollbar is the only grey belonging to neither the palette nor the paper.
    *
-   * The resting thumb is the lightest grey in the palette, two steps down from the text colour
-   * it used to be, and the reason is the page as well as the bar: the scrollbar is an indicator
-   * rather than a control, and an indicator drawn as dark as the text beside it competes with
-   * what the page is saying. It is still a step off the surface — a thumb the same colour as
-   * what it is drawn on is not a thumb.
-   *
-   * The hovered values are the icon button's own tokens, read straight off it,
-   * rather than new ones that would drift from it the first time either moved.
+   * The resting thumb is the lightest grey in the palette: an indicator drawn as dark as the text
+   * beside it competes with the page. The hovered values are the icon button's own tokens.
    */
   --Scrollbar-Track: transparent;
   --Scrollbar-Thumb: var(--Color-Neutral-200);
@@ -401,17 +332,12 @@ body.PageFade {
   --Scrollbar-ThumbActive: var(--Color-Action-Primary-Active);
   --Scrollbar-TrackHover: transparent;
   /*
-   * How wide the scrollbar is, in pixels. A share of nothing would be a
-   * fraction of the thumb, which is a fraction of a fraction, so this is a length
-   * and the one place the scrollbar is not scaled with the page.
+   * How wide the scrollbar is, in pixels. A share of nothing would be a fraction of the thumb,
+   * which is a fraction of a fraction, so this is a length and the one place the scrollbar is not
+   * scaled with the page.
    *
-   * Three pixels, a third of what it was, and thin for the reason the thumb is pale: the bar is
-   * an indicator drawn on a surface it does not belong to, and at eight pixels it was a strip
-   * laid along the page rather than a line drawn on it. Three is still a line — a rounded
-   * thumb under one pixel is not a shape a pointer can find — and at that size the question of
-   * centring it stops mattering on the page, where it runs the whole height anyway. The bar
-   * that is short enough for centring to show is the roster's own, which draws its thumb inside
-   * its own scrollbar box for the same reason.
+   * Three pixels, a third of what it was: at eight the bar was a strip laid along the page rather
+   * than a line drawn on it, and under one pixel a rounded thumb is not a shape a pointer can find.
    */
   --Scrollbar-Width: 3px;
 
@@ -439,53 +365,35 @@ body.PageFade {
   --Glyph-Tone-Deep: var(--Color-Neutral-400);
   --Glyph-Opacity: 0.55;
   /*
-   * How far a mark drifts as it loops, as a share of its own size. Small,
-   * because a mark is now huge: a share that read as a nudge at text size is a
-   * screen's worth of travel here, and the loop would read as the field
-   * rearranging rather than as breathing.
+   * How far a mark drifts as it loops, as a share of its own size. Small, because a mark is now
+   * huge: a share that read as a nudge at text size is a screen's worth of travel here, and the
+   * loop would read as the field rearranging rather than as breathing.
    */
   --Glyph-Drift: 7%;
   /*
-   * Pulled past both edges, so neither the drift nor the scroll parallax ever
-   * shows an edge of the band. Sized against the furthest a mark travels rather
-   * than against the drift alone: the parallax carries a deep mark a couple of
-   * hundred pixels down the page, and a band only overscanned for the drift
-   * would uncover its own top edge at full travel.
+   * Pulled past both edges, so neither the drift nor the scroll parallax ever shows an edge of the
+   * band. Sized against the furthest a mark travels rather than against the drift alone: the
+   * parallax carries a deep mark a couple of hundred pixels down the page, and a band only
+   * overscanned for the drift would uncover its own top edge at full travel.
    */
   --Glyph-Overscan: 280px;
   /*
-   * How much of the screen one band's worth of marks covers, counted from the
-   * outer edge inward. Fifteen per cent, at every screen size: the field is a
-   * fixed part of the layout rather than something that adapts, so the same
-   * arrangement reads the same way on a phone and on a desktop, and the middle
-   * seventy per cent is always the game's.
+   * How much of the screen one band's worth of marks covers, counted from the outer edge inward.
    *
-   * The same at every screen size, and not a breakpoint. Both bands hang off a
-   * screen edge and a mark is placed from that edge, so the band's width is the
-   * area a mark is laid out in rather than where it sits: widening the bands
-   * would widen the boxes without moving a single mark, and the margins close in
-   * from the size of the marks rather than from the size of the bands.
+   * Fifteen per cent at every screen size, and not a breakpoint. Both bands hang off a screen edge
+   * and a mark is placed from that edge, so widening the bands would widen the boxes without moving
+   * a single mark. The middle seventy per cent is always the game's.
    */
   --Glyph-BandWidth: 15%;
   /*
-   * How wide one mark may be, as a share of the viewport: the smallest and the
-   * largest, with every mark rolled from between them.
+   * How wide one mark may be, as a share of the viewport: the smallest and the largest, with every
+   * mark rolled from between them.
    *
-   * A share of the screen, so a mark is the same width relative to the band it
-   * hangs in whatever the screen is. The range is wide at the bottom and narrow
-   * at the top on purpose: a small mark reads as a mark in the corner of the
-   * margin, and a large one reads as a shape the margin is cut out of, and the
-   * margin needs both. The largest is only just wider than the band, so a large
-   * mark spans the band without reaching the text.
+   * The range is wide at the bottom and narrow at the top on purpose: a small mark reads as a mark
+   * in the corner, and a large one as a shape the margin is cut out of.
    *
-   * Each is a share with a floor under it, through `max`, rather than a share
-   * with a breakpoint under it. A bare share collapses the field on a phone,
-   * where sixteen per cent is little more than a glyph of body text and the
-   * margins read as a nearly empty page; a floor keeps a mark from getting that
-   * small without stopping it from growing on a large one. `max` rather than a
-   * second rule per screen size, because the size has to keep changing as the
-   * window changes: a mark that jumped size at a breakpoint would jump size
-   * again on the way past it, and the field is one continuous arrangement.
+   * A floor under each through `max`, not a breakpoint: a bare share collapses the field on a phone.
+   */
    */
   --Glyph-MarkWidthMin: max(16vw, 120px);
   --Glyph-MarkWidthMax: max(32vw, 240px);
@@ -505,39 +413,27 @@ body.PageFade {
    * where the muted grey reads as the control being switched off.
    */
   --Color-Text-Quiet: var(--Color-Neutral-500);
-/*
+  /*
    * The title and the section headings, in the tint itself.
    *
-   * The tint, not the darker step beside it. This is a deliberate departure from the
-   * rule the rest of the palette follows, so the numbers are on record rather than
-   * quietly dropped: at the raw tint the eight measure 3.54, 3.53, 3.05, 2.97, 2.61,
-   * 2.50, 2.04 and 1.85 against white, which clears the 3:1 bar for large text on
-   * three of the eight and misses it on the rest. The game title is set at 56px and
-   * the section headings at 24px, both large text, and the choice was made in favour
-   * of the headings looking like the character the player picked.
+   * A deliberate departure from the rule the rest of the palette follows, so the numbers are on
+   * record rather than quietly dropped: at the raw tint the eight measure 3.54, 3.53, 3.05, 2.97,
+   * 2.61, 2.50, 2.04 and 1.85 against white, clearing the 3:1 bar for large text on three of them.
    *
-   * `--Accent-Ink` is still the step for body-sized text, borders and focus rings,
-   * where 3:1 is not the bar and this would not be legible.
+   * The title is 56px and the headings 24px, both large text. `--Accent-Ink` is for body text.
    */
   --Color-Text-Display: var(--Accent-Tint);
   --Color-Text-Title: var(--Accent-Tint);
   --Color-Text-Inverse: #ffffff;
 
-/*
+  /*
    * The accent, which is the tint this player chose.
    *
-   * Declared here as the fallback and overwritten by `AccentProvider` on `:root`,
-   * so a page that somehow loads without the provider still has a whole accent rather
-   * than an uncoloured interface. Yellow is the fallback because it was the accent
-   * before tints could choose it, so it is the one value that cannot look like a
-   * mistake.
+   * Declared here as the fallback and overwritten by `AccentProvider` on `:root`, so a page that
+   * loads without the provider still has a whole accent. Yellow is the fallback because it was the
+   * accent before tints could choose it, so it is the one value that cannot look like a mistake.
    *
-   * Three steps, and no more. The values come from `Core/Accents.ts` rather than from
-   * here because they are measured: `Accents.test.ts` holds the pairings to WCAG AA.
-   *
-   * There is no fill or press step here, which took a while to notice. The two filled
-   * buttons are fixed colours rather than accent steps, so nothing in the app fills with
-   * the accent, and five of the eight that were being written were read by nothing.
+   * Three steps. The values come from `Core/Accents.ts` because they are measured.
    */
   --Accent-Tint: #eeb62e;
   --Accent-Ink: #8f6d1c;
@@ -546,29 +442,20 @@ body.PageFade {
   /*
    * The one name components use for the accent.
    *
-   * `ink` is anything drawn on a light surface: a heading, a score. Components should
-   * not be reaching for `--Accent-Ink` directly, because the choice between the steps
-   * is the decision and this is where it is recorded. Reaching past it is how the next
-   * control ends up drawing body text in a step meant for a line.
-   *
-   * There was a second name here for the tint step, for marks filled with the accent.
-   * Nothing filled with it once the icon button's hover moved to the room's yellow and
-   * the picker's selection border with it, so it went rather than sitting there
-   * waiting for the next component to use a colour that no longer had a job.
+   * `ink` is anything drawn on a light surface: a heading, a score. Components should not reach
+   * for `--Accent-Ink` directly, because the choice between the steps is the decision and this is
+   * where it is recorded. Reaching past it is how a control ends up drawing body text in a step
+   * meant for a line.
    */
   --Color-Accent-Ink: var(--Accent-Ink);
 
   /*
    * The primary button, in yellow outright whatever the player picked.
    *
-   * Fixed because it is the button that starts something, and the thing that starts
-   * something should look the same to every player in the room rather than wearing
-   * one person's taste. It also sits directly above the create-room button on the
-   * join screen, and two buttons that changed colour with the picker would make
-   * that stack the only place on the screen where the accent cannot be read.
-   *
-   * The gold ramp the accent started as, so the hover and press steps are the ones
-   * that were there before, and ink clears 8.7:1 on it.
+   * Fixed because it is the button that starts something, and that should look the same to every
+   * player in the room rather than wearing one person's taste. It also sits directly above the
+   * create-room button on the join screen, where two picker-coloured buttons would make the one
+   * place on screen where the accent cannot be read.
    */
   --Color-Action-Primary-Background: #eeb62e;
 --Color-Action-Primary-Text: var(--Color-Text-Default);
@@ -578,15 +465,11 @@ body.PageFade {
   /*
    * The second action, in the info blue rather than a step of the accent.
    *
-   * Creating a room and joining one are different acts, and in the one place both
-   * appear they sit directly above each other. The accent already belongs to the
-   * player, so spending it twice there would give two identical buttons where the
-   * screen is asking for a choice.
+   * Creating a room and joining one are different acts, and in the one place both appear they sit
+   * directly above each other. The accent already belongs to the player, so spending it twice there
+   * would give two identical buttons where the screen is asking for a choice.
    *
-   * Cyan was in the palette and unused by anything, which is why it fits here: it is
-   * the one colour in the set that is not a tint, so it cannot be confused with the
-   * accent a player chose or with another player in the roster. Its text is ink,
-   * which clears 7:1 against it.
+   * Cyan is the one colour in the set that is not a tint.
    */
   --Color-Action-Secondary-Background: var(--Color-Feedback-Info);
   --Color-Action-Secondary-Text: var(--Color-Text-Default);
@@ -594,17 +477,13 @@ body.PageFade {
   --Color-Action-Secondary-Active: #0098ac;
 
   /*
-   * The one yellow, for the things that are about the room rather than about whoever
-   * is looking at it.
+   * The one yellow, for the things that are about the room rather than about whoever is looking at
+   * it.
    *
-   * Four marks share it and all four mean the same kind of thing: the button that
-   * starts the game, the host's crown, the border on the local player's own chip, and
-   * an icon button answering the pointer. Each says something the whole room would
-   * agree on, so none of them follows the viewer's own tint — a crown in the accent
-   * would name whoever is looking at the screen as the host.
-   *
-   * It is the same value as the primary button rather than a second one, which is
-   * what keeps "the yellow" a single decision. `Tokens.test.ts` holds them together.
+   * Four marks share it and all four mean the same kind of thing: the button that starts the game,
+   * the host's crown, the border on the local player's own chip, and an icon button answering the
+   * pointer. Each says something the whole room would agree on, so none follows the viewer's tint:
+   * a crown in the accent would name whoever is looking as the host.
    */
   --Color-Room-Yellow: #eeb62e;
 
@@ -623,19 +502,13 @@ body.PageFade {
   /*
    * Character tints.
    *
-   * The character art is black ink on a white body, so the body is filled from
-   * this palette instead of carrying a colour of its own. That is what lets one
-   * drawing be worn in any tint. They are mid-tone rather than pastel so the
-   * black ink stays readable on top, and they all hold roughly the same weight
-   * against the paper so no player looks more prominent than another.
-   */
-  /*
-   * The tints are the raw hues and nothing else, deliberately. They used to take
-   * the accent gold from `--Color-Action-Primary-Background`, which was fine while
-   * the accent was fixed. Now that the accent follows the player's own tint, that
-   * reference would mean picking Red repainted Yellow as well, and the picker would
-   * show a palette that no longer matched the cast. Each tint is spelled out, and
-   * `Core/Accents.ts` holds the same eight values for the ramps.
+   * The character art is black ink on a white body, so the body is filled from this palette rather
+   * than carrying a colour of its own. That is what lets one drawing be worn in any tint, mid-tone
+   * rather than pastel so the ink stays readable, and all eight hold the same weight against the
+   * paper so no player looks more prominent.
+   *
+   * The raw hues and nothing else. They used to take the accent gold, which was fine while the
+   * accent was fixed; now that it follows the player's tint, picking Red would repaint Yellow.
    */
   --Color-Character-Coral: #ef6a5a;
   --Color-Character-Amber: #f2a63b;
@@ -653,25 +526,23 @@ body.PageFade {
   /*
    * The focus ring, in the same cyan as the create-room button.
    *
-   * Fixed, like that button: where the keyboard is is the same fact for everyone in
-   * the room, and a ring that changed colour with the viewer's tint made the one
-   * thing a keyboard user relies on the hardest thing to find.
+   * Fixed, like that button: where the keyboard is is the same fact for everyone in the room, and
+   * a ring that changed colour with the viewer's tint made the one thing a keyboard user relies on
+   * the hardest thing to find.
    *
-   * It is the accent's ink step no longer, and that is not only because of the colour.
-   * Selection borders went black in the same pass, so the focus ring had to move off
-   * the accent entirely rather than share a hue with the thing it sits beside.
+   * Off the accent entirely: selection borders went black in the same pass, so a shared hue would
+   * put the ring against the thing it sits beside.
    */
   --Color-Border-Focus: var(--Color-Feedback-Info);
   --Color-Border-Error: #e91e63;
 
   --Color-Feedback-Success: #8bc34a;
   /*
-   * The warning is a fixed amber rather than a step of the accent. It was the
-   * accent's active step, which was a way of saying "part of this game's colour",
-   * and that no longer works: the accent is now whatever the player picked, so a
-   * warning would change colour with the player's taste and stop being a warning
-   * at all. It is also not the accent under any tint, since that is what "go" looks
-   * like and a warning in the same colour as the button would be saying nothing.
+   * The warning is a fixed amber rather than a step of the accent. It was the accent's active step,
+   * which said "part of this game's colour", and that no longer works: the accent is now whatever
+   * the player picked, so a warning would change colour with their taste and stop being a warning.
+   *
+   * Also not the accent under any tint, since that is what "go" looks like.
    */
   --Color-Feedback-Warning: #cf9a1e;
   --Color-Feedback-Error: #e91e63;
@@ -693,35 +564,17 @@ body.PageFade {
   /*
    * How wide one theme card is, and the shape it keeps.
    *
-   * Landscape on purpose: the names are one or two words, so a card taller than it is
-   * wide is mostly empty, and the bank of six only reads as six panels held out rather
-   * than as six tall shapes.
+   * Landscape on purpose: the names are one or two words, so a card taller than it is wide is
+   * mostly empty, and the bank of six only reads as six panels held out rather than as six tall
+   * shapes.
    *
-   * Three across on a wide screen and two on a narrow one, decided by arithmetic rather than by
-   * a width query. A card count is not something a `calc()` can hold, but the count a row ends
-   * up with is only ever a consequence of how wide the card is: a card as wide as two of them
-   * fit leaves room for two, and a card as wide as three of them fit leaves room for three. So
-   * the width is the smaller of what two across would allow and what three across would allow,
-   * and the row is whatever that leaves room for.
+   * Three across on a wide screen and two on a narrow one, decided by arithmetic rather than by a
+   * width query. A card count is not something a `calc()` can hold, but the count a row ends up
+   * with is only ever a consequence of how wide the card is, so the width is the smaller of what
+   * two across and what three across would allow.
    *
-   * The smaller of the two rather than always the three: below about five hundred pixels the
-   * three-across card is around a hundred and forty wide, and a theme name cut to three letters
-   * on every one of six cards is not a choice anybody can make. Above that, three across is the
-   * better arrangement and the three-across width is the smaller of the two, so it wins.
-   *
-   * Which is why the number in the middle is a card width and not a screen width: it is the
-   * width at which three across stops being worth it, and the screen width at which the row
-   * changes follows from it, with the gaps and the page's own margins still counted where they
-   * are.
-   *
-   * The cap at the outside is the one the widest screen has always had: past about a thousand
-   * pixels the arithmetic asks for wider and wider cards, and a panel three times the size of
-   * the text on it is not a panel, it is a field.
-   *
-   * Everything drawn on a card is a share of this width — the name, the number behind it, the
-   * letter in its corner, the row of rounds, the padding, the panel that crops the number — so
-   * a narrower card is a smaller card rather than the same card with less room in it, and none
-   * of that has to be written a second time for the two arrangements.
+   * The smaller rather than always the three: below about five hundred pixels a theme name cut to
+   * three letters on every one of six cards is not a choice anybody can make.
    */
 
   /*
@@ -754,16 +607,15 @@ body.PageFade {
     )
   );
 /*
-   * How big the theme's own initial is on the card.
-   *
-   * A share of the card's width rather than a length, so it is the same fraction of a narrow
-   * card as of a wide one: the card narrows on a phone to fit two across, and a flat size
-   * would be a letter in the corner on one screen and a letter filling the card on another.
-   *
-   * A mark in the corner rather than the card's substance: roughly a sixth of the width, which is
-   * a letter you read without reading it — enough to say which theme this is, small enough that
-   * the name stays the thing on the card being read.
-   */
+ * How big the theme's own initial is on the card.
+ *
+ * A share of the card's width rather than a length, so it is the same fraction of a narrow card as
+ * of a wide one: the card narrows on a phone to fit two across, and a flat size would be a letter
+ * in the corner on one screen and a letter filling the card on another.
+ *
+ * A mark in the corner rather than the card's substance: roughly a sixth of the width, which is a
+ * letter you read without reading it.
+ */
   --FontSize-ThemeCardInitial: calc(var(--Size-ThemeCardWidth) * 0.0775);
 
   /*
@@ -779,20 +631,17 @@ body.PageFade {
   /*
    * How tall one theme card is allowed to be.
    *
-   * The card's shape is its width through `--Ratio-ThemeCard`, which on a screen with room is
-   * the whole of its height. On a device turned on its side it is not: six cards are two rows
-   * of three, and at the shape they are taller than the window, so the second row is off the
-   * bottom and half the themes on offer are not on the screen at all.
+   * The card's shape is its width through `--Ratio-ThemeCard`, which on a screen with room is the
+   * whole of its height. On a device turned on its side it is not: six cards are two rows of
+   * three, and at the shape they are taller than the window, so the second row is off the bottom.
    *
-   * The room for two rows rather than a share of the screen, because two rows are what has to
-   * fit: what is left after the page's own margins and the one gap between the rows, divided by
-   * two, is the only height at which both rows are on the screen. A flat share of a short screen
-   * is more than half of what two rows can have, which is how the second row came to run off
-   * the bottom of a phone on its side.
+   * The room for two rows rather than a share of the screen, because two rows are what has to fit:
+   * what is left after the page's margins and the one gap between the rows, divided by two, is
+   * the only height at which both rows are on screen. A flat share of a short screen is more than
+   * half of what two rows can have, which is how the second row ran off a phone on its side.
    *
-   * The card keeps its width and loses height, which is the only way to lose it: a shorter card
-   * that is still as wide is a card with more room for the name in it, and a card that narrowed
-   * instead would be a card nobody could read.
+   * The card keeps its width and loses height: a shorter card still as wide has more room for the
+   * name, and one that narrowed would be unreadable.
    */
   --Size-ThemeCardHeightMax: calc(
     (
@@ -802,16 +651,13 @@ body.PageFade {
   /*
    * How large a theme's name is drawn.
    *
-   * Its own token rather than one of the `--FontSize-H*` steps because it is the only
-   * name in the game that is the whole content of a panel: the topic under it is a
-   * heading over a paragraph, and this is a single word with a third of a card under it.
-   * At the section-heading step it read as a caption on something.
+   * Its own token rather than one of the `--FontSize-H*` steps because it is the only name in the
+   * game that is the whole content of a panel: this is a single word with a third of a card under
+   * it, and at the section-heading step it read as a caption on something.
    *
-   * A share of the card's own width rather than a size, so it shrinks with the card. A
-   * flat size would be right at one window and wrong at every other: the card narrows on
-   * a phone to fit two across, and a fixed 36px name in a card half that wide is a
-   * caption again — the exact thing the size was raised from. The share is a bit over a
-   * ninth of the width, which puts the longest theme name on one line at the widest card.
+   * A share of the card's own width rather than a size, so it shrinks with the card. A flat size
+   * would be right at one window and wrong at every other: the card narrows on a phone to fit two
+   * across, and a fixed 36px name in a card half that wide is a caption again.
    */
   --FontSize-ThemeCard: calc(var(--Size-ThemeCardWidth) * 0.115);
   /*
@@ -844,34 +690,32 @@ body.PageFade {
    * the mark behind it — and a second pair of sizes would be four numbers where one ratio
    * says the same thing.
    *
-* Modest, because the card is already large and its name already fills a good part of it.
-    * Much more than this and the longest name wraps on hover, so a card that was one line
-    * becomes two the moment it is looked at.
-    *
-    * The mark's own share is four times this, because 1.12 of a figure that is already
-    * larger than the card and clipped by it moves almost nothing inside the crop — which is
-    * why the delay between the name and the mark was unnoticeable: there was barely a
-    * movement for the gap to separate from. Scaled on its own rather than sharing this, since
-    * a clipped figure and a line of text cannot both answer to the same amount.
-    */
+   * Modest, because the card is already large and its name already fills a good part of it.
+   * Much more and the longest name wraps on hover, so a card that was one line becomes two the
+   * moment it is looked at.
+   *
+   * The mark's own share is four times this, because 1.12 of a figure already larger than the
+   * card moves almost nothing inside the crop — which is why the delay between the name and the
+   * mark was unnoticeable. A clipped figure and a line of text cannot answer to the same amount.
+   */
   --Scale-ThemeCardHover: 1.12;
   --Scale-ThemeCardMarkHover: 1.5;
   /*
-* How far the mark is held back at rest, and under the pointer.
+   * How far the mark is held back at rest, and under the pointer.
    *
-    * Both values are well short of one and they are not ordered against each other: the mark
-    * is a figure on a card, not a highlight, and which way it moves on hover is a matter of
-    * what the card is doing rather than a rule — it greys under the pointer here, and the
-    * scale and the delay do the rest of the work of the card opening up.
-    *
-    * What has to hold at both ends: the mark never competes with the name, which is drawn in
-    * the theme's tint at full strength, and the mark always changes something when the pointer
-    * arrives. A mark that answered nothing would be a figure on a card that did not notice it
-    * was being looked at.
-    *
-    * The mark is grey rather than the theme's own hue at rest, which is what puts it behind
-    * the theme rather than in it: a weaker tint is still the tint, and would compete with the
-    * ticks and the name for being the same colour as both. It takes the tint under the pointer.
+   * Both values are well short of one and they are not ordered against each other: the mark
+   * is a figure on a card, not a highlight, and which way it moves on hover is a matter of
+   * what the card is doing rather than a rule — it greys under the pointer here, and the
+   * scale and the delay do the rest of the work of the card opening up.
+   *
+   * What has to hold at both ends: the mark never competes with the name, which is drawn in
+   * the theme's tint at full strength, and the mark always changes something when the pointer
+   * arrives. A mark that answered nothing would be a figure on a card that did not notice it
+   * was being looked at.
+   *
+   * The mark is grey rather than the theme's own hue at rest, which is what puts it behind
+   * the theme rather than in it: a weaker tint is still the tint, and would compete with the
+   * ticks and the name for being the same colour as both. It takes the tint under the pointer.
     */
   --Opacity-ThemeCardMark: 0.075;
   --Opacity-ThemeCardMarkHover: 0.1;
@@ -1088,13 +932,13 @@ body.PageFade {
   --Layout-ScreenPaddingHorizontal: var(--Space-Lg);
 
 /*
-   * How wide the card of this browser's own seat is: a plank along the top of the game, and never
-   * wider than the frame it stands in.
-   *
-   * A wide cap for a short card, because the two lines of words run along it and the face stands
-   * at the end: the card's width is what the name is written across, so it is a line length
-   * rather than a square's side. The `100%` floor is the frame — a card solved against the
-   * viewport is a card that can be wider than the page it is drawn in.
+ * How wide the card of this browser's own seat is: a plank along the top of the game, and never
+ * wider than the frame it stands in.
+ *
+ * A wide cap for a short card, because the two lines of words run along it and the face stands
+ * at the end: the card's width is what the name is written across, so it is a line length
+ * rather than a square's side. The `100%` floor is the frame — a card solved against the
+ * viewport is a card that can be wider than the page it is drawn in.
    */
   --Size-PlayerCardWidth: min(180px, 100%);
 
@@ -1155,37 +999,37 @@ body.PageFade {
 }
 
 /*
-   * The drawn cursors, on a device that has a pointer.
+ * The drawn cursors, on a device that has a pointer.
  *
-   * `hover: hover` alone is not enough, because a touchscreen laptop reports that it
-   * hovers while still being driven by touch, and the player who taps it should not
-   * get the drawn arrow. Both have to hold: the device must hover and its primary
-   * input must be a fine pointer, which is the mouse or the trackpad rather than a
-   * finger.
+ * `hover: hover` alone is not enough, because a touchscreen laptop reports that it
+ * hovers while still being driven by touch, and the player who taps it should not
+ * get the drawn arrow. Both have to hold: the device must hover and its primary
+ * input must be a fine pointer, which is the mouse or the trackpad rather than a
+ * finger.
  *
-   * The hotspot is the only part of this that has to be accurate. A cursor image is
-   * drawn at whatever size it declares and is never measured, but the hotspot is
-   * where the player aims, so being off by more than a pixel or two reads as the
-   * game aiming for the wrong answer. Each is the aim point of its own glyph: the
-   * arrow's tip, the fingertip, for the barred one, which points nowhere, the
-   * top-left of the ring so the whole badge sits below and right of the pointer, and
-   * for the I-beam, the middle of the stem, which is where a click lands rather than
-   * an edge of the glyph.
+ * The hotspot is the only part of this that has to be accurate. A cursor image is
+ * drawn at whatever size it declares and is never measured, but the hotspot is
+ * where the player aims, so being off by more than a pixel or two reads as the
+ * game aiming for the wrong answer. Each is the aim point of its own glyph: the
+ * arrow's tip, the fingertip, for the barred one, which points nowhere, the
+ * top-left of the ring so the whole badge sits below and right of the pointer, and
+ * for the I-beam, the middle of the stem, which is where a click lands rather than
+ * an edge of the glyph.
  *
-   * These are in the pixels of the image as the browser draws it, which is why the
-   * size lives in the SVG's own width rather than in a stylesheet: changing that
-   * width rescales the drawing, and the hotspot below has to be restated to match.
-   * The sizes are linked, and changing one without the others is the way to end up
-   * aiming at nothing.
+ * These are in the pixels of the image as the browser draws it, which is why the
+ * size lives in the SVG's own width rather than in a stylesheet: changing that
+ * width rescales the drawing, and the hotspot below has to be restated to match.
+ * The sizes are linked, and changing one without the others is the way to end up
+ * aiming at nothing.
  *
-   * Each SVG is a 512-unit viewBox drawn at 32px. Browsers cap a custom cursor at
-   * 128px and scale anything larger down, and a hotspot in a scaled cursor then
-   * depends on whether a given browser scales it by the same factor. At 32px
-   * nothing is ever scaled, so the numbers below are read straight off the image.
+ * Each SVG is a 512-unit viewBox drawn at 32px. Browsers cap a custom cursor at
+ * 128px and scale anything larger down, and a hotspot in a scaled cursor then
+ * depends on whether a given browser scales it by the same factor. At 32px
+ * nothing is ever scaled, so the numbers below are read straight off the image.
  *
-   * The trailing keyword is the fallback the browser shows if the image cannot be
-   * loaded, which is also what keeps the cursor usable if the SVG is ever missing
-   * from the build.
+ * The trailing keyword is the fallback the browser shows if the image cannot be
+ * loaded, which is also what keeps the cursor usable if the SVG is ever missing
+ * from the build.
  */
 @media (hover: hover) and (pointer: fine) {
   :root {
@@ -1195,6 +1039,3 @@ body.PageFade {
     --Cursor-Text: url('../Cursors/Text.svg') 16 16, text;
   }
 }
-
-
-

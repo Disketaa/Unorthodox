@@ -1,9 +1,6 @@
 import { Topic } from '@/Core';
 
-/**
- * Topic bank. Rounds pick topics from here without repetition.
- * Generic party prompts, safe for a mixed audience.
- */
+/** Topic bank. Rounds pick topics from here without repetition. Generic party prompts, safe for a mixed audience. */
 export const Topics: readonly Topic[] = [
   'Что может заставить любого человека улыбнуться?',
   'Назовите напиток, который вы бы выпили прямо сейчас',

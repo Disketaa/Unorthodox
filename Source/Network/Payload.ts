@@ -1,9 +1,6 @@
 import type { JsonValue } from 'trystero';
 
-/**
- * Best-effort label for a protocol message, used only in log lines. Falls back
- * to the primitive type for anything that is not a tagged protocol message.
- */
+/** Best-effort label for a protocol message, used only in log lines. Falls back to the primitive type for anything that is not a tagged protocol message. */
 export function describeMessage(message: unknown): string {
   if (typeof message === 'object' && message !== null && 'type' in message) {
     const type = Reflect.get(message, 'type');
@@ -12,10 +9,7 @@ export function describeMessage(message: unknown): string {
   return typeof message;
 }
 
-/**
- * Trystero can only carry structured-clone/JSON payloads. Protocol messages are
- * plain JSON objects, so anything else is rejected rather than sent blindly.
- */
+/** Trystero can only carry structured-clone/JSON payloads. Protocol messages are plain JSON objects, so anything else is rejected rather than sent blindly. */
 export function toPayload(message: unknown): JsonValue | undefined {
   if (typeof message === 'string' || typeof message === 'number' || typeof message === 'boolean') {
     return message;
@@ -29,8 +23,8 @@ export function toPayload(message: unknown): JsonValue | undefined {
 /**
  * Prepare a message for the wire, returning undefined when it cannot be sent.
  *
- * Trystero only carries structured-clone/JSON payloads. Rejecting anything else
- * here means a bad message is dropped once, with a reason, instead of failing
+ * Trystero only carries structured-clone or JSON payloads, so rejecting
+ * anything else here drops a bad message once with a reason, instead of failing
  * deep inside the library.
  */
 export function preparePayload(
@@ -45,7 +39,8 @@ export function preparePayload(
   return payload;
 }
 
-/** Read a `type` tag off a decoded message without casting it. */export function readTag(message: JsonValue): string | undefined {
+/** Read a `type` tag off a decoded message without casting it. */
+export function readTag(message: JsonValue): string | undefined {
   if (typeof message !== 'object' || message === null || Array.isArray(message)) {
     return undefined;
   }

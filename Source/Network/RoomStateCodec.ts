@@ -4,22 +4,17 @@ import type { PlayerId } from '@/Core';
 /**
  * The host's game state, as plain data and back again.
  *
- * Split out from the storage that holds it, because this half is pure and the other
- * half is the one that touches the browser: the shape of a round can be checked
- * without a tab, and a change to either does not drag the other along.
- *
- * Written out per phase and read back field by field rather than handed to
- * `JSON.stringify` and cast on the way in. The maps and the sets are the whole of what
- * JSON cannot hold, and a cast would be a promise about a shape nothing had checked.
- * Anything that is not a state we can resume comes back as nothing.
+ * Split from the storage that holds it, so a round's shape can be checked
+ * without a tab. Written out per phase and read back field by field, because a
+ * cast promises a shape nothing checked.
  */
 
 /**
  * Plain data as name/value pairs, so a value can be read without a cast.
  *
- * `Object.entries` is what makes this possible: it takes an object of an unknown shape
- * and hands back the keys and values as it found them, where reading a property off
- * the unknown would need a cast to say what it was.
+ * `Object.entries` is what makes this possible: it reads an object of unknown
+ * shape where reading a property off the unknown would need a cast to say what
+ * it was.
  */
 type Fields = Map<string, unknown>;
 
@@ -45,9 +40,9 @@ function rawPairs(fields: Fields, name: string): unknown[] {
 /**
  * A stored list of pairs back as a map, dropping anything that is not one.
  *
- * Guarded rather than cast into the map: what is in storage was written by an older
- * version of this file or by nothing at all, and an entry that does not look like what
- * it claims is not a seat to resume.
+ * Guarded rather than cast, because what is in storage was written by an older
+ * version of this file or by nothing at all, and an entry that does not look
+ * like what it claims is not a seat.
  */
 function toMap<V>(
   pairs: readonly unknown[],
@@ -70,10 +65,8 @@ const isPlayer = (value: unknown): value is Player => typeof value === 'object' 
 /** The state as plain data, one shape per phase. */
 export function encodeRoomState(state: HostState): Record<string, unknown> {
   const scores = [...state.cumulativeScores.entries()];
-  // Every phase writes the roster out. It is the one thing a resumed room cannot do
-  // without: the seats are how a returning player is recognised and how the bar of
-  // players knows who to draw, and a room that came back without them would be a room
-  // of faceless seats.
+  // Every phase writes the roster out: the seats are how a returning player is recognised and how
+  // the bar of players knows who to draw, so a resumed room without them is a room of faceless seats.
   const members = { players: [...state.players.entries()], scores };
   if (state.phase === 'Lobby') {
     return { ...members, phase: state.phase, pace: state.pace };
@@ -81,8 +74,8 @@ export function encodeRoomState(state: HostState): Record<string, unknown> {
   if (state.phase === 'Final') {
     return { ...members, phase: state.phase };
   }
-  // Every remaining phase is timed, and reads the same clock: how long it runs and
-  // when it started, which is what a phase resumed after a refresh counts from.
+  // Every remaining phase is timed and reads the same clock: how long it runs, and when it started,
+  // which is what a phase resumed after a refresh counts from.
   const clock = { durationMs: state.durationMs, startedAt: state.startedAt };
   if (state.phase === 'Scores') {
     return { ...members, ...clock, phase: state.phase, round: [...state.scores] };
@@ -97,8 +90,8 @@ export function encodeRoomState(state: HostState): Record<string, unknown> {
     phase: state.phase,
     topic: state.topic,
     answers,
-    // The sets go out as lists of names: the only shape that survives JSON, and the
-    // only one a rejection is ever compared in.
+    // The sets go out as lists of names: the only shape that survives JSON, and the only one a
+    // rejection is ever compared in.
     rejections: [...state.groupRejections].map(([groupId, rejected]) => [groupId, [...rejected]]),
   };
 }

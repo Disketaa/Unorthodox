@@ -2,22 +2,9 @@
  * A stable id for this browser, so the room can tell a returning player from an
  * impostor.
  *
- * The name is not enough on its own. It is the only handle the room keeps, which is
- * why a player who refreshes is meant to get their seat back — but a name alone cannot
- * say "the same person came back", only "somebody using this name is here", and the
- * room has been resolving that by waiting for the old connection to be reported gone.
- *
- * Which is a notice, and notices are lost. A tab that closes does not get to choose
- * whether the relays carried the news before the new connection arrived, and when one
- * is late or a relay is refusing writes the seat stays held: the returning player is
- * refused as an impostor and that name can never sit down again, in that room, for as
- * long as the host's page lives.
- *
- * So the client says who it is instead, and the room believes a name whose holder
- * answers with the same id. `localStorage` rather than `sessionStorage` precisely
- * because it has to survive the reload that is the whole problem; scoped per browser
- * rather than per tab because a player who refreshes, or opens the room in a second
- * tab, is the same player either way.
+ * A name alone can only say "somebody using this name is here", so the room
+ * waits for the old connection to be reported gone — and notices are lost,
+ * leaving that name locked out for good.
  */
 const ClientIdKey = 'unorthodox.clientId';
 
@@ -33,13 +20,9 @@ function randomId(): string {
 /**
  * This browser's id, minted on first use and kept from then on.
  *
- * Held in a module variable as well as in storage, and that is not a cache but a
- * requirement: the join is re-sent until the host answers, so a client that minted a
- * new id per call would sit down and then be told it was an impostor by its own retry.
- *
- * A browser that refuses to store it keeps a per-load id, which is not fatal — that
- * player is then treated as an impostor after a refresh exactly as before, so refusing
- * storage is the old behaviour rather than a new way to be locked out.
+ * Held in a module variable as well as in storage, and that is a requirement
+ * rather than a cache: the join is re-sent until answered, so a new id per call
+ * would be refused by its own retry.
  */
 export function clientId(): string {
   if (minted !== null) {
@@ -63,8 +46,8 @@ export function clientId(): string {
 /**
  * Drop the stored id, so the next call mints a different one.
  *
- * For tests standing in for a second browser or a second device: two players under one
- * name are the case this id exists to tell apart, and a test cannot give them separate
+ * For tests standing in for a second browser: two players under one name are
+ * the case this id exists to tell apart, and a test cannot give them separate
  * browsers any other way.
  */
 export function forgetClientId(): void {

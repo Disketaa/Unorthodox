@@ -1,7 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { normalizeForGrouping, groupAnswers } from './Grouping';
 
-// Helper to sort groups for consistent comparison
 function sortGroups(groups: { groupId: number; answers: string[] }[]) {
   return groups
     .map(g => ({ text: g.answers[0], count: g.answers.length }))

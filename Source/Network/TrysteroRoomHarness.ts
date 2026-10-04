@@ -5,10 +5,7 @@ import type { JsonValue, MessageAction, MessageContext } from 'trystero';
 /** A recorded send, reduced to what the handshake tests care about. */
 type Sent = { data: JsonValue; target?: string };
 
-/**
- * A stand-in for a trystero action. It records what was sent and lets a test
- * deliver an incoming message, standing in for the remote side of the wire.
- */
+/** A stand-in for a trystero action. It records what was sent and lets a test deliver an incoming message, standing in for the remote side of the wire. */
 class FakeAction {
   readonly sent: Sent[] = [];
   onMessage: ((data: JsonValue, context: MessageContext) => void) | null = null;

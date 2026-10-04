@@ -15,7 +15,7 @@ const levelOrder: Record<LogLevel, number> = {
   error: 40,
 };
 
-// This module is the single place in the codebase allowed to touch the console.
+/** The single place in the codebase allowed to touch the console. */
 function consoleWriter(
   level: LogLevel,
   scope: string,

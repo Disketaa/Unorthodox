@@ -13,11 +13,12 @@ import type {
 /**
  * One phase of the host's state, as a client is told about it.
  *
- * Every phase sends the roster, and that is the change from the lobby-only version: the
- * bar of players runs across the whole game rather than appearing in the lobby and
- * vanishing at the first topic, and a client that refreshed mid-round is handed the room
- * back instead of an empty strip. None of it is new information — a name, a face and
- * whether that player is still connected were all already on the wire in the lobby.
+ * Every phase sends the roster, and that is the change from the lobby-only
+ * version: the bar of players runs across the whole game rather than appearing
+ * in the lobby and vanishing at the first topic, and a client that refreshed
+ * mid-round is handed the room back instead of an empty strip. None of it is
+ * new information — a name, a face and whether that player is still connected
+ * were all already on the wire in the lobby.
  */
 function publicPlayers(state: HostState): PublicPlayer[] {
   const players: PublicPlayer[] = [];
@@ -96,7 +97,7 @@ export function toPublicFinalState(state: HostState): PublicFinalState {
   }
   return {
     phase: 'Final',
-    durationMs: 0, // not used
+    durationMs: 0,
     players: publicPlayers(state),
     scores: totalsOf(state.cumulativeScores),
   };

@@ -38,9 +38,9 @@ export function isDebugEnabled(): boolean {
 /**
  * Turn debug logging on or off for the rest of this session.
  *
- * The flag is kept in memory rather than in storage, so leaving the room and
- * coming back finds the room the way the link left it, and a stray ?debug link
- * shared around afterwards does not drag the logging along with it.
+ * Kept in memory rather than storage, so leaving and rejoining finds the room
+ * the way the link left it and a stray `?debug` link shared afterwards does not
+ * drag the logging along.
  */
 export function setDebugEnabled(enabled: boolean): void {
   override = enabled;
@@ -51,9 +51,8 @@ export function setDebugEnabled(enabled: boolean): void {
 /**
  * Read the relay socket table from the installed trystero nostr strategy.
  *
- * The table maps a relay URL to the live `WebSocket` for it, so an entry is the
- * socket itself and not a wrapper around one. An entry that is missing means the
- * relay has not been dialled yet, or has been dropped by trystero for good.
+ * The table maps a relay URL to the live `WebSocket` for it, so a missing entry
+ * means the relay has not been dialled yet, or has been dropped for good.
  */
 function relayStates(): Record<string, string> {
   const states: Record<string, string> = {};
@@ -90,9 +89,11 @@ function peerStates(getPeers: () => Record<string, RTCPeerConnection>): Record<s
 
 /**
  * Last state reported for each relay, so a change is logged once instead of on
- * every tick. Trystero retires a relay permanently once its reconnect backoff
- * runs out, so a relay going from open to closed never comes back in this
- * session and is worth saying out loud.
+ * every tick.
+ *
+ * Trystero retires a relay permanently once its reconnect backoff runs out, so
+ * one going from open to closed never comes back this session and is worth
+ * saying out loud.
  */
 const lastRelayState = new Map<string, string>();
 

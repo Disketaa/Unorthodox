@@ -13,17 +13,18 @@ const log = createLogger('ClientSession');
 /**
  * How often the client asks the host where the game is.
  *
- * A client that was suspended, backgrounded or offline misses the state messages sent on
- * phase changes, so it asks again on a timer. It also makes the countdown correct after
- * the client wakes up, because the state carries the host's phase start time rather than
- * the moment the client received it.
+ * A client that was suspended, backgrounded or offline misses the state
+ * messages sent on phase changes, so it asks again on a timer. It also makes
+ * the countdown correct after the client wakes up, because the state carries
+ * the host's phase start time rather than the moment the client received it.
  */
 export const SyncIntervalMs = 5_000;
 
 export class ClientSession {
   private state: Game.PublicState | undefined = undefined;
   private transport: Transport;
-  private playerId: string | null = null; // assigned by the host on Join, never chosen here
+  /** Assigned by the host on Join, never chosen here. */
+  private playerId: string | null = null;
   private updateListener: (() => void) | undefined = undefined;
   /** The join, held and re-sent until the host answers it or refuses it. */
   private readonly joinRetry: JoinRetry;
@@ -164,9 +165,9 @@ join(playerName: string, look: PlayerLook): void {
    * Whether this client is seated yet, logging why not if it is not.
    *
    * Every action that names a player goes through here, because all of them are
-   * meaningless before the host has assigned an id. Only a client that has reached
-   * Writing can reach this at all, so the guard catches the player's own click
-   * arriving before their join did.
+   * meaningless before the host has assigned an id. Only a client that has
+   * reached Writing can reach this at all, so the guard catches the player's
+   * own click arriving before their join did.
    */
   private seated(action: string): boolean {
     if (this.playerId !== null) {
@@ -210,8 +211,9 @@ join(playerName: string, look: PlayerLook): void {
   /**
    * How many players the room holds, as the host last reported it.
    *
-   * Zero until a refusal says otherwise, which is the only thing the UI reads it for: a
-   * full-room refusal is the one refusal whose sentence carries a number.
+   * Zero until a refusal says otherwise, which is the only thing the UI reads
+   * it for: a full-room refusal is the one refusal whose sentence carries a
+   * number.
    */
   getRoomLimit(): number {
     return this.roomLimit;

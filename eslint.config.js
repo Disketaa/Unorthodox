@@ -2,6 +2,7 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import checkFile from "eslint-plugin-check-file";
 import prettier from "eslint-config-prettier";
+import { commentPlugin } from "./Scripts/CommentRules.js";
 
 // Agent Manager worktrees hold their own tsconfig inside the repo, so the
 // default "walk up from cwd" root is ambiguous and every file fails to parse.
@@ -40,7 +41,7 @@ export default tseslint.config(
   // General rules for Source/ only
   {
     files: ["Source/**/*.{ts,tsx}"],
-    plugins: { "check-file": checkFile },
+    plugins: { "check-file": checkFile, comments: commentPlugin },
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-non-null-assertion": "error",
@@ -68,6 +69,21 @@ export default tseslint.config(
         { ignoreMiddleExtensions: true },
       ],
       "check-file/folder-naming-convention": ["error", { "Source/**/": "PASCAL_CASE" }],
+      "comments/max-lines": "error",
+      "comments/no-trailing": "error",
+      "comments/no-block-in-ts": "error",
+      "comments/form": "error",
+      "comments/shape": "error",
+    },
+  },
+
+  // Tests keep room for prose: an expectation table with a note per row is the clearest form.
+  // The one-style rule stays, because a second dialect is what the rule exists to prevent.
+  {
+    files: ["Source/**/*.test.{ts,tsx}"],
+    rules: {
+      "comments/max-lines": "off",
+      "comments/no-trailing": "off",
     },
   },
 

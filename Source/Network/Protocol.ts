@@ -1,10 +1,7 @@
 import { PlayerId, PlayerLook, isPlayerLook } from '@/Core';
 import * as Game from '@/Game';
 
-/**
- * Messages sent from clients to the host.
- * `groupId` is the numeric index assigned by the grouping algorithm.
- */
+/** Messages sent from clients to the host. `groupId` is the numeric index assigned by the grouping algorithm. */
 export type ClientMessage =
   | { type: 'Join'; name: string; look: PlayerLook; clientId: string }
   | { type: 'SetLook'; playerId: PlayerId; look: PlayerLook }
@@ -31,9 +28,10 @@ export type HostMessage =
       /**
        * How many players the room holds.
        *
-       * On the wire rather than written into a sentence, because the room's limit is a
-       * number the host holds and the client may not read, and a refusal that says "full"
-       * without saying of what is a dead end the player cannot argue with.
+       * On the wire rather than written into a sentence, because the room's
+       * limit is a number the host holds and the client may not read, and a
+       * refusal that says "full" without saying of what is a dead end the
+       * player cannot argue with.
        */
       maxPlayers: number;
     }
@@ -50,10 +48,11 @@ function asRecord(value: unknown): Record<string, unknown> | undefined {
 /**
  * Why a client is not in a room.
  *
- * Every one of them is a message the host sends and all end the same way on screen, so
- * they are one field with a reason rather than several booleans that could all be set.
- * Declared here rather than on the session because the reasons are the host's messages
- * first and the client's own bookkeeping second.
+ * Every one of them is a message the host sends and all end the same way on
+ * screen, so they are one field with a reason rather than several booleans that
+ * could all be set. Declared here rather than on the session because the
+ * reasons are the host's messages first and the client's own bookkeeping
+ * second.
  */
 export type BlockedReason = 'NameTaken' | 'AlreadyStarted' | 'RoomFull' | 'Kicked';
 

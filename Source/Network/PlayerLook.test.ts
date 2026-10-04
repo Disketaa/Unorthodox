@@ -72,14 +72,10 @@ describe('A player who closes the tab and comes back', () => {
     InMemoryTransport.resetPeers();
   });
 
-  /**
-   * A new client under Ann's name, as if her tab had been closed and reopened.
-   *
-   * The old client is dropped first, because that is what closing a tab looks like
-   * to the host: it sees the departure, which frees the name. A second client
-   * arriving while the first is still connected is a different thing, and is
-   * refused rather than seated twice.
-   */
+  // A new client under Ann's name, as if her tab had been closed and reopened. The old client
+  // is dropped first because that is what closing a tab looks like to the host: it sees the
+  // departure, which frees the name. A second client arriving while the first is still
+  // connected is a different thing, and is refused rather than seated twice.
   function annReturns(transport: InMemoryTransport, look: PlayerLook): ClientSession {
     transport.simulateLeave();
     const returning = new ClientSession(new InMemoryTransport());

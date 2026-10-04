@@ -74,10 +74,9 @@ Naming rules enforced by linter (`@typescript-eslint/naming-convention` + `eslin
 Three forms, and which one to use is not a matter of taste.
 
 - `/** ... */` on a declaration: a function, class, type, interface, field, constant. It is
-  the only form a tool shows on hover, so anything a symbol needs saying goes here. One
-  sentence may sit on one line; two or more go in the block form, `*` aligned.
-- `//` on a statement, and trailing a field on the same line. Nothing to attach a docstring
-  to, so nothing to reach for the doc form. A run of `//` lines is one comment.
+  the only form a tool shows on hover, so anything a symbol needs saying goes here.
+- `//` on a statement. Nothing to attach a docstring to, so nothing to reach for the doc
+  form. A run of `//` lines is one comment.
 - `/* ... */` in CSS only, and `{/* ... */}` inside JSX. There is no declaration in a
   stylesheet to attach a docstring to. `/* eslint-disable */` is tool syntax, exempt from
   all of this.
@@ -86,11 +85,29 @@ A bare `/* ... */` inside a function body is wrong in `.ts` and `.tsx`: that is 
 comment and takes `//`. Only two exceptions exist today, both forced: the eslint directives in
 `Core/Logger.ts`, and JSX braces.
 
+**Three content lines is the budget**, counted excluding the delimiters and any line holding only
+`*`. Tests are exempt, since an expectation table with a note per row is the clearest form there.
+A comment needing a fourth line is too long: shorten it or delete it.
+
+**Two shapes for a doc comment, decided by width and not by taste.** A comment that fits the
+80-column print width *including its indent* is one line, `/** ... */`. Anything longer is a
+gutter block with the delimiters on their own lines and `*` aligned. Never pad a short comment out
+to a block — six physical lines around three lines of prose reads as ceremony. A blank `*` line
+survives only where a new paragraph genuinely starts, never at the top or the bottom.
+
+Enforced by `npm run lint`, not by eye: `comments/max-lines` for the budget, `comments/shape` for
+the two shapes, `comments/no-trailing`, `comments/no-block-in-ts`, and `comments/form` for scope.
+All five report one message: *COMMENT ONLY IF NEEDED, AND CODE IS NOT SELF UNDERSTANABLE IF SO
+DON'T MAKE A COMMENT*. CSS is not linted by ESLint, so `npm run comments -- --css` owns its own
+budget of eight content lines — higher than TypeScript's three, because a comment in a stylesheet
+is the specification and a token scale has no name or type to explain itself through.
+
 **A comment earns its place only by saying something the code cannot.** Allowed: why this
 approach and not the obvious one, a constraint that would otherwise be "tidied" away, a rule
 the shape of the data does not reveal, a failure mode that was found by using the thing.
 
-Three kinds are banned, and `npm run comments` exists to find the first two:
+Four kinds are banned. The first three are found by `npm run lint` or `npm run comments`; the
+fourth is a matter of judgment and is why every finding must be disposed of by hand:
 
 1. **Restatement.** `/** Stop the host session */` above `stop()`, `/* Padding */` above
    `.PaddingXs`, `@param` and `@returns` on a signature that already carries them. Delete.
@@ -102,6 +119,8 @@ Three kinds are banned, and `npm run comments` exists to find the first two:
    add", "not sure". These are not comments, they are unfinished thoughts, and an agent
    reading one either copies the uncertainty or treats it as a decision. Answer it where it
    stands, or move it to `DECISIONS.md` and answer it there.
+4. **Trailing a line of code.** `const cost = a === b ? 0 : 1; // substitution` puts the note
+   where it is easiest to miss and easiest to leave behind. Move it above, or delete it.
 
 Deleting a comment is not always the right call. A docstring that disambiguates between two
 similar fields (`scores` against `cumulativeScores`), or that records a rule the type system

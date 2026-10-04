@@ -4,11 +4,11 @@ import { GameConfig } from '@/Game';
 /**
  * Who is at the table, and which seat each name belongs to.
  *
- * The name is the only handle a returning player has: nothing about them is kept
- * in their browser, so the host is what remembers that this name is already
- * seated. Re-joining under a known name reclaims that seat, which is what makes a
- * player who closed the tab come back as the same person. The trade-off is that
- * two people who pick the same name are treated as one.
+ * The name is the only handle a returning player has: nothing about them is
+ * kept in their browser, so the host is what remembers that this name is
+ * already seated. Re-joining under a known name reclaims that seat, which is
+ * what makes a player who closed the tab come back as the same person. The
+ * trade-off is that two people who pick the same name are treated as one.
  */
 export class HostRoster {
   private nextId = 1;
@@ -16,10 +16,10 @@ export class HostRoster {
   /**
    * The seat each transport address is sitting in.
    *
-   * A departure arrives addressed by peer id, and the roster is keyed by seat, so
-   * without this the host could only tell that somebody left, never who. A player
-   * who reconnects is a new address for the same seat, so the older address is
-   * dropped rather than left to claim a second departure.
+   * A departure arrives addressed by peer id, and the roster is keyed by seat,
+   * so without this the host could only tell that somebody left, never who. A
+   * player who reconnects is a new address for the same seat, so the older
+   * address is dropped rather than left to claim a second departure.
    */
   private readonly seatByPeerId = new Map<string, PlayerId>();
   /** Seats handed out, so the host knows how many answers to wait for. */
@@ -27,20 +27,20 @@ export class HostRoster {
   /**
    * The seats of players who have dropped.
    *
-   * Held apart from the seat map rather than by removing the seat, because a player
-   * who loses the connection has not given up their place: the room is waiting on
-   * them, not counting them out.
+   * Held apart from the seat map rather than by removing the seat, because a
+   * player who loses the connection has not given up their place: the room is
+   * waiting on them, not counting them out.
    */
   private readonly goneSeats = new Set<PlayerId>();
 
   /**
-   * The browser behind each seat, so a returning player can be recognised without
-   * having been seen to leave.
+   * The browser behind each seat, so a returning player can be recognised
+   * without having been seen to leave.
    *
-   * Keyed by seat rather than by name, because the seat is what a claim reclaims and
-   * what the answers are attached to. A browser that vanishes and comes back finds its
-   * own entry, which is what lets a refresh keep the seat even when the departure
-   * notice never arrived.
+   * Keyed by seat rather than by name, because the seat is what a claim
+   * reclaims and what the answers are attached to. A browser that vanishes and
+   * comes back finds its own entry, which is what lets a refresh keep the seat
+   * even when the departure notice never arrived.
    */
   private readonly browserBySeat = new Map<PlayerId, string>();
 
@@ -53,16 +53,18 @@ export class HostRoster {
   /**
    * Take the roster back out of a room this tab was already hosting.
    *
-   * A host that refreshes has the room's state again but not the table of seats that
-   * state is keyed by, and every decision about who is in the room is a decision about
-   * seats: how many answers to wait for, whose name is taken, and whether the player who
-   * has just knocked is somebody the room already knows. Without this the resumed room
-   * would have faces and no players behind them.
+   * A host that refreshes has the room's state again but not the table of seats
+   * that state is keyed by, and every decision about who is in the room is a
+   * decision about seats: how many answers to wait for, whose name is taken,
+   * and whether the player who has just knocked is somebody the room already
+   * knows. Without this the resumed room would have faces and no players behind
+   * them.
    *
-   * Only names and seats. Nobody is behind a browser or an address, because a refresh
-   * has lost every connection the room had — a returning player re-establishes their own
-   * by claiming the seat, which is what makes them a returning player rather than a new
-   * one. A seat this tab already has is left alone, which is how the host's own survives.
+   * Only names and seats. Nobody is behind a browser or an address, because a
+   * refresh has lost every connection the room had — a returning player
+   * re-establishes their own by claiming the seat, which is what makes them a
+   * returning player rather than a new one. A seat this tab already has is left
+   * alone, which is how the host's own survives.
    */
   restore(players: readonly (readonly [PlayerId, { name: string }])[]): void {
     players.forEach(([playerId, player]) => {
@@ -81,9 +83,10 @@ export class HostRoster {
   /**
    * Whether this name already holds a seat in the room.
    *
-   * What decides a join once the room has started: a player who was in the lobby at the
-   * start is let back in and nobody else is. Their seat is what they come back to, so a
-   * returning player keeps their score, their answer and their character.
+   * What decides a join once the room has started: a player who was in the
+   * lobby at the start is let back in and nobody else is. Their seat is what
+   * they come back to, so a returning player keeps their score, their answer
+   * and their character.
    */
   hasSeatForName(name: string): boolean {
     const seat = this.seatByName.get(name);
@@ -93,19 +96,16 @@ export class HostRoster {
   /**
    * Whether the room has a seat left to give.
    *
-   * Counted over seats rather than over players who are connected, so a dropped player
-   * still holds theirs: the seat is kept for a player who may yet come back, and a room
-   * that filled up with the gaps left behind would turn a connection into a reason to lock
-   * somebody out.
+   * Counted over seats rather than over players who are connected, so a dropped
+   * player still holds theirs: the seat is kept for a player who may yet come
+   * back, and a room that filled up with the gaps left behind would turn a
+   * connection into a reason to lock somebody out.
    */
   get hasRoom(): boolean {
     return this.seats.size < GameConfig.limits.maxPlayers;
   }
 
-  /**
-   * The seat for a name, reusing the one it had before if this player is
-   * returning. A brand new name is given the next free seat.
-   */
+  /** The seat for a name, reusing the one it had before if this player is returning. A brand new name is given the next free seat. */
   claimSeat(name: string, peerId: string, browserId: string): PlayerId {
     const known = this.seatByName.get(name);
     const seat = known ?? `p${this.nextId++}`;
@@ -153,8 +153,9 @@ export class HostRoster {
   /**
    * Give a seat up at the host's word, unlike a departure.
    *
-   * Everything the seat was remembered by goes with it, so the name is free again
-   * and the player's own late departure cannot mark a seat that no longer exists.
+   * Everything the seat was remembered by goes with it, so the name is free
+   * again and the player's own late departure cannot mark a seat that no longer
+   * exists.
    */
   releaseSeat(playerId: PlayerId): void {
     this.seats.delete(playerId);
@@ -175,18 +176,20 @@ export class HostRoster {
   /**
    * Whether this name is taken by someone who is still here.
    *
-   * A name belonging to a player who has dropped is free again, because the name is
-   * the only handle the room has and that player is not in it. The host's own name
-   * counts as taken: the host is playing, and a second player wearing its name would
-   * be indistinguishable from it in every answer and every score.
+   * A name belonging to a player who has dropped is free again, because the
+   * name is the only handle the room has and that player is not in it. The
+   * host's own name counts as taken: the host is playing, and a second player
+   * wearing its name would be indistinguishable from it in every answer and
+   * every score.
    *
-   * A browser that already holds the name is not an impostor either, and this is the
-   * case that a dropped seat alone does not cover. Whether the host heard the previous
-   * connection leave is a fact about relays, and relays fail: a player who refreshed
-   * while one was refusing writes would otherwise be locked out of a room it is
-   * demonstrably talking to, under a name that can never be freed again while the host's
-   * page lives. The browser answering for the name is the evidence, and it is evidence
-   * the room asked for rather than inferred.
+   * A browser that already holds the name is not an impostor either, and this
+   * is the case that a dropped seat alone does not cover. Whether the host
+   * heard the previous connection leave is a fact about relays, and relays
+   * fail: a player who refreshed while one was refusing writes would otherwise
+   * be locked out of a room it is demonstrably talking to, under a name that
+   * can never be freed again while the host's page lives. The browser answering
+   * for the name is the evidence, and it is evidence the room asked for rather
+   * than inferred.
    */
   isNameActive(name: string, browserId: string): boolean {
     const seat = this.seatByName.get(name);
@@ -204,8 +207,9 @@ export class HostRoster {
    * How many answers the room is still waiting for.
    *
    * Seats minus the players who have dropped, so a disconnected player does not
-   * hold the round open for an answer that can no longer arrive. The seat is kept
-   * either way, so a player who comes back is waited for again from that moment.
+   * hold the round open for an answer that can no longer arrive. The seat is
+   * kept either way, so a player who comes back is waited for again from that
+   * moment.
    */
   get count(): number {
     return this.seats.size - this.goneSeats.size;
@@ -224,10 +228,10 @@ export class HostRoster {
 /**
  * The character to record for a player who is (or may be) returning.
  *
- * A player the host already knows keeps the character it gave them, and the look
- * they arrive with is ignored: it was rolled on their side and would otherwise
- * overwrite the record that survived their tab closing. Only a player with no
- * record yet brings their own look into the room.
+ * A player the host already knows keeps the character it gave them, and the
+ * look they arrive with is ignored: it was rolled on their side and would
+ * otherwise overwrite the record that survived their tab closing. Only a player
+ * with no record yet brings their own look into the room.
  */
 export function resolveLook(
   knownLook: PlayerLook | undefined,

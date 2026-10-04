@@ -1,19 +1,22 @@
 import { normalizeAnswer } from './Normalization';
 import { PlayerId } from '@/Core';
 
-// Typical Russian endings to strip. Order matters: the first match wins, so longer
-// endings come first, otherwise 'ам' would be missed behind a trailing 'а'. Only words
-// longer than four characters are stripped at all, which keeps a short stem intact.
+/**
+ * Typical Russian endings to strip, in the order they must be tried: the first
+ * match wins, so a two-letter plural ending is never shadowed by the single
+ * letter that starts it. Words of four characters or fewer are left alone,
+ * which keeps a short stem intact.
+ */
 const russianEndings = [
-  'ам', 'ям', 'ом', 'ем', 'им', 'ым', // plural instrumental/dative/prepositional
-  'а', 'я', 'ы', 'ь', 'й', 'у', 'ю', 'е', // common singular endings
-  'и', // plural nominative
+  'ам', 'ям', 'ом', 'ем', 'им', 'ым',
+  'а', 'я', 'ы', 'ь', 'й', 'у', 'ю', 'е',
+  'и',
 ];
 
 /**
- * Strip typical Russian endings from a word.
- * Returns the word with the longest matching ending removed, if any.
- * We only strip if the word length is greater than 4 to avoid stripping too short words.
+ * Strip typical Russian endings from a word. Returns the word with the longest
+ * matching ending removed, if any. We only strip if the word length is greater
+ * than 4 to avoid stripping too short words.
  */
 function stripRussianEndings(word: string): string {
   if (word.length <= 4) {
@@ -28,8 +31,9 @@ function stripRussianEndings(word: string): string {
 }
 
 /**
- * Compute the Levenshtein distance between two strings.
- * Returns the number of single-character edits (insertions, deletions, substitutions) required to change one string into the other.
+ * Compute the Levenshtein distance between two strings. Returns the number of
+ * single-character edits (insertions, deletions, substitutions) required to
+ * change one string into the other.
  */
 function levenshteinDistance(a: string, b: string): number {
   if (a.length === 0) return b.length;
@@ -47,10 +51,11 @@ function levenshteinDistance(a: string, b: string): number {
   for (let i = 1; i <= b.length; i++) {
     for (let j = 1; j <= a.length; j++) {
       const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+      // The three Levenshtein moves: delete from a, insert from b, or substitute.
       matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1, // deletion
-        matrix[i][j - 1] + 1, // insertion
-        matrix[i - 1][j - 1] + cost // substitution
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
       );
     }
   }
@@ -58,10 +63,7 @@ function levenshteinDistance(a: string, b: string): number {
   return matrix[b.length][a.length];
 }
 
-/**
- * Normalize an answer for grouping purposes.
- * This includes the basic normalization plus stripping Russian endings from each word.
- */
+/** Normalize an answer for grouping purposes. This includes the basic normalization plus stripping Russian endings from each word. */
 export function normalizeForGrouping(answer: string): string {
   const normalized = normalizeAnswer(answer);
   const words = normalized.split(' ');
@@ -70,15 +72,16 @@ export function normalizeForGrouping(answer: string): string {
 }
 
 /**
- * Group answers based on similarity.
- * Two answers are in the same group if:
- *   - Their normalized-for-grouping strings are exactly equal, OR
- *   - Their Levenshtein distance is ≤1 and the length of the longer string is ≥5.
- * We use a simple greedy algorithm: iterate through answers and assign to the first matching group.
+ * Group answers based on similarity. Two answers are in the same group if: -
+ * Their normalized-for-grouping strings are exactly equal, OR - Their
+ * Levenshtein distance is ≤1 and the length of the longer string is ≥5. We use
+ * a simple greedy algorithm: iterate through answers and assign to the first
+ * matching group.
  */
 export function groupAnswers(answers: string[]): { groupId: number; answers: string[] }[] {
   const groups: { groupId: number; answers: string[] }[] = [];
-  const groupKeys: string[] = []; // the normalized-for-grouping string for each group (representative)
+  // The normalized string that represents each group, so a later answer can be matched to it.
+  const groupKeys: string[] = [];
 
   for (const answer of answers) {
     const key = normalizeForGrouping(answer);
@@ -112,11 +115,11 @@ export function groupAnswers(answers: string[]): { groupId: number; answers: str
 }
 
 /**
- * Group answers with their player IDs based on similarity.
- * Two answers are in the same group if:
- *   - Their normalized-for-grouping strings are exactly equal, OR
- *   - Their Levenshtein distance is ≤1 and the length of the longer string is ≥5.
- * We return an array of groups, each containing the groupId, the list of answers, and the list of playerIds.
+ * Group answers with their player IDs based on similarity. Two answers are in
+ * the same group if: - Their normalized-for-grouping strings are exactly equal,
+ * OR - Their Levenshtein distance is ≤1 and the length of the longer string is
+ * ≥5. We return an array of groups, each containing the groupId, the list of
+ * answers, and the list of playerIds.
  */
 export function groupAnswersWithPlayers(answers: Map<PlayerId, string>): {
   groupId: number;

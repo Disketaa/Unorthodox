@@ -95,13 +95,14 @@ describe('the wash step', () => {
 });
 
 /**
- * The game title and the section headings are set in the raw tint, which is a choice
- * and not an oversight. This test is here so the cost of the choice stays visible
- * rather than being discovered later by someone who has to fix it.
+ * The game title and the section headings are set in the raw tint, which is a
+ * choice and not an oversight. This test is here so the cost of the choice
+ * stays visible rather than being discovered later by someone who has to fix
+ * it.
  *
  * At the tint, the eight measure: Rose 3.54, Violet 3.53, Coral 3.05, Sky 2.97,
- * Mint 2.61, Lime 2.50, Amber 2.04, Yellow 1.85 against white. Three clear the 3:1
- * bar for large text; five do not. Changing this back is a one-line edit to
+ * Mint 2.61, Lime 2.50, Amber 2.04, Yellow 1.85 against white. Three clear the
+ * 3:1 bar for large text; five do not. Changing this back is a one-line edit to
  * `--Color-Text-Title` and `--Color-Text-Display` in `Tokens.css`.
  */
 describe('the headings, which are exempt on purpose', () => {

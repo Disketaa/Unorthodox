@@ -9,12 +9,13 @@ const log = createLogger('TrysteroTransport');
 
 export class TrysteroTransport implements Transport {
   private room: ReturnType<typeof joinRoom> | null = null;
-  private appId: string = 'unorthodox-game'; // Unique app ID for this project
+  /** Namespaces every room this project opens; two apps sharing it would see each other. */
+  private appId: string = 'unorthodox-game';
   private roomId: string = '';
   private isHost: boolean = false;
-  private playerId: string | null = null; // The game-level id of this peer
-  // The Trystero peerId is not the game playerId: the host is addressed as the
-  // reserved `host` id in game state but on the wire as its trystero selfId.
+  /** The game-level id of this peer, assigned by the host on Join. */
+  private playerId: string | null = null;
+  /** Not the game playerId: the host is `host` in game state but its selfId on the wire. */
   private peerId: string = selfId;
 
   private hostToClientAction: MessageAction<JsonValue> | null = null;
@@ -118,10 +119,7 @@ export class TrysteroTransport implements Transport {
     this.clientToHostAction.send(payload, { target: this.hostPeerId });
   }
 
-  /**
-   * Reply to a peer using its transport-level address, which is never the game
-   * player id: that one is assigned by the host and stays off the wire.
-   */
+  /** Reply to a peer using its transport-level address, which is never the game player id: that one is assigned by the host and stays off the wire. */
   sendToPeer(peerId: string, message: unknown): void {
     if (!this.isHost || !this.hostToClientAction) {
       log('warn', 'sendToPeer called on a client, ignoring');

@@ -2,13 +2,10 @@ import { useEffect, useState } from 'preact/hooks';
 import { rollTiming, useSwayMotion } from '@/Design/Primitives';
 
 /**
- * The values one character brings to a reaction: where it comes from and how it is
- * cocked when it gets there.
+ * The values one character brings to a reaction: where it comes from and how it is cocked.
  *
- * Everything here is what makes one character differ from another, and nothing here
- * is shared with anything else. The squash itself, the duration and the idle sway all
- * belong to `Pop` and to `useSwayMotion`, so every reaction and every resting pose is
- * the same movement however many things are on the screen.
+ * Everything here is what makes one character differ from another. The squash, the duration and
+ * the idle sway belong to `Pop` and `useSwayMotion`.
  */
 export interface CharacterPop {
   tilt: number;
@@ -22,10 +19,10 @@ export interface CharacterPop {
 const MaxPopTiltDeg = 5;
 
 /**
- * How far off its resting place it appears, in pixels. This is the "arrives from its
- * own direction" part: a pop from exactly the same point every time looks like a
- * system animation, and a pop from slightly different places and angles looks like
- * nine characters turning up.
+ * How far off its resting place it appears, in pixels.
+ *
+ * The "arrives from its own direction" part: a pop from exactly the same point every time looks
+ * like a system animation.
  */
 const MaxPopOffsetPx = 7;
 

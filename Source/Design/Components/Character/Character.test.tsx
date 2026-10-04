@@ -39,11 +39,11 @@ function popOf(root: HTMLElement): Element | null {
 }
 
 /**
- * A character reacts to every action through the same pop, so picking a tint and
- * picking a character are the same movement. This checks the mechanism, not the
- * pixels: an element is rebuilt when the thing it reacts to changes, and that is
- * what restarts the animation. If it stopped, the pop would play once and never
- * again, and nothing else in the suite would notice.
+ * A character reacts to every action through the same pop, so picking a tint
+ * and picking a character are the same movement. This checks the mechanism, not
+ * the pixels: an element is rebuilt when the thing it reacts to changes, and
+ * that is what restarts the animation. If it stopped, the pop would play once
+ * and never again, and nothing else in the suite would notice.
  */
 describe('Character pop', () => {
   it('pops on mount', () => {
@@ -118,12 +118,13 @@ describe('Character reaction', () => {
 });
 
 /**
- * The pop must never scale the character away. A version that grew from zero width
- * looked fine in the picker but flashed every small character in the roster to
- * nothing, which read as a rendering fault rather than as an arrival. There is one
- * keyframe, `PopSquash`, and it only ever touches the height; the stylesheet says
- * why. That is asserted by reading the stylesheet, which the test runner rewrites
- * to an empty module, so it is left to the stylesheet and its own comment.
+ * The pop must never scale the character away. A version that grew from zero
+ * width looked fine in the picker but flashed every small character in the
+ * roster to nothing, which read as a rendering fault rather than as an arrival.
+ * There is one keyframe, `PopSquash`, and it only ever touches the height; the
+ * stylesheet says why. That is asserted by reading the stylesheet, which the
+ * test runner rewrites to an empty module, so it is left to the stylesheet and
+ * its own comment.
  */
 describe('The pop element', () => {
   it('wraps the character in exactly one element, whatever reacted', () => {
@@ -157,10 +158,7 @@ describe('Character element identity', () => {
   });
 });
 
-/**
- * The per-character values are what make a row of characters feel like nine
- * people arriving rather than one animation played nine times.
- */
+/** The per-character values are what make a row of characters feel like nine people arriving rather than one animation played nine times. */
 describe('Character pop values', () => {
   it('writes the values the pop is driven by', () => {
     const style = styleOf(mount({ character: 'Butterfly', color: 'Coral' }));

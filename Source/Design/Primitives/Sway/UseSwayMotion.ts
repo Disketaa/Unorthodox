@@ -1,22 +1,13 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 
 /**
- * A thing on screen that rocks from side to side, the way someone standing shifts
- * their weight.
+ * A thing on screen that rocks from side to side, the way someone standing shifts their weight.
  *
- * This is the characters' idle movement, lifted out of `Character` so anything that
- * wants to look alive on the page can have the same one. It is a hook and a
- * stylesheet rather than a component: it has no element of its own, because the node
- * it writes to has to be the one already carrying the thing's own layout, and a
- * wrapper would have been a box sized for nothing.
+ * This is the characters' idle movement, lifted out of `Character`. A hook and a stylesheet rather
+ * than a component, because the node it writes to must be the one already carrying the layout.
  *
- * The node is found through the ref this returns, so a caller that also needs its own
- * custom properties on the same element writes them there. `Character` does exactly
- * that, for the values its nested `Pop` reads by inheritance.
- *
- * Generic over the element rather than fixed to a span, because the caller knows what it is
- * putting the movement on and the movement does not care: the characters ride a span and a
- * theme card rides a button, and a ref typed to one of them is a cast away at the other.
+ * Generic over the element rather than fixed to a span: the characters ride a span and a theme card
+ * rides a button, and a ref typed to one is a cast away at the other.
  */
 export interface IdleMotion {
   tilt: number;

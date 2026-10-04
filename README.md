@@ -7,10 +7,19 @@ Live: https://disketaa.github.io/Unorthodox/
 ## Run locally
 ```bash
 npm install
-npm run dev      # dev server
-npm run build    # production build to dist/
-npm test         # unit tests
+npm run dev        # dev server (http://localhost:5173)
+npm run build      # production build to dist/
+npm test           # unit tests (watch)
+npm run test:once  # unit tests (single run)
+npm run lint       # ESLint
+npm run typecheck  # tsc --noEmit
+npm run comments   # comment audit
+npm run check      # lint + typecheck + test:once + build
 ```
+
+Requires Node 20.19+ (Vite 8). Debug from VS Code: `.vscode/launch.json` has
+`Dev server + debug app` (compound, starts `npm run dev` then Chrome),
+single-file vitest debugging, and an Edge variant. `.vscode/` is gitignored.
 
 ## Change the theme
 All colors, spacing and radii live as CSS variables in `Source/Design/Tokens/Tokens.css`.

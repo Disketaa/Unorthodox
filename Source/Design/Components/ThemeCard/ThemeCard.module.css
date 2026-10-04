@@ -37,12 +37,12 @@
   width: 100%;
   height: 100%;
 /*
-   * The card's own padding, on the card, and once.
-   *
-   * It was zero and the name and the ticks each held their own inset, which was three numbers
-   * saying one thing: a card whose contents were inset by different amounts at the top and the
-   * bottom, a word sitting further from the frame than the row under it, and a row of ticks
-   * touching the edges. One inset on the card, and nothing on the contents.
+ * The card's own padding, on the card, and once.
+ *
+ * It was zero and the name and the ticks each held their own inset, which was three numbers
+ * saying one thing: a card whose contents were inset by different amounts at the top and the
+ * bottom, a word sitting further from the frame than the row under it, and a row of ticks
+ * touching the edges. One inset on the card, and nothing on the contents.
    */
   padding: var(--Space-ThemeCardPadding);
   /*
@@ -159,7 +159,7 @@
  * it and nothing else is a label, and the bank is being held out at the player rather than
  * listed.
  *
-* In the card's quiet grey at a low opacity rather than in the theme's own colour, so it
+ * In the card's quiet grey at a low opacity rather than in the theme's own colour, so it
  * darkens with the surface instead of sitting on it. An opacity and not a paler colour,
  * because the name takes the same hue on hover and has to stay the stronger of the two.
  *
@@ -363,16 +363,16 @@
  * `z-index` because it shares the card with the mark, which is absolutely positioned and would
  * paint over the one thing on the card that is meant to be read.
  *
-* In the default ink rather than the title's accent at rest, and it takes the tint only on
-  * hover, from the same custom property the fill does. The accent is the colour a theme wears
-  * rather than one a player chose for themselves, so wearing it permanently on six cards would
-  * say whose screen this is rather than what the room could play; on hover it is the card's
-  * own colour answering the pointer, which is a fact about the card rather than the viewer.
-  *
-  * The name and the bar are a pair centred together, which is why this does not grow: the card
-  * centres the two of them as a column, so once neither grows the bar falls directly under the
-  * word wherever the pair's middle happens to be. The name growing to fill the card is exactly
-  * what left the bar pinned to the bottom edge with a centred word above it.
+ * In the default ink rather than the title's accent at rest, and it takes the tint only on
+ * hover, from the same custom property the fill does. The accent is the colour a theme wears
+ * rather than one a player chose for themselves, so wearing it permanently on six cards would
+ * say whose screen this is rather than what the room could play; on hover it is the card's
+ * own colour answering the pointer, which is a fact about the card rather than the viewer.
+ *
+ * The name and the bar are a pair centred together, which is why this does not grow: the card
+ * centres the two of them as a column, so once neither grows the bar falls directly under the
+ * word wherever the pair's middle happens to be. The name growing to fill the card is exactly
+ * what left the bar pinned to the bottom edge with a centred word above it.
   */
 .Name {
   /*
@@ -388,7 +388,7 @@
   z-index: 1;
   display: flex;
   /*
-* Not growing, which is the whole of the bar sitting under the word.
+   * Not growing, which is the whole of the bar sitting under the word.
    *
    * This was `flex: 1`, so the name took every pixel above the bar and the bar was left at the
    * bottom of the card with the word centred in whatever was left over — which looked like a

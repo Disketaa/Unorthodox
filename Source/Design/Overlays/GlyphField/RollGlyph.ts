@@ -10,15 +10,13 @@ import type { Random } from '@/Core';
  */
 const Symbols = ['@', '#', '$', '%', '&', '*', '+', '=', '?', '!', '~', ';', ':', '/', '\\', '^'];
 
-
-
 /**
  * How many marks along one band, and so how finely the height is divided.
  *
- * Doubled from twenty-two. A mark is much wider than it is tall, so the band was
- * reading as a few large shapes with gaps between them rather than as a crowd, and
- * the fix is more marks rather than smaller ones: a smaller mark on a phone is
- * barely larger than the body text it sits behind.
+ * Doubled from twenty-two. A mark is much wider than it is tall, so the band
+ * was reading as a few large shapes with gaps between them rather than as a
+ * crowd, and the fix is more marks rather than smaller ones: a smaller mark on
+ * a phone is barely larger than the body text it sits behind.
  */
 export const SlotsPerBand = 44;
 
@@ -44,8 +42,8 @@ export interface Glyph {
  * How a mark's width is placed in the range between the two size tokens.
  *
  * Weighted low, because the small end is what the corners and the gaps between
- * marks need, and a band of large marks alone reads as a solid shape rather than
- * as marks.
+ * marks need, and a band of large marks alone reads as a solid shape rather
+ * than as marks.
  */
 const ScaleChoices = [0, 0, 0.25, 0.25, 0.5, 0.75, 1];
 
@@ -62,9 +60,10 @@ const DurationMaxS = 34;
  * the slots decide where a mark belongs, and only the jitter is random.
  *
  * A share of the step and not of the band, which is what keeps the arrangement
- * the same shape at any density: doubling the slots halves the step, and a jitter
- * held at the old share of the band would then span four slots and land marks on
- * top of each other. A mark may cross into its neighbour's slot, never past it.
+ * the same shape at any density: doubling the slots halves the step, and a
+ * jitter held at the old share of the band would then span four slots and land
+ * marks on top of each other. A mark may cross into its neighbour's slot, never
+ * past it.
  */
 const JitterShare = 0.35;
 
@@ -119,12 +118,12 @@ function fixedBetween(min: number, max: number, random: Random): number {
  * viewport, so the marks are dense everywhere the band is tall.
  *
  * The slots are spread across the whole band, first on its top edge and last on
- * its bottom edge, rather than sitting half a step in from each end. The band is
- * pulled past both screen edges by `--Glyph-Overscan`, so a slot on the band's
- * own end lands well above the screen and well below it: that is what carries
- * the field off the top and the bottom rather than stopping at them, and it also
- * spaces the marks evenly over what is actually visible instead of bunching them
- * in the middle.
+ * its bottom edge, rather than sitting half a step in from each end. The band
+ * is pulled past both screen edges by `--Glyph-Overscan`, so a slot on the
+ * band's own end lands well above the screen and well below it: that is what
+ * carries the field off the top and the bottom rather than stopping at them,
+ * and it also spaces the marks evenly over what is actually visible instead of
+ * bunching them in the middle.
  */
 function slotTop(slot: number, random: Random): number {
   const jitter = (random() * 2 - 1) * slotStep() * JitterShare;
@@ -139,9 +138,9 @@ function slotStep(): number {
 /**
  * One mark at random, in the slot it was given.
  *
- * The generator is passed in rather than reached for, the way a look is rolled in
- * Core, so one seed decides the whole field and the field can be rolled again from
- * the seed that was reported for it.
+ * The generator is passed in rather than reached for, the way a look is rolled
+ * in Core, so one seed decides the whole field and the field can be rolled
+ * again from the seed that was reported for it.
  */
 export function rollGlyph(slot: number, random: Random): Glyph {
   const char = Symbols[Math.floor(random() * Symbols.length)] ?? '#';
@@ -151,13 +150,8 @@ export function rollGlyph(slot: number, random: Random): Glyph {
     char,
     scale,
     rotation: fixedBetween(-RotationDeg, RotationDeg, random),
-    /*
-     * This mark's share of the scroll parallax: how far it travels against the
-     * page. Widened well past one, because the parallax is now the main thing
-     * the field does and it needs real separation between layers to read as
-     * depth: a shallow mark barely answers a scroll while a deep one crosses a
-     * good share of the viewport, and that spread of speeds is the effect.
-     */
+    // Share of the scroll parallax. Widened past one because the field needs real speed
+    // separation between layers before it reads as depth rather than as scattered marks.
     depth: fixedBetween(0.15, 1.6, random),
     durationS: fixedBetween(DurationMinS, DurationMaxS, random),
     delayS: fixedBetween(-DurationMaxS, 0, random),

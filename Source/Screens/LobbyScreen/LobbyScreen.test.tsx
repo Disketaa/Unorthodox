@@ -35,9 +35,10 @@ function lobby(isHost: boolean, pace: Pace = 'Standard') {
 /**
  * The pace buttons, found by the settings card they sit in.
  *
- * Not simply every button on the screen: the lobby also has the exit control, and the
- * roster's own controls, so a bare `querySelectorAll('button')` would assert over
- * controls this has nothing to do with and would pass or fail for the wrong reason.
+ * Not simply every button on the screen: the lobby also has the exit control,
+ * and the roster's own controls, so a bare `querySelectorAll('button')` would
+ * assert over controls this has nothing to do with and would pass or fail for
+ * the wrong reason.
  */
 function paceButtons(container: HTMLElement): HTMLButtonElement[] {
   const found: HTMLButtonElement[] = [];

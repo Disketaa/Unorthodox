@@ -16,17 +16,11 @@ export const HostRole = 'Host';
 export const PlayerRole = 'Player';
 
 export interface RoomHandlers {
-  /**
-   * A protocol message arrived, tagged with the direction it came from and the
-   * sender's transport-level peer id.
-   */
+  /** A protocol message arrived, tagged with the direction it came from and the sender's transport-level peer id. */
   onMessage: (message: JsonValue, fromHost: boolean, peerId: string) => void;
   /** A peer left; clients only receive this for the host. */
   onPeerLeave: (peerId: string) => void;
-  /**
-   * The host peerId first became known, so anything held back for lack of a
-   * route can go out immediately.
-   */
+  /** The host peerId first became known, so anything held back for lack of a route can go out immediately. */
   onHostReady: () => void;
 }
 
@@ -95,9 +89,10 @@ function wireHello(hello: MessageAction<JsonValue>, hostPeer: HostPeerState, isH
 /**
  * Wire the directional protocol actions.
  *
- * Every peer creates both channels, but only listens to the one carrying traffic
- * in its own direction: the host reads what clients send, the client reads what
- * the host sends. Listening to both would feed a peer its own messages back.
+ * Every peer creates both channels, but only listens to the one carrying
+ * traffic in its own direction: the host reads what clients send, the client
+ * reads what the host sends. Listening to both would feed a peer its own
+ * messages back.
  */
 function wireActions(actions: RoomActions, handlers: RoomHandlers, isHost: boolean): void {
   const inbound = isHost ? actions.clientToHost : actions.hostToClient;

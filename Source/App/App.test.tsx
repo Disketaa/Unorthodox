@@ -17,7 +17,8 @@ function renderApp() {
  * Types into a field, as the player's keystrokes arrive.
  *
  * Wrapped in `act` because the app holds the name as state, and a click
- * immediately after a keystroke would otherwise read the name as it was before it.
+ * immediately after a keystroke would otherwise read the name as it was before
+ * it.
  */
 async function type(root: HTMLElement, index: number, value: string): Promise<void> {
   const field = root.querySelectorAll('input[type="text"]')[index];

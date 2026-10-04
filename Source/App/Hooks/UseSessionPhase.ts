@@ -28,10 +28,11 @@ export interface SessionPhase {
 /**
  * The room, read as the three lookups the screens ask it for.
  *
- * The roster arrives in every phase rather than only in the lobby, so this is derived
- * from the state on every render instead of being accumulated in a ref: a client that
- * refreshed mid-round is handed the room back by the state it is sent, and a device that
- * has not been sent one yet draws an empty bar for the moment before it has.
+ * The roster arrives in every phase rather than only in the lobby, so this is
+ * derived from the state on every render instead of being accumulated in a ref:
+ * a client that refreshed mid-round is handed the room back by the state it is
+ * sent, and a device that has not been sent one yet draws an empty bar for the
+ * moment before it has.
  */
 function readRoster(players: readonly PublicPlayer[]) {
   const names = new Map<PlayerId, string>();

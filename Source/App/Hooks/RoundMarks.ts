@@ -2,8 +2,8 @@
  * Per-round UI state for the local player.
  *
  * Submission and rejection belong to a single round, so they are stored against
- * the topic they happened in. A new topic therefore starts a clean slate instead
- * of leaving the player stuck on a previous round's confirmation.
+ * the topic they happened in. A new topic therefore starts a clean slate
+ * instead of leaving the player stuck on a previous round's confirmation.
  *
  * This lives apart from the hook so the rule can be tested without a DOM.
  */

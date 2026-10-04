@@ -9,13 +9,11 @@ export interface PopProps {
    * The element is keyed on this, so a new value is a new element and the
    * browser runs the animation again from the start. Pass the thing that just
    * changed, not a counter, so the pop is tied to the reason it happened. Leave
-   * it undefined for something that never reacts: the value never changes, so it
-   * plays once on mount and then never again.
+   * it undefined for something that never reacts: the value never changes, so
+   * it plays once on mount and then never again.
    */
   trigger: string | number | undefined;
-  /**
-   * Its place in a row, so a row of reactions ripples instead of firing in unison.
-   */
+  /** Its place in a row, so a row of reactions ripples instead of firing in unison. */
   index?: number;
   children?: ComponentChildren;
 }
@@ -24,9 +22,9 @@ export interface PopProps {
  * Runs its child through the squash-and-stretch pop, replaying whenever the
  * trigger changes.
  *
- * Uses the individual `scale`, `rotate` and `translate` properties, which compose
- * with one another and with any `transform` on an ancestor, so a pop can play on
- * top of an idle sway without either replacing the other.
+ * Uses the individual `scale`, `rotate` and `translate` properties, which
+ * compose with one another and with any `transform` on an ancestor, so a pop
+ * can play on top of an idle sway without either replacing the other.
  */
 export function Pop({ trigger, index, children }: PopProps) {
   // Set from a ref callback rather than an effect, and the difference is the whole

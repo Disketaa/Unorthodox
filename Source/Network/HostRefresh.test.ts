@@ -1,6 +1,8 @@
-// A refresh is defined by the browser's own storage surviving it, so the environment is
-// the point of this file: without a `localStorage` there is nothing for the host's
-// game to come back in.
+/**
+ * A refresh is defined by the browser's own storage surviving it, so the
+ * environment is the point of this file: without a `localStorage` there is
+ * nothing for the host's game to come back in.
+ */
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach } from 'vitest';
 import { InMemoryTransport } from './InMemoryTransport';
@@ -22,9 +24,9 @@ function hostInRound(): HostSession {
 /**
  * The host comes back, which is what a browser refresh amounts to.
  *
- * A new session on the same code and the same storage, with nothing carried over in
- * memory: this is the whole difference between the two, and it is the difference
- * between a game continuing and a new room with the same name.
+ * A new session on the same code and the same storage, with nothing carried
+ * over in memory: this is the whole difference between the two, and it is the
+ * difference between a game continuing and a new room with the same name.
  */
 function hostReturns(): HostSession {
   const back = new HostSession(new InMemoryTransport());
