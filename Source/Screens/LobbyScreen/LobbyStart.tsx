@@ -10,7 +10,8 @@ export interface LobbyStartProps {
   onStart: () => void;
 }
 
-/** The foot of the lobby: a note for whoever cannot press Start, and Start itself for the host once it would work. */
+/** The foot of the lobby: a note for whoever cannot press Start, and Start itself for the host
+ * once it would work. */
 export function LobbyStart({ enoughPlayers, roomFull, isHost, onStart }: LobbyStartProps) {
   if (!isHost) {
     // The same plank as the host's own notes, so everyone in the room is reading

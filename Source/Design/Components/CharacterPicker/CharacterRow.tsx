@@ -14,13 +14,10 @@ export interface CharacterRowProps {
   onPick: (character: CharacterId) => void;
 }
 
-/**
- * The whole cast, one button each.
- *
- * Kept in its own file because the picker is three rows and each row is a control of its own.
- * Every cell is the same size, so stepping through the row moves by a constant distance and the
- * chosen one can be found by counting rather than by recognising a shape.
- */
+/** The whole cast, one button each. Kept in its own file because the picker is three rows and
+ * each row is a control of its own. Every cell is the same size, so stepping through the row
+ * moves by a constant distance and the chosen one can be found by counting rather than by
+ * recognising a shape. */
 export function CharacterRow({
   character,
   color,

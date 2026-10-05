@@ -5,13 +5,9 @@ import { playSound } from '@/Design/Sounds';
 import { useCountdown } from './UseCountdown';
 import type { SessionPhase } from './UseSessionPhase';
 
-/**
- * How far apart the count-in's notes are, in semitones.
- *
- * Two steps from the first number to the last, which puts the last note a quarter above the
- * first: three notes a listener can put in order, and the last one saying "now". A fifth would
- * have been the start of a different tune rather than the end of this one.
- */
+/** How far apart the count-in's notes are, in semitones. Two steps from the first number to the
+ * last: three notes a listener can put in order, the last of them saying "now". A fifth would
+ * start a different tune rather than end this one. */
 const PitchStepSemitones = 2;
 
 /** The highest number the count reaches, and so the first note, which is the base one. */
@@ -33,26 +29,9 @@ function countInMs(): number {
   return GameConfig.timing.startVeilMs + GameConfig.timing.startCountdownMs;
 }
 
-/**
- * Where this device is in the count-in, once the room has started writing.
- *
- * Counted on this device's own clock from the moment it heard about the phase, not on the
- * host's from the moment the host pressed Start. A count read off the host's clock is a count
- * shared between devices by the length of the message that announced it: a phone that was a
- * second late to the news joined the count a second in, and watched it begin at two. Nothing
- * about a count-in needs two phones looking at the same number for the same instant — what
- * needs that is the clock that ends the round, and that one still belongs to the host.
- *
- * Counted only by a device that has not seen this room do it already, which is what tells a
- * player arriving late apart from a player who refreshed mid-round: both land in the middle of
- * a writing phase, and only one of them was there for the start. It also keeps the count out of
- * every later round, where the players are already writing and a count-in would take the first
- * seconds of every answer from them.
- *
- * The note goes on the number changing rather than on a timer of its own, so a tab that was
- * throttled while it was hidden plays one note rather than a burst of the three it missed, and
- * it climbs with the count rather than wobbling.
- */
+/** Where this device is in the count-in, once the room has started writing. Counted on this
+ * device's clock from when it heard the phase, not the host's, and only once per room: a late
+ * arrival counts in, a mid-round refresh does not. */
 export function useStartCountdown(phase: SessionPhase, roomCode: string): StartCount {
   const countedRef = useRef(hasCountedIn(roomCode));
   const now = Date.now();
@@ -71,10 +50,8 @@ export function useStartCountdown(phase: SessionPhase, roomCode: string): StartC
     0,
     counting,
   );
-  // How far into the count-in this device is. The shade takes the first stretch of it
-  // and the numbers the second, so this is the one measurement both are read from: the
-  // shade is up while it still has time to run, and the first number appears exactly
-  // when it has finished.
+  // How far into the count-in this device is. The shade takes the first stretch of it and the
+  // numbers the second, so both are read from this one measurement.
   const elapsedMs = countInMs() - remainingMs;
   // How much of the count is left, which is the number on screen. Counted down rather
   // than up, since the room is counting towards the round and not away from it.
@@ -89,10 +66,8 @@ export function useStartCountdown(phase: SessionPhase, roomCode: string): StartC
   const playedRef = useRef<number | null>(null);
 
   useEffect(() => {
-    // Marked once the whole count-in has run, not while there is no number on screen:
-    // the shade is a moment with no number, and treating that as the end of the count
-    // would stop the count before it began. Written down as well as remembered, so a
-    // refresh or a new tab is the same device having been there.
+    // Marked once the whole count-in has run: the shade is a moment with no number, and treating
+    // that as the end would stop the count before it began. Written down so a refresh counts.
     if (phase.phase === 'Writing' && remainingMs <= 0) {
       countedRef.current = true;
       markCountedIn(roomCode);

@@ -46,13 +46,10 @@ export class HostSession {
     this.updateListener = listener;
   }
 
-  /**
-   * Open the room, picking up the game this tab was already running.
-   *
-   * A host who refreshes has not left, so the state comes back from where it was last written
-   * rather than from nothing: a fresh lobby here would be a different room with the same code,
-   * and everybody still in it would be waiting on a host that no longer exists.
-   */
+  /** Open the room, picking up the game this tab was already running. A host who refreshes has
+   * not left, so the state comes back from where it was last written rather than from nothing:
+   * a fresh lobby here would be a different room with the same code, and everybody still in it
+   * would be waiting on a host that no longer exists. */
   start(roomCode: string, hostName: string, look: PlayerLook): void {
     log('info', 'starting host session', roomCode, hostName);
     this.roomCode = roomCode;
@@ -127,7 +124,8 @@ export class HostSession {
     this.commit(startGame(this.state, topic, durationMs));
   }
 
-  /** Advance out of the Writing phase once everyone has answered, or out of the Reviewing phase (once reviewing time is up, going to Scores). */
+  /** Advance out of the Writing phase once everyone has answered, or out of the Reviewing phase
+   * (once reviewing time is up, going to Scores). */
   endReviewing(durationMs: number): void {
     const next =
       this.state?.phase === 'Writing'
@@ -155,14 +153,11 @@ export class HostSession {
     this.apply({ type: 'SET_PACE', pace });
   }
 
-  /**
-   * Put an invented player in the room, for the host trying a full room alone.
-   *
-   * A join like any other, so the bot is in the roster and can be voted for and kicked. It is
-   * given a seat of its own rather than claimed from the roster, because there is no address
-   * behind it and nothing to go offline, which also keeps the room from waiting on an answer
-   * that will not be written.
-   */
+  /** Put an invented player in the room, for the host trying a full room alone. A join like any
+   * other, so the bot is in the roster and can be voted for and kicked. It is given a seat of
+   * its own rather than claimed from the roster, because there is no address behind it and
+   * nothing to go offline, which also keeps the room from waiting on an answer that will not be
+   * written. */
   addBot(): void {
     if (!this.state) return;
     const action = botJoin(this.state, this.botsAdded + 1, Math.random);
@@ -172,13 +167,9 @@ export class HostSession {
     }
   }
 
-  /**
-   * Remove a player from the room at the host's word.
-   *
-   * The address is released before the seat, so that a player who walks out of their own kicked
-   * session is not then reported as one more dropout by a host that has already forgotten they
-   * were here.
-   */
+  /** Remove a player from the room at the host's word. The address is released before the seat,
+   * so that a player who walks out of their own kicked session is not then reported as one more
+   * dropout by a host that has already forgotten they were here. */
   kick(playerId: PlayerId): void {
     const address = this.roster.addressForSeat(playerId);
     if (address !== undefined) {
@@ -214,7 +205,8 @@ export class HostSession {
     this.updateListener?.();
   }
 
-  /** The host's own state, every answer in it. Never sent to a client: what leaves the host goes through `toPublicState`, which drops the answers. */
+  /** The host's own state, every answer in it. Never sent to a client: what leaves the host goes
+   * through `toPublicState`, which drops the answers. */
   getState(): Game.HostState | undefined {
     return this.state;
   }

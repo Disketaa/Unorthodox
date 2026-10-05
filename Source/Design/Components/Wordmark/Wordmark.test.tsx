@@ -19,13 +19,11 @@ function styleOf(root: HTMLElement): string {
   return root.firstElementChild?.getAttribute('style') ?? '';
 }
 
-/**
- * The mark wears the characters' idle sway, so the name and the cast move as one thing. This
+/** The mark wears the characters' idle sway, so the name and the cast move as one thing. This
  * checks the mechanism rather than the pixels: the values are what make the movement varied,
  * and they are written from JavaScript onto a node, so a change that stopped writing them would
  * leave a wordmark that is present, correctly coloured, and perfectly still — and nothing else
- * in the suite would notice.
- */
+ * in the suite would notice. */
 describe('the wordmark sway', () => {
   it('carries the values the sway is driven by', () => {
     const style = styleOf(mount());

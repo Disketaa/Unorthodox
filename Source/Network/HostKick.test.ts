@@ -93,7 +93,8 @@ describe('the host kicking a player', () => {
   });
 });
 
-/** A removed player's seat is gone, so the round must close on whoever is left rather than hang on an answer that will never arrive. */
+/** A removed player's seat is gone, so the round must close on whoever is left rather than hang
+ * on an answer that will never arrive. */
 describe('the room after a kick', () => {
   beforeEach(() => {
     InMemoryTransport.resetPeers();

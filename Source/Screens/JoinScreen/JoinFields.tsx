@@ -14,12 +14,9 @@ export interface JoinFieldsProps {
   onRoomCodeChange: (value: string) => void;
 }
 
-/**
- * Name and room code inputs with their validation messages.
- *
- * The messages stay hidden until the player tries to continue, so an untouched form is not
- * scolded. They clear themselves as soon as the field is filled in.
- */
+/** Name and room code inputs with their validation messages. The messages stay hidden until the
+ * player tries to continue, so an untouched form is not scolded. They clear themselves as soon
+ * as the field is filled in. */
 export function JoinFields({
   name,
   roomCode,

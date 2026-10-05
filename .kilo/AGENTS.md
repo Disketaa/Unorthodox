@@ -85,20 +85,35 @@ A bare `/* ... */` inside a function body is wrong in `.ts` and `.tsx`: that is 
 comment and takes `//`. Only two exceptions exist today, both forced: the eslint directives in
 `Core/Logger.ts`, and JSX braces.
 
-**Three content lines is the budget**, counted excluding the delimiters and any line holding only
-`*`. Tests are exempt, since an expectation table with a note per row is the clearest form there.
-A comment needing a fourth line is too long: shorten it or delete it.
+**Three content lines is the budget**, counted excluding the delimiters. Tests are exempt, since an
+expectation table with a note per row is the clearest form there. A comment needing a fourth line
+is too long: shorten it or delete it.
 
-**Two shapes for a doc comment, decided by width and not by taste.** A comment that fits the
-80-column print width *including its indent* is one line, `/** ... */`. Anything longer is a
-gutter block with the delimiters on their own lines and `*` aligned. Never pad a short comment out
-to a block — six physical lines around three lines of prose reads as ceremony. A blank `*` line
-survives only where a new paragraph genuinely starts, never at the top or the bottom.
+**Two shapes for a doc comment, decided by width and not by taste.** Prose that fits on one line
+is one line, delimiters included. Anything longer is a gutter block at the 96-column print width,
+with the opening delimiter riding on the first line of prose and the closing one on the last, and
+no gutter line ever left blank. Never pad a short comment out to a block — six physical lines
+around three lines of prose says nothing and reads as ceremony.
+
+```ts
+/** Its place in a row, so a row of reactions ripples instead of firing in unison. */
+trigger: string | number | undefined;
+
+/** This player's own character, as the host has it.
+ * Not the roll made on this device: a returning player is given the character the host kept,
+ * so the picker shows what the rest of the room actually sees. */
+ownLook: PlayerLook | undefined;
+```
+
+A gutter block stays a real doc comment, not a run of `//` lines: only a doc comment attaches to a
+declaration in TypeScript and in every LSP that reads it, so `//` above a function means no hover
+text and no IntelliSense. Inside a function body there is no declaration to document, which is why
+that scope takes `//` instead.
 
 Enforced by `npm run lint`, not by eye: `comments/max-lines` for the budget, `comments/shape` for
 the two shapes, `comments/no-trailing`, `comments/no-block-in-ts`, and `comments/form` for scope.
-All five report one message: *COMMENT ONLY IF NEEDED, AND CODE IS NOT SELF UNDERSTANABLE IF SO
-DON'T MAKE A COMMENT*. CSS is not linted by ESLint, so `npm run comments -- --css` owns its own
+All five report one message: *Comment only if the code cannot explain itself.* CSS is not linted
+by ESLint, so `npm run comments -- --css` owns its own
 budget of eight content lines — higher than TypeScript's three, because a comment in a stylesheet
 is the specification and a token scale has no name or type to explain itself through.
 

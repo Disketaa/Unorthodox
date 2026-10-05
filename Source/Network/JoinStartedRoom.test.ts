@@ -33,14 +33,11 @@ beforeEach(() => {
   sessionStorage.clear();
 });
 
-/**
- * A player who turns up after the room has left its lobby.
- *
- * A room mid-round has nowhere to put them: the answers for this round are being read now and
- * nobody has seen them, so seating them would leave a player the room waits on and cannot use.
- * The alternative — ignoring the join — leaves them on the joining screen forever, which is the
- * same problem with no explanation attached.
- */
+/** A player who turns up after the room has left its lobby. A room mid-round has nowhere to put
+ * them: the answers for this round are being read now and nobody has seen them, so seating them
+ * would leave a player the room waits on and cannot use. The alternative — ignoring the join —
+ * leaves them on the joining screen forever, which is the same problem with no explanation
+ * attached. */
 describe('joining a room that has already started', () => {
   it('is refused, and the refusal says why', () => {
     startedRoom();

@@ -29,14 +29,11 @@ function joinAs(name: string): ClientSession {
   return session;
 }
 
-/**
- * A client trying to sit down under a name from a different browser.
- *
- * The id is forgotten first, which is what makes this a second person rather than the first one
- * returning. Two players under one name are only a problem when they are two players: the same
- * browser coming back is a refresh, and the room has to be able to tell those apart, so a test
- * that did not separate them would be testing neither.
- */
+/** A client trying to sit down under a name from a different browser. The id is forgotten first,
+ * which is what makes this a second person rather than the first one returning. Two players
+ * under one name are only a problem when they are two players: the same browser coming back is
+ * a refresh, and the room has to be able to tell those apart, so a test that did not separate
+ * them would be testing neither. */
 function joinAsFromAnotherBrowser(name: string): ClientSession {
   forgetClientId();
   return joinAs(name);
@@ -48,12 +45,10 @@ function rosterSize(hostSession: HostSession): number {
   return state?.phase === 'Lobby' ? state.players.size : -1;
 }
 
-/**
- * The name is how the room tells players apart: it is the handle a returning player keeps, and
+/** The name is how the room tells players apart: it is the handle a returning player keeps, and
  * it is what a score and an answer are attached to. Two live players under one name would be
  * the same person in every one of those, so the second is refused. A name belonging to someone
- * who has dropped is free again.
- */
+ * who has dropped is free again. */
 describe('Two players under one name', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -101,15 +96,11 @@ describe('Two players under one name', () => {
   });
 });
 
-/**
- * The whole rule in one test, because the two cases are one decision and the browser id is what
- * tells them apart.
- *
- * The same browser under the same name is a player who refreshed, and must be seated. A
- * different browser under the same name is a second person, and must not be — two people
- * answering as one name are one person in every answer and every score, and a room that cannot
- * tell them apart cannot count either of them.
- */
+/** The whole rule in one test, because the two cases are one decision and the browser id is what
+ * tells them apart. The same browser under the same name is a player who refreshed, and must be
+ * seated. A different browser under the same name is a second person, and must not be — two
+ * people answering as one name are one person in every answer and every score, and a room that
+ * cannot tell them apart cannot count either of them. */
 describe('A name and the browser holding it', () => {
   beforeEach(() => {
     vi.useFakeTimers();

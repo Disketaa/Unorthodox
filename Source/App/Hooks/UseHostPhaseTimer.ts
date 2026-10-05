@@ -3,13 +3,9 @@ import { GameConfig } from '@/Game';
 import { Session } from '../Session';
 import { SessionPhase } from './UseSessionPhase';
 
-/**
- * The host closes every timed phase, and its own clock is the reference.
- *
- * The delay is measured from the real phase start rather than from when this effect ran, so a
- * host whose tab was throttled or suspended fires the phase on time instead of running the
- * whole phase again.
- */
+/** The host closes every timed phase, and its own clock is the reference. The delay is measured
+ * from the real phase start, not from when this effect ran, so a throttled or suspended host
+ * fires the phase on time instead of running it again. */
 export function useHostPhaseTimer(
   session: Session,
   isHost: boolean,

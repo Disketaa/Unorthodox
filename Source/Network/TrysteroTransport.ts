@@ -119,7 +119,8 @@ export class TrysteroTransport implements Transport {
     this.clientToHostAction.send(payload, { target: this.hostPeerId });
   }
 
-  /** Reply to a peer using its transport-level address, which is never the game player id: that one is assigned by the host and stays off the wire. */
+  /** Reply to a peer using its transport-level address, which is never the game player id: that
+   * one is assigned by the host and stays off the wire. */
   sendToPeer(peerId: string, message: unknown): void {
     if (!this.isHost || !this.hostToClientAction) {
       log('warn', 'sendToPeer called on a client, ignoring');
@@ -157,12 +158,9 @@ export class TrysteroTransport implements Transport {
     this.onHostReadyCallback = callback;
   }
 
-  /**
-   * Whether the host has announced itself over an open peer connection.
-   *
-   * Until the hello handshake completes there is no address to send to, so this is the only
-   * honest answer to "has my join gone out yet".
-   */
+  /** Whether the host has announced itself over an open peer connection. Until the hello
+   * handshake completes there is no address to send to, so this is the only honest answer to
+   * "has my join gone out yet". */
   isHostAddressable(): boolean {
     return !this.isHost && this.hostPeerId !== null;
   }

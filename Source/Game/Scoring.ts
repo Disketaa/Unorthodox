@@ -12,7 +12,8 @@ export function pointsForGroupSize(size: number, config: typeof GameConfig): num
   return config.scoring.commonPoints;
 }
 
-/** Round score per player. Everyone in a rejected group scores zero, whatever size that group was. */
+/** Round score per player. Everyone in a rejected group scores zero, whatever size that group
+ * was. */
 export function calculateRoundScores(
   groups: { playerIds: string[]; isRejected: boolean }[],
   config: typeof GameConfig

@@ -9,41 +9,29 @@ export interface ThemeCardProps {
   theme: ThemeId;
   /** The theme's name in this player's language. */
   name: string;
-  /**
-   * How many rounds this theme is played for.
-   *
-   * On the card rather than read from the game rules, because a component that reached into the
-   * game's configuration to count its own ticks would not be usable anywhere else.
-   */
+  /** How many rounds this theme is played for. On the card rather than read from the game rules,
+   * because a component that reached into the game's configuration to count its own ticks would
+   * not be usable anywhere else. */
   rounds?: number;
-  /**
-   * How many of the theme's rounds have been played.
-   *
-   * A count of what has gone rather than an index of what is next, because the row empties from
-   * the right. Left out it is nothing, which is a full bar.
-   */
+  /** How many of the theme's rounds have been played. A count of what has gone rather than an
+   * index of what is next, because the row empties from the right. Left out it is nothing,
+   * which is a full bar. */
   spent?: number;
-  /**
-   * Where this card sits in the bank, counted from one.
-   *
-   * The card's place in the row rather than the theme's place in the catalogue: the six in
-   * front of a player are numbered one to six whatever they are.
-   */
+  /** Where this card sits in the bank, counted from one. The card's place in the row rather than
+   * the theme's place in the catalogue: the six in front of a player are numbered one to six
+   * whatever they are. */
   index?: number;
   /** Asking for this theme. Nothing is decided yet, so nothing acts on it yet. */
   onPick?: (theme: ThemeId) => void;
-  /** Whether the card idles. On by default, since a still card is the odd one out; off for a gallery row or anything already moving. */
+  /** Whether the card idles. On by default, since a still card is the odd one out; off for a
+   * gallery row or anything already moving. */
   moving?: boolean;
 }
 
-/**
- * The theme's own first letter, as the card's substance.
- *
- * One letter rather than a word, and not to abbreviate the name — the name is right there and
- * is the thing being read. It is there because a card with a name and nothing else is a label.
- *
- * Taken from the name as the player sees it, so it follows the language.
- */
+/** The theme's own first letter, as the card's substance. One letter rather than a word, and not
+ * to abbreviate the name — the name is right there and is the thing being read. It is there
+ * because a card with a name and nothing else is a label. Taken from the name as the player
+ * sees it, so it follows the language. */
 function initialOf(name: string) {
   return [...name.trim()][0] ?? '';
 }
@@ -55,22 +43,16 @@ const Properties = {
   tint: '--ThemeCard-Tint',
 } as const;
 
-/**
- * One theme, as a card with its name on it.
- *
- * A button rather than a `Card` inside one, and the reason is the hover. `Card` paints an
- * opaque surface of its own, so a wash on the button underneath it would never be seen, and its
- * API is closed — it takes no `className` for the wash to be written on. The frame is therefore
- * drawn here from the same tokens `Card` uses, the one place in the design system where a
- * surface is re-declared rather than borrowed.
- *
- * A button because a card you can point at has to be one: a `div` with a hover on it is a
- * control the browser cannot focus or announce.
- *
- * The wash and the ink are written onto the card's own node rather than passed in, so the
- * theme's colour is the theme's business and not a prop every caller has to remember: a caller
- * that passed the colour could pass the wrong one, and nothing would see it.
- */
+/** One theme, as a card with its name on it. A button rather than a `Card` inside one, and the
+ * reason is the hover. `Card` paints an opaque surface of its own, so a wash on the button
+ * underneath it would never be seen, and its API is closed — it takes no `className` for the
+ * wash to be written on. The frame is therefore drawn here from the same tokens `Card` uses,
+ * the one place in the design system where a surface is re-declared rather than borrowed. A
+ * button because a card you can point at has to be one: a `div` with a hover on it is a control
+ * the browser cannot focus or announce. The wash and the ink are written onto the card's own
+ * node rather than passed in, so the theme's colour is the theme's business and not a prop
+ * every caller has to remember: a caller that passed the colour could pass the wrong one, and
+ * nothing would see it. */
 export function ThemeCard({
   theme,
   name,

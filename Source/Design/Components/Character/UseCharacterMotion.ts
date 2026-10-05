@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'preact/hooks';
 import { rollTiming, useSwayMotion } from '@/Design/Primitives';
 
-/**
- * The values one character brings to a reaction: where it comes from and how it is cocked.
- *
+/** The values one character brings to a reaction: where it comes from and how it is cocked.
  * Everything here is what makes one character differ from another. The squash, the duration and
- * the idle sway belong to `Pop` and `useSwayMotion`.
- */
+ * the idle sway belong to `Pop` and `useSwayMotion`. */
 export interface CharacterPop {
   tilt: number;
   offsetX: number;
@@ -18,26 +15,18 @@ export interface CharacterPop {
 /** The angle it is cocked over at on its first frame, in degrees. */
 const MaxPopTiltDeg = 5;
 
-/**
- * How far off its resting place it appears, in pixels.
- *
- * The "arrives from its own direction" part: a pop from exactly the same point every time looks
- * like a system animation.
- */
+/** How far off its resting place it appears, in pixels. The "arrives from its own direction"
+ * part: a pop from exactly the same point every time looks like a system animation. */
 const MaxPopOffsetPx = 7;
 
 /** Steps in the pop. Few, so each held shape is a real frame of the flipbook. */
 const MinPopSteps = 5;
 const MaxPopSteps = 8;
 
-/**
- * The nearest a character arrives from, in pixels.
- *
- * Never zero, because an arrival from exactly its resting place is not an arrival at all, and
- * because the sign of that offset is what says the character dropped in rather than surfacing.
- * A roll that landed on zero would break both, so the value starts above it rather than
- * trusting the roll.
- */
+/** The nearest a character arrives from, in pixels. Never zero, because an arrival from exactly
+ * its resting place is not an arrival at all, and because the sign of that offset is what says
+ * the character dropped in rather than surfacing. A roll that landed on zero would break both,
+ * so the value starts above it rather than trusting the roll. */
 const MinPopOffsetYAbsPx = 1.2;
 
 /** A number anywhere in a range. */
@@ -73,14 +62,10 @@ function popProperties(motion: CharacterPop): [string, string][] {
   ];
 }
 
-/**
- * The ref for a character's own node, carrying its idle sway and its arrival.
- *
- * The two are written by two effects onto one node rather than one hook writing both, because
- * the sway belongs to every thing on the page and the arrival belongs to a character: sharing
- * the node is what lets `Pop` read the arrival by inheritance while the sway runs on the same
- * element.
- */
+/** The ref for a character's own node, carrying its idle sway and its arrival. The two are
+ * written by two effects onto one node rather than one hook writing both, because the sway
+ * belongs to every thing on the page and the arrival belongs to a character: sharing the node
+ * is what lets `Pop` read the arrival by inheritance while the sway runs on the same element. */
 export function useCharacterMotion(): { current: HTMLSpanElement | null } {
   const motionRef = useSwayMotion();
   const [motion] = useState(rollPop);

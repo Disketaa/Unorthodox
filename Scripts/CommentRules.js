@@ -9,8 +9,7 @@
  * on punctuation.
  */
 
-const MESSAGE =
-  "COMMENT ONLY IF NEEDED, AND CODE IS NOT SELF UNDERSTANABLE IF SO DON'T MAKE A COMMENT";
+const MESSAGE = "Comment only if the code cannot explain itself.";
 
 const MAX_LINES = 3;
 
@@ -143,9 +142,9 @@ function formRule() {
       schema: [],
       messages: {
         scope:
-          "COMMENT ONLY IF NEEDED, AND CODE IS NOT SELF UNDERSTANABLE IF SO DON'T MAKE A COMMENT — this is module, class or type scope, so it takes a doc comment, not //",
+          "Comment only if the code cannot explain itself — this is module, class or type scope, so it takes a doc comment, not //",
         local:
-          "COMMENT ONLY IF NEEDED, AND CODE IS NOT SELF UNDERSTANABLE IF SO DON'T MAKE A COMMENT — this is inside a function body, so it takes //, not a doc comment",
+          "Comment only if the code cannot explain itself — this is inside a function body, so it takes //, not a doc comment",
       },
     },
     create(context) {
@@ -200,24 +199,20 @@ function isInsideFunctionBody(sourceCode, comment) {
 /**
  * The two canonical doc-comment shapes.
  *
- * A doc comment whose prose fits one line is one line. One that does not is a gutter block: opening
- * delimiter, aligned lines, closing delimiter, each on its own line. There is no third shape, and in
- * particular a short comment is never padded out to a block — that is what turns three lines of
- * prose into six physical lines, which reads as ceremony.
+ * Prose that fits on one line is one line, delimited on both ends by that line. Prose that does
+ * not is a gutter block, but the delimiters ride on the prose rather than sitting on lines of their
+ * own, and no gutter line is ever left blank. Padding a three-line comment out to six physical
+ * lines says nothing and reads as ceremony.
  *
- * The test is the prose, not the whole line. A single sentence is not split across three lines
- * because the opening delimiter and the closing one pushed it two columns over: that makes the
- * comment longer, not shorter, and the sentence is what the reader wanted. Only prose that
- * genuinely needs wrapping gets a block.
+ * The gutter block stays a real doc comment rather than a run of line comments. Only a doc comment
+ * attaches to a declaration in TypeScript and in every LSP that reads it, so a line comment above a
+ * function means no hover text and no IntelliSense. Inside a function body there is no declaration
+ * to document, and the `comments/form` rule already asks for a line comment instead.
  *
  * 96 columns, not prettier's 80. That governs code, and every comment body in this repo is written
  * wider: measured across 3730 body lines, the median is 77 and the 98th percentile is 97, so only
  * 2.5% exceed 96. Wrapping to 80 would rewrap two thirds of the comments in the tree and read as
  * churn rather than as a rule.
- *
- * Deliberately no autofix. Two attempts at one failed badly: the indent taken from the start of the
- * line was computed wrongly, and the "fix" then rewrote real source. A cosmetic rule that cannot
- * corrupt the codebase is worth keeping; one that can is not, whatever the intent.
  */
 const PRINT_WIDTH = 96;
 
@@ -227,42 +222,24 @@ function canonicalShape(comment, sourceCode, eol = "\n") {
   if (own.slice(0, comment.loc.start.column).trim() !== "") return sourceCode.getText(comment);
   const indent = " ".repeat(comment.loc.start.column);
 
-  // The value starts with the `*` that ends the opening delimiter, and that star is not content.
-  const flat = comment.value.replace(/^\*/, "").replace(/\s+/g, " ").trim();
-  if (flat === "") return sourceCode.getText(comment);
-
-  // Split after the leading star so the opening delimiter's own star is not read as content.
-  const parts = comment.value
+  // Paragraph gaps carry no information here, so the prose is flattened before it is re-wrapped.
+  const flat = comment.value
     .slice(1)
     .split(/\r?\n/)
-    .map((part) => part.replace(/^\s*\*?[ \t]?/, "").trim());
-  // A blank star is only kept between two paragraphs; leading and trailing blanks are padding.
-  while (parts.length > 0 && parts[0] === "") parts.shift();
-  while (parts.length > 0 && parts[parts.length - 1] === "") parts.pop();
+    .map((part) => part.replace(/^\s*\*?[ \t]?/, "").trim())
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (flat === "") return sourceCode.getText(comment);
 
-  // Prose on one line is one line, whatever the delimiters add. Reflowed below three lines means
-  // the author wrote one sentence, so it goes back on one line: a gutter block exists to hold a
-  // paragraph, not to break a sentence in half.
-  const paragraphs = [];
-  let current = [];
-  for (const part of parts) {
-    if (part === "") {
-      paragraphs.push(current.join(" "));
-      current = [];
-    } else current.push(part);
-  }
-  paragraphs.push(current.join(" "));
-  const filled = paragraphs.map((text) => (text === "" ? [] : reflow(text, PRINT_WIDTH - indent.length - 3)));
-  const lineCount = filled.reduce((total, lines) => total + lines.length, 0);
-  if (lineCount <= 2) return `/** ${paragraphs.filter((text) => text !== "").join(" ")} */`;
-
-  const wrapped = [];
-  filled.forEach((lines, index) => {
-    if (index > 0) wrapped.push("");
-    wrapped.push(...lines);
-  });
-  const body = wrapped.map((part) => (part === "" ? `${indent} *` : `${indent} * ${part}`));
-  return ["/**", ...body, `${indent} */`].join(eol);
+  const lines = reflow(flat, PRINT_WIDTH - indent.length - 3);
+  if (lines.length === 1) return `/** ${lines[0]} */`;
+  const last = lines.length - 1;
+  return lines
+    .map((part, index) =>
+      index === 0 ? `/** ${part}` : `${indent} * ${part}${index === last ? " */" : ""}`,
+    )
+    .join(eol);
 }
 
 /** Rewrap one paragraph to a width, breaking only at spaces. */
@@ -287,6 +264,7 @@ function shapeRule() {
     meta: {
       type: "problem",
       schema: [],
+      fixable: "code",
       messages: { shape: `${MESSAGE} — expected shape:\n{{expected}}` },
     },
     create(context) {
@@ -299,11 +277,13 @@ function shapeRule() {
             if (comment.type !== "Block" || !comment.value.startsWith("*")) continue;
             if (isJsxComment(text, comment)) continue;
             const expected = canonicalShape(comment, sourceCode, eol);
+            // The author text is already canonical, so nothing may be rewritten.
             if (sourceCode.getText(comment) === expected) continue;
             context.report({
               node: comment,
               messageId: "shape",
               data: { expected },
+              fix: (fixer) => fixer.replaceText(comment, expected),
             });
           }
         },

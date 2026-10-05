@@ -1,22 +1,18 @@
 import { normalizeAnswer } from './Normalization';
 import { PlayerId } from '@/Core';
 
-/**
- * Typical Russian endings to strip, in the order they must be tried: the first match wins, so a
+/** Typical Russian endings to strip, in the order they must be tried: the first match wins, so a
  * two-letter plural ending is never shadowed by the single letter that starts it. Words of four
- * characters or fewer are left alone, which keeps a short stem intact.
- */
+ * characters or fewer are left alone, which keeps a short stem intact. */
 const russianEndings = [
   'ам', 'ям', 'ом', 'ем', 'им', 'ым',
   'а', 'я', 'ы', 'ь', 'й', 'у', 'ю', 'е',
   'и',
 ];
 
-/**
- * Strip typical Russian endings from a word. Returns the word with the longest matching ending
+/** Strip typical Russian endings from a word. Returns the word with the longest matching ending
  * removed, if any. We only strip if the word length is greater than 4 to avoid stripping too
- * short words.
- */
+ * short words. */
 function stripRussianEndings(word: string): string {
   if (word.length <= 4) {
     return word;
@@ -29,7 +25,8 @@ function stripRussianEndings(word: string): string {
   return word;
 }
 
-/** Compute the Levenshtein distance between two strings. Returns the number of single-character edits (insertions, deletions, substitutions) required to change one string into the other. */
+/** Compute the Levenshtein distance between two strings. Returns the number of single-character
+ * edits (insertions, deletions, substitutions) required to change one string into the other. */
 function levenshteinDistance(a: string, b: string): number {
   if (a.length === 0) return b.length;
   if (b.length === 0) return a.length;
@@ -58,7 +55,8 @@ function levenshteinDistance(a: string, b: string): number {
   return matrix[b.length][a.length];
 }
 
-/** Normalize an answer for grouping purposes. This includes the basic normalization plus stripping Russian endings from each word. */
+/** Normalize an answer for grouping purposes. This includes the basic normalization plus
+ * stripping Russian endings from each word. */
 export function normalizeForGrouping(answer: string): string {
   const normalized = normalizeAnswer(answer);
   const words = normalized.split(' ');
@@ -66,12 +64,10 @@ export function normalizeForGrouping(answer: string): string {
   return processedWords.join(' ');
 }
 
-/**
- * Group answers based on similarity. Two answers are in the same group if: - Their
+/** Group answers based on similarity. Two answers are in the same group if: - Their
  * normalized-for-grouping strings are exactly equal, OR - Their Levenshtein distance is ≤1 and
  * the length of the longer string is ≥5. We use a simple greedy algorithm: iterate through
- * answers and assign to the first matching group.
- */
+ * answers and assign to the first matching group. */
 export function groupAnswers(answers: string[]): { groupId: number; answers: string[] }[] {
   const groups: { groupId: number; answers: string[] }[] = [];
   // The normalized string that represents each group, so a later answer can be matched to it.
@@ -108,12 +104,10 @@ export function groupAnswers(answers: string[]): { groupId: number; answers: str
   return groups;
 }
 
-/**
- * Group answers with their player IDs based on similarity. Two answers are in the same group
+/** Group answers with their player IDs based on similarity. Two answers are in the same group
  * if: - Their normalized-for-grouping strings are exactly equal, OR - Their Levenshtein
  * distance is ≤1 and the length of the longer string is ≥5. We return an array of groups, each
- * containing the groupId, the list of answers, and the list of playerIds.
- */
+ * containing the groupId, the list of answers, and the list of playerIds. */
 export function groupAnswersWithPlayers(answers: Map<PlayerId, string>): {
   groupId: number;
   answers: string[];

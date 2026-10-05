@@ -1,14 +1,10 @@
 import { Glyph, GlyphSide } from './RollGlyph';
 import styles from './GlyphColumn.module.css';
 
-/**
- * Writes one mark's rolled values onto its node.
- *
- * Custom properties rather than a style prop, the way the paper overlay sets its own drift: the
- * component keeps a closed API and the stylesheet still decides what each value means. Only
- * unitless numbers and percentages cross this boundary; every length, including a mark's size,
- * comes from `Tokens.css`.
- */
+/** Writes one mark's rolled values onto its node. Custom properties rather than a style prop,
+ * the way the paper overlay sets its own drift: the component keeps a closed API and the
+ * stylesheet still decides what each value means. Only unitless numbers and percentages cross
+ * this boundary; every length, including a mark's size, comes from `Tokens.css`. */
 function applyGlyph(node: HTMLSpanElement, glyph: Glyph): void {
   const properties: [string, string][] = [
     ['--Glyph-Rotation', `${glyph.rotation.toFixed(2)}deg`],
@@ -31,16 +27,11 @@ export interface GlyphColumnProps {
   side: GlyphSide;
 }
 
-/**
- * One band of marks down a side of the screen.
- *
- * Two nested elements per mark: the outer one carries the parallax offset, the inner one
- * carries the drift animation. A single element could not do both, because a running animation
- * owns its transform and would drop the parallax.
- *
- * Decorative only, so the column is hidden from assistive technology and lets pointer events
- * through, which keeps the interface underneath usable.
- */
+/** One band of marks down a side of the screen. Two nested elements per mark: the outer one
+ * carries the parallax offset, the inner one carries the drift animation. A single element
+ * could not do both, because a running animation owns its transform and would drop the
+ * parallax. Decorative only, so the column is hidden from assistive technology and lets pointer
+ * events through, which keeps the interface underneath usable. */
 export function GlyphColumn({ glyphs, side }: GlyphColumnProps) {
   return (
     <div class={`${styles.Root} ${styles[`Side${side}`]}`} aria-hidden="true">

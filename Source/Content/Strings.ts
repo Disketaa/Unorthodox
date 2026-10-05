@@ -7,13 +7,11 @@ export const Strings = {
   common: {
     /** Acknowledges the message on an info screen, whatever the message was. */
     ok: 'Ок',
-    /**
-     * Abandons what the screen was waiting for, rather than acknowledging what it said. A
+    /** Abandons what the screen was waiting for, rather than acknowledging what it said. A
      * different word from `ok` on purpose: on a screen whose message is a fact already settled,
      * the button confirms and the screen goes away. On one that is still waiting, the same
      * button would be promising an outcome it cannot deliver, and this says what it actually
-     * does.
-     */
+     * does. */
     cancel: 'Отмена',
   },
   join: {
@@ -34,33 +32,26 @@ export const Strings = {
     roomFull: 'Комната заполнена',
     /** The accessible name of the icon-only control that leaves the room. */
     exit: 'Выйти из комнаты',
-    /** Says that the host's "*" took effect, since nothing else on screen moves when only the console does. Only shown while logging is on, so turning it off needs no announcement. */
+    /** Says that the host's "*" took effect, since nothing else on screen moves when only the
+     * console does. Only shown while logging is on, so turning it off needs no announcement. */
     debugOn: 'Отладка включена',
-    /**
-     * Puts an invented player in the room, so a host can try a full room alone. Named as what
+    /** Puts an invented player in the room, so a host can try a full room alone. Named as what
      * it does to the room, and left in the imperative because it is something to do rather than
-     * a state to read.
-     */
+     * a state to read. */
     addBot: 'Добавь бота',
     /** What the host's control on a player says, naming who it would remove. */
     kick: (name: string) => `Исключить ${name}`,
-    /**
-     * The pace the room plays at, and the three waits it decides.
-     *
-     * Named as the game is named, so the two buttons say what picking one does rather than
-     * naming a speed nobody has an idea of.
-     */
+    /** The pace the room plays at, and the three waits it decides. Named as the game is named,
+     * so the two buttons say what picking one does rather than naming a speed nobody has an
+     * idea of. */
     settings: {
       title: 'Настройки',
-      /** On the rule that opens the body of the card, naming what is under it: the two pace buttons and the three waits they decide, which are one thing. */
+      /** On the rule that opens the body of the card, naming what is under it: the two pace
+       * buttons and the three waits they decide, which are one thing. */
       params: 'Параметры',
-      /**
-       * The two paces, by the same key as `Pace`.
-       *
-       * Adjectives rather than names for the game: a button reading "Обычно" is a choice
-       * between two speeds, where "Стандартная игра" is a second name for the thing the card is
-       * already about.
-       */
+      /** The two paces, by the same key as `Pace`. Adjectives rather than names for the game: a
+       * button reading "Обычно" is a choice between two speeds, where "Стандартная игра" is a
+       * second name for the thing the card is already about. */
       paces: {
         Fast: 'Быстро',
         Standard: 'Обычно',
@@ -72,12 +63,8 @@ export const Strings = {
       seconds: (seconds: number) => `${seconds}с`,
     },
   },
-  /**
-   * Names for the character picker.
-   *
-   * The picker is in the design system and cannot read Strings itself, so the labels travel
-   * with it as a prop.
-   */
+  /** Names for the character picker. The picker is in the design system and cannot read Strings
+   * itself, so the labels travel with it as a prop. */
   characters: {
     names: {
       Butterfly: 'Бабочка',
@@ -127,17 +114,13 @@ Coral: 'Коралл',
     nextRound: 'Следующий раунд',
     waitingForHost: 'Ждём следующий раунд',
   },
-  /**
-   * What the game is doing right now, on the block above the theme bank.
-   *
-   * One sentence per phase and no more: the block says what is happening, the bank below it is
-   * the thing being done, and the player's own card says where they stand. A phase that had
-   * more to say would be a phase with a second thing on the screen.
-   *
-   * The first person rather than the third, because the sentence is about this browser's own
-   * moment — it is the theme in front of them being picked — and a block reading about somebody
-   * else while the player is doing it is one they have to translate.
-   */
+  /** What the game is doing right now, on the block above the theme bank. One sentence per phase
+   * and no more: the block says what is happening, the bank below it is the thing being done,
+   * and the player's own card says where they stand. A phase that had more to say would be a
+   * phase with a second thing on the screen. The first person rather than the third, because
+   * the sentence is about this browser's own moment — it is the theme in front of them being
+   * picked — and a block reading about somebody else while the player is doing it is one they
+   * have to translate. */
   phase: {
     choosingTheme: (name: string) => `${name} выбирает тему…`,
     writing: 'Все пишут ответы…',
@@ -151,13 +134,10 @@ Coral: 'Коралл',
     playAgain: 'Сыграть ещё раз',
     place: (rank: number) => `Место: ${rank}`,
   },
-  /**
-   * The themes a lobby is offered, by the same key as `ThemeId`.
-   *
-   * Here rather than beside the theme bank because a theme's name is text and the bank is ids:
-   * the six cards on the game screen are drawn from these and nothing else, so adding a theme
-   * means a key in `Core/Themes.ts` and a word here.
-   */
+  /** The themes a lobby is offered, by the same key as `ThemeId`. Here rather than beside the
+   * theme bank because a theme's name is text and the bank is ids: the six cards on the game
+   * screen are drawn from these and nothing else, so adding a theme means a key in
+   * `Core/Themes.ts` and a word here. */
   themes: {
     /** Names the row of cards, so the six read as one set rather than as six cards. */
     title: 'Темы',
@@ -179,7 +159,8 @@ Coral: 'Коралл',
     nameTaken: 'Это имя уже занято',
     /** The room was past its lobby, so this player has a round they were never in. */
     alreadyStarted: 'Игра уже началась',
-    /** Every seat is taken. The count is the host's, so it travels rather than being written here. */
+    /** Every seat is taken. The count is the host's, so it travels rather than being written
+     * here. */
     roomFull: (maxPlayers: number) => `В комнате уже ${maxPlayers} игроков`,
     kicked: 'Вы были исключены',
     connecting: 'Подключаемся…',

@@ -1,20 +1,13 @@
 import type { HostState, Player } from '@/Game';
 import type { PlayerId } from '@/Core';
 
-/**
- * The host's game state, as plain data and back again.
- *
- * Split from the storage that holds it, so a round's shape can be checked without a tab.
- * Written out per phase and read back field by field, because a cast promises a shape nothing
- * checked.
- */
+/** The host's game state, as plain data and back again. Split from the storage that holds it, so
+ * a round's shape can be checked without a tab. Written out per phase and read back field by
+ * field, because a cast promises a shape nothing checked. */
 
-/**
- * Plain data as name/value pairs, so a value can be read without a cast.
- *
- * `Object.entries` is what makes this possible: it reads an object of unknown shape where
- * reading a property off the unknown would need a cast to say what it was.
- */
+/** Plain data as name/value pairs, so a value can be read without a cast. `Object.entries` is
+ * what makes this possible: it reads an object of unknown shape where reading a property off
+ * the unknown would need a cast to say what it was. */
 type Fields = Map<string, unknown>;
 
 function fieldsOf(value: unknown): Fields {
@@ -36,12 +29,9 @@ function rawPairs(fields: Fields, name: string): unknown[] {
   return Array.isArray(value) ? value : [];
 }
 
-/**
- * A stored list of pairs back as a map, dropping anything that is not one.
- *
- * Guarded rather than cast, because what is in storage was written by an older version of this
- * file or by nothing at all, and an entry that does not look like what it claims is not a seat.
- */
+/** A stored list of pairs back as a map, dropping anything that is not one. Guarded rather than
+ * cast, because what is in storage was written by an older version of this file or by nothing
+ * at all, and an entry that does not look like what it claims is not a seat. */
 function toMap<V>(
   pairs: readonly unknown[],
   isValue: (value: unknown) => value is V,

@@ -159,7 +159,7 @@ that against an expectation built with an indent on line one made 16 of HostRost
    - `comments/max-lines` — one comment (`//` run or `/* */` block) is at most 3 lines
    - `comments/no-trailing` — no comment after code on the same line
    - `comments/no-block-in-ts` — no bare `/* */` inside `.ts`/`.tsx` except eslint directives
-   - All three report: `COMMENT ONLY IF NEEDED, AND CODE IS NOT SELF UNDERSTANABLE IF SO DON'T MAKE A COMMENT`
+   - All three report: `Comment only if the code cannot explain itself.`
 2. Test files: `max-lines` off, `no-trailing` off, `no-block-in-ts` on. Tests get
    length freedom, not a second dialect.
 3. Fix the 315 existing long comments, file by file.

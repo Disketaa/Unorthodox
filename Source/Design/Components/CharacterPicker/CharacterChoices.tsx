@@ -10,15 +10,10 @@ export interface ColorChoiceProps {
   onPick: (color: CharacterColor) => void;
 }
 
-/**
- * One tint, as a button.
- *
- * The drawing it holds is a plain block of colour: the row above already shows every character
- * at full size, and repeating that artwork eight more times would make the palette heavier than
- * the choice needs.
- *
- * No border of its own, because the button around it is already the outline of the cell.
- */
+/** One tint, as a button. The drawing it holds is a plain block of colour: the row above already
+ * shows every character at full size, and repeating that artwork eight more times would make
+ * the palette heavier than the choice needs. No border of its own, because the button around it
+ * is already the outline of the cell. */
 export function ColorChoice({
   name,
   label,

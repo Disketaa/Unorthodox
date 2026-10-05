@@ -1,10 +1,6 @@
-/**
- * Whether a room has already counted itself in, remembered across a refresh.
- *
- * Told apart from a round under way by whether this device saw it happen, not by how much of
- * the phase is left: a phone that heard about the phase a second late is still here for the
- * start.
- */
+/** Whether a room has already counted itself in, remembered across a refresh. Told apart from a
+ * round under way by whether this device saw it happen, not by how much of the phase is left: a
+ * phone that heard about the phase a second late is still here for the start. */
 
 const KeyPrefix = 'unorthodox.counted.';
 

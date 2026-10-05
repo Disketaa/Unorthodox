@@ -7,17 +7,17 @@ import { pruneStrayPath } from './Routes';
 import "@/Design/Tokens/Tokens.css";
 import "@/Design/Reset.css";
 
-/** Run before the first render, so the router reads a URL that has already been cleaned of a path pasted in by hand, which no route could ever have produced. */
+/** Run before the first render, so the router reads a URL that has already been cleaned of a
+ * path pasted in by hand, which no route could ever have produced. */
 pruneStrayPath();
 
-/** Decoded before anyone presses anything, so the first click is not waiting on a fetch. The context opens suspended, which is why this can run here at all. */
+/** Decoded before anyone presses anything, so the first click is not waiting on a fetch. The
+ * context opens suspended, which is why this can run here at all. */
 void preloadSounds();
 
-/**
- * Debug logging is opt-in via ?debug, so the noisy connection tracing stays out of the way
+/** Debug logging is opt-in via ?debug, so the noisy connection tracing stays out of the way
  * during normal play. The flag is read from the query string, from the hash and from
- * localStorage, so it works wherever the ?debug ended up.
- */
+ * localStorage, so it works wherever the ?debug ended up. */
 if (isDebugEnabled()) {
   setLogLevel('debug');
 }

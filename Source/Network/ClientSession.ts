@@ -10,14 +10,10 @@ export type { BlockedReason } from './Protocol';
 
 const log = createLogger('ClientSession');
 
-/**
- * How often the client asks the host where the game is.
- *
- * A client that was suspended, backgrounded or offline misses the state messages sent on phase
- * changes, so it asks again on a timer. It also makes the countdown correct after the client
- * wakes up, because the state carries the host's phase start time rather than the moment the
- * client received it.
- */
+/** How often the client asks the host where the game is. A client that was suspended,
+ * backgrounded or offline misses the state messages sent on phase changes, so it asks again on
+ * a timer. It also makes the countdown correct after the client wakes up, because the state
+ * carries the host's phase start time rather than the moment the client received it. */
 export const SyncIntervalMs = 5_000;
 
 export class ClientSession {
@@ -146,13 +142,9 @@ join(playerName: string, look: PlayerLook): void {
     });
   }
 
-  /**
-   * Ask the host to change this player's character.
-   *
-   * The look the player picks here is the one they arrived with, until they change it. The host
-   * may refuse: it keeps the character a returning player already had, and it stops honouring
-   * changes once the game starts.
-   */
+  /** Ask the host to change this player's character. The look the player picks here is the one
+   * they arrived with, until they change it. The host may refuse: it keeps the character a
+   * returning player already had, and it stops honouring changes once the game starts. */
   setLook(look: PlayerLook): void {
     if (this.playerId === null) {
       log('warn', 'cannot set a look before receiving a playerId');
@@ -161,13 +153,10 @@ join(playerName: string, look: PlayerLook): void {
     this.transport.sendToHost({ type: 'SetLook', playerId: this.playerId, look });
   }
 
-  /**
-   * Whether this client is seated yet, logging why not if it is not.
-   *
-   * Every action that names a player goes through here, because all of them are meaningless
-   * before the host has assigned an id. Only a client that has reached Writing can reach this
-   * at all, so the guard catches the player's own click arriving before their join did.
-   */
+  /** Whether this client is seated yet, logging why not if it is not. Every action that names a
+   * player goes through here, because all of them are meaningless before the host has assigned
+   * an id. Only a client that has reached Writing can reach this at all, so the guard catches
+   * the player's own click arriving before their join did. */
   private seated(action: string): boolean {
     if (this.playerId !== null) {
       return true;
@@ -207,12 +196,9 @@ join(playerName: string, look: PlayerLook): void {
     return this.blocked;
   }
 
-  /**
-   * How many players the room holds, as the host last reported it.
-   *
-   * Zero until a refusal says otherwise, which is the only thing the UI reads it for: a
-   * full-room refusal is the one refusal whose sentence carries a number.
-   */
+  /** How many players the room holds, as the host last reported it. Zero until a refusal says
+   * otherwise, which is the only thing the UI reads it for: a full-room refusal is the one
+   * refusal whose sentence carries a number. */
   getRoomLimit(): number {
     return this.roomLimit;
   }

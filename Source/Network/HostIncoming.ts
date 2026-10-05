@@ -17,12 +17,9 @@ export interface IncomingContext {
   state: HostState;
 }
 
-/**
- * The game action a client message asks for, or undefined if it asks for none.
- *
- * A join is the only message that can be refused, and refusing it is a message of its own
- * rather than a change of state, which is why the transport is in here.
- */
+/** The game action a client message asks for, or undefined if it asks for none. A join is the
+ * only message that can be refused, and refusing it is a message of its own rather than a
+ * change of state, which is why the transport is in here. */
 export function toAction(context: IncomingContext): GameAction | undefined {
   const { message, peerId, roster, transport } = context;
   switch (message.type) {
@@ -78,12 +75,9 @@ export function toAction(context: IncomingContext): GameAction | undefined {
   }
 }
 
-/**
- * The look already recorded for a returning player.
- *
- * Undefined for a player with no record yet, which sends them on with the look they arrived
- * with. The record is on the roster, so a player four rounds in keeps the drawn character.
- */
+/** The look already recorded for a returning player. Undefined for a player with no record yet,
+ * which sends them on with the look they arrived with. The record is on the roster, so a player
+ * four rounds in keeps the drawn character. */
 function knownLook(state: HostState, playerId: string) {
   return state.players.get(playerId)?.look;
 }

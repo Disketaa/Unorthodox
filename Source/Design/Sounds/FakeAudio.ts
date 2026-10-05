@@ -14,13 +14,9 @@ export interface FakeAudio {
   resumed: number;
 }
 
-/**
- * A Web Audio context that records itself.
- *
- * happy-dom has no Web Audio, so the bank is exercised against a stand-in that reports what it
- * was asked to do: which clip was decoded, how many times a node was started, and the detune it
- * was played at.
- */
+/** A Web Audio context that records itself. happy-dom has no Web Audio, so the bank is exercised
+ * against a stand-in that reports what it was asked to do: which clip was decoded, how many
+ * times a node was started, and the detune it was played at. */
 export function installFakeAudio(): FakeAudio {
   const record: FakeAudio = { sounded: [], decoded: [], fetched: [], resumed: 0 };
 

@@ -1,12 +1,9 @@
 import { CharacterPicker } from './CharacterPicker';
 import { Stack, Text } from '@/Design/Primitives';
 
-/**
- * Placeholder labels, since the design system cannot read the real ones.
- *
- * Written out rather than generated, so that adding a ninth character or tint fails the build
- * here and points at this file, instead of rendering an unlabelled button in the gallery.
- */
+/** Placeholder labels, since the design system cannot read the real ones. Written out rather
+ * than generated, so that adding a ninth character or tint fails the build here and points at
+ * this file, instead of rendering an unlabelled button in the gallery. */
 const labels = {
   character: {
     Butterfly: 'Butterfly',

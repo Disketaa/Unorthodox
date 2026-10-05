@@ -10,32 +10,25 @@ export interface CharacterProps {
   character: CharacterId;
   color: CharacterColor;
   size?: CharacterSize;
-  /** Whether the character idles. On by default, since a still character is the odd one out; off for rows that are changing anyway. */
+  /** Whether the character idles. On by default, since a still character is the odd one out; off
+   * for rows that are changing anyway. */
   moving?: boolean;
-  /**
-   * Plays the reaction squash. Change the value to react again, so clicking the same character
-   * twice plays the pop twice.
-   *
-   * Deliberately not a boolean. A boolean would also change when a character is *un*chosen, and
-   * the character that lost the choice would pop as though it had been picked. Holding a
-   * per-character count that only ever goes up means the character you chose reacts, and only
-   * it.
-   */
+  /** Plays the reaction squash. Change the value to react again, so clicking the same character
+   * twice plays the pop twice. Deliberately not a boolean. A boolean would also change when a
+   * character is *un*chosen, and the character that lost the choice would pop as though it had
+   * been picked. Holding a per-character count that only ever goes up means the character you
+   * chose reacts, and only it. */
   pulse?: number;
   /** Its place in a row, so a row of reactions ripples rather than firing at once. */
   index?: number;
 }
 
-/**
- * A player drawn as one of the characters, in one of the tints.
- *
- * `Fill` takes its size from the space it is given, which is what the picker needs on a narrow
- * screen; the named sizes are fixed tokens for the roster and the scoreboard, where the line
- * has to be the same length every time.
- *
- * Decorative: the character repeats information the name beside it already carries, so it is
- * hidden from assistive technology rather than given a label that would be read out twice.
- */
+/** A player drawn as one of the characters, in one of the tints. `Fill` takes its size from the
+ * space it is given, which is what the picker needs on a narrow screen; the named sizes are
+ * fixed tokens for the roster and the scoreboard, where the line has to be the same length
+ * every time. Decorative: the character repeats information the name beside it already carries,
+ * so it is hidden from assistive technology rather than given a label that would be read out
+ * twice. */
 export function Character({
   character,
   color,

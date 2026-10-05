@@ -44,13 +44,10 @@ function flush(): void {
   });
 }
 
-/**
- * Move this device on by `ms`, one tick at a time.
- *
- * Stepped rather than moved in one go because `act` batches everything inside it and flushes
- * once at the end: a test that jumped the whole count-in in a single call would only ever see
- * the number it landed on, and the numbers and notes in between are the thing being tested.
- */
+/** Move this device on by `ms`, one tick at a time. Stepped rather than moved in one go because
+ * `act` batches everything inside it and flushes once at the end: a test that jumped the whole
+ * count-in in a single call would only ever see the number it landed on, and the numbers and
+ * notes in between are the thing being tested. */
 function pass(ms: number): void {
   for (let elapsed = 0; elapsed < ms; elapsed += uiTickMs) {
     act(() => {
