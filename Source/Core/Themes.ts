@@ -23,12 +23,8 @@ export function isThemeId(value: unknown): value is ThemeId {
 }
 
 /** The tint each theme washes in, and names itself in. Reused rather than one hue per theme: the
- * palette holds eight tints and there are nine themes, so a theme that suits another theme's
- * colour takes it. Nothing here is a new colour — each is one of the eight `CharacterColor`
- * tints, so the wash and the ink come from `Accents`, which are already measured for contrast
- * and already on screen as the faces a player is drawn as. The wash rather than the raw tint,
- * because a raw tint behind a name fails contrast in every one of the eight; the ink step of
- * the same accent is what can be read on its wash. */
+ * palette holds eight tints and there are nine themes. Each is a `CharacterColor` tint, so wash
+ * and ink come from `Accents`, already contrast-checked. */
 const ThemeAccents: Readonly<Record<ThemeId, CharacterColor>> = {
   VideoGames: 'Violet',
   Nature: 'Lime',
@@ -41,19 +37,16 @@ const ThemeAccents: Readonly<Record<ThemeId, CharacterColor>> = {
   Random: 'Violet',
 };
 
-/** The accent a theme washes in, by the same key as `ThemeId`. One function rather than a table
- * callers index into, so the one thing a caller needs is the whole accent — wash and ink
- * together, since a wash without its ink is half an answer and a caller that picked one out of
- * the pair would have to know they belong together. */
+/** The accent a theme washes in, by the same key as `ThemeId`. A function rather than a table to
+ * index into, so the one thing a caller needs is the whole accent: wash and ink belong
+ * together, and a wash without its ink is half an answer. */
 export function themeAccent(theme: ThemeId): Accent {
   return Accents[ThemeAccents[theme]];
 }
 
 /** The themes one lobby is offered, drawn from the whole set without repetition. A partial
- * shuffle rather than six independent rolls, because a deal that can hold the same theme twice
- * is not a choice — a player would be weighing one card against its own duplicate. The
- * randomness is injected so a lobby's deal can be reproduced from its seed rather than being a
- * thing that happened once. */
+ * shuffle rather than six rolls, since a deal holding the same theme twice is not a choice. The
+ * randomness is injected so a deal is reproducible from its seed. */
 export function dealThemes(random: () => number, count: number): ThemeId[] {
   const pool = [...ThemeIds];
   const taken = Math.min(Math.max(count, 0), pool.length);

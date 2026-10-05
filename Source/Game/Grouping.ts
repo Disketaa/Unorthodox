@@ -64,10 +64,8 @@ export function normalizeForGrouping(answer: string): string {
   return processedWords.join(' ');
 }
 
-/** Group answers based on similarity. Two answers are in the same group if: - Their
- * normalized-for-grouping strings are exactly equal, OR - Their Levenshtein distance is ≤1 and
- * the length of the longer string is ≥5. We use a simple greedy algorithm: iterate through
- * answers and assign to the first matching group. */
+/** Group answers on exact normalized equality, or a Levenshtein distance of 1 once both strings
+ * are at least five long. Greedy: each answer joins the first group it matches. */
 export function groupAnswers(answers: string[]): { groupId: number; answers: string[] }[] {
   const groups: { groupId: number; answers: string[] }[] = [];
   // The normalized string that represents each group, so a later answer can be matched to it.
@@ -104,10 +102,7 @@ export function groupAnswers(answers: string[]): { groupId: number; answers: str
   return groups;
 }
 
-/** Group answers with their player IDs based on similarity. Two answers are in the same group
- * if: - Their normalized-for-grouping strings are exactly equal, OR - Their Levenshtein
- * distance is ≤1 and the length of the longer string is ≥5. We return an array of groups, each
- * containing the groupId, the list of answers, and the list of playerIds. */
+/** The same grouping, carrying the player each answer came from. */
 export function groupAnswersWithPlayers(answers: Map<PlayerId, string>): {
   groupId: number;
   answers: string[];

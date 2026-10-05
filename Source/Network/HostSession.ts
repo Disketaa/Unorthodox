@@ -46,9 +46,8 @@ export class HostSession {
     this.updateListener = listener;
   }
 
-  /** Open the room, picking up the game this tab was already running. A host who refreshes has
-   * not left, so the state comes back from where it was last written rather than from nothing:
-   * a fresh lobby here would be a different room with the same code, and everybody still in it
+  /** Open the room, picking up the game this tab was already running. A refreshing host has not
+   * left, so a fresh lobby would be a different room with the same code, and everybody in it
    * would be waiting on a host that no longer exists. */
   start(roomCode: string, hostName: string, look: PlayerLook): void {
     log('info', 'starting host session', roomCode, hostName);
@@ -154,10 +153,8 @@ export class HostSession {
   }
 
   /** Put an invented player in the room, for the host trying a full room alone. A join like any
-   * other, so the bot is in the roster and can be voted for and kicked. It is given a seat of
-   * its own rather than claimed from the roster, because there is no address behind it and
-   * nothing to go offline, which also keeps the room from waiting on an answer that will not be
-   * written. */
+   * other, so the bot can be voted for and kicked. Given a seat of its own rather than claimed
+   * from the roster: there is no address behind it, so nothing can go offline. */
   addBot(): void {
     if (!this.state) return;
     const action = botJoin(this.state, this.botsAdded + 1, Math.random);

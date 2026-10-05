@@ -47,13 +47,9 @@ function Demo({ caption, vertical, align, wordmark, spare }: DemoProps) {
   );
 }
 
-/** Three arrangements rather than one per combination: each fills the viewport, because filling
- * the viewport is what lets `Top` and `Center` differ at all, so a gallery of every combination
- * is a screen of scrolling per pair of them. Resize the window to see it. The last two go one,
- * two, then three across, and their fourth container wraps to a line of its own. `align` is
- * only visible once two containers are side by side: the second lines them up by the top edge
- * and the third centres them against one another, which is the difference between a wordmark
- * floating beside a menu and sitting in the middle of it. */
+/** Three arrangements rather than one per combination: each fills the viewport, which is what
+ * lets `Top` and `Center` differ at all. `align` only shows once two containers are side by
+ * side: the second lines them up by the top edge, the third centres them against one another. */
 export function ScreenGallery() {
   return (
     <Stack direction="Vertical" gap="Md">

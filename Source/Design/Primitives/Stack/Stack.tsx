@@ -19,18 +19,12 @@ export interface StackProps {
   justify?: StackJustify;
   fill?: StackFill;
   /** Whether the row takes the height its parent has left. The question `Screen` answers for a
-   * whole page of containers, and this answers for one row inside a page: a stack is otherwise
-   * exactly as tall as what is in it, so a child that centres itself in the space below a
-   * sibling has no space to be given. `1 0 auto` grows into the room and never shrinks below
-   * its own content, which is what lets the same row still scroll when its contents are taller
-   * than the room. */
+   * whole page, asked of one row inside it: a stack is otherwise exactly as tall as its
+   * contents. `1 0 auto` grows into the room but never shrinks below its content. */
   grow?: boolean;
   /** Whether the row keeps its contents on the screen rather than letting the page scroll. For
-   * the one row that is the whole game: the player's own card above and the bank of theme cards
-   * below it are both fixed arrangements, and on a device turned on its side there is not
-   * height for both. Scrolling is the wrong answer for a screen a player is looking at rather
-   * than reading — half the themes on offer end up below the fold, and the card has to be
-   * scrolled back to — so the row clips instead and what does not fit is simply not drawn. */
+   * the one row that is the whole game: a device on its side has no height for both. Scrolling
+   * is wrong for a screen being looked at, so the row clips and what does not fit is not drawn. */
   clip?: boolean;
   children?: ComponentChildren;
   padding?: StackSize;

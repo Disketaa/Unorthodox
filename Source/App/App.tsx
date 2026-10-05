@@ -14,14 +14,9 @@ import { navigate, parseRoute, roomPath, Route } from './Routes';
 import { GameRoom } from './GameRoom';
 import type { GameRoomProps } from './GameRoom';
 
-/** The player name is kept in localStorage, so it outlives the tab. Typing does not save it. The
- * name is written when a room is entered, join or create, so the stored name is always one the
- * player actually committed to and an abandoned half-typed name never becomes the next visit's
- * name. Until then the field is state only, and a reload inside a room shows the join screen
- * with a live room link and the next keystroke would join under a one-character name, which is
- * what the stored name prevents. localStorage is shared by every tab of the browser, so two
- * tabs on one device would enter as the same player. The host treats a re-joining known name as
- * the same seat, so the second tab rejoins the first rather than doubling it up. */
+/** The player name is kept in localStorage, so it outlives the tab. Typing does not save it: the
+ * name is written when a room is entered, so a half-typed name never becomes the next visit's.
+ * Two tabs share it, so the host reads them as one seat. */
 const NameStorageKey = 'unorthodox.playerName';
 
 function loadName(): string {
@@ -86,13 +81,9 @@ function Entry(props: JoinScreenProps) {
   );
 }
 
-/** The entry screen's wiring: the name, the code, and the two ways into a room. Split out
- * because all of it belongs to the join screen and none of it to the accent or the route, and
- * keeping it here is what leaves `App` about which screen is on rather than about how the entry
- * screen works. A room link that finds this browser without a name still has its code filled
- * in, which is the one thing the link knows: the room it names. The role is not the player or
- * the host's to pick here — it is what this browser remembers about the room, and `onCreate` is
- * what starts remembering. */
+/** The entry screen's wiring: the name, the code, and the two ways into a room. Split out so
+ * `App` stays about which screen is on rather than how the entry screen works. The role is not
+ * the player's to pick here: it is what this browser remembers. */
 function useEntryScreen(roomCodeFromLink?: string) {
   const [name, setName] = useState(loadName);
   const [roomCode, setRoomCode] = useState(() => roomCodeFromLink ?? '');

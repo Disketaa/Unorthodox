@@ -3,8 +3,7 @@ import { GameConfig } from '@/Game';
 
 /** Remaining time of a phase, counted from the host's phase start time. `startedAt` is the
  * host's clock, converted through the measured offset: counting from when a message arrived
- * would give a late or resumed client the full duration again. `active` stops the tick for a
- * phase with no clock, so the tab is not woken to read a zero it already knows. */
+ * would give a late or resumed client the full duration again. */
 export function useCountdown(
   durationMs: number,
   startedAt: number,

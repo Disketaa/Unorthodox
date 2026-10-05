@@ -1,8 +1,6 @@
-/** Normalize an answer string for comparison: lowercased, 'ё' folded to 'е', punctuation
- * replaced by a space, and runs of spaces collapsed. The 'ё' fold is deliberate: Russian
- * players type it and plenty of keyboards do not carry it, so the same word typed two ways has
- * to compare equal. Punctuation becomes a space rather than vanishing, so "а,б" splits into two
- * words instead of fusing into "аб". */
+/** Normalize an answer string for comparison: lowercased, 'ё' folded to 'е', punctuation to a
+ * space, runs of spaces collapsed. The fold is deliberate, since plenty of keyboards lack 'ё',
+ * and punctuation becomes a space so "а,б" splits rather than fusing to "аб". */
 export function normalizeAnswer(input: string): string {
   let result = input.toLowerCase();
   result = result.replace(/ё/g, 'е');

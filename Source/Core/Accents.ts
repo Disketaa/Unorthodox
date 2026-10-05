@@ -1,23 +1,17 @@
 import { CharacterColor, CharacterColors } from './Characters';
 
-/** The three accent steps a tint actually needs. The tint does two jobs the raw character colour
- * cannot, and each needs its own step: - `ink` is the hue taken dark enough to read as text,
- * and to draw a line that can be seen. Titles, section headings, scores, focus rings and the
- * border on a chosen cell are all set in it. At the raw tint the best of the eight manages 3.54
- * against white, which is why this is a separate value and the tint reused. - `wash` is a pale
- * tint filling the inside of a chosen cell. Nothing is written on it, so it carries no contrast
- * requirement of its own. - `tint` is the raw colour, and is the character body. The headings
- * take it on purpose even though five of the eight miss the large-text bar; that is recorded in
- * the test that names them rather than left to be discovered. There is deliberately no fill,
- * hover or press step. The two filled buttons are fixed colours — gold for the one that starts
- * something, cyan for the other — so nothing in the app fills with the accent, and a ramp
- * nothing reads is only a ramp to keep in step with the palette. */
+/** The three accent steps a tint actually needs. The raw character colour does two jobs it
+ * cannot: read as text, and fill a cell. Deliberately no fill, hover or press step, since the
+ * two filled buttons are fixed colours. */
 export interface Accent {
-  /** The character body's own colour. */
+  /** The character body's own colour. Headings take it even though five of the eight miss the
+   * large-text bar; the test naming them records that rather than leaving it to be discovered. */
   tint: string;
-  /** The hue dark enough to read as text or to draw a meaningful line. */
+  /** The hue dark enough to read as text or to draw a meaningful line. Separate because at the
+   * raw tint the best of the eight manages 3.54 against white. */
   ink: string;
-  /** A pale wash of the hue, for the inside of a chosen cell. */
+  /** A pale wash of the hue, for the inside of a chosen cell. Nothing is written on it, so it
+   * carries no contrast requirement of its own. */
   wash: string;
 }
 

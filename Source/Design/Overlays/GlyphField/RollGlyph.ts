@@ -6,9 +6,8 @@ import type { Random } from '@/Core';
 const Symbols = ['@', '#', '$', '%', '&', '*', '+', '=', '?', '!', '~', ';', ':', '/', '\\', '^'];
 
 /** How many marks along one band, and so how finely the height is divided. Doubled from
- * twenty-two: a mark is much wider than it is tall, so the band read as a few large shapes with
- * gaps. More marks is the fix rather than smaller ones — a smaller mark on a phone is barely
- * larger than the body text behind it. */
+ * twenty-two, since a mark is much wider than tall and the band read as a few large shapes.
+ * More marks, not smaller ones: a smaller mark on a phone is near body-text size. */
 export const SlotsPerBand = 44;
 
 export type GlyphTone = 'Light' | 'Mid' | 'Deep';
@@ -73,9 +72,8 @@ function fixedBetween(min: number, max: number, random: Random): number {
 }
 
 /** One slot's centre along the band, in percent. Spread over the band rather than the viewport,
- * so marks are dense everywhere the band is tall. The slots run to the band's own ends because
- * it is pulled past both screen edges, which carries the field off the top and bottom rather
- * than stopping at them. */
+ * so marks are dense everywhere it is tall. The slots run past both screen edges, carrying the
+ * field off the top and bottom. */
 function slotTop(slot: number, random: Random): number {
   const jitter = (random() * 2 - 1) * slotStep() * JitterShare;
   return (100 * slot) / (SlotsPerBand - 1) + jitter;

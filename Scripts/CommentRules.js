@@ -265,7 +265,7 @@ function shapeRule() {
       type: "problem",
       schema: [],
       fixable: "code",
-      messages: { shape: `${MESSAGE} — expected shape:\n{{expected}}` },
+      messages: { shape: `${MESSAGE} — this one is padded out; eslint --fix reshapes it.` },
     },
     create(context) {
       return {
@@ -282,7 +282,6 @@ function shapeRule() {
             context.report({
               node: comment,
               messageId: "shape",
-              data: { expected },
               fix: (fixer) => fixer.replaceText(comment, expected),
             });
           }

@@ -1,10 +1,8 @@
 import type { BlockedReason, HostMessage } from './Protocol';
 
 /** What a refusal means to a client, once the host has sent one. A table rather than four cases
- * in the message handler, because the four refusals differ in exactly two facts and the handler
- * had grown a case each to say so. `closes` is the one that matters: a kicked player must not
- * be left listening to the room they were put out of, and a player who was merely refused is
- * still welcome to knock again. */
+ * in the handler, since the refusals differ in two facts. `closes` matters most: a kicked
+ * player must not sit listening to a room they were put out of. */
 export interface Refusal {
   reason: BlockedReason;
   /** Whether the session stops listening as well as asking. */

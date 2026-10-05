@@ -18,10 +18,9 @@ const timing = {
   scoresDurationMs: 15000,
   graceMs: 3000,
   uiTickMs: 100,
-  /** The count-in before the first round, and the writing time it is added to. The writing phase
-   * is this much longer than the pace says, so the count-in is time the players get rather than
-   * time taken from them. Two parts, the shade first and the numbers over it, so the first is
-   * not already half faded. */
+  /** The count-in before the first round, and the writing time it is added to. Writing is this
+   * much longer than the pace says, so the count-in is time the players get. Two parts, the
+   * shade first, so the first number is not already half faded. */
   startVeilMs: 300,
   startCountdownMs: 3000,
 };

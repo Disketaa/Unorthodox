@@ -20,9 +20,7 @@ export interface JoinFormHandlers {
 
 /** Validation for the entry form. The buttons stay enabled and validate on click. A disabled
  * button cannot explain itself, so the player presses it and only then sees which field is
- * empty, which is the usual pattern and reads better on a phone. Each button only reveals the
- * messages for the fields it actually requires: creating a room needs no code, so the code
- * stays quiet until join asks for it. */
+ * empty. Each button reveals only the messages for the fields it requires. */
 export function useJoinForm(name: string, roomCode: string): JoinFormHandlers {
   const [showNameError, setShowNameError] = useState(false);
   const [showCodeError, setShowCodeError] = useState(false);

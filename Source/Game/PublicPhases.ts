@@ -10,12 +10,9 @@ import type {
   PublicWritingState,
 } from './PublicState';
 
-/** One phase of the host's state, as a client is told about it. Every phase sends the roster,
- * and that is the change from the lobby-only version: the bar of players runs across the whole
- * game rather than appearing in the lobby and vanishing at the first topic, and a client that
- * refreshed mid-round is handed the room back instead of an empty strip. None of it is new
- * information — a name, a face and whether that player is still connected were all already on
- * the wire in the lobby. */
+/** One phase of the host's state, as a client is told about it. Every phase sends the roster, so
+ * the bar of players runs across the whole game and a client that refreshed mid-round is handed
+ * the room back rather than an empty strip. */
 function publicPlayers(state: HostState): PublicPlayer[] {
   const players: PublicPlayer[] = [];
   state.players.forEach((player, id) => {

@@ -13,11 +13,9 @@ function randomShift(): { x: number; y: number } {
   return Math.random() < 0.5 ? { x: shift, y: 0 } : { x: 0, y: shift };
 }
 
-/** A seamless paper texture laid over the whole app. The texture is static and repositioned once
- * a second. Because the image tiles, any offset stays seamless, and moving only one axis keeps
- * the drift slow and unnoticeable, the way real paper shifts under a lamp rather than sliding
- * diagonally. Decorative only, so it is hidden from assistive technology and ignores pointer
- * events, which is what keeps the interface underneath clickable. */
+/** A seamless paper texture laid over the whole app. Static and repositioned once a second.
+ * Because it tiles, any offset stays seamless, and moving one axis keeps the drift the way
+ * paper shifts under a lamp. Decorative, so it ignores pointers. */
 export function PaperBackground() {
   const texture = useRef<HTMLDivElement>(null);
 

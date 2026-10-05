@@ -13,11 +13,9 @@ export interface ColorSwatchProps {
   shape?: ColorSwatchShape;
 }
 
-/** One tint, as a block of colour. `Fill` takes its size from the space it is given, which is
- * what the picker needs so a cell keeps its share of the row on a narrow screen. The named
- * sizes are fixed tokens, for places that line the swatch up with a fixed-size character.
- * Decorative: the button around it carries the tint's name, so a screen reader already
- * announces the choice. This only has to show which colour it is. */
+/** One tint, as a block of colour. `Fill` takes its size from the space given, so a cell keeps
+ * its share of the row; the named sizes are fixed tokens. Decorative: the button around it
+ * carries the announced name. */
 export function ColorSwatch({
   color,
   size = 'Small',

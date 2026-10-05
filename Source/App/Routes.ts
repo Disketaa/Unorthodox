@@ -7,13 +7,8 @@ export type Route =
   | { kind: 'Room'; roomCode: string };
 
 /** Hash routing, because GitHub Pages does not rewrite SPA paths. A room link carries the code
- * and nothing else. It used to carry the role too, and that was a hole rather than a
- * convenience: a link that says who is hosting is a link anyone can edit, and one word changed
- * in the address is the app opening as the host of somebody else's room. What this device may
- * do with a room is remembered instead — see `RoomOwnership`. The hash is percent-encoded by
- * the browser, and room codes are Cyrillic, so the segments are decoded before reading. A
- * malformed escape sequence falls back to the raw text rather than throwing, which would leave
- * a blank page. */
+ * and nothing else: it used to carry the role too, which was a hole, since a link saying who is
+ * hosting is a link anyone can edit. See `RoomOwnership`. */
 export function parseRoute(hash: string): Route {
   const segments = decodeSegments(hash);
 
@@ -21,12 +16,9 @@ export function parseRoute(hash: string): Route {
     return { kind: 'Gallery' };
   }
   if (segments[0] === 'Room' && segments[1] !== undefined) {
-    // The raw segment is checked as well as the normalised code, because
-    // normalising truncates: a five letter path would otherwise be accepted as
-    // the first four letters and quietly join the wrong room.
-    //
-    // Anything after the code is ignored rather than refused, so links made before the
-    // role left the address still open the room they name.
+    // The raw segment is checked as well as the normalised one, because normalising
+    // truncates and a five letter path would otherwise join the wrong room. Anything
+    // after the code is ignored, so old links still open the room they name.
     const raw = segments[1];
     if (raw.length > GameConfig.limits.roomCodeLength) {
       return { kind: 'Join' };
@@ -58,12 +50,8 @@ function decodeSegments(hash: string): string[] {
 const RouteRoots = new Set(['Room', 'Gallery']);
 
 /** Drop path segments left behind by a hand-typed or pasted link. Routing is entirely in the
- * fragment, so a path is meaningless to the app, but it is not harmless: it survives in every
- * link copied afterwards and on GitHub Pages it turns into a 404 for anyone who opens it. The
- * base directory is unknown to the app, so the path is cut at the first segment that names a
- * route, which leaves a deploy path such as `/Unorthodox/` alone and removes `/Room/5978/Host`.
- * This runs before the router reads the hash, so a link that carries its route in both places
- * keeps working and simply loses the copy nobody can use. */
+ * fragment, but a stray path survives into every copied link and 404s. The base directory is
+ * unknown here, so the path is cut at the first segment naming a route. */
 export function pruneStrayPath(): void {
   const path = basePath();
   if (path === window.location.pathname) {
@@ -86,11 +74,8 @@ export function roomPath(roomCode: string): string {
 }
 
 /** Move to a route, with an empty path meaning the entry screen. Assigning an empty hash leaves
- * a bare `#` in the address bar, which then rides along in every link copied out of the app.
- * Leaving the root route therefore drops the fragment through the history API, which keeps the
- * search string and records an entry so the back button still works. The hashchange event is
- * raised by hand because the router listens for it and the history API does not fire it; a real
- * event is not needed, since the handler only re-reads `location.hash`. */
+ * a bare `#` that rides along in every copied link, so the root route drops the fragment
+ * through the history API. Hashchange is raised by hand; the API does not. */
 export function navigate(path: string): void {
   if (path !== '') {
     window.location.hash = path;

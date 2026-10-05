@@ -21,10 +21,9 @@ export interface PublicPlayer {
 export type PublicLobbyState = {
   phase: 'Lobby';
   players: PublicPlayer[];
-  /** The pace the host has set. Sent to every client rather than kept on the host, because the
-   * settings card is drawn for clients too and a card showing one pace while the room plays
-   * another is worse than no card. A client may press the buttons to see what a pace would
-   * mean, but what it reads back afterwards is this field and not its own click. */
+  /** The pace the host has set. Sent to every client because the settings card is drawn for
+   * clients too, and a card showing one pace while the room plays another is worse than no
+   * card. */
   pace: Pace;
 };
 

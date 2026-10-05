@@ -23,10 +23,9 @@ const MaxPopOffsetPx = 7;
 const MinPopSteps = 5;
 const MaxPopSteps = 8;
 
-/** The nearest a character arrives from, in pixels. Never zero, because an arrival from exactly
- * its resting place is not an arrival at all, and because the sign of that offset is what says
- * the character dropped in rather than surfacing. A roll that landed on zero would break both,
- * so the value starts above it rather than trusting the roll. */
+/** The nearest a character arrives from, in pixels. Never zero: an arrival from its own resting
+ * place is not an arrival, and the sign of the offset is what says the character dropped in
+ * rather than surfaced. */
 const MinPopOffsetYAbsPx = 1.2;
 
 /** A number anywhere in a range. */
@@ -62,10 +61,9 @@ function popProperties(motion: CharacterPop): [string, string][] {
   ];
 }
 
-/** The ref for a character's own node, carrying its idle sway and its arrival. The two are
- * written by two effects onto one node rather than one hook writing both, because the sway
- * belongs to every thing on the page and the arrival belongs to a character: sharing the node
- * is what lets `Pop` read the arrival by inheritance while the sway runs on the same element. */
+/** The ref for a character's own node, carrying its idle sway and its arrival. Two effects write
+ * one node: the sway belongs to everything on the page, the arrival to a character. Sharing the
+ * node is what lets `Pop` inherit the arrival while the sway runs. */
 export function useCharacterMotion(): { current: HTMLSpanElement | null } {
   const motionRef = useSwayMotion();
   const [motion] = useState(rollPop);

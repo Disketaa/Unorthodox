@@ -8,10 +8,8 @@ export const Strings = {
     /** Acknowledges the message on an info screen, whatever the message was. */
     ok: 'Ок',
     /** Abandons what the screen was waiting for, rather than acknowledging what it said. A
-     * different word from `ok` on purpose: on a screen whose message is a fact already settled,
-     * the button confirms and the screen goes away. On one that is still waiting, the same
-     * button would be promising an outcome it cannot deliver, and this says what it actually
-     * does. */
+     * different word from `ok` on purpose: on a settled screen the button confirms, and on one
+     * that is still waiting `ok` would promise an outcome it cannot deliver. */
     cancel: 'Отмена',
   },
   join: {
@@ -114,13 +112,9 @@ Coral: 'Коралл',
     nextRound: 'Следующий раунд',
     waitingForHost: 'Ждём следующий раунд',
   },
-  /** What the game is doing right now, on the block above the theme bank. One sentence per phase
-   * and no more: the block says what is happening, the bank below it is the thing being done,
-   * and the player's own card says where they stand. A phase that had more to say would be a
-   * phase with a second thing on the screen. The first person rather than the third, because
-   * the sentence is about this browser's own moment — it is the theme in front of them being
-   * picked — and a block reading about somebody else while the player is doing it is one they
-   * have to translate. */
+  /** What the game is doing right now, on the block above the theme bank. One sentence per
+   * phase, in the first person: the sentence is about this browser's own moment, and a block
+   * reading about somebody else while the player is doing it has to be translated. */
   phase: {
     choosingTheme: (name: string) => `${name} выбирает тему…`,
     writing: 'Все пишут ответы…',
@@ -135,9 +129,8 @@ Coral: 'Коралл',
     place: (rank: number) => `Место: ${rank}`,
   },
   /** The themes a lobby is offered, by the same key as `ThemeId`. Here rather than beside the
-   * theme bank because a theme's name is text and the bank is ids: the six cards on the game
-   * screen are drawn from these and nothing else, so adding a theme means a key in
-   * `Core/Themes.ts` and a word here. */
+   * theme bank because a theme's name is text and the bank is ids: adding a theme means a key
+   * in `Core/Themes.ts` and a word here. */
   themes: {
     /** Names the row of cards, so the six read as one set rather than as six cards. */
     title: 'Темы',

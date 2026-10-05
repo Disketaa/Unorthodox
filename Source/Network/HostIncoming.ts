@@ -37,11 +37,8 @@ export function toAction(context: IncomingContext): GameAction | undefined {
       }
       if (context.state.phase !== 'Lobby' && !roster.hasSeatForName(message.name)) {
         // A room mid-round has nowhere to put a player who was never in it: the answer they owe
-        // is already being read. Turned away rather than ignored, because an ignored client has
-        // only the joining screen to look at forever.
-        //
-        // A name that already holds a seat is not that case, and is why this is a question about
-        // seats: a tab that refreshed mid-round is that player.
+        // is already being read. Turned away rather than ignored, since an ignored client has only
+        // the joining screen forever. Asked about seats: a tab that refreshed is that player.
         log('info', 'refusing a join into a room that has started');
         transport.sendToPeer(peerId, { type: 'AlreadyStarted' });
         return undefined;

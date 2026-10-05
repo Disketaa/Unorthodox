@@ -10,10 +10,9 @@ export type { BlockedReason } from './Protocol';
 
 const log = createLogger('ClientSession');
 
-/** How often the client asks the host where the game is. A client that was suspended,
- * backgrounded or offline misses the state messages sent on phase changes, so it asks again on
- * a timer. It also makes the countdown correct after the client wakes up, because the state
- * carries the host's phase start time rather than the moment the client received it. */
+/** How often the client asks the host where the game is. A suspended or offline client misses
+ * the state messages sent on phase changes. Asking again on a timer also fixes the countdown on
+ * waking, since the state carries the host's start time. */
 export const SyncIntervalMs = 5_000;
 
 export class ClientSession {
@@ -154,9 +153,8 @@ join(playerName: string, look: PlayerLook): void {
   }
 
   /** Whether this client is seated yet, logging why not if it is not. Every action that names a
-   * player goes through here, because all of them are meaningless before the host has assigned
-   * an id. Only a client that has reached Writing can reach this at all, so the guard catches
-   * the player's own click arriving before their join did. */
+   * player goes through here, since all are meaningless before the host has assigned an id, and
+   * it catches a click arriving before the player's own join. */
   private seated(action: string): boolean {
     if (this.playerId !== null) {
       return true;

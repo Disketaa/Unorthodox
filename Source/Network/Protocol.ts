@@ -24,10 +24,9 @@ export type HostMessage =
   | { type: 'AlreadyStarted' }
   | {
       type: 'RoomFull';
-      /** How many players the room holds. On the wire rather than written into a sentence,
-       * because the room's limit is a number the host holds and the client may not read, and a
-       * refusal that says "full" without saying of what is a dead end the player cannot argue
-       * with. */
+      /** How many players the room holds. On the wire rather than written into a sentence: the
+       * limit is a number the host holds and the client may not read, so a bare "full" would be
+       * a dead end. */
       maxPlayers: number;
     }
   | { type: 'Kicked' };
@@ -40,10 +39,9 @@ function asRecord(value: unknown): Record<string, unknown> | undefined {
   return { ...value };
 }
 
-/** Why a client is not in a room. Every one of them is a message the host sends and all end the
- * same way on screen, so they are one field with a reason rather than several booleans that
- * could all be set. Declared here rather than on the session because the reasons are the host's
- * messages first and the client's own bookkeeping second. */
+/** Why a client is not in a room. All end the same way on screen, so one field with a reason
+ * rather than several booleans that could all be set. Here rather than on the session: these
+ * are the host's messages first. */
 export type BlockedReason = 'NameTaken' | 'AlreadyStarted' | 'RoomFull' | 'Kicked';
 
 export function isClientMessage(value: unknown): value is ClientMessage {
@@ -79,10 +77,8 @@ export function isHostMessage(value: unknown): value is HostMessage {
   }
   switch (record.type) {
     case 'State':
-      // The payload is not walked field by field. It is written by the host rather
-      // than by a peer, and a host sending a malformed state has broken its own
-      // room, so a client that rejected it would have nothing better to show. The
-      // screens read the fields they need and treat a missing one as absent.
+      // The payload is not walked field by field. A host sending a malformed state has
+      // broken its own room, so a client that rejected it would have nothing better to show.
       return 'state' in record;
     case 'SetPlayerId':
       return typeof record.playerId === 'string';

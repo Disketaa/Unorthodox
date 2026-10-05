@@ -19,9 +19,8 @@ export interface LobbyRoomProps {
 }
 
 /** Whether the room is ready to start, and whether it is already full. Counted from the players
- * who are actually here: a seat whose owner has dropped is still on the roster, but starting a
- * round would wait on an answer that can no longer arrive, so a room of one live player is a
- * room of one. */
+ * actually here: a seat whose owner has dropped is still on the roster, but starting would wait
+ * on an answer that can no longer arrive, so a room of one live player is one. */
 function readiness(players: readonly PublicPlayer[]): {
   enoughPlayers: boolean;
   roomFull: boolean;

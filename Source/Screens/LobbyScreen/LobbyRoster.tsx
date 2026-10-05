@@ -15,15 +15,8 @@ export interface LobbyRosterProps {
 }
 
 /** The roster: each player drawn as the character the host has them as, under a rule that names
- * it. The word is on the rule rather than in the card's title, because the card above is titled
- * by the room code: that is the room, and the list inside it is one part of it. Naming the list
- * here says the two are not the same thing without taking the card's own title away from the
- * thing the card is actually for. Two nested stacks, and the gap on the outer one is the
- * picker's rather than the chips': a separator takes its spacing from whatever it sits in, so a
- * roster packed tight and a picker spread out gave two rules dividing the same two things at
- * different distances from each other. The chips keep their own tight gap on the inner stack,
- * where nothing is dividing anything. Kept apart from the screen so the screen stays about
- * arranging parts. */
+ * it. The word is on the rule rather than in the card's title, since the card above is titled
+ * by the room code: that is the room, and the list inside it is one part of it. */
 export function LobbyRoster({ players, ownPlayerId, isHost, onKick }: LobbyRosterProps) {
   return (
     <Stack gap="Md">

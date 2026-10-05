@@ -7,11 +7,9 @@ const log = createLogger('JoinRetry');
 /** How often a join is re-sent while waiting for the host to become reachable. */
 export const JoinRetryIntervalMs = 2_000;
 
-/** A join that has to survive the host not being there yet. The first attempt is sent as soon as
- * the transport reports the host addressable, which is the common case and leaves no dead air.
- * A timer sits behind it as a backstop, for the two ways that first attempt can fail: the host
- * was addressable but the message was lost, or the addressable moment was missed entirely.
- * Without the timer, either reads as a room that simply never connects. */
+/** A join that has to survive the host not being there yet. The first attempt goes as soon as
+ * the transport reports the host addressable, which is the common case. A timer backs it up,
+ * for a lost message or a missed addressable moment. */
 export class JoinRetry {
   private message: ClientMessage | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;

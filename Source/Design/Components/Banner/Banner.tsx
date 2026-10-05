@@ -16,10 +16,9 @@ export interface BannerProps {
    * is already in the wording and four marks would make a set of notes read as a set of
    * statuses. Only the mark that has to say more than the words asks for a different one. */
   mark?: BannerMark;
-  /** The figure at the end of the line, held against the right edge. Present only where the
-   * block is a setting rather than a note: a value the eye is meant to compare down the column,
-   * which is the whole point of putting the words on the left and the number at the far end
-   * rather than together. */
+  /** The figure at the end of the line, held against the right edge. Only where the block is a
+   * setting rather than a note: a value the eye compares down the column, which is why the
+   * words are on the left and the number at the far end. */
   value?: string;
   children?: ComponentChildren;
 }

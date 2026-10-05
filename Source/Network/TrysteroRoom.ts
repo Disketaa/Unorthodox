@@ -56,11 +56,9 @@ function createHostPeerState(onFirstKnown: () => void): HostPeerState {
   };
 }
 
-/** Announce our own role to everyone in the room. This is broadcast rather than sent to a single
- * peer on purpose: `onPeerJoin` fires on both sides of a new connection, so a broadcast from
- * each side guarantees that whoever arrived second learns who the host is. Targeting only the
- * joining peer would still deadlock when the host joined first, because the host never sees a
- * join event for a client that is already present. */
+/** Announce our own role to everyone in the room. Broadcast rather than sent to one peer:
+ * `onPeerJoin` fires on both sides, so a broadcast from each reaches whoever arrived second.
+ * Targeting only the joiner would deadlock when the host first. */
 function announceRole(
   hello: MessageAction<JsonValue>,
   role: string,
@@ -133,12 +131,9 @@ function wirePeers(
   };
 }
 
-/** Wire up peer lifecycle, role exchange and message delivery for a joined room. Every peer
- * announces its role to the whole room on every peer join, so the handshake does not depend on
- * which side arrived first. Both protocol directions are created on every peer, because a
- * trystero action is a topic: a peer only receives messages on a channel it created itself.
- * Creating just the sending direction leaves the far end unsubscribed, so its messages are
- * dropped without a trace. */
+/** Wire up peer lifecycle, role exchange and message delivery for a joined room. Both directions
+ * of the protocol are created on every peer, since a trystero action is a topic and the far end
+ * would otherwise drop what is sent. */
 export function openRoom(options: {
   appId: string;
   roomCode: string;
