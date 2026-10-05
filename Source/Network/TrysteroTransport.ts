@@ -1,7 +1,7 @@
 import { Transport } from './Transport';
 import { describeMessage, preparePayload } from './Payload';
 import { startDiagnostics } from './Diagnostics';
-import { openRoom, HostRole, PlayerRole, type RoomHandlers } from './TrysteroRoom';
+import { openRoom, warmRelays, HostRole, PlayerRole, type RoomHandlers } from './TrysteroRoom';
 import { createLogger } from '@/Core';
 import { joinRoom, selfId, type JsonValue, type MessageAction } from 'trystero';
 
@@ -38,6 +38,7 @@ export class TrysteroTransport implements Transport {
   }
 
   start(roomCode: string, _playerName: string, isHost: boolean): void {
+    warmRelays();
     this.roomId = roomCode;
     this.isHost = isHost;
     const opened = openRoom({

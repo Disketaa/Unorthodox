@@ -1,5 +1,6 @@
 export * from './Transport';
 export * from './Protocol';
+export * from './TrysteroRoom';
 export * from './TrysteroTransport';
 export * from './InMemoryTransport';
 export * from './HostSession';

@@ -5,6 +5,10 @@ import { joinRoom, type JsonValue, type MessageAction } from 'trystero';
 
 const log = createLogger('TrysteroRoom');
 
+/** Namespace for the room opened only to dial the relays. No game room uses this name, so no
+ * player can ever appear in it. */
+const RelayWarmupRoom = '_relay-warmup';
+
 /** The action every peer announces its role on once a connection exists. */
 export const HelloAction = 'hello';
 
@@ -129,6 +133,19 @@ function wirePeers(
       handlers.onPeerLeave(peerId);
     }
   };
+}
+
+/** The room opened at start-up purely to dial the relays, held for the session. */
+let warmRoom: ReturnType<typeof joinRoom> | null = null;
+
+/** Open the relay sockets before anyone asks to join a room. A phone takes about three seconds
+ * to open them, while the burst announcing a peer to a room is over inside one and a third, so
+ * joining first spends it on nothing. Passive keeps the room dormant: it never announces. */
+export function warmRelays(): void {
+  if (warmRoom !== null) {
+    return;
+  }
+  warmRoom = joinRoom({ ...roomConfig('unorthodox-game'), passive: true }, RelayWarmupRoom);
 }
 
 /** Wire up peer lifecycle, role exchange and message delivery for a joined room. Both directions

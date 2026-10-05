@@ -9,6 +9,7 @@ import { GlyphField, PaperBackground } from '@/Design/Overlays';
 import { DiagnosticsPanel } from './Views/DiagnosticsPanel';
 import { useAccent } from './Hooks/UseAccent';
 import { hostsRoom, rememberHosting } from '@/Network/RoomOwnership';
+import { warmRelays } from '@/Network';
 import { createRoomCode, normalizeRoomCode } from './RoomCode';
 import { loadLook } from './LookStorage';
 import { navigate, parseRoute, roomPath, Route } from './Routes';
@@ -115,6 +116,11 @@ export function App() {
   const entry = useEntryScreen(route.kind === 'Room' ? route.roomCode : undefined);
   const [look, setLook] = useState<PlayerLook>(() => loadLook() ?? randomLook(Math.random));
   const { accent, onLook: onAccentLook } = useAccent();
+
+  // Dialing the relays takes a phone about three seconds, so it starts with the page rather
+  // than with the join: by the time a name and a code are typed, the burst that introduces this
+  // peer to a room lands on sockets that are already open.
+  useEffect(warmRelays, []);
   const onLook = (next: PlayerLook) => {
     onAccentLook(next);
     setLook(next);
