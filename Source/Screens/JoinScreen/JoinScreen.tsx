@@ -1,3 +1,4 @@
+import { ComponentChildren } from 'preact';
 import { Stack, Screen } from '@/Design/Primitives';
 import { Button, Card, Wordmark } from '@/Design/Components';
 import { Strings } from '@/Content';
@@ -11,6 +12,8 @@ export interface JoinScreenProps {
   onRoomCodeChange: (value: string) => void;
   onJoin: () => void;
   onCreate: () => void;
+  /** How the connection is going, offered here because a phone has no console to read. */
+  diagnostics?: ComponentChildren;
 }
 
 /** Enter tries to join, from either field. On a phone the keyboard's return key is the only key
@@ -36,6 +39,7 @@ export function JoinScreen({
   onRoomCodeChange,
   onJoin,
   onCreate,
+  diagnostics,
 }: JoinScreenProps) {
   const { errors, submitJoin, submitCreate } = useJoinForm(name, roomCode);
   const tryJoin = () => submitJoin(onJoin);
@@ -63,6 +67,7 @@ export function JoinScreen({
           <Button variant="Secondary" size="Medium" onClick={() => submitCreate(onCreate)}>
             {Strings.join.createButton}
           </Button>
+          {diagnostics}
         </Stack>
       </Card>
     </Screen>

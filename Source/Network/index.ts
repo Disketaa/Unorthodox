@@ -8,3 +8,4 @@ export * from './RoomStateStore';
 export * from './CountIn';
 export * from './RoomOwnership';
 export * from './ClientSession';
+export * from './Diagnostics';

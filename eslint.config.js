@@ -98,6 +98,15 @@ export default tseslint.config(
     },
   },
 
+  // The report exists to be read on a phone, which has no console to read. Trystero announces a
+  // relay it has given up on through console.warn rather than through any logger of ours, so
+  // those lines are the ones a stuck join is explained by, and intercepting them is the whole
+  // reason this file may name console at all.
+  {
+    files: ["Source/Network/Diagnostics.ts"],
+    rules: { "no-console": "off" },
+  },
+
   // Tests keep room for prose: an expectation table with a note per row is the clearest form.
   // The one-style rule stays, because a second dialect is what the rule exists to prevent.
   {

@@ -6,6 +6,7 @@ import { JoinScreen } from '@/Screens';
 import type { JoinScreenProps } from '@/Screens';
 import { AccentProvider } from '@/Design/Accent';
 import { GlyphField, PaperBackground } from '@/Design/Overlays';
+import { DiagnosticsPanel } from './Views/DiagnosticsPanel';
 import { useAccent } from './Hooks/UseAccent';
 import { hostsRoom, rememberHosting } from '@/Network/RoomOwnership';
 import { createRoomCode, normalizeRoomCode } from './RoomCode';
@@ -76,7 +77,7 @@ function Room(props: GameRoomProps) {
 function Entry(props: JoinScreenProps) {
   return (
     <WithBackground>
-      <JoinScreen {...props} />
+      <JoinScreen {...props} diagnostics={<DiagnosticsPanel />} />
     </WithBackground>
   );
 }
