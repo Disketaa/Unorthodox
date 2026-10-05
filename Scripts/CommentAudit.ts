@@ -15,7 +15,12 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 
-type Verdict = "kept" | "noisy" | "stale";
+/**
+ * `over-budget` is its own verdict rather than being folded into `stale`. A stale comment says
+ * something untrue; an over-budget one may be entirely accurate and merely too long. Reporting both
+ * as `stale` hides which one a fix has to address.
+ */
+type Verdict = "kept" | "noisy" | "stale" | "over-budget";
 
 interface Finding {
   readonly file: string;
@@ -396,8 +401,8 @@ function main(): void {
       findings.push({
         file: relative(process.cwd(), file).split(sep).join("/"),
         line: comment.line,
-        verdict: verdict === "kept" ? "stale" : verdict,
-        reasons: verdict === "kept" ? ["over-budget"] : reasons,
+        verdict: verdict === "kept" ? "over-budget" : verdict,
+        reasons: verdict === "kept" ? [`${comment.lines} lines, over by ${comment.lines - CSS_LINE_BUDGET}`] : reasons,
         text: comment.text.replace(/\s+/g, " ").trim().slice(0, 90),
       });
     }
@@ -405,8 +410,13 @@ function main(): void {
 
   const stale = findings.filter((finding) => finding.verdict === "stale");
   const noisy = findings.filter((finding) => finding.verdict === "noisy");
+  const overBudget = findings.filter((finding) => finding.verdict === "over-budget");
 
-  for (const [label, group] of [["STALE", stale], ["NOISY", noisy]] as const) {
+  for (const [label, group] of [
+    ["STALE", stale],
+    ["NOISY", noisy],
+    ["OVER BUDGET", overBudget],
+  ] as const) {
     if (group.length === 0) continue;
     console.log(`\n${label} (${group.length})`);
     for (const finding of group) {
@@ -416,8 +426,10 @@ function main(): void {
     }
   }
 
-  console.log(`\n${noisy.length} noisy, ${stale.length} stale, of ${files.length} files.`);
-  if (stale.length > 0) process.exitCode = 1;
+  console.log(
+    `\n${noisy.length} noisy, ${stale.length} stale, ${overBudget.length} over budget, of ${files.length} files.`,
+  );
+  if (stale.length > 0 || noisy.length > 0 || overBudget.length > 0) process.exitCode = 1;
 }
 
 main();

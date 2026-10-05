@@ -40,9 +40,8 @@
  * for one face with the screen to itself, and a character is drawn to be looked at rather than
  * found among others. A clamp, because a card in a hand and a card on a desktop are read from
  * different distances. Reached through the card rather than through a size of the character's
- * own: `Character` takes its size from a variant so one drawing is the same size everywhere,
- * and this is the one place it is not. The ceiling keeps the plank a plank: a face at the
- * picker's size would outgrow the words. */
+ * own: `Character` takes its size from a variant so one drawing is the same size everywhere.
+ * The ceiling keeps the plank a plank: a face at the picker's size would outgrow the words. */
 .Root > :last-child {
   width: var(--Size-PlayerCardCharacter);
   height: var(--Size-PlayerCardCharacter);

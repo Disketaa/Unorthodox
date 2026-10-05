@@ -24,8 +24,7 @@
  * because the file on disk is a black silhouette and the mark has to come out of the block in
  * the colour of the words beside it. Sized in `em` against the banner's own text rather than in
  * pixels, so it grows with the wording. The box is a quarter larger than the line it sits on,
- * and a little of that is the margin `contain` fits, so the shape itself comes out at about the
- * text's own height. */
+ * and a little of that is the margin `contain` fits. */
 .Icon {
   flex-shrink: 0;
   width: 1.25em;

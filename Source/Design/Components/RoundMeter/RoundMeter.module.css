@@ -1,11 +1,9 @@
 /* The theme's rounds as a row of ticks under the theme's name. `justify-content: center`
  * because the card centres its own contents on the cross axis and this is one of them: a row
  * ten marks wide would otherwise sit against one side, and six cards would each leave a
- * different amount of space beside their row. No `margin-top: auto` and no `width: 100%`. The
- * card is a column that centres its contents and neither grows, so this row falls directly
- * under the name; auto margins would pull it to the bottom and stretching it would put the
- * padding back into the centring. No margin of its own: the card holds that gap, so the pair is
- * one centred thing rather than two. */
+ * different amount of space beside their row. No `margin-top: auto` and no `width: 100%`:
+ * the card is a column that centres its contents and neither grows, so this row falls directly
+ * under the name. */
 .Root {
   /* Above the card's inner panel, which is what crops the number. Positioned on purpose rather
    * than left in the flow: the panel is absolutely positioned, and a positioned box paints over
@@ -44,10 +42,9 @@
 /* A round already played: the same shape, the same colour, and greyed. Greyed by opacity rather
  * than by a paler colour, because every tick is the theme's own accent and a spent one has to
  * still be that accent — a bar where the spent part is a different hue is a bar showing two
- * kinds of thing rather than one bar with less in it. Faint rather than empty, and that matters
- * more here than it did as a progress marker: the greyed ticks are still part of the theme and
- * still count towards its ten, so an absent one would read as a round that does not exist. What
- * is spent is drawn, not deleted. */
+ * kinds of thing rather than one bar with less in it. Faint rather than empty: the greyed ticks
+ * are still part of the theme and still count towards its ten, so an absent one would read as a
+ * round that does not exist. What is spent is drawn, not deleted. */
 .Spent {
   opacity: var(--Opacity-RoundMarkSpent);
 }

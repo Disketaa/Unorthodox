@@ -5,13 +5,10 @@
 
 /* A heading, which is a player's name in a lobby and a section name everywhere else. Cut with
  * an ellipsis rather than wrapped. A title sits in a row with controls at its end, and a name
- * long enough to wrap turned that row two lines tall and pushed the control off the end of it,
- * which is the part that has to stay reachable. The cut is in the drawing only: the name is
- * still whole in the data, so anything that reads it gets all of it. `display: block` and
- * `min-width: 0` are both load-bearing. The element is a span, and an inline box ignores
- * `overflow` entirely, so the ellipsis would never be drawn; and a block that is also a flex
- * item still refuses to shrink below its contents by default, which is what let a long name
- * push the row wide instead of being cut. */
+ * long enough to wrap turned that row two lines tall and pushed the control off the end of it.
+ * The cut is in the drawing only: the name is whole in the data, so anything that reads it gets
+ * all of it. `display: block` and `min-width: 0` are both load-bearing — an inline box ignores
+ * `overflow`, and a flex item refuses to shrink below its contents. */
 .VariantTitle {
   composes: Truncate from '../Truncate/Truncate.module.css';
   display: block;

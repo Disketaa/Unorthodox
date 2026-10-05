@@ -22,12 +22,8 @@
 /* Every child one equal share of the row's width. On the children rather than on the row, and
  * with a `0` basis, which is the whole mechanism. `justify-content` only ever moves children
  * around inside a row they do not fill, so it can centre a pair of buttons but cannot widen
- * them: the leftover width stays outside as empty row. Growing the children is what puts it
- * inside. The basis is `0` rather than `auto` so the shares are equal. Left at `auto`, each
- * child starts from its own content width and the leftover is split in proportion to that, so a
- * shorter word still gets a narrower button. `min-width: 0` alongside it, because a flex item's
- * floor is its content by default and a long word would then refuse to shrink below itself and
- * push the row wider than the frame it is in. */
+ * them: the leftover width stays outside as empty row. Growing the children puts it inside.
+ * The basis is `0` rather than `auto` so the shares are equal. */
 .FillEven > * {
   flex: 1 1 0;
   min-width: 0;

@@ -2,9 +2,8 @@
  * is deliberately not clipping: the marks are anchored to the outer edge, so the crowded part
  * of the field is the outer fifteen per cent of the screen and everything past that is a mark
  * spilling out of its band and thinning as it goes. Clipping would cut those marks off in a
- * straight line and the band would read as a hard-edged panel rather than as marks that happen
- * to be thickest at the screen edge. The field as a whole is still clipped to the viewport, so
- * nothing is drawn off screen. */
+ * straight line and the band would read as a hard-edged panel. The field as a whole is still
+ * clipped to the viewport, so nothing is drawn off screen. */
 .Root {
   position: absolute;
   top: calc(-1 * var(--Glyph-Overscan));
@@ -16,10 +15,8 @@
  * by this mark's own depth, so a shallow mark barely answers a scroll while a deep one travels.
  * It is separate from the animation because a running animation owns its transform and would
  * replace this one entirely. The spread is read the same way in both bands and only on the
- * vertical axis, so scrolling carries the field down the page rather than across it. It is
- * scaled by the mark's depth, so a deep mark travels further and the field spreads as a crowd
- * rather than as one sheet. Scroll is the only thing that writes this: no pointer, mouse or
- * touch position is read anywhere in the field. */
+ * vertical axis, so scrolling carries the field down the page rather than across it. A deep
+ * mark travels further, so the field spreads as a crowd rather than as one sheet. */
 .SideLeft .Glyph,
 .SideRight .Glyph {
   transform: translate3d(0, calc(var(--Glyph-Spread, 0px) * var(--Glyph-Depth, 1)), 0);
@@ -50,9 +47,8 @@
  * Measured in the mark's own width rather than in the band's, so a mark is placed the same way
  * relative to itself at every screen size, and the visible slice of it is always the same
  * slice. The same rolled share places both bands, and the right band reads it from the right
- * instead of the left: that is what makes the two sides the same arrangement rather than two
- * that happen to look alike. Nothing here adapts to the viewport, which is what keeps a phone
- * and a desktop showing the same field. */
+ * instead of the left: that is what makes the two sides the same arrangement. Nothing here
+ * adapts to the viewport, which keeps a phone and a desktop showing the same field. */
 .SideLeft .Glyph {
   left: calc(0% - var(--Glyph-Reach, 0.5) * var(--Glyph-EdgeReach) * var(--Glyph-Size));
 }
@@ -65,14 +61,8 @@
  * its edge starts. The two bands shift in opposite directions because `left` and `right` are
  * opposite: the left band is positioned by its left edge, so its centre is to the right of
  * that, while the right band is positioned by its right edge and its centre is to the left.
- * Shifting both the same way pushed the left band a whole half-width further off screen than
- * the right, and the right side looked wider. Sixty-six per cent rather than fifty, which is
- * further in than a mark's own half. The mark is much wider than the band, so this is what
- * carries the field from the screen edge towards the middle without anything reaching the text:
- * the marks overlap more the closer they get, and the outer part of the screen stays the dense
- * part. The `translate` property and not `transform`, because the transform on this element
- * belongs to the drift animation and the one on the parent belongs to the parallax. The three
- * compose, so nothing has to own two of them. */
+ * Shifting both the same way pushed the left band half a width further off, and the right side
+ * looked wider. */
 .SideLeft .Mark {
   translate: 30% 0;
 }

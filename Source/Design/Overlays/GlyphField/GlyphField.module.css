@@ -33,6 +33,5 @@
  * screen size: every value behind it is a share of the viewport with a floor under it, and none
  * of them is behind a breakpoint, so a resize moves the marks to the same relative place
  * instead of jumping them somewhere new. The marks reach well past their bands, so the middle
- * is busier on a phone than on a desktop. That is deliberate: the field stays present on every
- * device, and it sits under the interface and under the paper, so a busier middle is texture
- * behind the text rather than anything in front of it. */
+ * is busier on a phone than on a desktop. That is deliberate: it sits under the interface and
+ * under the paper, so a busier middle is texture behind the text rather than in front of it. */

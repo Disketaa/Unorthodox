@@ -437,14 +437,11 @@ body.PageFade {
   --FontSize-Display: var(--FontSize-4xl);
 
   /* How wide one theme card is, and the shape it keeps. Landscape on purpose: the names are one
-   * or two words, so a card taller than it is wide is mostly empty, and the bank of six only
-   * reads as six panels held out rather than as six tall shapes. Three across on a wide screen
-   * and two on a narrow one, decided by arithmetic rather than by a width query. A card count
-   * is not something a `calc()` can hold, but the count a row ends up with is only ever a
-   * consequence of how wide the card is, so the width is the smaller of what two across and
-   * what three across would allow. The smaller rather than always the three: below about five
-   * hundred pixels a theme name cut to three letters on every one of six cards is not a choice
-   * anybody can make. */
+   * or two words, so a card taller than it is wide is mostly empty. Three across on a wide screen
+   * and two on a narrow one, decided by arithmetic rather than by a width query. A card count is
+   * not something a `calc()` can hold, but the count a row ends up with is only a consequence of
+   * how wide the card is, so the width is the smaller of what two across and what three across
+   * allow. Below about five hundred pixels a name cut to three letters on all six is no choice. */
 
   /* The card width at which three across stops being worth it, and below which the row is two.
    * A card width rather than a screen width, which is the whole point of the arithmetic above:
@@ -486,35 +483,28 @@ body.PageFade {
   --Ratio-ThemeCard: 10 / 7;
 
   /* How tall one theme card is allowed to be. The card's shape is its width through
-   * `--Ratio-ThemeCard`, which on a screen with room is the whole of its height. On a device
-   * turned on its side it is not: six cards are two rows of three, and at the shape they are
-   * taller than the window, so the second row is off the bottom. The room for two rows rather
-   * than a share of the screen, because two rows are what has to fit: what is left after the
-   * page's margins and the one gap between the rows, divided by two, is the only height at
-   * which both rows are on screen. A flat share of a short screen is more than half of what two
-   * rows can have, which is how the second row ran off a phone on its side. The card keeps its
-   * width and loses height: a shorter card still as wide has more room for the name, and one
-   * that narrowed would be unreadable. */
+   * `--Ratio-ThemeCard`, which on a screen with room is the whole of its height. On a device turned
+   * on its side it is not: six cards are two rows of three, and at that shape they are taller than
+   * the window, so the second row is off the bottom. The room for two rows rather than a share of
+   * the screen, because two rows are what has to fit — what is left after the page's margins and the
+   * one gap, halved. The card keeps its width and loses height. */
   --Size-ThemeCardHeightMax: calc(
     (
         100dvh - 2 * var(--Layout-ScreenPaddingVertical) - var(--Space-ThemeCardsGap)
       ) / 2
   );
-  /* How large a theme's name is drawn. Its own token rather than one of the `--FontSize-H*`
-   * steps because it is the only name in the game that is the whole content of a panel: this is
-   * a single word with a third of a card under it, and at the section-heading step it read as a
-   * caption on something. A share of the card's own width rather than a size, so it shrinks
-   * with the card. A flat size would be right at one window and wrong at every other: the card
-   * narrows on a phone to fit two across, and a fixed 36px name in a card half that wide is a
-   * caption again. */
+  /* How large a theme's name is drawn. Its own token rather than one of the `--FontSize-H*` steps
+   * because it is the only name in the game that is the whole content of a panel: a single word
+   * with a third of a card under it, and at the section-heading step it read as a caption. A
+   * share of the card's own width rather than a size, so it shrinks with the card — a flat size
+   * would be right at one window and wrong at every other, since a fixed 36px name in a card half
+   * that wide is a caption again. */
   --FontSize-ThemeCard: calc(var(--Size-ThemeCardWidth) * 0.115);
-  /* How large a card's own number is drawn behind its name. Far larger than the name and far
-   * larger than the card, so the frame cuts it on two sides and what is left of it is most of a
-   * figure rather than the whole of one: a mark that fits inside the card is a second label,
-   * and this one is meant to be the panel's substance rather than another thing written on it.
-   * A share of the card's width, so it holds on a phone as well as on a desktop — the card
-   * narrows to fit two across, and a flat size would be a figure on a card rather than a figure
-   * filling it. */
+  /* How large a card's own number is drawn behind its name. Far larger than the name and larger
+   * than the card, so the frame cuts it on two sides and what is left is most of a figure rather
+   * than the whole of one: a mark that fits inside the card is a second label, and this one is
+   * meant to be the panel's substance. A share of the card's width, so it holds on a phone as
+   * well as on a desktop. */
   --FontSize-ThemeCardMark: calc(var(--Size-ThemeCardWidth) * 1.45);
   /* How far the figure is pushed past the card's centre towards its bottom right corner. In
    * `em` — the figure's own size — rather than a length or a share of the card, so it holds at
@@ -527,58 +517,35 @@ body.PageFade {
   /* How much bigger the name and the mark get under the pointer. A scale rather than a size,
    * because the two are at different sizes already — the name and the mark behind it — and a
    * second pair of sizes would be four numbers where one ratio says the same thing. Modest,
-   * because the card is already large and its name already fills a good part of it. Much more
-   * and the longest name wraps on hover, so a card that was one line becomes two the moment it
-   * is looked at. The mark's own share is four times this, because 1.12 of a figure already
-   * larger than the card moves almost nothing inside the crop — which is why the delay between
-   * the name and the mark was unnoticeable. A clipped figure and a line of text cannot answer
-   * to the same amount. */
+   * because the card is already large and its name already fills a good part of it: much more and
+   * the longest name wraps on hover. The mark's own share is four times this, because 1.12 of a
+   * figure already larger than the card moves almost nothing inside the crop. */
   --Scale-ThemeCardHover: 1.12;
   --Scale-ThemeCardMarkHover: 1.5;
   /* How far the mark is held back at rest, and under the pointer. Both values are well short of
    * one and they are not ordered against each other: the mark is a figure on a card, not a
-   * highlight, and which way it moves on hover is a matter of what the card is doing rather
-   * than a rule — it greys under the pointer here, and the scale and the delay do the rest of
-   * the work of the card opening up. What has to hold at both ends: the mark never competes
-   * with the name, which is drawn in the theme's tint at full strength, and the mark always
-   * changes something when the pointer arrives. A mark that answered nothing would be a figure
-   * on a card that did not notice it was being looked at. The mark is grey rather than the
-   * theme's own hue at rest, which is what puts it behind the theme rather than in it: a weaker
-   * tint is still the tint, and would compete with the ticks and the name for being the same
-   * colour as both. It takes the tint under the pointer. */
+   * highlight, and which way it moves on hover is a matter of what the card is doing rather than
+   * a rule. What has to hold at both ends: the mark never competes with the name, drawn in the
+   * theme's tint at full strength, and it always changes something when the pointer arrives.
+   * Grey at rest rather than the theme's own hue, which is what puts it behind the theme. */
   --Opacity-ThemeCardMark: 0.075;
   --Opacity-ThemeCardMarkHover: 0.1;
-  /* The grain on a theme card: the tile, how big it is drawn, how it blends and how much of
-   * itself it is worth. A separate texture from the paper rather than the paper at a smaller
-   * size, because the two are different finishes. The paper is a surface the whole page is
-   * printed on; this is a coat over one panel, and it is the same at any card size — a grain
-   * that scaled with its card would be a different finish on a phone than on a desktop, and a
-   * bank of six would not match. Drawn at its own size rather than scaled, which is the other
-   * half of this being visible at all. Scaled down to a hundred-odd pixels the tile is averaged
-   * into flat grey before it is drawn, and a flat grey multiplied over a card is the card: the
-   * grain exists in the original pixel size and is destroyed by any reduction of it. `overlay`,
-   * and which blend this is took three tries on cards this pale. `multiply` — the paper's
-   * blend, and the first thing tried — can only darken, so over a near-white surface it moves
-   * the card a very little per step and read as no grain at all. `difference` puts the grain in
-   * the darks and the lights both and does show, but it is violent enough at full strength to
-   * have been held down to a twentieth, which turned it back into a tint too faint to see.
-   * Overlay is where it settled, at an opacity well short of one: the grain is a finish over a
-   * card, not a texture the card is made of, and the name has to stay the thing being read
-   * through it. */
+  /* The grain on a theme card: the tile, how big it is drawn, how it blends and how much of itself
+   * it is worth. A separate texture from the paper, which is a surface the whole page is printed
+   * on; this is a coat over one panel. Drawn at its own size rather than scaled — scaled down to a
+   * hundred-odd pixels the tile averages into flat grey, and a flat grey multiplied over a card is
+   * the card. `overlay` took three tries: `multiply` can only darken, so over near-white it read
+   * as no grain, and `difference` shows only at a twentieth of its strength. */
   --Texture-ThemeCardNoise: url('../Overlays/Noise.gif');
   --Blend-ThemeCardNoise: overlay;
   --Opacity-ThemeCardNoise: 0.2;
   --Opacity-ThemeCardNoiseHover: 0.5;
   /* The round ticks along the bottom of a card: how big one is, how far apart they sit, how
-   * rounded, and how faint the ones the room is not on are. A tick rather than a dot, and
-   * taller than it is wide. A row of dots on a card this size reads as a rating or a strength
-   * meter, and ten of them is too many of one shape to be counted at a glance; a pipe is a mark
-   * in a list, which is what a round is. The sizes are in `em` of the card's own width, so the
-   * row is the same proportion of the card whatever the card's size — the card narrows on a
-   * phone to fit two across, and a fixed tick would leave ten marks spread across a phone's
-   * card or bunched at the end of a desktop's. The resting marks are the theme's own accent at
-   * full strength, because the row is one thing the card is saying — this theme, this many
-   * rounds — and the single greyed tick is what is left to play. */
+   * rounded, and how faint the ones the room is not on are. A tick rather than a dot, and taller
+   * than it is wide: a row of dots on a card this size reads as a rating meter, and ten of them is
+   * too many of one shape to count at a glance. The sizes are in `em` of the card's own width,
+   * so the row is the same proportion of the card whatever its size — the card narrows on a phone
+   * to fit two across, and a fixed tick would bunch the marks at the end of a desktop's. */
   --Size-RoundMarkWidth: 0.15em;
   --Size-RoundMarkHeight: 0.42em;
   --Radius-RoundMark: 0.075em;
@@ -592,14 +559,11 @@ body.PageFade {
   --Opacity-RoundMark: 1;
   --Opacity-RoundMarkSpent: 0.16;
   /* How much room a theme name keeps inside its card. A share of the card's width, and that is
-   * the whole of how a narrow screen is handled: at a flat 16px a card on a phone is a
-   * twentieth of its width in padding twice over — the card's own and the name's — and a card
-   * with that much of itself in padding is a card with no room for a name. Sharing the width
-   * means the card is narrowed and then scaled: the name, the number behind it, the letter in
-   * its corner, the row of rounds and the panel that crops the number are all shares of the
-   * same width, so a small card is a small card rather than a big one with less room in it. A
-   * twentieth is the 16px a flat size was, on the widest card, and it holds the name off the
-   * frame at every width below that. */
+   * the whole of how a narrow screen is handled: at a flat 16px a card on a phone is a twentieth
+   * of its width in padding twice over, and a card with that much of itself in padding has no
+   * room for a name. Sharing the width means the card is narrowed and then scaled — the name,
+   * the number behind it, the letter in its corner, the row of rounds and the panel that crops
+   * the number are all shares of the same width. */
   --Space-ThemeCardPadding: calc(var(--Size-ThemeCardWidth) * 0.05);
 
   /* How far the card's inner panel sits in from its edge. The panel is what crops the number
@@ -607,8 +571,7 @@ body.PageFade {
    * would crop it where the card already did, and a panel set in further than the card's own
    * padding would crop the name and the row of rounds with it. A share of the card's width
    * rather than a length, for the reason the padding is one: on a phone a flat inset is a panel
-   * inside a card with almost nothing between them, and the crop it makes stops being a margin.
-   * A fortieth is the 8px a flat size was on the widest card. */
+   * inside a card with almost nothing between them. */
   --Space-ThemeCardInset: calc(var(--Size-ThemeCardWidth) * 0.025);
 
   /* The gap between theme cards: a bezel rather than a field. `clamp` against the window rather
@@ -619,80 +582,46 @@ body.PageFade {
    * a fifth of a card and a row of six with more space between them than on them. */
   --Space-ThemeCardsGap: clamp(6px, 3vw, 16px);
   /* How wide the bank of cards is allowed to be: three cards and the two gaps between them, and
-   * not one card more. The cap rather than a breakpoint, for the reason `--Layout-ColumnsMax`
-   * is one. The row wraps because the cards are a fixed width, so on a wide screen six of them
-   * would fit and the fourth card would start a second row on its own — the middle of a bank of
-   * six reading as a row of four with a pair underneath. Capping the row's own width at three
-   * cards means the fourth always starts a new row, on any screen, without a stylesheet having
-   * to know how wide the window is. Three on a wide screen and two on a narrow one, and the cap
-   * is what says which. The card width above is never wider than two cards and a gap can hold,
-   * so on a narrow screen the row wraps at two on its own — which is the same wrap this cap
-   * causes on a wide screen, decided by one piece of arithmetic rather than by a width query
-   * over the row. `calc()` over the three tokens above rather than a number, so a card that
-   * changes size takes its cap with it. `Scripts/ThemeCardsLayout.test.ts` recomputes it and
-   * compares, which is what stops the cap and the three tokens from drifting apart. */
+   * not one card more. The cap rather than a breakpoint, for the reason `--Layout-ColumnsMax` is
+   * one. The row wraps because the cards are a fixed width, so on a wide screen six of them would
+   * fit and the fourth would start a second row on its own — the middle of a bank of six reading
+   * as a row of four with a pair underneath. Capping the row at three means the fourth always
+   * starts a new row, without a stylesheet having to know how wide the window is. */
   --Layout-ThemeCardsMaxWidth: calc(
     3 * var(--Size-ThemeCardWidth) + 2 * var(--Space-ThemeCardsGap)
   );
 
   /* Layout */
+
   /* How wide one container of a screen may be, and how many may sit side by side. The width is
-   * what a card's text is measured against, so it is the readable line length rather than a
-   * share of the screen: a card is never wider because the window is. It was the whole page's
-   * width while the app was a single fixed column, and it is one container's width now that a
-   * screen can lay several out across, which is the only thing that changed about it. The count
-   * is the cap on a row rather than a breakpoint. `Screen` sizes itself as this many columns
-   * wide, so a track past the third has nowhere to go and the row wraps on its own: a fourth
-   * card starts a new line without a width query saying where. One, two or three is decided by
-   * how much room there is, and three is the most that will ever be asked for. */
+   * what a card's text is measured against, so it is the readable line length rather than a share
+   * of the screen: a card is never wider because the window is. The count is the cap on a row
+   * rather than a breakpoint. `Screen` sizes itself as this many columns wide, so a track past the
+   * third has nowhere to go and the row wraps on its own — a fourth card starts a new line
+   * without a width query saying where. */
   --Layout-ContainerMaxWidth: 480px;
   --Layout-ColumnsMax: 3;
   /* How narrow a column in a row of several may get before the row stops being a row. Not
-   * `--Layout-ContainerMaxWidth`, and the difference is a layout that works on a laptop. The
-   * cap above is how wide one container may grow, which is the readable line length; nothing
-   * said a column in a row of three has to reach it, and measuring the row against the cap put
-   * the threshold at 1536px — wider than most laptops, so a room of three sat in one column on
-   * a 1440 screen with the space for all three plainly there. This is the width the row is
-   * *measured* at, not a floor on the track: the tracks inside the query are `1fr` and share
-   * the frame, and this is the point below which there is not enough room to be worth having.
-   * Its own floor is being legible rather than comfortable, since a column that opens a row is
-   * by definition as narrow as the row allows. The width at which the row actually opens is
-   * this times `--Layout-ColumnsMax`, plus the gaps and the page margin, and that total
-   * deliberately is not a token. A media query does not resolve `var()`, so the one declaration
-   * that needs the total cannot read a token at all, and a token nothing reads is a number that
-   * looks load-bearing and is not. It is written out in `Screen.module.css` and recomputed from
-   * these tokens by `Scripts/ScreenLayout.test.ts`, which is the only place that can see both
-   * sides at once and which fails rather than letting them drift. */
+   * `--Layout-ContainerMaxWidth`, and the difference is a layout that works on a laptop: measuring
+   * the row against the cap put the threshold at 1536px, so a room of three sat in one column on a
+   * 1440 screen with the space for all three plainly there. This is the width the row is
+   * *measured* at, not a floor on the track — the tracks inside the query are `1fr`. The width at
+   * which the row opens is this times `--Layout-ColumnsMax` plus the gaps and the page margin. */
   --Layout-ColumnMinWidth: 320px;
   /* The window width at which a full row of containers opens. A literal, and the one number in
-   * the file that is a whole row rather than a single thing. A media query cannot hold a
-   * `calc()` the minifier accepts, and cannot hold a `var()` at all, so the threshold has to be
-   * spelled out even though it is arithmetic over the tokens above. Which is why the arithmetic
-   * is written here rather than left in the stylesheet: one place to recompute, and
-   * `Scripts/ScreenLayout.test.ts` resolves the tokens and compares them against it, so a
-   * change to `--Layout-ColumnsMax`, `--Layout-ColumnMinWidth`, `--Space-Lg` or
-   * `--Layout-ScreenPaddingHorizontal` cannot quietly leave the row opening at a width the
-   * columns no longer fit into. */
+   * the file that is a whole row rather than a single thing. A media query cannot hold a `var()`
+   * at all, so the threshold has to be spelled out even though it is arithmetic over the tokens
+   * above. Which is why that arithmetic is written here rather than left in the stylesheet:
+   * `Scripts/ScreenLayout.test.ts` resolves the tokens and compares them against it, so a change
+   * to any of the four cannot leave the row opening where the columns no longer fit. */
   --Layout-ColumnMinWidth: 320px;
   --Layout-ContentPadding: var(--Space-Md);
   /* The margin around the whole screen, from the edge of the viewport to its first container.
    * Its own token rather than the card's, because the two are not the same distance and sharing
    * one number made them move together: a card's padding is inside its own frame and a body's
    * step is right for it, while a screen's is the only margin a top-aligned screen has. Two of
-   * them, vertical and horizontal, because they are not the same distance either. Down the page
-   * there is nothing but margin, so on a screen with room it is worth as much as the largest
-   * space there is. Across the page the container is already centred and the margin is only
-   * what keeps a wide container off the edge, so the large step spent 40px a side on the gap
-   * between the container and the frame of the page, which is margin nobody was reading. The
-   * vertical one is a clamp rather than the large step outright, and it is solved against both
-   * axes rather than one. A fixed 64px top and bottom is a screen's worth of margin spent
-   * before anything is drawn, and a game screen already holds a roster and a bank of cards
-   * between the two: on a small screen the margin was the largest thing on it and the content
-   * was fitted into what was left. The width is one of the two axes, because it decides how
-   * many seats the roster draws and the seats are solved from it; the height is the other,
-   * because the margin is vertical and a phone turned on its side has width to spare and no
-   * height at all — 64px of it at the top and 64px at the bottom on a 500px screen is a quarter
-   * of the screen spent on nothing. */
+   * them, vertical and horizontal, because they are not the same distance either. Across the page
+   * the container is already centred, so this is only what keeps a wide container off the edge. */
   --Layout-ScreenPaddingVertical: clamp(var(--Space-Lg), min(9vw, 7dvh), var(--Space-2xl));
   --Layout-ScreenPaddingHorizontal: var(--Space-Lg);
 
@@ -751,22 +680,20 @@ body.PageFade {
  * because a touchscreen laptop reports that it hovers while still being driven by touch, and
  * the player who taps it should not get the drawn arrow. Both have to hold: the device must
  * hover and its primary input must be a fine pointer, which is the mouse or the trackpad rather
- * than a finger. The hotspot is the only part of this that has to be accurate. A cursor image
- * is drawn at whatever size it declares and is never measured, but the hotspot is where the
- * player aims, so being off by more than a pixel or two reads as the game aiming for the wrong
- * answer. Each is the aim point of its own glyph: the arrow's tip, the fingertip, for the
- * barred one, which points nowhere, the top-left of the ring so the whole badge sits below and
- * right of the pointer, and for the I-beam, the middle of the stem, which is where a click
- * lands rather than an edge of the glyph. These are in the pixels of the image as the browser
- * draws it, which is why the size lives in the SVG's own width rather than in a stylesheet:
- * changing that width rescales the drawing, and the hotspot below has to be restated to match.
- * The sizes are linked, and changing one without the others is the way to end up aiming at
- * nothing. Each SVG is a 512-unit viewBox drawn at 32px. Browsers cap a custom cursor at 128px
- * and scale anything larger down, and a hotspot in a scaled cursor then depends on whether a
- * given browser scales it by the same factor. At 32px nothing is ever scaled, so the numbers
- * below are read straight off the image. The trailing keyword is the fallback the browser shows
- * if the image cannot be loaded, which is also what keeps the cursor usable if the SVG is ever
- * missing from the build. */
+ * than a finger. */
+
+/* The hotspot is the only part of this that has to be accurate. A cursor image is drawn at
+ * whatever size it declares and is never measured, but the hotspot is where the player aims, so
+ * being off by more than a pixel or two reads as the game aiming at the wrong answer. Each is
+ * the aim point of its own glyph: the arrow's tip, the fingertip, and the middle of the stem of
+ * the I-beam, which is where a click lands rather than an edge of the glyph. */
+
+/* The numbers below are the pixels of the image as the browser draws it, which is why the size
+ * lives in the SVG's own width rather than in a stylesheet: changing that width rescales the
+ * drawing, and the hotspot has to be restated to match. Each SVG is a 512-unit viewBox drawn at
+ * 32px. Browsers cap a custom cursor at 128px and scale anything larger down, and a hotspot in a
+ * scaled cursor then depends on whether a given browser scales it by the same factor. At 32px
+ * nothing is ever scaled, so nothing is in doubt. */
 @media (hover: hover) and (pointer: fine) {
   :root {
     --Cursor-Default: url('../Cursors/Arrow.svg') 4 0, default;

@@ -1,14 +1,9 @@
 /* The child centred in the viewport rather than in the room left below everything above it.
- * `flex: 1` takes what is left of the stage, and `margin-top` gives half the height above back
- * off the top. The child is then centred in what is left of the two, which is the middle of the
- * screen — where centring into the leftover height alone puts it half of everything above too
- * low, and where it moves every time the bar above wraps onto a second row. The margin is
- * negative and halved, both of which are the point. A positive margin would push the child down
- * by the same amount, which is the error being corrected; and the half is because a stage with
- * `a` above the child and `b` below centres it in the middle of `a + b`, which is half a bar
- * too low exactly when `a` is half a bar. `min-height: 0` because a flex item's floor is its
- * content by default, and a bank of cards taller than the room would refuse to shrink and push
- * the page instead of letting the child centre inside what it has. */
+ * `flex: 1` takes what is left of the stage and `margin-top` gives half the height above back
+ * off the top, so the child is centred in the middle of the screen rather than half of
+ * everything above too low, and it no longer moves when the bar above wraps onto a second row.
+ * The margin is negative and halved: a stage with `a` above the child and `b` below centres it
+ * in `a + b`, half a bar too low exactly when `a` is half a bar. */
 .Root {
   display: flex;
   flex: 1 1 auto;

@@ -3,9 +3,7 @@
  * changes tint and gets chosen, and all three are the same pop; only when it happens differs.
  * Nothing is scaled away, so the character is never briefly invisible, which is what a
  * grow-from-nothing reveal looked like in a roster of small characters. The tilt and the offset
- * come from the caller as custom properties, so each character reacts from its own place. They
- * are optional: without them the pop is a plain squash, which is the right thing for a UI that
- * has not asked for character. */
+ * come from the caller as custom properties, so each character reacts from its own place. */
 .Root {
   display: block;
   width: 100%;

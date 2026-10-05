@@ -17,9 +17,8 @@
  * rather than a fill: a filled chip would read as a chosen or disabled control, and the roster
  * is a list, not a set of options. The same fixed yellow as the crown and the primary button,
  * and not the accent. The chip says which seat is yours, which is a fact about the room rather
- * than about whoever is looking at it, so it must not change colour with the viewer's own tint
- * — a border in the accent step read as brown against a yellow accent and said nothing about
- * the seat at all. */
+ * than about whoever is looking at it — a border in the accent step read as brown against a
+ * yellow accent and said nothing about the seat at all. */
 .Self {
   border-color: var(--Color-Room-Yellow);
 }
@@ -37,8 +36,7 @@
  * two marks sharing it would each claim half and end up with a gap between them in the middle
  * of the row. Cut short with an ellipsis rather than wrapped or allowed to push the row wider.
  * A name is still there in full for anything that can read it, so it is cut in the drawing
- * rather than in the data. The cut itself is `Truncate`, shared with every other place a name
- * is drawn. */
+ * rather than in the data. The cut is `Truncate`, shared with every other place a name is drawn. */
 .Name {
   composes: Truncate from '../../Primitives/Truncate/Truncate.module.css';
   font-size: var(--FontSize-Body);
@@ -50,10 +48,8 @@
 /* In yellow outright, and not the accent, whatever the player picked. The crown is a fact about
  * who is hosting rather than something to aim at, so it holds its colour permanently instead of
  * waiting for a pointer. It cannot follow the accent either: every player now wears their own
- * tint, so an accent-coloured crown would mark whoever is looking at the screen as the host. A
- * fixed yellow says the same thing to everybody in the room. Drawn in the fill step rather than
- * the text one, because it is a mark rather than text, and it clears 8.7:1 against the chip it
- * sits on. */
+ * tint, so an accent-coloured crown would mark whoever is looking at the screen as the host.
+ * Drawn in the fill step rather than the text one, because it is a mark rather than text. */
 .Crown {
   display: inline-flex;
   align-items: center;
