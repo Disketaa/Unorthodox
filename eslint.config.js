@@ -84,7 +84,6 @@ export default tseslint.config(
     files: ["Source/**/*.test.{ts,tsx}"],
     rules: {
       "comments/max-lines": "off",
-      "comments/no-trailing": "off",
     },
   },
 

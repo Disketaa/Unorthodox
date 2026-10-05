@@ -20,7 +20,7 @@ import { join, relative, sep } from "node:path";
  * something untrue; an over-budget one may be entirely accurate and merely too long. Reporting both
  * as `stale` hides which one a fix has to address.
  */
-type Verdict = "kept" | "noisy" | "stale" | "over-budget" | "split";
+type Verdict = "kept" | "noisy" | "stale" | "over-budget" | "split" | "trailing";
 
 interface Finding {
   readonly file: string;
@@ -379,6 +379,16 @@ function findAdjacent(source: string, comments: readonly RawComment[]): Map<numb
   return pairs;
 }
 
+/**
+ * A comment sharing its line with code in front of it annotates that code, and is forbidden in every
+ * file type. The reason is that it cannot be wrapped: the prose is squeezed into whatever the code
+ * left, so it ends up short, and a short note that says what the code beside it plainly says is the
+ * comment this whole policy exists to remove.
+ */
+function findTrailing(comments: readonly RawComment[]): RawComment[] {
+  return comments.filter((comment) => comment.trailing);
+}
+
 function walk(directory: string, into: string[]): void {
   for (const entry of readdirSync(directory)) {
     const full = join(directory, entry);
@@ -431,7 +441,17 @@ function main(): void {
     const source = readFileSync(file, "utf8");
     const comments = collectComments(source, isCss);
     const adjacent = findAdjacent(source, comments);
+    for (const comment of findTrailing(comments)) {
+      findings.push({
+        file: relative(process.cwd(), file).split(sep).join("/"),
+        line: comment.line,
+        verdict: "trailing",
+        reasons: ["shares its line with code in front of it"],
+        text: comment.text.replace(/\s+/g, " ").trim().slice(0, 90),
+      });
+    }
     for (const comment of comments) {
+      if (comment.trailing) continue;
       const { verdict, reasons } = classify(comment, followingCode(source, comment));
       const neighbour = adjacent.get(comment.line);
       if (neighbour !== undefined) {
@@ -462,12 +482,14 @@ function main(): void {
   const noisy = findings.filter((finding) => finding.verdict === "noisy");
   const overBudget = findings.filter((finding) => finding.verdict === "over-budget");
   const split = findings.filter((finding) => finding.verdict === "split");
+  const trailing = findings.filter((finding) => finding.verdict === "trailing");
 
   for (const [label, group] of [
     ["STALE", stale],
     ["NOISY", noisy],
     ["OVER BUDGET", overBudget],
     ["SPLIT", split],
+    ["TRAILING", trailing],
   ] as const) {
     if (group.length === 0) continue;
     console.log(`\n${label} (${group.length})`);
@@ -479,9 +501,15 @@ function main(): void {
   }
 
   console.log(
-    `\n${noisy.length} noisy, ${stale.length} stale, ${overBudget.length} over budget, ${split.length} split, of ${files.length} files.`,
+    `\n${noisy.length} noisy, ${stale.length} stale, ${overBudget.length} over budget, ${split.length} split, ${trailing.length} trailing, of ${files.length} files.`,
   );
-  if (stale.length > 0 || noisy.length > 0 || overBudget.length > 0 || split.length > 0) {
+  if (
+    stale.length > 0 ||
+    noisy.length > 0 ||
+    overBudget.length > 0 ||
+    split.length > 0 ||
+    trailing.length > 0
+  ) {
     process.exitCode = 1;
   }
 }

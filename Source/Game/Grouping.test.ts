@@ -11,11 +11,12 @@ describe('normalizeForGrouping', () => {
   test('basic normalization and stripping endings', () => {
     // We assume endings like 'а', 'я' are stripped.
     expect(normalizeForGrouping('Привет')).toBe('привет');
-    expect(normalizeForGrouping('Привета')).toBe('привет'); // stripped 'а'
-    expect(normalizeForGrouping('Приветы')).toBe('привет'); // stripped 'ы'
-    expect(normalizeForGrouping('Приветом')).toBe('привет'); // stripped 'ом'
-    expect(normalizeForGrouping('Привет amie')).toBe('привет amie'); // only Russian words stripped
-    expect(normalizeForGrouping('  Привет, как дела!  ')).toBe('привет как дела'); // punctuation removed, spaces collapsed
+    expect(normalizeForGrouping('Привета')).toBe('привет');
+    expect(normalizeForGrouping('Приветы')).toBe('привет');
+    expect(normalizeForGrouping('Приветом')).toBe('привет');
+    // Latin text is left alone; punctuation and repeated spaces are removed.
+    expect(normalizeForGrouping('Привет amie')).toBe('привет amie');
+    expect(normalizeForGrouping('  Привет, как дела!  ')).toBe('привет как дела');
   });
 });
 

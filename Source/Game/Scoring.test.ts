@@ -20,10 +20,14 @@ describe('pointsForGroupSize', () => {
 describe('calculateRoundScores', () => {
   test('calculates scores correctly', () => {
     const groups = [
-      { playerIds: ['p1'], isRejected: false }, // unique -> 3 points
-      { playerIds: ['p2', 'p3'], isRejected: false }, // pair -> 1 point each
-      { playerIds: ['p4', 'p5', 'p6'], isRejected: false }, // common -> 0 points
-      { playerIds: ['p7'], isRejected: true }, // rejected -> 0 points
+      // unique -> 3 points
+      { playerIds: ['p1'], isRejected: false },
+      // pair -> 1 point each
+      { playerIds: ['p2', 'p3'], isRejected: false },
+      // common -> 0 points
+      { playerIds: ['p4', 'p5', 'p6'], isRejected: false },
+      // rejected -> 0 points
+      { playerIds: ['p7'], isRejected: true },
     ];
     const scores = calculateRoundScores(groups, GameConfig);
     // Convert to object for easy assertion

@@ -9,7 +9,8 @@ describe('reducer REJECT_GROUP action', () => {
       topic: 'Test',
       durationMs: 30000,
       startedAt: 1000,
-      answers: new Map([['p1', 'Ans1'], ['p2', 'Ans1']]), // same answer, will be grouped
+      // Both players gave the same answer, so they are one group.
+      answers: new Map([['p1', 'Ans1'], ['p2', 'Ans1']]),
       groupRejections: new Map(),
       players: new Map(),
       cumulativeScores: new Map(),
