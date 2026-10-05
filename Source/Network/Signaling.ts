@@ -23,9 +23,13 @@ export const RelayUrls = [
 export const StunUrls = ['stun:stun.cloudflare.com:3478', 'stun:stun.miwifi.com:3478'];
 
 /** Our TURN server, which is what a phone behind carrier NAT has to connect through, since no
- * direct route exists from inside one. Over UDP and TCP at once, because a network that blocks
- * one is more common than one that blocks both. */
-export const TurnUrls = ['turn:144.31.61.203:3478', 'turn:144.31.61.203:3478?transport=tcp'];
+ * direct route exists from inside one. Over UDP and TCP at once, and over TLS on 5349 because
+ * the relay holds 443 and 3478 alone left a phone exchanging SDP with nobody. */
+export const TurnUrls = [
+  'turn:144.31.61.203:3478',
+  'turn:144.31.61.203:3478?transport=tcp',
+  'turns:144.31.61.203:5349',
+];
 
 /** Every relay to announce on: the own relay ahead of the public pool, never instead of it, so
  * our relay being blocked on one network costs that network its redundancy, not its room. */

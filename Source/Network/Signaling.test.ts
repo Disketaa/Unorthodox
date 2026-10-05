@@ -54,6 +54,16 @@ describe('ICE servers', () => {
     expect(servers[servers.length - 1].username).toBe('game');
   });
 
+  it('offers TURN over TLS too, since a phone is more often allowed 443 than 3478', () => {
+    // A phone on a mobile network reached every relay and exchanged its SDP, then failed to
+    // connect. That is TURN being unreachable rather than signaling being broken, and both
+    // remaining URLs were on 3478. A port a carrier leaves open is worth having even when the
+    // server is not listening on it yet, since the browser just skips it.
+    expect(TurnUrls.some(url => url.startsWith('turns:'))).toBe(true);
+  });
+
+  
+
   it('offers TURN over UDP and TCP together, since one alone is often blocked', () => {
     const turn = iceServers().find(server => server.username !== undefined);
     expect(turn?.urls).toEqual(TurnUrls);
