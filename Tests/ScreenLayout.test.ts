@@ -14,7 +14,7 @@ const sheet = stylesheet('../Source/Design/Primitives/Screen/Screen.module.css')
 const flat = sheet.flat;
 
 const tokens = readFileSync(
-  new URL('../Source/Design/Tokens/Tokens.css', import.meta.url),
+  new URL('../Source/Design/Tokens.css', import.meta.url),
   'utf8',
 );
 const tokenValue = tokenReader(tokens);

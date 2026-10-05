@@ -33,6 +33,14 @@ newline is `eol-last` in ESLint for code and the `eof` verdict in the CSS audit,
 supplies it. Prettier emits a final newline unconditionally, so this agrees with the formatter
 rather than ruling against it. Blank lines are not linted: nothing in the tree has two.
 
+**Text is UTF-8, and text that was decoded twice is rejected.** `encoding/no-mojibake` in ESLint
+and the `mojibake` verdict in the CSS audit share one signature list in
+`Tools/Encoding/Mojibake.mjs`: U+FFFD, a Cyrillic U+0432 followed by U+0402, a Latin U+00E2 followed
+by U+20AC, and U+00C3. U+0420 and U+0421 are excluded on purpose — the repo is written in Russian, so
+they cannot be told from ordinary words. Never write a signature out literally, even in a comment or
+a doc: that puts the damage in the file explaining it. `DECISIONS.md` and `README.md` pass through
+no gate, so re-read them after any tool touches them.
+
 # ARCHITECTURE: MODULES AND DEPENDENCY DIRECTION
 ```
 Source/
@@ -40,7 +48,7 @@ Source/
   Content/     Topics.ts (topic bank), Strings.ts (all UI text).
   Game/        PURE logic: phases, reducer, scoring, normalization, GameConfig.
   Network/     Transport (interface), TrysteroTransport, InMemoryTransport, Protocol, HostSession, ClientSession.
-  Design/      Tokens/, Primitives/, Components/. Knows nothing about Game and Network.
+  Design/      Tokens.css, Primitives/, Components/. Knows nothing about Game and Network.
   Screens/     JoinScreen, LobbyScreen, WritingScreen, ReviewScreen, ScoresScreen, FinalScreen, HostLeftScreen. Receive data ONLY via props.
                Screens may hold local UI state only inside a sub-component (e.g. the answer draft in `AnswerInput`), never game state.
   App/         Assembly: providers, hooks (useGameSession, useCountdown), routing. Only place where everything meets.
@@ -62,7 +70,7 @@ camelCase: variables, parameters, functions, props, object fields. Hooks are `us
 Naming rules enforced by linter (`@typescript-eslint/naming-convention` + `eslint-plugin-check-file`). Red lint = stage not done.
 
 # DESIGN SYSTEM "LIKE IN FIGMA"
-1. **Tokens = Figma variables.** Single source: `Design/Tokens/Tokens.css`, one `--Token-Name` per line, split into a primitive layer (raw values, e.g. `--Color-Blue-500`, `--Space-4`) and a semantic layer (meaning, e.g. `--Color-Surface-Default`), where semantic tokens reference primitives with `var()`. There is no `Tokens.json` and no generator script: the file is hand-written and committed. Components use ONLY semantic tokens. Adding a token means adding a line to `Tokens.css` first, then using it. Themes are not implemented in v1.
+1. **Tokens = Figma variables.** Single source: `Design/Tokens.css`, one `--Token-Name` per line, split into a primitive layer (raw values, e.g. `--Color-Blue-500`, `--Space-4`) and a semantic layer (meaning, e.g. `--Color-Surface-Default`), where semantic tokens reference primitives with `var()`. There is no `Tokens.json` and no generator script: the file is hand-written and committed. Components use ONLY semantic tokens. Adding a token means adding a line to `Tokens.css` first, then using it. Themes are not implemented in v1.
 2. **Primitives = Auto Layout / Frame:** `Box`, `Stack` (direction, gap, align, justify; gap only `"Xs" | "Sm" | "Md" | "Lg" | "Xl"`), `Text` (variant: `"Title" | "Body" | "Caption" | "Mono"`), `Spacer`.
 3. **Components = Components + Variants:** Button, TextField, Card, PlayerChip, RoomCodeBadge, Timer, AnswerCard, VoteButton, ScoreRow, Banner.
    - One folder per component: `X.tsx`, `X.module.css`, `X.Gallery.tsx`, `index.ts`.

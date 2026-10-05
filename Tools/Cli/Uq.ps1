@@ -103,7 +103,7 @@ function Write-UqHelp {
     Write-Host '    uq fix Source/Design/Components/Button' -ForegroundColor DarkGray
     Write-Host '    uq tc Tools' -ForegroundColor DarkGray
     Write-Host '    uq t RoundMarks' -ForegroundColor DarkGray
-    Write-Host '    uq rel Source/Design/Tokens/Tokens.css' -ForegroundColor DarkGray
+    Write-Host '    uq rel Source/Design/Tokens.css' -ForegroundColor DarkGray
     Write-Host '    uq check' -ForegroundColor DarkGray
 }
 

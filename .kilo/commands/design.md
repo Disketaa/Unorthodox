@@ -4,7 +4,7 @@ This document describes how to create designs using the Unorthodox design system
 
 ## Core Principles
 
-1. **No Magic Numbers**: All values must come from design tokens in `Source/Design/Tokens/Tokens.css`.
+1. **No Magic Numbers**: All values must come from design tokens in `Source/Design/Tokens.css`.
 2. **No Inline Styles**: Styles must be defined in CSS modules, never in JSX `style` props.
 3. **No Direct className Props**: Components must accept variant/size props and map them to internal class names.
 4. **Strict Typing**: No `any` type, no type assertions (`as`), use proper TypeScript interfaces.
@@ -13,7 +13,7 @@ This document describes how to create designs using the Unorthodox design system
 
 ## Design Tokens
 
-All design decisions are derived from tokens in `Source/Design/Tokens/Tokens.css`:
+All design decisions are derived from tokens in `Source/Design/Tokens.css`:
 
 - **Colors**: `--Color-*` (primitive and semantic)
 - **Spacing**: `--Space-*` (Xs, Sm, Md, Lg, Xl)

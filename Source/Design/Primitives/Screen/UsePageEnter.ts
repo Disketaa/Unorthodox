@@ -1,7 +1,7 @@
 import { useRef } from 'preact/hooks';
 
-/** The class the fade hangs off, declared in `Design/Tokens/Tokens.css`. On the body rather than
- * on anything the screens own, because the marks and the paper are fixed layers of the document
+/** The class the fade hangs off, declared in `Design/Tokens.css`. On the body rather than on
+ * anything the screens own, because the marks and the paper are fixed layers of the document
  * and a fade on a screen would arrive without them. */
 export const PageFadeClass = 'PageFade';
 

@@ -10,7 +10,7 @@ import { contrastRatio, parseHex } from '../Source/Core/Color';
  * and widening the app's TypeScript `types` to allow that would let browser code import Node
  * built-ins. `Tests/` is outside the app's `tsconfig` and vitest still picks the file up. */
 const tokens = readFileSync(
-  new URL('../Source/Design/Tokens/Tokens.css', import.meta.url),
+  new URL('../Source/Design/Tokens.css', import.meta.url),
   'utf8',
 );
 

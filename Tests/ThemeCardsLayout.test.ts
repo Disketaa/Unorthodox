@@ -10,7 +10,7 @@ const sheet = stylesheet('../Source/Design/Components/ThemeCards/ThemeCards.modu
 const card = stylesheet('../Source/Design/Components/ThemeCard/ThemeCard.module.css');
 const meter = stylesheet('../Source/Design/Components/RoundMeter/RoundMeter.module.css');
 const tokens = readFileSync(
-  new URL('../Source/Design/Tokens/Tokens.css', import.meta.url),
+  new URL('../Source/Design/Tokens.css', import.meta.url),
   'utf8',
 );
 const tokenValue = tokenReader(tokens);

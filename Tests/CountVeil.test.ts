@@ -8,7 +8,7 @@ import { stylesheet, tokenReader } from './Stylesheet';
  * and does not time one, so what can be checked is the length the stylesheet asks for. */
 const sheet = stylesheet('../Source/Design/Overlays/StartCountdown/StartCountdown.module.css');
 const tokens = readFileSync(
-  new URL('../Source/Design/Tokens/Tokens.css', import.meta.url),
+  new URL('../Source/Design/Tokens.css', import.meta.url),
   'utf8',
 );
 const tokenValue = tokenReader(tokens);

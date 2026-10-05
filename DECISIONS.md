@@ -1,5 +1,12 @@
 ﻿# DECISIONS
 
+## 2026-10-05 — Tokens.css sits in Design/ instead of a folder of its own
+`Source/Design/Tokens/` held exactly one file, and a folder whose only content is the folder is a
+path every importer has to know. `Source/Design/Tokens.css` now sits beside `Reset.css`, where the
+other two stylesheets that are not modules already were. Nothing else moved: the stylesheet is still
+the single source for every token, still imported once from `App/main.tsx`, and the layout suites
+still read it as a file. `Design/index.ts` never exported it, so no barrel entry changed.
+
 ## 2026-10-05 — mojibake is rejected, and half of it cannot be
 Eleven occurrences of decoded-twice text turned up in two files: ten em dashes read as CP1251 in the
 headings of this file, and one U+FFFD in `UseStartCountdown.test.tsx`. Both are fixed. A rule was

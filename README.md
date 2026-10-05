@@ -52,13 +52,34 @@ Every file ends with exactly one newline, and no two blank lines sit together. T
 `uq fix` adds it back if an editor drops it. Prettier is a devDependency and drives
 `eslint-config-prettier`, but no script runs it, so it is not the gate — these two are.
 
+## Encoding
+Mojibake is text that was decoded twice, and it is silent: a file full of it still compiles, still
+lints and still renders. `encoding/no-mojibake` in ESLint and the `mojibake` verdict of
+`npm run comments:css` catch the four signatures that can only be damage: U+FFFD, a Cyrillic
+U+0432 followed by U+0402 (an em dash read as CP1251), a Latin U+00E2 followed by U+20AC (a smart
+quote read as Latin-1), and U+00C3 (the first half of any accented letter). They are named by
+codepoint here on purpose — writing them out literally would put the damage in the file that
+explains it. The signatures live once in `Tools/Encoding/Mojibake.mjs` and both gates import them.
+
+The Cyrillic lead bytes U+0420 and U+0421 are deliberately not in that list. They start the same
+damage, but this repo is written in Russian, so they cannot be told apart from ordinary words.
+Markdown is not covered by either gate, which is why these paragraphs needed checking by hand.
+
+## CSS in the editor
+`.vscode/settings.json` sets `css.lint.unknownProperties: "ignore"`, and it is the one file in
+`.vscode/` that is committed. Without it the editor flags `composes: X from "./Y.module.css"` on 13
+lines across 10 stylesheets: `composes` is a CSS Modules directive that `postcss-modules` consumes
+at build time and deletes, so a plain-CSS validator reports it as an unknown property on every
+correct use. Only that one check is off; the rest of the CSS validation stays on. ESLint never sees
+these files, so nothing in `npm run check` changes.
+
 To put `Tools\Cli` on the PATH yourself:
 ```powershell
 [Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path','User') + ';C:\Projects\Unorthodox\Tools\Cli', 'User')
 ```
 
 ## Change the theme
-All colors, spacing and radii live as CSS variables in `Source/Design/Tokens/Tokens.css`.
+All colors, spacing and radii live as CSS variables in `Source/Design/Tokens.css`.
 Edit the `--Color-*` / `--Space-*` scales there and the whole UI updates; no component changes needed.
 
 ## Add a component
