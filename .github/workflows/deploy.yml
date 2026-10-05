@@ -12,7 +12,11 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  # Queued, never cancelled. `cancel-in-progress` killed a run while configure-pages still had a
+  # request queued against the Pages API, and the next run's configure-pages saw that stale request
+  # as higher priority and cancelled itself in turn, so no deploy ever completed. Waiting for the
+  # earlier run to finish costs a few minutes and keeps the Pages requests in order.
+  cancel-in-progress: false
 
 jobs:
   build:
