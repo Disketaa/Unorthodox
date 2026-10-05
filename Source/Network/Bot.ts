@@ -1,13 +1,12 @@
+/** A player the host invents, for trying a room out with nobody else in it. Debug only, behind
+ * the `*` that turns the console on: a bot that got into a real room would be a player nobody
+ * asked for. It joins like anyone else but never answers and nothing waits on it. */
 import { PlayerId, PlayerLook, createLogger, randomLook } from '@/Core';
 import type { Random } from '@/Core';
 import { GameConfig } from '@/Game';
 import type { ActionOf, HostState } from '@/Game';
 
 const log = createLogger('Bot');
-
-/** A player the host invents, for trying a room out with nobody else in it. Debug only, behind
- * the `*` that turns the console on: a bot that got into a real room would be a player nobody
- * asked for. It joins like anyone else but never answers and nothing waits on it. */
 
 /** The names a bot goes by, rolled at random like everything else about it. Written to stress
  * the bar rather than to sound like a room: truncated, non-Latin, one letter, emoji, caps. The

@@ -20,7 +20,7 @@ import { join, relative, sep } from "node:path";
  * something untrue; an over-budget one may be entirely accurate and merely too long. Reporting both
  * as `stale` hides which one a fix has to address.
  */
-type Verdict = "kept" | "noisy" | "stale" | "over-budget";
+type Verdict = "kept" | "noisy" | "stale" | "over-budget" | "split";
 
 interface Finding {
   readonly file: string;
@@ -344,6 +344,41 @@ function classify(comment: RawComment, following: string): { verdict: Verdict; r
   return { verdict, reasons };
 }
 
+/**
+ * A comment whose only separation from the next is a blank line is the same comment split in two.
+ * Two blocks over one declaration are one thought, and permitting them makes the budget a
+ * suggestion: an eighteen-line note becomes three six-line notes and the rule is satisfied without
+ * anything having been shortened. So this is an error rather than a shape to reshape, and the pair
+ * is also counted once against the budget.
+ */
+/** A tool's own pragma, such as vitest's `// @vitest-environment`. It is read by the runner from
+ * the file's leading comment block and has to be a comment of its own, so it is not prose and not
+ * a second half of one. */
+function isDirective(text: string): boolean {
+  return /@\w[\w-]*\s/.test(text.trimStart());
+}
+
+function findAdjacent(source: string, comments: readonly RawComment[]): Map<number, RawComment> {
+  const lines = source.split(/\r?\n/);
+  const pairs = new Map<number, RawComment>();
+  for (const [index, comment] of comments.entries()) {
+    const next = comments[index + 1];
+    if (next === undefined) continue;
+    // A trailing comment annotates the code on its own line. Two of those are two annotations,
+    // one per line, however close together the lines are.
+    if (comment.trailing || next.trailing) continue;
+    if (isDirective(comment.text) || isDirective(next.text)) continue;
+    // Directly stacked is already one comment, not two. Only a blank line between separate
+    // comments is the split.
+    if (next.line <= comment.endLine + 1) continue;
+    // Only a blank line may sit between them. Anything else is a real separation.
+    const between = lines.slice(comment.endLine, next.line - 1);
+    if (!between.every((line) => line.trim() === "")) continue;
+    pairs.set(comment.line, next);
+  }
+  return pairs;
+}
+
 function walk(directory: string, into: string[]): void {
   for (const entry of readdirSync(directory)) {
     const full = join(directory, entry);
@@ -394,8 +429,23 @@ function main(): void {
     const isCss = file.endsWith(".css");
     if (isCss && !includeCss) continue;
     const source = readFileSync(file, "utf8");
-    for (const comment of collectComments(source, isCss)) {
+    const comments = collectComments(source, isCss);
+    const adjacent = findAdjacent(source, comments);
+    for (const comment of comments) {
       const { verdict, reasons } = classify(comment, followingCode(source, comment));
+      const neighbour = adjacent.get(comment.line);
+      if (neighbour !== undefined) {
+        findings.push({
+          file: relative(process.cwd(), file).split(sep).join("/"),
+          line: comment.line,
+          verdict: "split",
+          reasons: [
+            `only a blank line before the next comment on line ${neighbour.line}, which is ${comment.lines + neighbour.lines} lines of comment together`,
+          ],
+          text: comment.text.replace(/\s+/g, " ").trim().slice(0, 90),
+        });
+        continue;
+      }
       const overBy = isCss && overCssBudget(comment);
       if (verdict === "kept" && !overBy) continue;
       findings.push({
@@ -411,11 +461,13 @@ function main(): void {
   const stale = findings.filter((finding) => finding.verdict === "stale");
   const noisy = findings.filter((finding) => finding.verdict === "noisy");
   const overBudget = findings.filter((finding) => finding.verdict === "over-budget");
+  const split = findings.filter((finding) => finding.verdict === "split");
 
   for (const [label, group] of [
     ["STALE", stale],
     ["NOISY", noisy],
     ["OVER BUDGET", overBudget],
+    ["SPLIT", split],
   ] as const) {
     if (group.length === 0) continue;
     console.log(`\n${label} (${group.length})`);
@@ -427,9 +479,11 @@ function main(): void {
   }
 
   console.log(
-    `\n${noisy.length} noisy, ${stale.length} stale, ${overBudget.length} over budget, of ${files.length} files.`,
+    `\n${noisy.length} noisy, ${stale.length} stale, ${overBudget.length} over budget, ${split.length} split, of ${files.length} files.`,
   );
-  if (stale.length > 0 || noisy.length > 0 || overBudget.length > 0) process.exitCode = 1;
+  if (stale.length > 0 || noisy.length > 0 || overBudget.length > 0 || split.length > 0) {
+    process.exitCode = 1;
+  }
 }
 
 main();

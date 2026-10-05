@@ -1,9 +1,8 @@
-import { HostState } from './GameState';
-import type { ActionOf } from './GameActions';
-
 /** The roster's own changes: joining, changing a face, going quiet, and being removed. Separate
  * from the phases because each is a change to one player rather than a move of the room, and
  * because they exist in every phase: a refresh mid-round is joining again. */
+import { HostState } from './GameState';
+import type { ActionOf } from './GameActions';
 
 /** The same room with a different roster, whatever phase it is in. */
 function withRoster(state: HostState, players: HostState['players']): HostState {

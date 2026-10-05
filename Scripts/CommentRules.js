@@ -110,6 +110,15 @@ function isJsxComment(text, comment) {
   return before.endsWith("{") && text.slice(comment.range[1]).trimStart().startsWith("}");
 }
 
+/** A comment sharing its line with code in front of it annotates that code, not the next line. */
+function isTrailing(sourceCode, comment) {
+  const own = (sourceCode.getLines()[comment.loc.start.line - 1] ?? "").slice(
+    0,
+    comment.loc.start.column,
+  );
+  return own.trim() !== "" && !isJsxComment(sourceCode.getText(), comment);
+}
+
 function blockInTsRule() {
   return {
     meta: { type: "problem", schema: [], messages: { block: MESSAGE } },
@@ -291,12 +300,64 @@ function shapeRule() {
   };
 }
 
+/**
+ * A tool's own pragma, such as `// @vitest-environment`. The runner reads it out of the file's
+ * leading comment block and it has to stand as a comment of its own, so it is not a second half
+ * of a split one.
+ */
+function isDirective(comment) {
+  return /^@\w[\w-]*\s/.test(comment.value.trimStart());
+}
+
+/**
+ * A comment whose only separation from the next is a blank line is one comment split in two.
+ * Permitting it makes `max-lines` a suggestion: an essay becomes two short notes and the rule is
+ * satisfied with nothing shortened. So this is an error, and the pair is counted once against the
+ * budget as well, which is what stops the split from being worth doing.
+ */
+function splitRule() {
+  return {
+    meta: {
+      type: "problem",
+      schema: [],
+      messages: {
+        split: `${MESSAGE} — these two are one comment cut in two; merge them.`,
+      },
+    },
+    create(context) {
+      return {
+        Program() {
+          const sourceCode = context.sourceCode;
+          const lines = sourceCode.getLines();
+          const comments = sourceCode.getAllComments();
+          for (const [index, comment] of comments.entries()) {
+            const next = comments[index + 1];
+            if (next === undefined) continue;
+            if (isDirective(comment) || isDirective(next)) continue;
+            // A trailing comment annotates the code on its own line, so two of them are two
+            // annotations rather than one comment in halves.
+            if (isTrailing(sourceCode, comment) || isTrailing(sourceCode, next)) continue;
+            // Directly stacked is already one comment: consecutive `//` lines are one run, and
+            // a block comment's own last line is not a separation. Only a blank line between two
+            // separate comments is the split.
+            if (next.loc.start.line <= comment.loc.end.line + 1) continue;
+            const between = lines.slice(comment.loc.end.line, next.loc.start.line - 1);
+            if (!between.every((line) => line.trim() === "")) continue;
+            context.report({ node: comment, messageId: "split" });
+          }
+        },
+      };
+    },
+  };
+}
+
 export const commentPlugin = {
   rules: {
     "max-lines": lengthRule(),
     "no-trailing": trailingRule(),
     "no-block-in-ts": blockInTsRule(),
     "form": formRule(),
+    "no-split": splitRule(),
     shape: shapeRule(),
   },
 };

@@ -1,11 +1,10 @@
+/** The host's own game state, kept across closing the tab and coming back to it. A host who
+ * refreshes has not left the room: without this, the room they come back to is a new one. In
+ * `localStorage` rather than `sessionStorage`, because what survives a refresh is per-tab. */
 import type { HostState } from '@/Game';
 import { clearCountIn } from './CountIn';
 import { forgetHosting } from './RoomOwnership';
 import { decodeRoomState, encodeRoomState } from './RoomStateCodec';
-
-/** The host's own game state, kept across closing the tab and coming back to it. A host who
- * refreshes has not left the room: without this, the room they come back to is a new one. In
- * `localStorage` rather than `sessionStorage`, because what survives a refresh is per-tab. */
 
 /** Where a room's state is written, named after the room so two rooms cannot share it. */
 const KeyPrefix = 'unorthodox.host.';

@@ -436,18 +436,12 @@ body.PageFade {
   --FontSize-Mono: var(--FontSize-Sm);
   --FontSize-Display: var(--FontSize-4xl);
 
-  /* How wide one theme card is, and the shape it keeps. Landscape on purpose: the names are one
-   * or two words, so a card taller than it is wide is mostly empty. Three across on a wide screen
-   * and two on a narrow one, decided by arithmetic rather than by a width query. A card count is
-   * not something a `calc()` can hold, but the count a row ends up with is only a consequence of
-   * how wide the card is, so the width is the smaller of what two across and what three across
-   * allow. Below about five hundred pixels a name cut to three letters on all six is no choice. */
-
-  /* The card width at which three across stops being worth it, and below which the row is two.
-   * A card width rather than a screen width, which is the whole point of the arithmetic above:
-   * a hundred and forty pixels is a card with a theme name on it, and three of them need about
-   * five hundred pixels of screen. Move this and the screen width at which the row changes
-   * answers on its own, with the gaps and the page's margins still counted where they are. */
+  /* How wide one theme card is, and the shape it keeps. Landscape on purpose: the names are one or
+   * two words, so a card taller than it is wide is mostly empty. Three across on a wide screen and
+   * two on a narrow one, decided by arithmetic rather than a width query — a card count is not
+   * something a `calc()` can hold, but the count a row ends up with only follows from the card's
+   * width, so this is the smaller of what two across and what three across allow.
+   * The threshold below is a card width for the same reason: 140px is a card with a name on it. */
   --Size-ThemeCardWidthThreeAcross: 140px;
 
   --Size-ThemeCardWidth: min(
@@ -591,14 +585,11 @@ body.PageFade {
     3 * var(--Size-ThemeCardWidth) + 2 * var(--Space-ThemeCardsGap)
   );
 
-  /* Layout */
-
-  /* How wide one container of a screen may be, and how many may sit side by side. The width is
-   * what a card's text is measured against, so it is the readable line length rather than a share
-   * of the screen: a card is never wider because the window is. The count is the cap on a row
-   * rather than a breakpoint. `Screen` sizes itself as this many columns wide, so a track past the
-   * third has nowhere to go and the row wraps on its own — a fourth card starts a new line
-   * without a width query saying where. */
+  /* Layout, and how wide one container of a screen may be, and how many may sit side by side.
+   * The width is what a card's text is measured against, so it is the readable line length rather
+   * than a share of the screen: a card is never wider because the window is. The count is the cap
+   * on a row rather than a breakpoint. `Screen` sizes itself as this many columns wide, so a
+   * track past the third has nowhere to go and the row wraps on its own. */
   --Layout-ContainerMaxWidth: 480px;
   --Layout-ColumnsMax: 3;
   /* How narrow a column in a row of several may get before the row stops being a row. Not
@@ -676,24 +667,12 @@ body.PageFade {
   --Cursor-Text: text;
 }
 
-/* The drawn cursors, on a device that has a pointer. `hover: hover` alone is not enough,
- * because a touchscreen laptop reports that it hovers while still being driven by touch, and
- * the player who taps it should not get the drawn arrow. Both have to hold: the device must
- * hover and its primary input must be a fine pointer, which is the mouse or the trackpad rather
- * than a finger. */
-
-/* The hotspot is the only part of this that has to be accurate. A cursor image is drawn at
- * whatever size it declares and is never measured, but the hotspot is where the player aims, so
- * being off by more than a pixel or two reads as the game aiming at the wrong answer. Each is
- * the aim point of its own glyph: the arrow's tip, the fingertip, and the middle of the stem of
- * the I-beam, which is where a click lands rather than an edge of the glyph. */
-
-/* The numbers below are the pixels of the image as the browser draws it, which is why the size
- * lives in the SVG's own width rather than in a stylesheet: changing that width rescales the
- * drawing, and the hotspot has to be restated to match. Each SVG is a 512-unit viewBox drawn at
- * 32px. Browsers cap a custom cursor at 128px and scale anything larger down, and a hotspot in a
- * scaled cursor then depends on whether a given browser scales it by the same factor. At 32px
- * nothing is ever scaled, so nothing is in doubt. */
+/* The drawn cursors, on a device that has a pointer. Both `hover: hover` and `pointer: fine` have
+ * to hold: a touchscreen laptop reports that it hovers while still being driven by touch.
+ * The hotspot is the only part that has to be accurate, since it is where the player aims. Each is
+ * the aim point of its own glyph: the arrow's tip, the fingertip, and the I-beam's stem.
+ * The numbers below are pixels of the image as drawn, which is why the size lives in the SVG's own
+ * width: changing it rescales the drawing and the hotspot must be restated. */
 @media (hover: hover) and (pointer: fine) {
   :root {
     --Cursor-Default: url('../Cursors/Arrow.svg') 4 0, default;

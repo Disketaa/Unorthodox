@@ -1,8 +1,6 @@
 /** Colour maths, enough to check that two colours can be read together. WCAG 2.1 relative
  * luminance and contrast ratio, on six-digit hex only, which is all the palette needs: every
- * token here is a flat hex. */
-
-/** One colour, split into the channels the ratios are computed from. */
+ * token here is a flat hex. One colour is split into the channels the ratios are computed from. */
 export interface Rgb {
   r: number;
   g: number;

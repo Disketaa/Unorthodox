@@ -74,6 +74,7 @@ export default tseslint.config(
       "comments/no-block-in-ts": "error",
       "comments/form": "error",
       "comments/shape": "error",
+      "comments/no-split": "error",
     },
   },
 

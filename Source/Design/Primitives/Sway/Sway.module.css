@@ -1,16 +1,9 @@
-/* The idle sway, shared by everything that rocks on the page. The characters have it and so
- * does the game's name. It lives here rather than in `Character` because it is not a
- * character's: a row of nine characters is only interesting because no two of them agree, and
- * that comes from the roll rather than from the drawing. Two copies of this would be one
- * movement that had quietly forked. Two classes and no element of its own, so a caller composes
- * them onto the node it already has. See `Truncate`, the same arrangement for the same reason. */
-
-/* Idle motion. Things rock from side to side, the way someone standing shifts their weight, and
- * that lateral swing is what carries the movement. The vertical part is barely there on
- * purpose: a thing that hops reads as bouncing, and a screen of them is busy rather than alive.
- * Every value behind it is rolled per instance, so no two move alike: the resting lean, the
- * swing width, the tempo, the step count, the jump keyword and the place in the cycle. One
- * shared duration and amplitude would instead look like a conveyor. */
+/* Idle motion: things rock from side to side, the way someone standing shifts their weight, and
+ * that lateral swing is what carries it. The vertical part is barely there on purpose — a thing
+ * that hops reads as bouncing, and a screen of them is busy rather than alive. Every value behind
+ * it is rolled per instance, so no two move alike: the resting lean, the swing width, the tempo,
+ * the step count, the jump keyword and the place in the cycle. Shared rather than in `Character`
+ * because a row of nine is only interesting because no two agree, and that comes from the roll. */
 .Moving {
   /* The fallbacks are what a thing looks like for the frame before its own values are written.
    * The step count and the keyword travel as one finished `steps()` call, because the build

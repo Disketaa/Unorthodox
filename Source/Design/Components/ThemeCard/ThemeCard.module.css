@@ -200,19 +200,12 @@
   opacity: var(--Opacity-ThemeCardNoiseHover);
 }
 
-/* The name takes the tint on hover, and so do the ticks and the number. All three the same
- * value rather than the tint here and the ink there: they are the theme's own colour, and
- * `Accents` gives one of each per theme for exactly this в— the tint is the accent as the game
- * draws it everywhere else, and the ink is the same hue turned down until text can sit on the
- * pale wash. A hovered card was the only part of a theme wearing the turned-down version of
- * itself. */
-
-/* The name on the card, which is the whole content of it. Centred and in the display face rather
- * than the body one: six lines of body text at reading size read as a paragraph that happens to be
- * broken up rather than as six things to pick from. `z-index` because it shares the card with the
- * mark, which is absolutely positioned and would paint over the one thing meant to be read.
- * In the default ink rather than the title's accent at rest, taking the tint only on hover: the
- * accent is a colour a theme wears rather than one a player chose. */
+/* The name on the card, which is the whole content of it, and the tint it takes on hover along
+ * with the ticks and the number. All three the same value rather than the tint here and the ink
+ * there: `Accents` gives one of each per theme for exactly this, the tint being the accent as the
+ * game draws it everywhere and the ink that hue turned down until text sits on the pale wash.
+ * Centred, and in the display face rather than the body one: six lines of body text at reading size
+ * read as a paragraph rather than as six things to pick from. */
 .Name {
   /* The shared cut, rather than a wrap. The name is one or two words and the card is a fixed
    * width that narrows on a phone, so a wrap is a second line on the cards that need one and
