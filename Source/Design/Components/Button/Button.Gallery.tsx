@@ -22,6 +22,7 @@ export function ButtonGallery() {
       <Stack direction="Horizontal" gap="Sm">
         <Button variant="Primary" disabled onClick={() => {}}>Disabled</Button>
         <Button variant="Primary" loading onClick={() => {}}>Loading</Button>
+        <Button variant="Primary" pulse onClick={() => {}}>Pulse</Button>
       </Stack>
     </Stack>
   );

@@ -236,6 +236,18 @@ body.PageFade {
    * through. */
   --Duration-CountVeil: 300ms;
 
+  /* How long one turn of the pulse on a button runs, from nothing to full and back. A loop, so
+   * a symmetric easing and not one of the three movements above, which are sized to a movement
+   * that ends. Slow enough to read as breathing rather than as a flash: a sweep that comes back
+   * sooner than a glance lands is a flicker, and a control that flickers is harder to aim at. */
+  --Duration-Pulse: 1800ms;
+
+  /* How much brighter the pulse on a button goes at its peak. A ratio rather than a colour,
+   * because there is nothing to pick: every variant's fill lifts by the same amount, so one
+   * movement is the same on all of them rather than a different one to remember. Shallow,
+   * because a lift a player can name stops being a breath and becomes a flash. */
+  --Scale-Pulse-Brightness: 1.15;
+
   /* How long the pop takes, how far it squashes, and how far apart two appearances in a row
    * wait. One duration and one squash for every reaction, whether a character is arriving or
    * reacting to being chosen, so the two are unmistakably the same movement. Over-tall rather

@@ -10,8 +10,8 @@ export interface LobbyStartProps {
   onStart: () => void;
 }
 
-/** The foot of the lobby: a note for whoever cannot press Start, and Start itself for the host
- * once it would work. */
+/** The head of the roster: a note for whoever cannot press Start, and Start itself for the host
+ * once it would work. Held above the players, since the roster grows and Start must not move. */
 export function LobbyStart({ enoughPlayers, roomFull, isHost, onStart }: LobbyStartProps) {
   if (!isHost) {
     // The same plank as the host's own notes, so everyone in the room is reading
@@ -32,7 +32,7 @@ export function LobbyStart({ enoughPlayers, roomFull, isHost, onStart }: LobbySt
         )}
       </Stack>
       {canStart && (
-        <Button variant="Primary" size="Large" onClick={onStart}>
+        <Button variant="Primary" size="Large" pulse onClick={onStart}>
           {Strings.lobby.startButton}
         </Button>
       )}

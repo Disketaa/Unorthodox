@@ -18,6 +18,31 @@
   transform: scale(0.97);
 }
 
+/* The breath on the one control a room is waiting on. The whole fill brightens and settles,
+ * with no layer and no shadow over it: anything drawn on top of the fill is a second thing to
+ * keep in step with the first, and a brightness is the button itself breathing. */
+.Pulse {
+  animation: ButtonPulse var(--Duration-Pulse) var(--Easing-Smooth) infinite;
+}
+
+/* Up and back, resting at no change at both ends so the loop joins without a step. */
+@keyframes ButtonPulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+
+  50% {
+    filter: brightness(var(--Scale-Pulse-Brightness));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .Pulse {
+    animation: none;
+  }
+}
+
 .Root:disabled {
   opacity: 0.5;
   cursor: var(--Cursor-NotAllowed);
