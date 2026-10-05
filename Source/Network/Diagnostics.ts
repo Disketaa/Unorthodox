@@ -1,17 +1,12 @@
 import { createLogger, LogLevel, setLogLevel } from '@/Core';
 import { relayPool } from './Signaling';
+import { fold, reportLine } from './Report';
 import { getRelaySockets } from 'trystero';
 
 const log = createLogger('Diagnostics');
 
 /** How often the connection snapshot is written to the console. */
 const PollIntervalMs = 3_000;
-
-/** Lines kept for the on-screen report, oldest dropped once it is full. A phone cannot open a
- * console, so this is the only way a failing join can be read from one. */
-const ReportMax = 200;
-
-const report: string[] = [];
 
 /** One value as text, without throwing on something that will not serialise. */
 function show(value: unknown): string {
@@ -25,27 +20,15 @@ function show(value: unknown): string {
   }
 }
 
-/** One report line, or none when the caller wants no console output of its own. */
-function reportLines(level: LogLevel, message: string, rest: unknown[]): string[] {
-  const stamp = new Date().toISOString().slice(11, 23);
-  return [`${stamp} ${level} ${[message, ...rest].map(show).join(' ')}`];
-}
-
 /** Log to the console and keep a copy, so the report and the console stay the same lines. The
- * logger wants a message and extra detail apart; the report joins them back into one line. */
+ * logger wants a message and extra detail apart; the report joins them back into one line. A
+ * repeat goes to the report and not the console, which is the whole point of folding. */
 function note(level: LogLevel, ...parts: unknown[]): void {
   const [message, ...rest] = parts;
-  log(level, show(message), ...rest);
-  report.push(...reportLines(level, show(message), rest));
-  if (report.length > ReportMax) {
-    report.shift();
+  const { stamp, body } = reportLine(level, show(message), rest);
+  if (fold(stamp, body)) {
+    log(level, show(message), ...rest);
   }
-}
-
-/** The connection story so far, for a player to hand over when a room will not open. Carries the
- * user agent and the address, and no TURN credentials, which are deliberately never logged. */
-export function getDiagnosticsReport(): string {
-  return [`agent ${navigator.userAgent}`, `href ${window.location.href}`, ...report].join('\n');
 }
 
 /** What the host toggled in the lobby, which beats the flags below: a link may carry ?debug and
@@ -182,7 +165,8 @@ export function startDiagnostics(getPeers: () => Record<string, RTCPeerConnectio
   // into the report and only the original call is passed on; logging here would recurse.
   const consoleWarn = console.warn.bind(console);
   console.warn = (...args: unknown[]) => {
-    report.push(...reportLines('warn', 'trystero', args));
+    const { stamp, body } = reportLine('warn', 'trystero', args);
+    fold(stamp, body);
     consoleWarn(...args);
   };
 
