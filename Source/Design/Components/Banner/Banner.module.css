@@ -65,8 +65,16 @@
   }
 }
 
-.Text {
+/* Both spans are truncatable, so a long wording or a long value stops the row from pushing the
+ * banner past its container. `min-width: 0` is what lets them shrink below their content width
+ * inside the flex row; without it the words keep their intrinsic width and the ellipsis never
+ * appears. */
+.Text,
+.Value {
   min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* The value sits at the far end of the row, and the words take the space between. `margin-left:
@@ -76,7 +84,6 @@
   margin-left: auto;
   font-family: var(--FontFamily-Body);
   font-weight: 700;
-  white-space: nowrap;
 }
 
 /* White on every fill, so the four variants read as one kind of block. The tones are
