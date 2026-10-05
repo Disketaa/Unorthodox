@@ -22,26 +22,42 @@ export const RelayUrls = [
  * trystero's list outright, so they are replaced here rather than extended. */
 export const StunUrls = ['stun:stun.cloudflare.com:3478', 'stun:stun.miwifi.com:3478'];
 
-/** Our TURN server, which is what a phone behind carrier NAT has to connect through, since no
- * direct route exists from inside one. Over UDP and TCP at once, and over TLS on 5349 because
- * the relay holds 443 and 3478 alone left a phone exchanging SDP with nobody. */
-export const TurnUrls = [
-  'turn:144.31.61.203:3478',
-  'turn:144.31.61.203:3478?transport=tcp',
-  'turns:144.31.61.203:5349',
-];
-
 /** Every relay to announce on: the own relay ahead of the public pool, never instead of it, so
  * our relay being blocked on one network costs that network its redundancy, not its room. */
 export function relayPool(): string[] {
   return [OwnRelayUrl, ...RelayUrls];
 }
 
+/** TURN servers, which is what a peer behind carrier NAT has to connect through. Ours answers
+ * TCP on 3478 and nothing else, and cannot be logged into, so it is kept and a public one
+ * follows it. One entry per server, since credentials belong to a server and not to a list. */
+const TurnServers: RTCIceServer[] = [
+  {
+    urls: ['turn:144.31.61.203:3478', 'turn:144.31.61.203:3478?transport=tcp'],
+    username: 'game',
+    credential: 'unorthodox-2026-static-secret',
+  },
+  {
+    urls: [
+      'turn:openrelay.metered.ca:3478',
+      'turn:openrelay.metered.ca:80',
+      'turn:openrelay.metered.ca:80?transport=tcp',
+      'turn:openrelay.metered.ca:443?transport=tcp',
+    ],
+    username: 'openrelay.metered.ca',
+    credential: 'openrelay.metered.ca',
+  },
+];
+
+/** Every TURN URL offered, for tests and for saying what the pool contains. */
+export const TurnUrls = TurnServers.flatMap(server =>
+  (Array.isArray(server.urls) ? server.urls : [server.urls ?? '']),
+);
+
 /** ICE servers to offer, TURN included, since without it a strict NAT has no path at all. */
 export function iceServers(): RTCIceServer[] {
   const stun = StunUrls.map(url => ({ urls: url }));
-  const turn = { urls: TurnUrls, username: 'game', credential: 'unorthodox-2026-static-secret' };
-  return [...stun, turn];
+  return [...stun, ...TurnServers];
 }
 
 /** Full trystero room configuration. `redundancy` is deliberately absent: trystero applies it

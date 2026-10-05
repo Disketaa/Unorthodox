@@ -48,26 +48,35 @@ describe('ICE servers', () => {
     expect(StunUrls.some(url => url.includes('google'))).toBe(false);
   });
 
-  it('adds our TURN server after STUN, since a strict NAT has no other path', () => {
+  it('adds a TURN server after STUN, since a strict NAT has no other path', () => {
     const servers = iceServers();
-    expect(urlsOf(servers)).toEqual([...StunUrls, TurnUrls[0]]);
-    expect(servers[servers.length - 1].username).toBe('game');
+    expect(urlsOf(servers).slice(0, StunUrls.length)).toEqual(StunUrls);
+    expect(servers.length).toBeGreaterThan(StunUrls.length);
   });
 
-  it('offers TURN over TLS too, since a phone is more often allowed 443 than 3478', () => {
-    // A phone on a mobile network reached every relay and exchanged its SDP, then failed to
-    // connect. That is TURN being unreachable rather than signaling being broken, and both
-    // remaining URLs were on 3478. A port a carrier leaves open is worth having even when the
-    // server is not listening on it yet, since the browser just skips it.
-    expect(TurnUrls.some(url => url.startsWith('turns:'))).toBe(true);
+  it('keeps our own TURN first, so the pool needs no edit the day coturn runs', () => {
+    // The box answers TCP on 3478 and never replies to anything else, so these URLs are dead
+    // today. They stay because a URL nothing answers is skipped by the browser rather than
+    // failing the peer, and this is where they belong when the server comes back.
+    expect(urlsOf(iceServers())).toContain('turn:144.31.61.203:3478');
   });
 
-  
+  it('carries a public TURN as well, since ours answers nothing', () => {
+    // With ours dead, this is the only entry a peer can actually allocate on, and the reason a
+    // phone can connect at all. A third party in the path is the price of not having a working
+    // own server, which the public signaling relays already set.
+    expect(TurnUrls.some(url => url.includes('openrelay'))).toBe(true);
+  });
+
+  it('gives each TURN server its own credentials, since they differ', () => {
+    const turn = iceServers().filter(server => server.username !== undefined);
+    expect(turn.length).toBeGreaterThan(1);
+    expect(new Set(turn.map(server => server.username)).size).toBe(turn.length);
+  });
 
   it('offers TURN over UDP and TCP together, since one alone is often blocked', () => {
-    const turn = iceServers().find(server => server.username !== undefined);
-    expect(turn?.urls).toEqual(TurnUrls);
     expect(TurnUrls.some(url => url.includes('transport=tcp'))).toBe(true);
+    expect(TurnUrls.some(url => !url.includes('transport=tcp'))).toBe(true);
   });
 });
 
