@@ -1,6 +1,6 @@
 # ROLE
 Senior frontend engineer. Build a browser-based party game in Jackbox style. Code will be read and edited by humans and other AI agents, so predictability beats creativity.
-Do not improvise beyond this document. If something is missing, pick the simplest solution, record it in one line in `DECISIONS.md`, and continue.
+Do not improvise beyond this document. If something is missing, pick the simplest solution, answer it where it stands, and continue.
 
 # PRODUCT
 - 3–10 players. All open one site (GitHub Pages) and see the same interface. No separate host screen.
@@ -11,7 +11,7 @@ Do not improvise beyond this document. If something is missing, pick the simples
 
 # STACK (fixed)
 Vite, TypeScript (strict), Preact, CSS Modules, Vitest, ESLint, Prettier, Trystero.
-No UI libraries, Tailwind, CSS-in-JS, state managers. New dependency only with entry in `DECISIONS.md` and reason.
+No UI libraries, Tailwind, CSS-in-JS, state managers. New dependency only with the reason stated where it is added.
 Before writing network adapter, read current Trystero docs (pin exact version, no `^`). Do not write its API from memory.
 
 # COMMANDS
@@ -39,7 +39,7 @@ and the `mojibake` verdict in the CSS audit share one signature list in
 `Tools/Encoding/Mojibake.mjs`: U+FFFD, a Cyrillic U+0432 followed by U+0402, a Latin U+00E2 followed
 by U+20AC, and U+00C3. U+0420 and U+0421 are excluded on purpose — the repo is written in Russian, so
 they cannot be told from ordinary words. Never write a signature out literally, even in a comment or
-a doc: that puts the damage in the file explaining it. `DECISIONS.md` and `README.md` pass through
+a doc: that puts the damage in the file explaining it. `README.md` and this file pass through
 no gate, so re-read them after any tool touches them.
 
 # ARCHITECTURE: MODULES AND DEPENDENCY DIRECTION
@@ -188,7 +188,7 @@ fourth is a matter of judgment and is why every finding must be disposed of by h
 3. **Open questions.** A comment ending in a question mark, or hedging with "might", "could
    add", "not sure". These are not comments, they are unfinished thoughts, and an agent
    reading one either copies the uncertainty or treats it as a decision. Answer it where it
-   stands, or move it to `DECISIONS.md` and answer it there.
+   stands, or delete it.
 4. **Trailing a line of code.** `const cost = a === b ? 0 : 1; // substitution` puts the note
    where it is easiest to miss and easiest to leave behind. Move it above, or delete it.
 
@@ -208,7 +208,7 @@ dispose of each finding by hand.
 8. `setInterval` not source of truth for time, only for re-renders.
 9. No `default export` (except Vite requirements), only named exports.
 10. No duplicate components like `BigPrimaryButton`: that is a variant.
-11. No `console.log`, commented code, or TODOs without number in `DECISIONS.md`.
+11. No `console.log`, commented code, or TODOs.
 12. No full file rewrites for small edits: point changes only.
 13. No comment that restates the code, narrates it, or asks a question: see COMMENTS.
 
@@ -411,7 +411,7 @@ if (!player) return err("PlayerNotFound");
 
 # WORK ORDER
 Work in stages. Stop at end of each stage and wait for "Next" command. Do not start next stage yourself.
-- **Stage 0. Scaffold:** Vite + TS strict + Preact, alias `@/`, ESLint (naming, module boundaries), Prettier, Vitest, workflow `.github/workflows/deploy.yml` for GitHub Pages (`base` = `'/<REPO>/'`, source = GitHub Actions), `DECISIONS.md`.
+- **Stage 0. Scaffold:** Vite + TS strict + Preact, alias `@/`, ESLint (naming, module boundaries), Prettier, Vitest, workflow `.github/workflows/deploy.yml` for GitHub Pages (`base` = `'/<REPO>/'`, source = GitHub Actions).
 - **Stage 1. Design system:** `Tokens.css`, Primitives, Components with `Gallery` files, `#/Gallery` page. Verified in gallery, no game logic yet.
 - **Stage 2. Game:** types, `GameConfig`, normalization, grouping, scoring, phase reducer, `toPublicState`, tests.
 - **Stage 3. Network:** `Transport`, `InMemoryTransport`, `Protocol` with guards, `HostSession`, `ClientSession`, integration test "host + 3 clients" on `InMemoryTransport`, then `TrysteroTransport`.
@@ -420,7 +420,7 @@ Work in stages. Stop at end of each stage and wait for "Next" command. Do not st
 
 # FORMAT OF ANSWER AT END OF EACH STAGE
 1. Tree of created and changed files.
-2. 3–5 lines of decisions made (duplicate in `DECISIONS.md`).
+2. 3–5 lines of decisions made and why.
 3. Verification commands (`npm run lint`, `npm test`, `npm run build`) and their results.
 4. "Waiting for 'Next'".
 Do not duplicate code in chat, it is already in files.
