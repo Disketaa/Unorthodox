@@ -47,6 +47,27 @@ function turnServer(): TurnServerConfig | undefined {
   return { urls: url, username, credential };
 }
 
+/** The relay this project runs, when the build names one. A value that is not a usable wss URL
+ * is dropped rather than passed on, since a malformed one throws out of `new WebSocket`. */
+function ownRelay(): string[] {
+  const url = readEnv('VITE_RELAY_URL')?.trim();
+  if (url === undefined) {
+    return [];
+  }
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'wss:' && parsed.hostname !== '' ? [url] : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Every relay to announce on: the own relay ahead of the public pool, never instead of it, so a
+ * relay this project cannot fix stays a survivable loss rather than the whole room. */
+export function relayPool(): string[] {
+  return [...new Set([...ownRelay(), ...RelayUrls])];
+}
+
 /** ICE servers to offer, with the configured TURN server appended when present. */
 export function iceServers(): RTCIceServer[] {
   const stun = StunUrls.map(url => ({ urls: url }));
@@ -60,7 +81,7 @@ export function iceServers(): RTCIceServer[] {
 export function roomConfig(appId: string): JoinRoomConfig {
   return {
     appId,
-    relayConfig: { urls: RelayUrls, warnOnRelayFailure: true },
+    relayConfig: { urls: relayPool(), warnOnRelayFailure: true },
     rtcConfig: { iceServers: iceServers() },
   };
 }

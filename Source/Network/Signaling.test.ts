@@ -1,26 +1,52 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { RelayUrls, StunUrls, iceServers, roomConfig } from './Signaling';
+import { RelayUrls, StunUrls, iceServers, relayPool, roomConfig } from './Signaling';
 
 const appId = 'unorthodox-game';
+const ownRelayUrl = 'wss://relay.example.com';
 
 function urlsOf(servers: RTCIceServer[]): string[] {
   return servers.map(server => (Array.isArray(server.urls) ? server.urls[0] : server.urls) ?? '');
 }
 
 describe('Signaling relays', () => {
-  it('offers a pool wide enough that two networks still share a relay', () => {
-    // Peers meet only if one relay in the list is open on both sides, so a
-    // short list fails as soon as one network cannot reach part of it.
-    expect(RelayUrls.length).toBeGreaterThanOrEqual(10);
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
-  it('keeps no known paywalled or auth-gated relay, which is retired on first announce', () => {
-    // Probed live: these refuse an unauthenticated EVENT, so they shrink the pool.
-    expect(RelayUrls.some(url => /nostr\.wine|nostr\.info|nostr\.land/.test(url))).toBe(false);
+  it('announces on the own relay the build names', () => {
+    vi.stubEnv('VITE_RELAY_URL', ownRelayUrl);
+    expect(relayPool()[0]).toBe(ownRelayUrl);
   });
 
-  it('offers only wss relays, since a page served over https cannot use ws', () => {
-    expect(RelayUrls.every(url => url.startsWith('wss://'))).toBe(true);
+  it('keeps the public pool behind the own relay, so one dead relay is survivable', () => {
+    vi.stubEnv('VITE_RELAY_URL', ownRelayUrl);
+    expect(relayPool()).toEqual([ownRelayUrl, ...RelayUrls]);
+  });
+
+  it('falls back to the public pool alone when no own relay is configured', () => {
+    expect(relayPool()).toEqual(RelayUrls);
+  });
+
+  it('drops a relay the page could not open, rather than passing it on', () => {
+    // A malformed wss URL throws out of `new WebSocket` inside trystero.
+    vi.stubEnv('VITE_RELAY_URL', 'ws://relay.example.com');
+    expect(relayPool()).toEqual(RelayUrls);
+    vi.stubEnv('VITE_RELAY_URL', 'wss://');
+    expect(relayPool()).toEqual(RelayUrls);
+    vi.stubEnv('VITE_RELAY_URL', 'not a url');
+    expect(relayPool()).toEqual(RelayUrls);
+  });
+
+  it('never lists the same relay twice', () => {
+    // A duplicate in front would announce on the same relay over two sockets.
+    vi.stubEnv('VITE_RELAY_URL', RelayUrls[2]);
+    const pool = relayPool();
+    expect(new Set(pool).size).toBe(pool.length);
+  });
+
+  it('carries the own relay into the room configuration', () => {
+    vi.stubEnv('VITE_RELAY_URL', ownRelayUrl);
+    expect(roomConfig(appId).relayConfig?.urls?.[0]).toBe(ownRelayUrl);
   });
 });
 

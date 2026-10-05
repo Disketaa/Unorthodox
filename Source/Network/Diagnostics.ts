@@ -1,4 +1,5 @@
 import { createLogger, setLogLevel } from '@/Core';
+import { relayPool } from './Signaling';
 import { getRelaySockets } from 'trystero';
 
 const log = createLogger('Diagnostics');
@@ -126,6 +127,8 @@ export function startDiagnostics(getPeers: () => Record<string, RTCPeerConnectio
   const build = document.querySelector('script[src*="assets/index-"]')?.getAttribute('src') ?? 'unknown';
   log('info', 'build', build, 'debug', String(isDebugEnabled()));
   log('info', 'href', window.location.href);
+  const relays = relayPool();
+  log('info', 'relay pool', relays.length, 'first', relays[0] ?? 'none');
 
   window.addEventListener('error', (event) => {
     log('error', 'uncaught error', event.message, event.filename, event.lineno);
