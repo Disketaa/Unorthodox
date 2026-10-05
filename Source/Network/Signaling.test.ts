@@ -1,99 +1,69 @@
-import { describe, it, expect, afterEach, vi } from 'vitest';
-import { RelayUrls, StunUrls, iceServers, relayPool, roomConfig } from './Signaling';
+import { describe, it, expect } from 'vitest';
+import { OwnRelayUrl, RelayUrls, StunUrls, TurnUrls, iceServers, relayPool, roomConfig } from './Signaling';
 
 const appId = 'unorthodox-game';
-const ownRelayUrl = 'wss://relay.example.com';
 
 function urlsOf(servers: RTCIceServer[]): string[] {
   return servers.map(server => (Array.isArray(server.urls) ? server.urls[0] : server.urls) ?? '');
 }
 
 describe('Signaling relays', () => {
-  afterEach(() => {
-    vi.unstubAllEnvs();
-  });
-
-  it('announces on the own relay the build names', () => {
-    vi.stubEnv('VITE_RELAY_URL', ownRelayUrl);
-    expect(relayPool()[0]).toBe(ownRelayUrl);
+  it('announces on the own relay ahead of the public pool', () => {
+    // Two peers of a room are most likely to meet on our own relay, and only fall
+    // back to a public one on a network where ours is blocked.
+    expect(relayPool()[0]).toBe(OwnRelayUrl);
   });
 
   it('keeps the public pool behind the own relay, so one dead relay is survivable', () => {
-    vi.stubEnv('VITE_RELAY_URL', ownRelayUrl);
-    expect(relayPool()).toEqual([ownRelayUrl, ...RelayUrls]);
+    expect(relayPool()).toEqual([OwnRelayUrl, ...RelayUrls]);
   });
 
-  it('falls back to the public pool alone when no own relay is configured', () => {
-    expect(relayPool()).toEqual(RelayUrls);
+  it('keeps the pool short, since a wide one gets rate-limited off the free relays', () => {
+    expect(RelayUrls.length).toBeLessThanOrEqual(8);
   });
 
-  it('drops a relay the page could not open, rather than passing it on', () => {
-    // A malformed wss URL throws out of `new WebSocket` inside trystero.
-    vi.stubEnv('VITE_RELAY_URL', 'ws://relay.example.com');
-    expect(relayPool()).toEqual(RelayUrls);
-    vi.stubEnv('VITE_RELAY_URL', 'wss://');
-    expect(relayPool()).toEqual(RelayUrls);
-    vi.stubEnv('VITE_RELAY_URL', 'not a url');
-    expect(relayPool()).toEqual(RelayUrls);
+  it('offers only wss relays, since a page served over https cannot use ws', () => {
+    expect(relayPool().every(url => url.startsWith('wss://'))).toBe(true);
   });
 
   it('never lists the same relay twice', () => {
-    // A duplicate in front would announce on the same relay over two sockets.
-    vi.stubEnv('VITE_RELAY_URL', RelayUrls[2]);
     const pool = relayPool();
     expect(new Set(pool).size).toBe(pool.length);
   });
 
-  it('carries the own relay into the room configuration', () => {
-    vi.stubEnv('VITE_RELAY_URL', ownRelayUrl);
-    expect(roomConfig(appId).relayConfig?.urls?.[0]).toBe(ownRelayUrl);
+  it('keeps no known paywalled or auth-gated relay, which is retired on first announce', () => {
+    // Probed live: these refuse an unauthenticated EVENT, so they shrink the pool.
+    expect(RelayUrls.some(url => /nostr\.wine|nostr\.info|nostr\.land/.test(url))).toBe(false);
+  });
+
+  it('carries the pool into the room configuration', () => {
+    expect(roomConfig(appId).relayConfig?.urls).toEqual(relayPool());
   });
 });
 
 describe('ICE servers', () => {
-  afterEach(() => {
-    vi.unstubAllEnvs();
-  });
-
-  it('uses only STUN servers by default', () => {
-    expect(urlsOf(iceServers())).toEqual(StunUrls);
-  });
-
   it('never relies on Google STUN, which an RU network cannot reach', () => {
     // Trystero's defaults are all Google apart from Cloudflare, and they are
     // replaced rather than extended.
     expect(StunUrls.some(url => url.includes('google'))).toBe(false);
   });
 
-  it('adds the TURN server when all three of its credentials are configured', () => {
-    vi.stubEnv('VITE_TURN_URL', 'turn:turn.example.com:3478');
-    vi.stubEnv('VITE_TURN_USERNAME', 'user');
-    vi.stubEnv('VITE_TURN_CREDENTIAL', 'secret');
-
-    expect(urlsOf(iceServers())).toEqual([...StunUrls, 'turn:turn.example.com:3478']);
+  it('adds our TURN server after STUN, since a strict NAT has no other path', () => {
+    const servers = iceServers();
+    expect(urlsOf(servers)).toEqual([...StunUrls, TurnUrls[0]]);
+    expect(servers[servers.length - 1].username).toBe('game');
   });
 
   it('offers TURN over UDP and TCP together, since one alone is often blocked', () => {
-    vi.stubEnv('VITE_TURN_URL', 'turn:turn.example.com:3478, turn:turn.example.com:3478?transport=tcp');
-    vi.stubEnv('VITE_TURN_USERNAME', 'user');
-    vi.stubEnv('VITE_TURN_CREDENTIAL', 'secret');
-
     const turn = iceServers().find(server => server.username !== undefined);
-    expect(turn?.urls).toEqual(['turn:turn.example.com:3478', 'turn:turn.example.com:3478?transport=tcp']);
-  });
-
-  it('omits TURN when its credentials are incomplete, rather than half configuring it', () => {
-    vi.stubEnv('VITE_TURN_URL', 'turn:turn.example.com:3478');
-    vi.stubEnv('VITE_TURN_USERNAME', 'user');
-
-    expect(urlsOf(iceServers())).toEqual(StunUrls);
+    expect(turn?.urls).toEqual(TurnUrls);
+    expect(TurnUrls.some(url => url.includes('transport=tcp'))).toBe(true);
   });
 });
 
 describe('Room configuration', () => {
   it('passes an explicit ICE server list, so the library defaults are replaced', () => {
-    const config = roomConfig(appId);
-    expect(config.rtcConfig?.iceServers).toBeDefined();
+    expect(roomConfig(appId).rtcConfig?.iceServers).toBeDefined();
   });
 
   it('keeps the relay failure warnings on, since they are the only signal', () => {

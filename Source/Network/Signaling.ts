@@ -1,25 +1,19 @@
-import type { JoinRoomConfig, TurnServerConfig } from 'trystero';
+import type { JoinRoomConfig } from 'trystero';
 
-/** Signaling relays for matchmaking; two peers need only one relay in common, so the pool must
- * be wide enough that any two networks share a survivor. Every host below answered an
- * unauthenticated ephemeral-kind EVENT live. */
+/** The relay this project runs, on a dedicated IP in Moscow. Announcing on it first means the
+ * two peers of a room most likely meet here, and the public pool behind it only has to cover a
+ * network this one is blocked from. */
+export const OwnRelayUrl = 'wss://relay.144-31-61-203.sslip.io';
+
+/** Signaling relays to fall back on, two peers needing only one in common. Kept short on
+ * purpose: every entry is another announce burst a free relay must absorb, and a wide pool got
+ * this project rate-limited off several of them. */
 export const RelayUrls = [
   'wss://nos.lol',
   'wss://nostr.mom',
-  'wss://relay.damus.io',
   'wss://relay.snort.social',
   'wss://relay.primal.net',
-  'wss://offchain.pub',
-  'wss://relay.nostr.net',
-  'wss://nostr-pub.wellorder.net',
-  'wss://nostr.oxtr.dev',
-  'wss://bitcoiner.social',
-  'wss://nostrue.com',
-  'wss://nostr.data.haus',
-  'wss://nostr.sathoarder.com',
-  'wss://nostr-relay.corb.net',
   'wss://nostr.islandarea.net',
-  'wss://schnorr.me',
   'wss://relay.mostro.network',
 ];
 
@@ -28,52 +22,22 @@ export const RelayUrls = [
  * trystero's list outright, so they are replaced here rather than extended. */
 export const StunUrls = ['stun:stun.cloudflare.com:3478', 'stun:stun.miwifi.com:3478'];
 
-/** Read a build-time variable, treating an absent or empty value as unset. */
-function readEnv(name: string): string | undefined {
-  const value = import.meta.env[name];
-  return typeof value === 'string' && value !== '' ? value : undefined;
-}
+/** Our TURN server, which is what a phone behind carrier NAT has to connect through, since no
+ * direct route exists from inside one. Over UDP and TCP at once, because a network that blocks
+ * one is more common than one that blocks both. */
+export const TurnUrls = ['turn:144.31.61.203:3478', 'turn:144.31.61.203:3478?transport=tcp'];
 
-/** The TURN server to fall back on, when one has been configured. STUN alone cannot help when
- * both players sit behind symmetric NAT, and no public TURN server is reliable enough to
- * hardcode, so credentials are supplied per deploy. */
-function turnServer(): TurnServerConfig | undefined {
-  const url = readEnv('VITE_TURN_URL');
-  const username = readEnv('VITE_TURN_USERNAME');
-  const credential = readEnv('VITE_TURN_CREDENTIAL');
-  if (url === undefined || username === undefined || credential === undefined) {
-    return undefined;
-  }
-  // UDP and TCP at once: a network that blocks one is more common than one that blocks both.
-  return { urls: url.split(',').map(part => part.trim()), username, credential };
-}
-
-/** The relay this project runs, when the build names one. A value that is not a usable wss URL
- * is dropped rather than passed on, since a malformed one throws out of `new WebSocket`. */
-function ownRelay(): string[] {
-  const url = readEnv('VITE_RELAY_URL')?.trim();
-  if (url === undefined) {
-    return [];
-  }
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === 'wss:' && parsed.hostname !== '' ? [url] : [];
-  } catch {
-    return [];
-  }
-}
-
-/** Every relay to announce on: the own relay ahead of the public pool, never instead of it, so a
- * relay this project cannot fix stays a survivable loss rather than the whole room. */
+/** Every relay to announce on: the own relay ahead of the public pool, never instead of it, so
+ * our relay being blocked on one network costs that network its redundancy, not its room. */
 export function relayPool(): string[] {
-  return [...new Set([...ownRelay(), ...RelayUrls])];
+  return [OwnRelayUrl, ...RelayUrls];
 }
 
-/** ICE servers to offer, with the configured TURN server appended when present. */
+/** ICE servers to offer, TURN included, since without it a strict NAT has no path at all. */
 export function iceServers(): RTCIceServer[] {
   const stun = StunUrls.map(url => ({ urls: url }));
-  const turn = turnServer();
-  return turn === undefined ? stun : [...stun, turn];
+  const turn = { urls: TurnUrls, username: 'game', credential: 'unorthodox-2026-static-secret' };
+  return [...stun, turn];
 }
 
 /** Full trystero room configuration. `redundancy` is deliberately absent: trystero applies it

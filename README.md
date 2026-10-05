@@ -105,14 +105,10 @@ Push to `main`; the `Deploy to GitHub Pages` workflow builds and publishes to Pa
 Set Settings → Pages → Source to **GitHub Actions** once, if it is not already.
 
 ## Connecting across networks
-Peers meet over nostr relays, then connect directly. `VITE_RELAY_URL` names a relay this project
-runs and puts it ahead of the public pool in `Source/Network/Signaling.ts`, so one relay being down
-costs reachability and not the room. STUN servers live in the same file.
+Peers meet over nostr relays, then connect directly. This project runs the first relay, on a dedicated
+IP in Moscow, and falls back to a short public pool behind it; both lists live in
+`Source/Network/Signaling.ts`. A TURN server on the same box carries players whose network offers no
+direct route at all, which is most mobile ones.
 
-On a symmetric NAT, or where STUN is blocked, set `VITE_TURN_URL`, `VITE_TURN_USERNAME` and
-`VITE_TURN_CREDENTIAL` to a TURN server you control; all three are required or none are used. Mobile
-players behind carrier-grade NAT need this most.
-
-All four are build-time and readable in the published bundle, so treat the TURN pair as public. The
-Pages build reads them from repository variables and secrets; the browser console reports the relay
-pool, each relay state and each peer.
+The TURN credentials are in the published bundle, so the server's quotas are what bound their use.
+The browser console reports each relay and peer state.
