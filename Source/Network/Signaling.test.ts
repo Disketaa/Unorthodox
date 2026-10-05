@@ -73,6 +73,15 @@ describe('ICE servers', () => {
     expect(urlsOf(iceServers())).toEqual([...StunUrls, 'turn:turn.example.com:3478']);
   });
 
+  it('offers TURN over UDP and TCP together, since one alone is often blocked', () => {
+    vi.stubEnv('VITE_TURN_URL', 'turn:turn.example.com:3478, turn:turn.example.com:3478?transport=tcp');
+    vi.stubEnv('VITE_TURN_USERNAME', 'user');
+    vi.stubEnv('VITE_TURN_CREDENTIAL', 'secret');
+
+    const turn = iceServers().find(server => server.username !== undefined);
+    expect(turn?.urls).toEqual(['turn:turn.example.com:3478', 'turn:turn.example.com:3478?transport=tcp']);
+  });
+
   it('omits TURN when its credentials are incomplete, rather than half configuring it', () => {
     vi.stubEnv('VITE_TURN_URL', 'turn:turn.example.com:3478');
     vi.stubEnv('VITE_TURN_USERNAME', 'user');

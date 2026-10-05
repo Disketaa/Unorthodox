@@ -44,7 +44,8 @@ function turnServer(): TurnServerConfig | undefined {
   if (url === undefined || username === undefined || credential === undefined) {
     return undefined;
   }
-  return { urls: url, username, credential };
+  // UDP and TCP at once: a network that blocks one is more common than one that blocks both.
+  return { urls: url.split(',').map(part => part.trim()), username, credential };
 }
 
 /** The relay this project runs, when the build names one. A value that is not a usable wss URL
