@@ -25,13 +25,18 @@ function show(value: unknown): string {
   }
 }
 
+/** One report line, or none when the caller wants no console output of its own. */
+function reportLines(level: LogLevel, message: string, rest: unknown[]): string[] {
+  const stamp = new Date().toISOString().slice(11, 23);
+  return [`${stamp} ${level} ${[message, ...rest].map(show).join(' ')}`];
+}
+
 /** Log to the console and keep a copy, so the report and the console stay the same lines. The
  * logger wants a message and extra detail apart; the report joins them back into one line. */
 function note(level: LogLevel, ...parts: unknown[]): void {
   const [message, ...rest] = parts;
   log(level, show(message), ...rest);
-  const stamp = new Date().toISOString().slice(11, 23);
-  report.push(`${stamp} ${level} ${parts.map(show).join(' ')}`);
+  report.push(...reportLines(level, show(message), rest));
   if (report.length > ReportMax) {
     report.shift();
   }
@@ -172,11 +177,12 @@ export function startDiagnostics(getPeers: () => Record<string, RTCPeerConnectio
   const relays = relayPool();
   log('info', 'relay pool', relays.length, 'first', relays[0] ?? 'none');
 
-  // Trystero reports a relay it has given up on through the console rather than this logger,
-  // and those lines are the reason a room would not open, so they join the report too.
+  // Trystero announces a relay it has given up on through the console, and those lines are why
+  // a room would not open. The logger writes through the console too, so the copy goes straight
+  // into the report and only the original call is passed on; logging here would recurse.
   const consoleWarn = console.warn.bind(console);
   console.warn = (...args: unknown[]) => {
-    note('warn', 'trystero', ...args);
+    report.push(...reportLines('warn', 'trystero', args));
     consoleWarn(...args);
   };
 
