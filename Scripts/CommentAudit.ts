@@ -1,26 +1,18 @@
-/**
- * Report comments that restate the code instead of adding to it.
- *
- * Three outcomes per comment: `noisy` (safe to delete), `stale` (an unresolved
- * question or a hedge, which needs a decision rather than a deletion), or
- * `kept`. The classification is mechanical on purpose: it only proposes, and
- * nothing is rewritten. `stale` exits non-zero so it can gate a commit.
- *
- * CSS is skipped unless `--css` is passed, and `--css` finds nothing: every
- * comment in the stylesheets records a design decision.
- *
- * Usage: npm run comments [-- --css] [-- <path>]
- */
+/** Report comments that restate the code instead of adding to it. Three outcomes per comment:
+ * `noisy` (safe to delete), `stale` (an unresolved question or a hedge, which needs a decision
+ * rather than a deletion), or `kept`. The classification is mechanical on purpose: it only
+ * proposes, and nothing is rewritten. `stale` exits non-zero so it can gate a commit. CSS is
+ * skipped unless `--css` is passed, and `--css` finds nothing: every comment in the stylesheets
+ * records a design decision. Usage: npm run comments [-- --css] [-- <path>] */
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
+import { canonicalShape } from "./CommentShape.mjs";
 
-/**
- * `over-budget` is its own verdict rather than being folded into `stale`. A stale comment says
- * something untrue; an over-budget one may be entirely accurate and merely too long. Reporting both
- * as `stale` hides which one a fix has to address.
- */
-type Verdict = "kept" | "noisy" | "stale" | "over-budget" | "split" | "trailing";
+/** `over-budget` is its own verdict rather than being folded into `stale`. A stale comment says
+ * something untrue; an over-budget one may be entirely accurate and merely too long. Reporting
+ * both as `stale` hides which one a fix has to address. */
+type Verdict = "kept" | "noisy" | "stale" | "over-budget" | "split" | "trailing" | "shape";
 
 interface Finding {
   readonly file: string;
@@ -228,6 +220,25 @@ function countContentLines(text: string): number {
     .filter((line) => line.trim() !== "").length;
 }
 
+/** The canonical text for a comment, from the shared definition the formatter and the ESLint
+ * rule both use. Three implementations of one shape would drift, and a formatter that disagrees
+ * with its own linter is worse than no formatter. A comment is off-shape when it is padded: a
+ * gutter block with blank gutter lines in it, or the delimiters sitting on lines of their own.
+ * `npm run comments:format` fixes those, and this reports them so a commit cannot reintroduce
+ * one without someone noticing. */
+function shapeProblem(sourceLines: readonly string[], comment: RawComment): boolean {
+  if (!comment.block || comment.trailing) return false;
+  const raw = sourceLines.slice(comment.line - 1, comment.endLine).join("\n");
+  // A nested delimiter is prose about the syntax, not a comment this should reshape.
+  if (raw.slice(2).includes("/*")) return false;
+  const own = sourceLines[comment.line - 1] ?? "";
+  const indent = own.slice(0, own.indexOf("/*"));
+  const body = raw.slice(2, raw.endsWith("*/") ? raw.length - 2 : raw.length);
+  const canonical = canonicalShape(body, indent, "\n", raw.startsWith("/**"));
+  if (canonical === null) return false;
+  return canonical !== raw;
+}
+
 /** Strip the leading `*` gutter from each line of a doc comment. */
 function makeBlock(startLine: number, endLine: number, buffer: readonly string[]): RawComment {
   const text = buffer
@@ -246,11 +257,8 @@ function makeBlock(startLine: number, endLine: number, buffer: readonly string[]
   };
 }
 
-/**
- * Consecutive `//` lines are one comment. Judged line by line, the middle of a
- * sentence reads as its own fragment and picks up signals from words that
- * belong to a sentence it never saw.
- */
+/** Consecutive `//` lines are one comment. Judged line by line, the middle of a sentence reads
+ * as its own fragment and picks up signals from words that belong to a sentence it never saw. */
 function mergeParagraphs(comments: readonly RawComment[]): RawComment[] {
   const merged: RawComment[] = [];
   for (const comment of comments) {
@@ -344,16 +352,14 @@ function classify(comment: RawComment, following: string): { verdict: Verdict; r
   return { verdict, reasons };
 }
 
-/**
- * A comment whose only separation from the next is a blank line is the same comment split in two.
- * Two blocks over one declaration are one thought, and permitting them makes the budget a
- * suggestion: an eighteen-line note becomes three six-line notes and the rule is satisfied without
- * anything having been shortened. So this is an error rather than a shape to reshape, and the pair
- * is also counted once against the budget.
- */
+/** A comment whose only separation from the next is a blank line is the same comment split in
+ * two. Two blocks over one declaration are one thought, and permitting them makes the budget a
+ * suggestion: an eighteen-line note becomes three six-line notes and the rule is satisfied
+ * without anything having been shortened. So this is an error rather than a shape to reshape,
+ * and the pair is also counted once against the budget. */
 /** A tool's own pragma, such as vitest's `// @vitest-environment`. It is read by the runner from
- * the file's leading comment block and has to be a comment of its own, so it is not prose and not
- * a second half of one. */
+ * the file's leading comment block and has to be a comment of its own, so it is not prose and
+ * not a second half of one. */
 function isDirective(text: string): boolean {
   return /@\w[\w-]*\s/.test(text.trimStart());
 }
@@ -379,12 +385,10 @@ function findAdjacent(source: string, comments: readonly RawComment[]): Map<numb
   return pairs;
 }
 
-/**
- * A comment sharing its line with code in front of it annotates that code, and is forbidden in every
- * file type. The reason is that it cannot be wrapped: the prose is squeezed into whatever the code
- * left, so it ends up short, and a short note that says what the code beside it plainly says is the
- * comment this whole policy exists to remove.
- */
+/** A comment sharing its line with code in front of it annotates that code, and is forbidden in
+ * every file type. The reason is that it cannot be wrapped: the prose is squeezed into whatever
+ * the code left, so it ends up short, and a short note that says what the code beside it
+ * plainly says is the comment this whole policy exists to remove. */
 function findTrailing(comments: readonly RawComment[]): RawComment[] {
   return comments.filter((comment) => comment.trailing);
 }
@@ -401,23 +405,19 @@ function walk(directory: string, into: string[]): void {
   }
 }
 
-/**
- * The stylesheet line budget. TypeScript has none here on purpose: `npm run lint` owns that rule
- * through `comments/max-lines`, and two gates judging the same comment is how the two drift apart.
- * CSS is not linted by ESLint, so this script is its only enforcement.
- *
- * Six, rather than the three TypeScript gets, and the reason is who is reading. A comment in a
- * stylesheet is usually the specification — a token scale, a variant pair — and there is no name,
- * type or signature for it to explain itself through. Three cannot hold a decision and its
- * consequence, so the essays get deleted and the reasoning goes to `DECISIONS.md`.
- *
- * Six is one more than that budget, not one more than a round number: it is what a decision plus
- * the two consequences of changing it actually needs, and it was measured rather than guessed.
- * Measured across the 39 stylesheets: 208 comments averaging seven content lines. A longer comment
- * costs an agent more than it returns, because the facts are buried and the narrative around them
- * goes stale without anyone noticing. Six keeps every "this value looks wrong but is not" note —
- * the ones that stop a reader tidying it away — and pushes the rest out.
- */
+/** The stylesheet line budget. TypeScript has none here on purpose: `npm run lint` owns that
+ * rule through `comments/max-lines`, and two gates judging the same comment is how the two
+ * drift apart. CSS is not linted by ESLint, so this script is its only enforcement. Six, rather
+ * than the three TypeScript gets, and the reason is who is reading. A comment in a stylesheet
+ * is usually the specification — a token scale, a variant pair — and there is no name, type or
+ * signature for it to explain itself through. Three cannot hold a decision and its consequence,
+ * so the essays get deleted and the reasoning goes to `DECISIONS.md`. Six is one more than that
+ * budget, not one more than a round number: it is what a decision plus the two consequences of
+ * changing it actually needs, and it was measured rather than guessed. Measured across the 39
+ * stylesheets: 208 comments averaging seven content lines. A longer comment costs an agent more
+ * than it returns, because the facts are buried and the narrative around them goes stale
+ * without anyone noticing. Six keeps every "this value looks wrong but is not" note — the ones
+ * that stop a reader tidying it away — and pushes the rest out. */
 const CSS_LINE_BUDGET = 6;
 
 function overCssBudget(comment: RawComment): boolean {
@@ -439,6 +439,7 @@ function main(): void {
     const isCss = file.endsWith(".css");
     if (isCss && !includeCss) continue;
     const source = readFileSync(file, "utf8");
+    const sourceLines = source.split(/\r?\n/);
     const comments = collectComments(source, isCss);
     const adjacent = findAdjacent(source, comments);
     for (const comment of findTrailing(comments)) {
@@ -467,12 +468,18 @@ function main(): void {
         continue;
       }
       const overBy = isCss && overCssBudget(comment);
-      if (verdict === "kept" && !overBy) continue;
+      const offShape = isCss && shapeProblem(sourceLines, comment);
+      if (verdict === "kept" && !overBy && !offShape) continue;
       findings.push({
         file: relative(process.cwd(), file).split(sep).join("/"),
         line: comment.line,
-        verdict: verdict === "kept" ? "over-budget" : verdict,
-        reasons: verdict === "kept" ? [`${comment.lines} lines, over by ${comment.lines - CSS_LINE_BUDGET}`] : reasons,
+        verdict: verdict !== "kept" ? verdict : offShape ? "shape" : "over-budget",
+        reasons:
+          verdict !== "kept"
+            ? reasons
+            : offShape
+              ? ["padded; `npm run comments:format` reshapes it"]
+              : [`${comment.lines} lines, over by ${comment.lines - CSS_LINE_BUDGET}`],
         text: comment.text.replace(/\s+/g, " ").trim().slice(0, 90),
       });
     }
@@ -483,6 +490,7 @@ function main(): void {
   const overBudget = findings.filter((finding) => finding.verdict === "over-budget");
   const split = findings.filter((finding) => finding.verdict === "split");
   const trailing = findings.filter((finding) => finding.verdict === "trailing");
+  const shape = findings.filter((finding) => finding.verdict === "shape");
 
   for (const [label, group] of [
     ["STALE", stale],
@@ -490,6 +498,7 @@ function main(): void {
     ["OVER BUDGET", overBudget],
     ["SPLIT", split],
     ["TRAILING", trailing],
+    ["SHAPE", shape],
   ] as const) {
     if (group.length === 0) continue;
     console.log(`\n${label} (${group.length})`);
@@ -501,14 +510,15 @@ function main(): void {
   }
 
   console.log(
-    `\n${noisy.length} noisy, ${stale.length} stale, ${overBudget.length} over budget, ${split.length} split, ${trailing.length} trailing, of ${files.length} files.`,
+    `\n${noisy.length} noisy, ${stale.length} stale, ${overBudget.length} over budget, ${split.length} split, ${trailing.length} trailing, ${shape.length} shape, of ${files.length} files.`,
   );
   if (
     stale.length > 0 ||
     noisy.length > 0 ||
     overBudget.length > 0 ||
     split.length > 0 ||
-    trailing.length > 0
+    trailing.length > 0 ||
+    shape.length > 0
   ) {
     process.exitCode = 1;
   }

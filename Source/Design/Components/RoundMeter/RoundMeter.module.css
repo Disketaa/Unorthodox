@@ -1,8 +1,8 @@
 /* The theme's rounds as a row of ticks under the theme's name. `justify-content: center`
  * because the card centres its own contents on the cross axis and this is one of them: a row
  * ten marks wide would otherwise sit against one side, and six cards would each leave a
- * different amount of space beside their row. No `margin-top: auto` and no `width: 100%`:
- * the card is a column that centres its contents and neither grows, so this row falls directly
+ * different amount of space beside their row. No `margin-top: auto` and no `width: 100%`: the
+ * card is a column that centres its contents and neither grows, so this row falls directly
  * under the name. */
 .Root {
   /* Above the card's inner panel, which is what crops the number. Positioned on purpose rather

@@ -1,9 +1,9 @@
 /* The frame a screen's containers are laid out on. One container per row by default, and the
  * whole set side by side only when the frame is wide enough for all of them. A grid rather than
  * a wrapping flex row, because of `align-content` below: a flex row wraps into lines too, but
- * it cannot say where those lines sit when the whole set is shorter than the viewport. Tracks are
- * a fixed container width rather than `1fr`, so two cards on a wide screen stay the size a card
- * is meant to be. The `min()` floor keeps a phone from overflowing a container. */
+ * it cannot say where those lines sit when the whole set is shorter than the viewport. Tracks
+ * are a fixed container width rather than `1fr`, so two cards on a wide screen stay the size a
+ * card is meant to be. The `min()` floor keeps a phone from overflowing a container. */
 .Root {
   display: grid;
   /* A single track, and the track is the width one container wants to be. Below the query
@@ -34,19 +34,18 @@
   margin: 0 auto;
 }
 
-/* The whole set side by side, and only then. `auto-fit` on its own cannot express this: it fits as
- * many tracks as the frame is wide, so a row of three was three across on a desktop, two and one
- * below on a laptop, and one per row on a phone. No setting of `auto-fit` answers "all of them
- * or none of them", because fitting a track is a per-track question and this is about the row.
- * So the row count turns on one comparison: is the frame wide enough for every container? The
- * threshold is the `max-width` above plus the page's padding. */
+/* The whole set side by side, and only then. `auto-fit` on its own cannot express this: it fits
+ * as many tracks as the frame is wide, so a row of three was three across on a desktop, two and
+ * one below on a laptop, and one per row on a phone. No setting of `auto-fit` answers "all of
+ * them or none of them", because fitting a track is a per-track question and this is about the
+ * row. So the row count turns on one comparison: is the frame wide enough for every container?
+ * The threshold is the `max-width` above plus the page's padding. */
 @media (min-width: 1056px) {
-  /* `auto-fit` over a floor wide enough to read in, once the window is wide enough for the whole
-   * row. The query above decides the row count; this decides how the containers there share the
-   * width, the question `auto-fit` is good at. A count instead would leave an empty track at the
-   * end of a two-container screen, so the wordmark would sit against the left with the gap on the
-   * wrong side. `minmax(0, 1fr)` rather than the column's own width as the floor: `auto-fit` fits
-   * tracks at their minimum, so a 320px floor made three narrow columns and lost the fourth. */
+  /* `auto-fit` over a floor wide enough to read in, once the window is wide enough for the
+   * whole row. The query above decides the row count; this decides how the containers there
+   * share the width, the question `auto-fit` is good at. A count instead would leave an empty
+   * track at the end of a two-container screen, so the wordmark would sit against the left with
+   * the gap on the wrong side. */
   .Root {
     grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   }

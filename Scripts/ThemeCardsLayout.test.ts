@@ -3,13 +3,9 @@ import { readFileSync } from 'node:fs';
 import { stylesheet, tokenReader } from './Stylesheet';
 import { GameConfig } from '../Source/Game';
 import { ThemeIds, dealThemes, createRandom, randomFor } from '../Source/Core';
-/**
- * The bank of theme cards, read from the stylesheet and the token file.
- *
- * Out here for the reason `Scripts/PlayerBarLayout.test.ts` is: happy-dom does not lay out
- * a flex row, so a rendered `ThemeCards` says nothing about how wide the bank gets or how
- * many cards fit across it.
- */
+/** The bank of theme cards, read from the stylesheet and the token file. Out here for the reason
+ * `Scripts/PlayerBarLayout.test.ts` is: happy-dom does not lay out a flex row, so a rendered
+ * `ThemeCards` says nothing about how wide the bank gets or how many cards fit across it. */
 const sheet = stylesheet('../Source/Design/Components/ThemeCards/ThemeCards.module.css');
 const card = stylesheet('../Source/Design/Components/ThemeCard/ThemeCard.module.css');
 const meter = stylesheet('../Source/Design/Components/RoundMeter/RoundMeter.module.css');
@@ -18,14 +14,11 @@ const tokens = readFileSync(
   'utf8',
 );
 const tokenValue = tokenReader(tokens);
-/**
- * A token written as a share of the card's width, as the number it multiplies it by.
- *
- * Several things drawn on a theme card are shares of one width rather than lengths, which is how
- * a narrow screen scales the card instead of crowding it. Reading them as numbers is what lets a
- * test compare them with each other — an inset against a padding, a name's size against a card's
- * — without resolving a `calc()` a test DOM cannot lay out.
- */
+/** A token written as a share of the card's width, as the number it multiplies it by. Several
+ * things drawn on a theme card are shares of one width rather than lengths, which is how a
+ * narrow screen scales the card instead of crowding it. Reading them as numbers is what lets a
+ * test compare them with each other — an inset against a padding, a name's size against a
+ * card's — without resolving a `calc()` a test DOM cannot lay out. */
 /** The gap between cards at the narrowest screen, which is the floor of its `clamp`. */
 function narrowestGap(): number {
   const match = tokenValue('--Space-ThemeCardsGap').match(/clamp\(\s*([0-9.]+)px/);

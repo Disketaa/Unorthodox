@@ -1,17 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { stylesheet } from './Stylesheet';
 
-/**
- * The row that fills itself, read from the stylesheet.
- *
- * Out here rather than beside the component for the reason `ScreenLayout.test.ts` is:
- * it reads a file with `node:fs`, and widening the app's TypeScript `types` to allow
- * that would let browser code import Node built-ins.
- *
- * And it reads the file rather than rendering the component, because this layout is
- * invisible to a test runner. happy-dom does not lay out a flex row, so a rendered
- * `Stack` asserts nothing about the one thing `fill` exists to decide.
- */
+/** The row that fills itself, read from the stylesheet. Out here rather than beside the
+ * component for the reason `ScreenLayout.test.ts` is: it reads a file with `node:fs`, and
+ * widening the app's TypeScript `types` to allow that would let browser code import Node
+ * built-ins. And it reads the file rather than rendering the component, because this layout is
+ * invisible to a test runner. happy-dom does not lay out a flex row, so a rendered `Stack`
+ * asserts nothing about the one thing `fill` exists to decide. */
 const sheet = stylesheet('../Source/Design/Primitives/Stack/Stack.module.css');
 const fillRule = /\.FillEven\s*>\s*\*\s*\{([^}]*)\}/;
 

@@ -1,9 +1,9 @@
-/* One theme card: the frame the `Card` variant would draw, plus the hover.
- * The frame is re-declared because the card has to be the thing the wash lands on: `Card` paints an
- * opaque surface and takes no `className`, so a button wrapped in one would hide the hover. Same
- * tokens, radius and padding, so it reads as the family. `width` and `height` are 100% because the
- * slot around this card sets the shape, and a button is the one element in a box that does not fill
- * it. `position: relative` and `overflow: hidden` are for the mark behind the name. */
+/* One theme card: the frame the `Card` variant would draw, plus the hover. The frame is
+ * re-declared because the card has to be the thing the wash lands on: `Card` paints an opaque
+ * surface and takes no `className`, so a button wrapped in one would hide the hover. Same
+ * tokens, radius and padding, so it reads as the family. `width` and `height` are 100% because
+ * the slot around this card sets the shape, and a button is the one element in a box that does
+ * not fill it. `position: relative` and `overflow: hidden` are for the mark behind the name. */
 .Root {
   position: relative;
   overflow: hidden;
@@ -47,12 +47,12 @@
     color var(--Duration-Fast) var(--Easing-Standard);
 }
 
-/* The hover, in the theme's own accent.
- * A wash rather than the tint, because the name is read off the card and a raw tint behind a name
- * fails contrast in all eight tints: the pale step of the same accent is what can be read on. The
- * name and the border take the tint, not the ink, since using the ink made the hovered card a
- * different colour from the theme it belongs to. All three values are written by the component from
- * `Core`, so the fallbacks here are only what a card looks like before it has been written to. */
+/* The hover, in the theme's own accent. A wash rather than the tint, because the name is read
+ * off the card and a raw tint behind a name fails contrast in all eight tints: the pale step of
+ * the same accent is what can be read on. The name and the border take the tint, not the ink,
+ * since using the ink made the hovered card a different colour from the theme it belongs to.
+ * All three values are written by the component from `Core`, so the fallbacks here are only
+ * what a card looks like before it has been written to. */
 .Root:hover {
   --ThemeCard-Surface: var(--ThemeCard-Wash, var(--Accent-Wash));
   background: var(--ThemeCard-Surface);
@@ -91,11 +91,12 @@
   outline-offset: var(--Border-Width-Default);
 }
 
-/* The mark: the card's own number, one figure, far larger than the card. Taken out of the flow and
- * pushed past the bottom right corner: a figure set to fill the panel and then clipped reads as
- * something the card is showing rather than a number that happens to fit on it. Centred it would be
- * a figure inside a card. The offset is a share of the figure's own size rather than a length, so
- * it holds as the figure grows: a fixed inset would put it back inside on narrow screens. */
+/* The mark: the card's own number, one figure, far larger than the card. Taken out of the flow
+ * and pushed past the bottom right corner: a figure set to fill the panel and then clipped
+ * reads as something the card is showing rather than a number that happens to fit on it.
+ * Centred it would be a figure inside a card. The offset is a share of the figure's own size
+ * rather than a length, so it holds as the figure grows: a fixed inset would put it back inside
+ * on narrow screens. */
 .Mark {
   position: absolute;
   display: flex;
@@ -114,12 +115,12 @@
   user-select: none;
   pointer-events: none;
   opacity: var(--Opacity-ThemeCardMark);
-  /* The card's own quiet grey at rest, not the theme's colour. Every other thing on the card in the
-   * theme's colour is in the tint — the ticks along the bottom are all of it. This one was
+  /* The card's own quiet grey at rest, not the theme's colour. Every other thing on the card in
+   * the theme's colour is in the tint — the ticks along the bottom are all of it. This one was
    * inheriting the card's quiet ink too, which made the bank read as six grey cards with six
-   * coloured strips rather than as six themes: the number is the biggest thing on the card and it
-   * was the one thing not wearing the theme. Grey rather than a faded tint, since a weaker tint is
-   * still the same hue as the ticks and competes with both. */
+   * coloured strips rather than as six themes: the number is the biggest thing on the card and
+   * it was the one thing not wearing the theme. Grey rather than a faded tint, since a weaker
+   * tint is still the same hue as the ticks and competes with both. */
   color: var(--Color-Text-Quiet);
   transform: scale(1);
   transform-origin: center;
@@ -133,10 +134,10 @@
 
 /* The inner panel: the box the number is printed in, set in from the card's edge. The mark was
  * cropped by the card and nothing else, so a figure a third again as wide as the panel met the
- * edge and stopped, reading as a number painted to fit rather than printed and cut by its frame.
- * It is cut by this box instead, which has margins of its own, so the space between the two edges
- * is the margin the figure is cropped at. A panel and not a ring: a ring is a second edge on a
- * surface already one flat colour, and two edges is what this card gave up its border to avoid. */
+ * edge and stopped, reading as a number painted to fit rather than printed and cut by its
+ * frame. It is cut by this box instead, which has margins of its own, so the space between the
+ * two edges is the margin the figure is cropped at. A panel and not a ring: a ring is a second
+ * edge on a surface already one flat colour, and two edges is what the card gave up to avoid. */
 .Panel {
   position: absolute;
   inset: var(--Space-ThemeCardInset);
@@ -147,12 +148,12 @@
   pointer-events: none;
 }
 
-/* The initial: the theme's own first letter, in the card's top left corner and in its quiet grey.
- * It is the one thing on the card that says which theme this is without being the name: a card with
- * a name and nothing else is a label, while six letters are six themes. Grey rather than any step of
- * the theme's accent — the tint is what the ticks and the hovered name are drawn in, and the ink is
- * dark enough to read as a second label. A pale step rather than the grey the number behind the
- * name wears, since two marks at one weight are two marks rather than one card. */
+/* The initial: the theme's own first letter, in the card's top left corner and in its quiet
+ * grey. It is the one thing on the card that says which theme this is without being the name: a
+ * card with a name and nothing else is a label, while six letters are six themes. Grey rather
+ * than any step of the theme's accent — the tint is what the ticks and the hovered name are
+ * drawn in, and the ink is dark enough to read as a second label. A pale step rather than the
+ * grey the number behind the name wears: two marks at one weight are two marks, not one card. */
 .Initial {
   position: absolute;
   top: var(--Space-ThemeCardPadding);
@@ -175,12 +176,12 @@
   color: var(--ThemeCard-Ink, var(--Accent-Ink));
 }
 
-/* The grain, laid over the card the way the paper is laid over the page. Blended rather than drawn
- * opaquely, which is the whole of it: a noise tile at any opacity below one is a grey wash unless
- * blended, since the tile has grey in its light parts as well as its dark. These pale cards answer
- * the blend question badly and it has been answered three times: `multiply` only darkens, so over
- * near-white it read as no grain; `difference` puts grain in the darks and the lights; `overlay` is
- * where it settled. Blend and opacities are both tokens, so the next try moves a number. */
+/* The grain, laid over the card the way the paper is laid over the page. Blended rather than
+ * drawn opaquely, which is the whole of it: a noise tile at any opacity below one is a grey
+ * wash unless blended, since the tile has grey in its light parts as well as its dark. These
+ * pale cards answer the blend question badly and it has been answered three times: `multiply`
+ * only darkens, so over near-white it read as no grain; `difference` puts grain in the darks
+ * and the lights; `overlay` is where it settled. */
 .Noise {
   position: absolute;
   inset: 0;
@@ -202,10 +203,10 @@
 
 /* The name on the card, which is the whole content of it, and the tint it takes on hover along
  * with the ticks and the number. All three the same value rather than the tint here and the ink
- * there: `Accents` gives one of each per theme for exactly this, the tint being the accent as the
- * game draws it everywhere and the ink that hue turned down until text sits on the pale wash.
- * Centred, and in the display face rather than the body one: six lines of body text at reading size
- * read as a paragraph rather than as six things to pick from. */
+ * there: `Accents` gives one of each per theme for exactly this, the tint being the accent as
+ * the game draws it everywhere and the ink that hue turned down until text sits on the pale
+ * wash. Centred, and in the display face rather than the body one: six lines of body text at
+ * reading size read as a paragraph rather than as six things to pick from. */
 .Name {
   /* The shared cut, rather than a wrap. The name is one or two words and the card is a fixed
    * width that narrows on a phone, so a wrap is a second line on the cards that need one and
@@ -235,12 +236,12 @@
   transition: font-size var(--Duration-Fast) var(--Easing-Standard);
 }
 
-/* The name and the mark open up together on hover, each by its own share, and only the name takes
- * its time getting there. Both move, because either alone stops the panel opening: the name alone
- * leaves the mark the same size, the mark alone swells out from behind a name that did not.
- * Two shares rather than one, since a clipped figure and a line of text cannot answer to the same
- * amount: the mark is already larger than the card, so the name's scale is invisible on it and it
- * needs four times as much to shift inside the crop. */
+/* The name and the mark open up together on hover, each by its own share, and only the name
+ * takes its time getting there. Both move, because either alone stops the panel opening: the
+ * name alone leaves the mark the same size, the mark alone swells out from behind a name that
+ * did not. Two shares rather than one, since a clipped figure and a line of text cannot answer
+ * to the same amount: the mark is already larger than the card, so the name's scale is
+ * invisible on it and it needs four times as much to shift inside the crop. */
 .Root:hover .Name {
   font-size: calc(var(--FontSize-ThemeCard) * var(--Scale-ThemeCardHover));
 }

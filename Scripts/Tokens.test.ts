@@ -2,19 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { contrastRatio, parseHex } from '../Source/Core/Color';
 
-/**
- * The two filled buttons, which are the only pair that ever sits side by side.
- *
- * These live in `Tokens.css` rather than in `Core/Accents.ts`, because the primary is
- * the fixed gold and the secondary is the info cyan: neither is an accent step any
- * more, since both are meant to look the same to every player in the room. So the
- * test reads the stylesheet instead of the palette.
- *
- * It is out here rather than under `Source/` because it reads a file with `node:fs`,
- * and widening the app's TypeScript `types` to allow that would let browser code
- * import Node built-ins. `Scripts/` is outside the app's `tsconfig` and vitest still
- * picks the file up.
- */
+/** The two filled buttons, which are the only pair that ever sits side by side. These live in
+ * `Tokens.css` rather than in `Core/Accents.ts`, because the primary is the fixed gold and the
+ * secondary is the info cyan: neither is an accent step any more, since both are meant to look
+ * the same to every player in the room. So the test reads the stylesheet instead of the
+ * palette. It is out here rather than under `Source/` because it reads a file with `node:fs`,
+ * and widening the app's TypeScript `types` to allow that would let browser code import Node
+ * built-ins. `Scripts/` is outside the app's `tsconfig` and vitest still picks the file up. */
 const tokens = readFileSync(
   new URL('../Source/Design/Tokens/Tokens.css', import.meta.url),
   'utf8',

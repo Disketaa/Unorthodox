@@ -1,14 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { stylesheet } from './Stylesheet';
 
-/**
- * The child centred in the viewport rather than in the room left below it.
- *
- * Out here for the reason the other layout tests are: happy-dom does not lay out a flex
- * container and does not give an element an offset, so nothing about this is visible to a
- * rendered component. What can be checked is the arithmetic the stylesheet expresses, which
- * is where the behaviour lives.
- */
+/** The child centred in the viewport rather than in the room left below it. Out here for the
+ * reason the other layout tests are: happy-dom does not lay out a flex container and does not
+ * give an element an offset, so nothing about this is visible to a rendered component. What can
+ * be checked is the arithmetic the stylesheet expresses, which is where the behaviour lives. */
 const sheet = stylesheet('../Source/Design/Primitives/ViewportCenter/ViewportCenter.module.css');
 
 const Root = /\.Root\s*\{([^}]*)\}/;

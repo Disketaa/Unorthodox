@@ -34,6 +34,13 @@ const layer = (folder, banned, { allowTrystero = false } = {}) => ({
 export default tseslint.config(
   { ignores: ["dist", "node_modules", ".kilo", "Source/Design/Tokens/Tokens.css"] },
   { languageOptions: { parserOptions: { tsconfigRootDir: rootDir } } },
+  // The tooling under Scripts/ is Node, not browser code, so it gets the Node globals and keeps
+  // the same no-console rule the rest of the tree has.
+  {
+    files: ["Scripts/**/*.{js,mjs}"],
+    languageOptions: { globals: { process: "readonly", console: "readonly" } },
+    rules: { "no-console": "off" },
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   prettier,

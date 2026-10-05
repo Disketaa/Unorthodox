@@ -1,9 +1,9 @@
-/* Six theme cards in a bank, laid flat. No perspective and no per-card turn. The row was a ring of
- * panels turned towards the middle of the screen, which needed a measurement per card on every
- * resize; what was worth keeping is the arrangement — cards of one size, three across, the fourth
- * wrapping rather than the row scrolling, since a card too narrow for its name is one nobody reads.
- * `align-content: start`, the default and written down because the other value was here and was
- * wrong: centring lines in a short box pushed the first line out the top. */
+/* Six theme cards in a bank, laid flat. No perspective and no per-card turn. The row was a ring
+ * of panels turned towards the middle of the screen, which needed a measurement per card on
+ * every resize; what was worth keeping is the arrangement — cards of one size, three across,
+ * the fourth wrapping rather than the row scrolling. `align-content: start`, the default and
+ * written down because the other value was here and was wrong: centring lines in a short box
+ * pushed the first line out the top. */
 .Root {
   display: flex;
   flex-wrap: wrap;
@@ -16,11 +16,11 @@
 }
 
 /* One card, and the box its shape is declared on. The slot rather than the card, so `ThemeCard`
- * stays a closed component that knows nothing about the size it is drawn at: the ratio belongs on
- * the node the grid owns. A fixed width rather than a share of the row, since the six only read as
- * six matching panels when they do match.
- * The height is capped by the screen rather than left to the ratio alone. A card is as tall as its
- * width says, so on a device turned on its side the second row is off the bottom. */
+ * stays a closed component that knows nothing about the size it is drawn at: the ratio belongs
+ * on the node the grid owns. A fixed width rather than a share of the row, since the six only
+ * read as six matching panels when they do match. The height is capped by the screen rather
+ * than left to the ratio alone. A card is as tall as its width says, so on a device turned on
+ * its side the second row is off the bottom. */
 .Slot {
   flex: 0 0 var(--Size-ThemeCardWidth);
   width: var(--Size-ThemeCardWidth);

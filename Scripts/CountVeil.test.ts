@@ -3,13 +3,9 @@ import { readFileSync } from 'node:fs';
 import { GameConfig } from '../Source/Game';
 import { stylesheet, tokenReader } from './Stylesheet';
 
-/**
- * The shade over the room before the count-in starts, read from the stylesheet.
- *
- * The same reason the layout tests read declarations rather than render: happy-dom does
- * not run an animation and does not time one, so what can be checked is the length the
- * stylesheet asks for.
- */
+/** The shade over the room before the count-in starts, read from the stylesheet. The same reason
+ * the layout tests read declarations rather than render: happy-dom does not run an animation
+ * and does not time one, so what can be checked is the length the stylesheet asks for. */
 const sheet = stylesheet('../Source/Design/Overlays/StartCountdown/StartCountdown.module.css');
 const tokens = readFileSync(
   new URL('../Source/Design/Tokens/Tokens.css', import.meta.url),

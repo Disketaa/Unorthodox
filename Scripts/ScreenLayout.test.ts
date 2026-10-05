@@ -2,19 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { stylesheet, tokenReader } from './Stylesheet';
 
-/**
- * The frame a screen's containers are laid out on, read from the stylesheet.
- *
- * This is out here rather than beside the component for the reason
- * `Scripts/Tokens.test.ts` is: it reads a file with `node:fs`, and widening the app's
- * TypeScript `types` to allow that would let browser code import Node built-ins.
- *
- * And it has to read the file rather than render the component, because the whole of
- * this layout is invisible to a test runner. happy-dom does not lay out a grid, does
- * not resolve a `minmax`, and does not match a width query, so a rendered `Screen`
+/** The frame a screen's containers are laid out on, read from the stylesheet. This is out here
+ * rather than beside the component for the reason `Scripts/Tokens.test.ts` is: it reads a file
+ * with `node:fs`, and widening the app's TypeScript `types` to allow that would let browser
+ * code import Node built-ins. And it has to read the file rather than render the component,
+ * because the whole of this layout is invisible to a test runner. happy-dom does not lay out a
+ * grid, does not resolve a `minmax`, and does not match a width query, so a rendered `Screen`
  * asserts nothing about the one thing it exists to decide. What can be checked is the
- * declaration itself, which is where the behaviour actually lives.
- */
+ * declaration itself, which is where the behaviour actually lives. */
 const sheet = stylesheet('../Source/Design/Primitives/Screen/Screen.module.css');
 const flat = sheet.flat;
 
@@ -24,13 +19,9 @@ const tokens = readFileSync(
 );
 const tokenValue = tokenReader(tokens);
 
-/**
- * The body of one rule, named rather than spelled out.
- *
- * Most of the rules checked here are plain class names, and a name reads better in the
- * assertion than the pattern that matches it. The combinator cases pass their own
- * pattern, which is why the shared helper takes one.
- */
+/** The body of one rule, named rather than spelled out. Most of the rules checked here are plain
+ * class names, and a name reads better in the assertion than the pattern that matches it. The
+ * combinator cases pass their own pattern, which is why the shared helper takes one. */
 function ruleBody(name: string): string {
   return sheet.ruleBody(new RegExp(`\\.${name}\\s*\\{([^}]*)\\}`));
 }
@@ -43,28 +34,22 @@ function declares(name: string, property: string): boolean {
   return sheet.declares(new RegExp(`\\.${name}\\s*\\{([^}]*)\\}`), property);
 }
 
-/**
- * The width the row's query asks for, as a number of pixels.
- *
- * A media query condition cannot hold a `var()`, so the threshold in the stylesheet is
- * a bare pixel value and this is the only thing that can hold it to the tokens: the
- * arithmetic the number stands for is recomputed here from the tokens themselves, and
- * the two have to come out equal. That is what makes the literal safe to have — change
- * a column width and this fails rather than leaving a row that opens too late.
- */
+/** The width the row's query asks for, as a number of pixels. A media query condition cannot
+ * hold a `var()`, so the threshold in the stylesheet is a bare pixel value and this is the only
+ * thing that can hold it to the tokens: the arithmetic the number stands for is recomputed here
+ * from the tokens themselves, and the two have to come out equal. That is what makes the
+ * literal safe to have — change a column width and this fails rather than leaving a row that
+ * opens too late. */
 function queryWidth(): number {
   const match = flat.match(/@media\(min-width:(\d+)px\)/);
   if (match?.[1] === undefined) throw new Error('no width query for the row');
   return Number(match[1]);
 }
 
-/**
- * The width a window has to be before the space inside it can hold a full row.
- *
- * Every column at its narrowest, the gaps between them, and the page's own margin on
- * both sides — which is the padding a media query cannot see, since it measures the
- * window and the frame is drawn inside that margin rather than across all of it.
- */
+/** The width a window has to be before the space inside it can hold a full row. Every column at
+ * its narrowest, the gaps between them, and the page's own margin on both sides — which is the
+ * padding a media query cannot see, since it measures the window and the frame is drawn inside
+ * that margin rather than across all of it. */
 function rowWidthFromTokens(): number {
   return (
     tokenNumber('--Layout-ColumnsMax') * tokenNumber('--Layout-ColumnMinWidth') +
@@ -73,21 +58,15 @@ function rowWidthFromTokens(): number {
   );
 }
 
-/**
- * How many containers share a row at a given window width.
- *
- * The stylesheet's two answers, worked out rather than described: below the query there
- * is one track and so one container per row, and at or above it the row holds
- * `--Layout-ColumnsMax` columns. The `auto-fit` inside the query is not consulted here,
- * because by the time it is reached the count is already decided — it only collapses
- * the tracks a screen has nothing in, and a screen with fewer containers than the count
- * still shows that many.
- *
- * This exists because "three across or one per row" is the property the change was for,
- * and every other assertion in this file checks a declaration rather than the layout
- * that declaration produces. A regression that put a second track back below the query
- * would leave the declarations intact and this number wrong.
- */
+/** How many containers share a row at a given window width. The stylesheet's two answers, worked
+ * out rather than described: below the query there is one track and so one container per row,
+ * and at or above it the row holds `--Layout-ColumnsMax` columns. The `auto-fit` inside the
+ * query is not consulted here, because by the time it is reached the count is already decided —
+ * it only collapses the tracks a screen has nothing in, and a screen with fewer containers than
+ * the count still shows that many. This exists because "three across or one per row" is the
+ * property the change was for, and every other assertion in this file checks a declaration
+ * rather than the layout that declaration produces. A regression that put a second track back
+ * below the query would leave the declarations intact and this number wrong. */
 function rowCountAt(windowWidth: number): number {
   return windowWidth >= queryWidth() ? tokenNumber('--Layout-ColumnsMax') : 1;
 }

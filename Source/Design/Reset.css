@@ -1,9 +1,9 @@
 /* A base for the document, below the tokens: only the two things a browser does on its own that
- * this design does not want, and both are about a control being pressed.
- * The tap highlight. Mobile browsers paint a translucent block over anything tapped, gone when
- * the finger lifts. On a control picked by pressing it, that block is the one piece of feedback
- * the player gets, and it does not match anything else here. The blue square and the ring are
- * the browser saying "you touched this" again, on top of what the component already says. */
+ * this design does not want, and both are about a control being pressed. The tap highlight.
+ * Mobile browsers paint a translucent block over anything tapped, gone when the finger lifts.
+ * On a control picked by pressing it, that block is the one piece of feedback the player gets,
+ * and it does not match anything else here. The blue square and the ring are the browser saying
+ * "you touched this" again, on top of what the component already says. */
 button,
 a,
 label,

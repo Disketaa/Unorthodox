@@ -36,7 +36,7 @@
  * two marks sharing it would each claim half and end up with a gap between them in the middle
  * of the row. Cut short with an ellipsis rather than wrapped or allowed to push the row wider.
  * A name is still there in full for anything that can read it, so it is cut in the drawing
- * rather than in the data. The cut is `Truncate`, shared with every other place a name is drawn. */
+ * rather than in the data. */
 .Name {
   composes: Truncate from '../../Primitives/Truncate/Truncate.module.css';
   font-size: var(--FontSize-Body);

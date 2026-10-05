@@ -1,7 +1,7 @@
 /* The countdown's own layer, and the only thing on screen while it counts. `fixed` against the
- * window, like the debug dock, so the numbers are in the middle of what the player is looking at
- * rather than in the middle of one column of it. Above the paper at 1, and one higher than the
- * dock, so a dock sharing the bottom of the window cannot be read through it. It takes the
+ * window, like the debug dock, so the numbers are in the middle of what the player is looking
+ * at rather than in the middle of one column of it. Above the paper at 1, and one higher than
+ * the dock, so a dock sharing the bottom of the window cannot be read through it. It takes the
  * pointer rather than letting it through: a click reaches the shade and nothing else. No
  * animation of its own — it fades in through the shade and is taken away at the end. */
 .Root {

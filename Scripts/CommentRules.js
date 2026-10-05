@@ -1,13 +1,10 @@
-/**
- * Comment rules for the codebase: length, placement, and one style per file kind.
- *
- * Local plugin rather than a dependency: the three checks are small, and the wording of the
- * message is the point, so it belongs in the repo.
- *
- * Counts comment CONTENT lines, not physical ones. The opening delimiter, the closing one and a
- * `*` gutter line say nothing, so a one-sentence docstring does not spend two of its three lines
- * on punctuation.
- */
+/** Comment rules for the codebase: length, placement, and one style per file kind. Local plugin
+ * rather than a dependency: the three checks are small, and the wording of the message is the
+ * point, so it belongs in the repo. Counts comment CONTENT lines, not physical ones. The
+ * opening delimiter, the closing one and a `*` gutter line say nothing, so a one-sentence
+ * docstring does not spend two of its three lines on punctuation. */
+
+import { canonicalShape } from "./CommentShape.mjs";
 
 const MESSAGE = "Comment only if the code cannot explain itself.";
 
@@ -139,11 +136,9 @@ function blockInTsRule() {
   };
 }
 
-/**
- * Rule A, enforced: a doc comment on a named thing at module, class or type scope, a line
- * comment for anything inside a function body. Without this the codebase grows a second
- * dialect one comment at a time, which is exactly what happened the first time round.
- */
+/** Rule A, enforced: a doc comment on a named thing at module, class or type scope, a line
+ * comment for anything inside a function body. Without this the codebase grows a second dialect
+ * one comment at a time, which is exactly what happened the first time round. */
 function formRule() {
   return {
     meta: {
@@ -181,10 +176,8 @@ function formRule() {
   };
 }
 
-/**
- * True when the comment sits within the body of a function. Range containment, not ancestry:
- * a doc comment above a top-level function has the function as an ancestor too.
- */
+/** True when the comment sits within the body of a function. Range containment, not ancestry: a
+ * doc comment above a top-level function has the function as an ancestor too. */
 function isInsideFunctionBody(sourceCode, comment) {
   let node = sourceCode.getNodeByRangeIndex(comment.range[0]);
   while (node !== null && node !== undefined) {
@@ -205,69 +198,6 @@ function isInsideFunctionBody(sourceCode, comment) {
   return false;
 }
 
-/**
- * The two canonical doc-comment shapes.
- *
- * Prose that fits on one line is one line, delimited on both ends by that line. Prose that does
- * not is a gutter block, but the delimiters ride on the prose rather than sitting on lines of their
- * own, and no gutter line is ever left blank. Padding a three-line comment out to six physical
- * lines says nothing and reads as ceremony.
- *
- * The gutter block stays a real doc comment rather than a run of line comments. Only a doc comment
- * attaches to a declaration in TypeScript and in every LSP that reads it, so a line comment above a
- * function means no hover text and no IntelliSense. Inside a function body there is no declaration
- * to document, and the `comments/form` rule already asks for a line comment instead.
- *
- * 96 columns, not prettier's 80. That governs code, and every comment body in this repo is written
- * wider: measured across 3730 body lines, the median is 77 and the 98th percentile is 97, so only
- * 2.5% exceed 96. Wrapping to 80 would rewrap two thirds of the comments in the tree and read as
- * churn rather than as a rule.
- */
-const PRINT_WIDTH = 96;
-
-function canonicalShape(comment, sourceCode, eol = "\n") {
-  const own = sourceCode.getLines()[comment.loc.start.line - 1] ?? "";
-  // A comment sharing a line with code keeps the author's text: there is no indent to reflow to.
-  if (own.slice(0, comment.loc.start.column).trim() !== "") return sourceCode.getText(comment);
-  const indent = " ".repeat(comment.loc.start.column);
-
-  // Paragraph gaps carry no information here, so the prose is flattened before it is re-wrapped.
-  const flat = comment.value
-    .slice(1)
-    .split(/\r?\n/)
-    .map((part) => part.replace(/^\s*\*?[ \t]?/, "").trim())
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (flat === "") return sourceCode.getText(comment);
-
-  const lines = reflow(flat, PRINT_WIDTH - indent.length - 3);
-  if (lines.length === 1) return `/** ${lines[0]} */`;
-  const last = lines.length - 1;
-  return lines
-    .map((part, index) =>
-      index === 0 ? `/** ${part}` : `${indent} * ${part}${index === last ? " */" : ""}`,
-    )
-    .join(eol);
-}
-
-/** Rewrap one paragraph to a width, breaking only at spaces. */
-function reflow(text, width) {
-  const words = text.split(/\s+/).filter((word) => word !== "");
-  const lines = [];
-  let current = "";
-  for (const word of words) {
-    if (current === "") current = word;
-    else if (current.length + 1 + word.length <= width) current += ` ${word}`;
-    else {
-      lines.push(current);
-      current = word;
-    }
-  }
-  if (current !== "") lines.push(current);
-  return lines;
-}
-
 function shapeRule() {
   return {
     meta: {
@@ -283,9 +213,15 @@ function shapeRule() {
           const text = sourceCode.getText();
           const eol = text.includes("\r\n") ? "\r\n" : "\n";
           for (const comment of sourceCode.getAllComments()) {
-            if (comment.type !== "Block" || !comment.value.startsWith("*")) continue;
+            if (comment.type !== "Block") continue;
             if (isJsxComment(text, comment)) continue;
-            const expected = canonicalShape(comment, sourceCode, eol);
+            const own = sourceCode.getLines()[comment.loc.start.line - 1] ?? "";
+            // A comment sharing its line with code keeps the author's text: there is no indent to
+            // reflow to, and `no-trailing` reports the placement separately.
+            if (own.slice(0, comment.loc.start.column).trim() !== "") continue;
+            const indent = " ".repeat(comment.loc.start.column);
+            const expected = canonicalShape(comment.value, indent, eol, comment.value.startsWith("*"));
+            if (expected === null) continue;
             // The author text is already canonical, so nothing may be rewritten.
             if (sourceCode.getText(comment) === expected) continue;
             context.report({
@@ -300,21 +236,17 @@ function shapeRule() {
   };
 }
 
-/**
- * A tool's own pragma, such as `// @vitest-environment`. The runner reads it out of the file's
+/** A tool's own pragma, such as `// @vitest-environment`. The runner reads it out of the file's
  * leading comment block and it has to stand as a comment of its own, so it is not a second half
- * of a split one.
- */
+ * of a split one. */
 function isDirective(comment) {
   return /^@\w[\w-]*\s/.test(comment.value.trimStart());
 }
 
-/**
- * A comment whose only separation from the next is a blank line is one comment split in two.
- * Permitting it makes `max-lines` a suggestion: an essay becomes two short notes and the rule is
- * satisfied with nothing shortened. So this is an error, and the pair is counted once against the
- * budget as well, which is what stops the split from being worth doing.
- */
+/** A comment whose only separation from the next is a blank line is one comment split in two.
+ * Permitting it makes `max-lines` a suggestion: an essay becomes two short notes and the rule
+ * is satisfied with nothing shortened. So this is an error, and the pair is counted once
+ * against the budget as well, which is what stops the split from being worth doing. */
 function splitRule() {
   return {
     meta: {

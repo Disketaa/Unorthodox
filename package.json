@@ -12,9 +12,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:once": "vitest run",
-    "check": "npm run lint && npm run typecheck && npm run comments:css && npm run test:once && npm run build",
+    "check": "npm run lint && npm run typecheck && npm run comments:css && npm run comments:format:check && npm run test:once && npm run build",
     "comments": "node Scripts/CommentAudit.ts",
-    "comments:css": "node Scripts/CommentAudit.ts --css"
+    "comments:css": "node Scripts/CommentAudit.ts --css",
+    "comments:format": "node Scripts/FormatComments.mjs",
+    "comments:format:check": "node Scripts/FormatComments.mjs --check"
   },
   "repository": {
     "type": "git",

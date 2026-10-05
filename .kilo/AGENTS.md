@@ -105,17 +105,44 @@ trigger: string | number | undefined;
 ownLook: PlayerLook | undefined;
 ```
 
+Do not write the shape by hand. `npm run comments:format` rewrites every block comment in the tree
+to the canonical shape and `npm run comments:format:check` fails when one is off it; both run inside
+`npm run check`. The shape is defined once, in `Scripts/CommentShape.mjs`, and the ESLint rule and
+the audit both import it — a formatter that disagreed with its own linter would be worse than none.
+Two notes on what it will not touch: a `//` comment, since it has no closing delimiter to reflow
+around, and a trailing comment, which has no indent and is reported by `comments/no-trailing` instead.
+
 A gutter block stays a real doc comment, not a run of `//` lines: only a doc comment attaches to a
 declaration in TypeScript and in every LSP that reads it, so `//` above a function means no hover
 text and no IntelliSense. Inside a function body there is no declaration to document, which is why
 that scope takes `//` instead.
 
-Enforced by `npm run lint`, not by eye: `comments/max-lines` for the budget, `comments/shape` for
-the two shapes, `comments/no-trailing`, `comments/no-block-in-ts`, and `comments/form` for scope.
-All five report one message: *Comment only if the code cannot explain itself.* CSS is not linted
-by ESLint, so `npm run comments -- --css` owns its own
-budget of eight content lines — higher than TypeScript's three, because a comment in a stylesheet
-is the specification and a token scale has no name or type to explain itself through.
+**The delimiter is fixed per language.** `/**` in TypeScript, JS and MJS; `/*` in CSS. This is one
+rule applied consistently rather than two dialects, and it is not interchangeable: `/**` is what
+attaches to a declaration and carries the hover text, while `/**` in a stylesheet is only a comment
+that happens to have an extra star, since no language reads a declaration out of CSS. Plain `/*` in a
+TypeScript file is rejected outright by `comments/no-block-in-ts`, the sole exception being an
+`eslint-disable` directive, which has to be a comment of its own.
+
+**One comment, not two.** A comment separated from the next by nothing but a blank line is the same
+comment cut in two, and permitting that turns the budget into a suggestion: the cursor block in
+`Tokens.css` was sixteen lines of prose cut into three six-line notes, the rule was satisfied, and
+nothing had been shortened. Rejected by `comments/no-split` and by the `split` verdict in the CSS
+audit, and the pair counts once against the budget. The case that looks like an exception is a file
+header followed by the first declaration's own comment: those are two subjects, so both stay and the
+header goes above the imports where a file header belongs. A trailing comment is also exempt, since
+`comments/no-trailing` already reports the placement.
+
+**A trailing comment is banned everywhere**, in every file type including CSS. It cannot be wrapped:
+the prose is squeezed into whatever the code left, so it ends up short, and a short note saying what
+the code beside it plainly says is exactly what this policy exists to remove.
+
+Enforced by `npm run lint` and `npm run comments -- --css`, not by eye: `comments/max-lines` for the
+budget, `comments/shape` for the two shapes, `comments/no-trailing`, `comments/no-block-in-ts`,
+`comments/no-split`, and `comments/form` for scope. All report one message: *Comment only if the
+code cannot explain itself.* CSS is not linted by ESLint, so the audit owns its own budget of six
+content lines — higher than TypeScript's three, because a comment in a stylesheet is the
+specification and a token scale has no name or type to explain itself through.
 
 **A comment earns its place only by saying something the code cannot.** Allowed: why this
 approach and not the obvious one, a constraint that would otherwise be "tidied" away, a rule

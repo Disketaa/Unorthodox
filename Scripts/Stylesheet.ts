@@ -1,22 +1,15 @@
 import { readFileSync } from 'node:fs';
 
-/**
- * Reading a stylesheet for a test, rather than rendering it.
- *
- * happy-dom does not lay out a grid, does not resolve a `minmax`, and does not match a
- * width query, so a rendered component asserts nothing about the thing a stylesheet
- * exists to decide. What can be checked is the declaration, which is where the behaviour
- * actually lives.
- *
- * Comments come out first because every one of these files explains most of itself, and
- * a parser reading the text as written would treat the end of a comment as the end of a
- * declaration and quietly skip the one after it.
- *
- * Selectors are matched as patterns rather than as names, because the ones worth
- * asserting on are often child combinators, and escaping those would be a second
- * spelling of the same selector. A pattern is expected to capture the rule body, so
- * `ruleBody(/\.Root\s*\{([^}]*)\}/)` rather than a name.
- */
+/** Reading a stylesheet for a test, rather than rendering it. happy-dom does not lay out a grid,
+ * does not resolve a `minmax`, and does not match a width query, so a rendered component
+ * asserts nothing about the thing a stylesheet exists to decide. What can be checked is the
+ * declaration, which is where the behaviour actually lives. Comments come out first because
+ * every one of these files explains most of itself, and a parser reading the text as written
+ * would treat the end of a comment as the end of a declaration and quietly skip the one after
+ * it. Selectors are matched as patterns rather than as names, because the ones worth asserting
+ * on are often child combinators, and escaping those would be a second spelling of the same
+ * selector. A pattern is expected to capture the rule body, so
+ * `ruleBody(/\.Root\s*\{([^}]*)\}/)` rather than a name. */
 export function readStylesheet(relativePath: string): string {
   return readFileSync(new URL(relativePath, import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
 }
@@ -61,12 +54,9 @@ export function stylesheet(relativePath: string): Stylesheet {
   return { text, flat, ruleBody, declaration, declares };
 }
 
-/**
- * The value a CSS custom property resolves to, following a `var()` to its target.
- *
- * The token file rather than a rendered value, so a test can ask what a token *is* on
- * paper, which is the question these tests are about.
- */
+/** The value a CSS custom property resolves to, following a `var()` to its target. The token
+ * file rather than a rendered value, so a test can ask what a token *is* on paper, which is the
+ * question these tests are about. */
 export function tokenReader(tokens: string): (name: string) => string {
   function tokenValue(name: string, depth = 0): string {
     const match = tokens.match(new RegExp(`${name}:\\s*([^;]+);`, 'i'));
