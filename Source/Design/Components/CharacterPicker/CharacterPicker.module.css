@@ -46,7 +46,7 @@
   border: var(--Border-Width-Default) solid var(--Color-Border-Default);
   border-radius: var(--Radius-Md);
   cursor: var(--Cursor-Pointer);
-  transition: border-color var(--Duration-Fast) var(--Easing-Standard);
+  transition: border-color var(--Transition-Standard);
 }
 
 /* The room's yellow on the pointer over a light grey, both as the icon button does it. Scoped

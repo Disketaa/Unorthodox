@@ -1,5 +1,46 @@
 ﻿# DECISIONS
 
+## 2026-10-05 — moving Tokens.css broke six asset URLs, and a build warning is not a gate
+`Tokens.css` moved up out of a folder of its own, and six relative `url()` references silently
+repointed: the display font, the theme-card noise texture and four cursors. In dev the browser got
+the SPA fallback and reported `OTS parsing error: invalid sfntVersion`, which reads like a corrupt
+font rather than a missing file. In production it was worse in the sense that it shipped: Vite
+printed `didn't resolve at build time, it will remain unchanged`, emitted no asset, and let the path
+404 on GitHub Pages. Six declarations, unchanged text, and every `npm run check` green, because the
+declaration diff compares strings and `../Fonts/BlobSpongey.ttf` is the same string either side of a
+move.
+
+The build said so the whole time. Nobody read it: the check output was being filtered for `error`
+and `built in`, and a Vite warning matches neither. So the fix is not to read warnings more carefully,
+it is to have a gate that fails on this without anybody reading anything. The CSS audit resolves
+every relative `url()` against the stylesheet's own folder and reports `asset` when nothing is
+there. It caught the reintroduced bug on the first run, which is the standard every other rule in
+this repo is measured against.
+
+## 2026-10-05 — Prettier owns the stylesheets, at the width the comments already use
+Two declarations in `Tokens.css` had lost their indent and nothing in the pipeline had an opinion:
+`comments:format` rewrites comments and nothing else, ESLint does not read CSS, and Prettier was a
+devDependency with no script running it. The damage was in `9ed5190`, so it had been sitting in the
+tree through several green `npm run check` runs — the clearest argument in this file for owning the
+thing rather than trusting review.
+
+The handrolled alternative was tried and abandoned: indent cannot be derived from brace depth
+without parsing CSS, because a one-line rule, a multi-line `calc()` and a brace inside `url()` all
+break the arithmetic. The first probe reported a thousand false positives across thirty-nine files.
+A rule that cries wolf is worse than none, as the mojibake entry above already argues.
+
+`printWidth` moves from 80 to 96 rather than staying at Prettier's default, because 96 is the width
+`CommentShape.mjs` already wraps prose to and at 80 Prettier split a `calc()` across three lines that
+read worse than the hand-written form. What is given up is the compact one-line rule:
+`.GapXs { gap: var(--Space-Xs); }` becomes three lines, which is most of the churn in
+`Stack.module.css`. That is a one-time cost and it buys an indentation mistake being caught by
+`uq fix` instead of by eye.
+
+Prettier and the comment formatter overlap on one thing, the indentation of a comment, and they
+converge: Prettier indents, `comments:format` rewraps at that indent, and a second pass of each
+changes nothing. Token inventory was compared before and after rather than assumed: 211 names,
+identical, and the only two values that changed did so by whitespace inside a `calc()`.
+
 ## 2026-10-05 — Tokens.css sits in Design/ instead of a folder of its own
 `Source/Design/Tokens/` held exactly one file, and a folder whose only content is the folder is a
 path every importer has to know. `Source/Design/Tokens.css` now sits beside `Reset.css`, where the

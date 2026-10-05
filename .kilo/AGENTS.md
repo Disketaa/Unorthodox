@@ -19,7 +19,8 @@ Before writing network adapter, read current Trystero docs (pin exact version, n
 scripts, so it is a shortcut and not a second toolchain. Use the narrow form while working and the
 wide one before handing over.
 
-- `uq lint [paths...]` — ESLint, one path or the whole repo. `uq fix` for `--fix`.
+- `uq lint [paths...]` — ESLint, one path or the whole repo. `uq fix` for `--fix`, which also runs
+  Prettier over the stylesheets: the two own disjoint files and neither reads the other's.
 - `uq tc [path]` — `tsc` for `Source`, `Tools` or `Tests` alone; no path runs all three.
 - `uq t` — tests RELATED to uncommitted changes (`vitest related`). `uq t <filter>` for one suite.
   `uq ta` is the full 936-test run, and `uq check` is `npm run check` in full.

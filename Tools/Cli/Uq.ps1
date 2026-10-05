@@ -121,11 +121,14 @@ switch ($Command) {
     }
 
     'fix' {
+        # Both formatters, because they own disjoint files: ESLint does not read CSS and Prettier
+        # does not read TypeScript. Running only one leaves a class of damage nobody will catch.
         if ($Rest -and $Rest.Count -gt 0) {
             Invoke-Uq 'npx' (@('eslint', '--fix') + $Rest) "eslint --fix $($Rest -join ' ')"
         }
         else {
             Invoke-Uq 'npx' @('eslint', '--fix', '.') 'eslint --fix .'
+            Invoke-Uq 'npm' @('run', 'format:css') 'prettier --write Source/**/*.css'
         }
     }
 

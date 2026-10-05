@@ -11,8 +11,8 @@
   color: var(--Color-Text-Quiet);
   cursor: var(--Cursor-Pointer);
   transition:
-    color var(--Duration-Fast) var(--Easing-Standard),
-    background var(--Duration-Fast) var(--Easing-Standard);
+    color var(--Transition-Standard),
+    background var(--Transition-Standard);
 }
 
 /* The room's yellow arrives on the pointer rather than sitting there, so the eye is sent to the

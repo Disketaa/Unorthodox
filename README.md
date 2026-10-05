@@ -14,7 +14,8 @@ npm run test:once  # unit tests (single run)
 npm run lint       # ESLint
 npm run typecheck  # tsc over Source, Tools and Tests
 npm run comments   # comment audit
-npm run check      # lint + typecheck + comment audit + test:once + build
+npm run format:css # Prettier over the stylesheets
+npm run check      # lint + typecheck + comment audit + both format checks + test:once + build
 ```
 
 Requires Node 20.19+ (Vite 8). Debug from VS Code: `.vscode/launch.json` has
@@ -45,6 +46,17 @@ what you changed instead of all 936.
   exactly the suites that import it.
 - A changed `.css` file runs the `Tests/` suites as well. Those read stylesheets with `node:fs`
   rather than importing them, so the import graph cannot see a token change at all.
+
+## Formatting CSS
+Prettier owns the stylesheets and ESLint owns the code, because neither can read the other's files.
+`npm run format:css` writes, `npm run format:css:check` is the gate inside `npm run check`, and
+`uq fix` runs both.
+
+`printWidth` is 96 rather than Prettier's 80, matching the width the comment rules already wrap to.
+At 80 it broke a `calc()` across three lines and made it harder to read than the hand-written form.
+The trade is that Prettier expands a compact one-line rule like `.GapXs { gap: var(--Space-Xs); }`
+into three lines. That is churn once, and it is the price of an indentation mistake in a stylesheet
+being caught by a command instead of by eye.
 
 ## File endings
 Every file ends with exactly one newline, and no two blank lines sit together. The newline is

@@ -2,7 +2,7 @@
  * game does not depend on a third party being reachable. */
 @font-face {
   font-family: 'BlobSpongey';
-  src: url('../Fonts/BlobSpongey.ttf') format('truetype');
+  src: url('./Fonts/BlobSpongey.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -256,6 +256,11 @@ body.PageFade {
   --Easing-Bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --Easing-Spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
+  /* The timing pair, as one value, because writing both halves at every call site is what made
+   * a `transition` on two properties run past the print width and wrap. Thirteen call sites
+   * used this exact pair, so the repetition was also a place for the two halves to drift apart. */
+  --Transition-Standard: var(--Duration-Fast) var(--Easing-Standard);
+
   --Color-Surface-Default: #ffffff;
   --Color-Surface-Hover: #f5f5f5;
   --Color-Surface-Active: #eeeeee;
@@ -321,7 +326,7 @@ body.PageFade {
    * means a mark's rolled share is read directly as that fraction of its width, which is the
    * plain reading; lower values scale the whole range down and pull the field back off the
    * edge. */
-  --Glyph-EdgeReach: 3  ;
+  --Glyph-EdgeReach: 3;
 
   --Color-Text-Default: #212121;
   --Color-Text-Muted: #757575;
@@ -358,7 +363,7 @@ body.PageFade {
    * on the join screen, where two picker-coloured buttons would make the one place on screen
    * where the accent cannot be read. */
   --Color-Action-Primary-Background: #eeb62e;
---Color-Action-Primary-Text: var(--Color-Text-Default);
+  --Color-Action-Primary-Text: var(--Color-Text-Default);
   --Color-Action-Primary-Hover: #dba72a;
   --Color-Action-Primary-Active: #c19325;
 
@@ -448,26 +453,22 @@ body.PageFade {
     320px,
     min(
       calc(
-        (
-            100vw - var(--Space-ThemeCardsGap) - 2 * var(--Layout-ScreenPaddingHorizontal)
-          ) / 2
+        (100vw - var(--Space-ThemeCardsGap) - 2 * var(--Layout-ScreenPaddingHorizontal)) / 2
       ),
       max(
         var(--Size-ThemeCardWidthThreeAcross),
         calc(
-          (
-              100vw - 2 * var(--Space-ThemeCardsGap) - 2 *
-                var(--Layout-ScreenPaddingHorizontal)
-            ) / 3
+          (100vw - 2 * var(--Space-ThemeCardsGap) - 2 * var(--Layout-ScreenPaddingHorizontal)) /
+            3
         )
       )
     )
   );
-/* How big the theme's own initial is on the card. A share of the card's width rather than a
- * length, so it is the same fraction of a narrow card as of a wide one: the card narrows on a
- * phone to fit two across, and a flat size would be a letter in the corner on one screen and a
- * letter filling the card on another. A mark in the corner rather than the card's substance:
- * roughly a sixth of the width, which is a letter you read without reading it. */
+  /* How big the theme's own initial is on the card. A share of the card's width rather than a
+   * length, so it is the same fraction of a narrow card as of a wide one: the card narrows on a
+   * phone to fit two across, and a flat size would be a letter in the corner on one screen and
+   * a letter filling the card on another. A mark in the corner rather than the card's
+   * substance: roughly a sixth of the width, which is a letter you read without reading it. */
   --FontSize-ThemeCardInitial: calc(var(--Size-ThemeCardWidth) * 0.0775);
 
   /* The shape of a theme card, as a ratio of its width. A ratio rather than a height, so a card
@@ -483,9 +484,7 @@ body.PageFade {
    * than a share of the screen, because two rows are what has to fit — what is left after the
    * page's margins and the one gap, halved. The card keeps its width and loses height. */
   --Size-ThemeCardHeightMax: calc(
-    (
-        100dvh - 2 * var(--Layout-ScreenPaddingVertical) - var(--Space-ThemeCardsGap)
-      ) / 2
+    (100dvh - 2 * var(--Layout-ScreenPaddingVertical) - var(--Space-ThemeCardsGap)) / 2
   );
   /* How large a theme's name is drawn. Its own token rather than one of the `--FontSize-H*`
    * steps because it is the only name in the game that is the whole content of a panel: a
@@ -529,7 +528,7 @@ body.PageFade {
    * printed on; this is a coat over one panel. Drawn at its own size rather than scaled —
    * scaled down to a hundred-odd pixels the tile averages into flat grey, and a flat grey
    * multiplied over a card is the card. */
-  --Texture-ThemeCardNoise: url('../Overlays/Noise.gif');
+  --Texture-ThemeCardNoise: url('./Overlays/Noise.gif');
   --Blend-ThemeCardNoise: overlay;
   --Opacity-ThemeCardNoise: 0.2;
   --Opacity-ThemeCardNoiseHover: 0.5;
@@ -614,12 +613,12 @@ body.PageFade {
   --Layout-ScreenPaddingVertical: clamp(var(--Space-Lg), min(9vw, 7dvh), var(--Space-2xl));
   --Layout-ScreenPaddingHorizontal: var(--Space-Lg);
 
-/* How wide the card of this browser's own seat is: a plank along the top of the game, and never
- * wider than the frame it stands in. A wide cap for a short card, because the two lines of
- * words run along it and the face stands at the end: the card's width is what the name is
- * written across, so it is a line length rather than a square's side. The `100%` floor is the
- * frame — a card solved against the viewport is a card that can be wider than the page it is
- * drawn in. */
+  /* How wide the card of this browser's own seat is: a plank along the top of the game, and
+   * never wider than the frame it stands in. A wide cap for a short card, because the two lines
+   * of words run along it and the face stands at the end: the card's width is what the name is
+   * written across, so it is a line length rather than a square's side. The `100%` floor is the
+   * frame — a card solved against the viewport is a card that can be wider than the page it is
+   * drawn in. */
   --Size-PlayerCardWidth: min(180px, 100%);
 
   /* How big the face at the end of the card is. A clamp up from the roster's small face, and
@@ -645,8 +644,8 @@ body.PageFade {
 :root {
   /* Character sizes, for the roster, the scoreboard and the picker. */
   --Size-Character-Small: 28px;
---Size-Character-Medium: 44px;
---Size-Character-Large: 96px;
+  --Size-Character-Medium: 44px;
+  --Size-Character-Large: 96px;
   /* The chosen character in the picker, above the rows of choices. */
   --Size-Character-Preview: 160px;
 
@@ -673,9 +672,9 @@ body.PageFade {
  * width: changing it rescales the drawing and the hotspot must be restated. */
 @media (hover: hover) and (pointer: fine) {
   :root {
-    --Cursor-Default: url('../Cursors/Arrow.svg') 4 0, default;
-    --Cursor-Pointer: url('../Cursors/Finger.svg') 12 0, pointer;
-    --Cursor-NotAllowed: url('../Cursors/Unavailable.svg') 2 3, not-allowed;
-    --Cursor-Text: url('../Cursors/Text.svg') 16 16, text;
+    --Cursor-Default: url('./Cursors/Arrow.svg') 4 0, default;
+    --Cursor-Pointer: url('./Cursors/Finger.svg') 12 0, pointer;
+    --Cursor-NotAllowed: url('./Cursors/Unavailable.svg') 2 3, not-allowed;
+    --Cursor-Text: url('./Cursors/Text.svg') 16 16, text;
   }
 }

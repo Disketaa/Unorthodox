@@ -22,9 +22,8 @@
    * and a container past the third wraps to a new line by itself. A `max-width` rather than a
    * hand-picked breakpoint, which is why the number is written as a count of tokens. */
   max-width: calc(
-    var(--Layout-ColumnsMax) * var(--Layout-ContainerMaxWidth) + (var(
-        --Layout-ColumnsMax
-      ) - 1) * var(--Space-Lg)
+    var(--Layout-ColumnsMax) * var(--Layout-ContainerMaxWidth) +
+      (var(--Layout-ColumnsMax) - 1) * var(--Space-Lg)
   );
   /* The tracks are a fixed width rather than `1fr`, so a row that is not full has empty space
    * at its end rather than cards stretched across it. That space is centred rather than left

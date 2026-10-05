@@ -29,9 +29,10 @@
    * have to agree on how big it is, and one custom property is what makes them agree. */
   --Glyph-Size: calc(
     (
-        var(--Glyph-MarkWidthMin) +
-          (var(--Glyph-MarkWidthMax) - var(--Glyph-MarkWidthMin)) * var(--Glyph-Scale, 0.5)
-      ) / var(--Glyph-Zoom, 1)
+        var(--Glyph-MarkWidthMin) + (var(--Glyph-MarkWidthMax) - var(--Glyph-MarkWidthMin)) *
+          var(--Glyph-Scale, 0.5)
+      ) /
+      var(--Glyph-Zoom, 1)
   );
   position: absolute;
   top: var(--Glyph-Top, 0%);

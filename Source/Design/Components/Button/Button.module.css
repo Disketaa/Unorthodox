@@ -7,8 +7,9 @@
   cursor: var(--Cursor-Pointer);
   font-family: var(--FontFamily-Body);
   font-weight: 600;
-  transition: background var(--Duration-Fast) var(--Easing-Standard),
-    transform var(--Duration-Fast) var(--Easing-Standard);
+  transition:
+    background var(--Transition-Standard),
+    transform var(--Transition-Standard);
   min-height: var(--Size-TouchTarget);
   min-width: var(--Size-TouchTarget);
 }

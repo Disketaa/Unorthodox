@@ -17,7 +17,7 @@
    * the viewport is filled with the same pattern. */
   position: absolute;
   inset: calc(-1 * var(--Overlay-ShiftMax));
-  background-image: url("../Paper.jpg");
+  background-image: url('../Paper.jpg');
   background-repeat: repeat;
   transform: translate3d(var(--Overlay-TextureX, 0px), var(--Overlay-TextureY, 0px), 0);
 }

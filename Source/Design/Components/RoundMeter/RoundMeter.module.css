@@ -36,7 +36,7 @@
   border-radius: var(--Radius-RoundMark);
   background: var(--ThemeCard-Tint, var(--Accent-Tint));
   opacity: var(--Opacity-RoundMark);
-  transition: opacity var(--Duration-Fast) var(--Easing-Standard);
+  transition: opacity var(--Transition-Standard);
 }
 
 /* A round already played: the same shape, the same colour, and greyed. Greyed by opacity rather

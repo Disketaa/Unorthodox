@@ -5,8 +5,8 @@
  * skipped unless `--css` is passed, and `--css` finds nothing: every comment in the stylesheets
  * records a design decision. Usage: npm run comments [-- --css] [-- <path>] */
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { dirname, join, relative, sep } from "node:path";
 import { canonicalShape } from "./CommentShape.mjs";
 import { findMojibake } from "../Encoding/Mojibake.mjs";
 
@@ -22,7 +22,8 @@ type Verdict =
   | "trailing"
   | "shape"
   | "eof"
-  | "mojibake";
+  | "mojibake"
+  | "asset";
 
 interface Finding {
   readonly file: string;
@@ -434,6 +435,23 @@ function overCssBudget(comment: RawComment): boolean {
   return comment.lines > CSS_LINE_BUDGET;
 }
 
+/** The relative `url()` targets in a stylesheet, with where each one starts. A data URI or an
+ * absolute URL is left alone: neither is resolved against the file, so neither can break by
+ * moving it. */
+function findRelativeUrls(source: string): { url: string; index: number }[] {
+  const found: { url: string; index: number }[] = [];
+  const pattern = /url\(\s*['"]?([^'")]+)['"]?\s*\)/g;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(source)) !== null) {
+    const url = (match[1] ?? "").trim();
+    if (url === "" || url.startsWith("data:") || url.startsWith("http:") || url.startsWith("https:")) {
+      continue;
+    }
+    found.push({ url, index: match.index });
+  }
+  return found;
+}
+
 function main(): void {
   const args = process.argv.slice(2);
   const target = args.find((argument) => !argument.startsWith("--")) ?? ROOT;
@@ -472,6 +490,21 @@ function main(): void {
           line: source.slice(0, damaged.index).split(/\r?\n/).length,
           verdict: "mojibake",
           reasons: [`decoded twice: ${damaged[0]}`],
+          text: "",
+        });
+      }
+      // Every relative `url()` is resolved against the file it sits in, so moving a stylesheet
+      // silently repoints all of them. Vite does not fail the build for this: it prints a warning,
+      // copies no asset, and leaves the path to 404 at runtime, which a browser reports as a
+      // corrupt font rather than a missing file.
+      for (const asset of findRelativeUrls(source)) {
+        const target = join(dirname(file), asset.url);
+        if (existsSync(target)) continue;
+        findings.push({
+          file: relative(process.cwd(), file).split(sep).join("/"),
+          line: source.slice(0, asset.index).split(/\r?\n/).length,
+          verdict: "asset",
+          reasons: [`no file at ${asset.url}, resolved against the stylesheet's own folder`],
           text: "",
         });
       }
@@ -527,6 +560,7 @@ function main(): void {
   const shape = findings.filter((finding) => finding.verdict === "shape");
   const eof = findings.filter((finding) => finding.verdict === "eof");
   const mojibake = findings.filter((finding) => finding.verdict === "mojibake");
+  const asset = findings.filter((finding) => finding.verdict === "asset");
 
   for (const [label, group] of [
     ["STALE", stale],
@@ -537,6 +571,7 @@ function main(): void {
     ["SHAPE", shape],
     ["EOF", eof],
     ["MOJIBAKE", mojibake],
+    ["ASSET", asset],
   ] as const) {
     if (group.length === 0) continue;
     console.log(`\n${label} (${group.length})`);
@@ -548,7 +583,7 @@ function main(): void {
   }
 
   console.log(
-    `\n${noisy.length} noisy, ${stale.length} stale, ${overBudget.length} over budget, ${split.length} split, ${trailing.length} trailing, ${shape.length} shape, ${eof.length} eof, ${mojibake.length} mojibake, of ${files.length} files.`,
+    `\n${noisy.length} noisy, ${stale.length} stale, ${overBudget.length} over budget, ${split.length} split, ${trailing.length} trailing, ${shape.length} shape, ${eof.length} eof, ${mojibake.length} mojibake, ${asset.length} asset, of ${files.length} files.`,
   );
   if (
     stale.length > 0 ||
@@ -558,7 +593,8 @@ function main(): void {
     trailing.length > 0 ||
     shape.length > 0 ||
     eof.length > 0 ||
-    mojibake.length > 0
+    mojibake.length > 0 ||
+    asset.length > 0
   ) {
     process.exitCode = 1;
   }

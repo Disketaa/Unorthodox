@@ -61,7 +61,7 @@
   background: transparent;
   border: var(--Border-Width-Default) solid transparent;
   border-radius: var(--Radius-Button);
-color: var(--Color-Room-Yellow);
+  color: var(--Color-Room-Yellow);
 }
 
 .CrownIcon {

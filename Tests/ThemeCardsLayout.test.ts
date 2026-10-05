@@ -172,8 +172,10 @@ it('washes in the theme accent on hover, in the same time as every other control
     ).toBe('var(--ThemeCard-Wash,var(--Accent-Wash))');
     expect(card.declaration(hover, 'color')).toContain('var(--ThemeCard-Tint');
     expect(card.declaration(hover, 'color')).not.toContain('--ThemeCard-Ink');
-    expect(card.text).toContain('--Duration-Fast');
-    expect(card.text).toContain('--Easing-Standard');
+    expect(card.text).toContain('var(--Transition-Standard)');
+    expect(tokenValue('--Transition-Standard')).toBe(
+      'var(--Duration-Fast) var(--Easing-Standard)',
+    );
   });
   it('has no frame, and is one step off the page rather than white on it', () => {
     // The border and the off-white both lift the card off the page, and a card this large does
@@ -396,7 +398,7 @@ it('holds the grain short of the name, which is the thing on the card being read
   it('lifts the grain on hover, on the card timing', () => {
     // The panel is the thing being looked at and a finish that does not respond reads as a
     // surface that did not notice.
-    expect(card.ruleBody(Noise)).toContain('--Duration-Fast');
+    expect(card.ruleBody(Noise)).toContain('--Transition-Standard');
     expect(card.ruleBody(/\.Root:hover\s+\.Noise\s*\{([^}]*)\}/)).not.toContain('transition');
   });
   it('is scaled on hover rather than resized, so nothing reflows under the pointer', () => {
