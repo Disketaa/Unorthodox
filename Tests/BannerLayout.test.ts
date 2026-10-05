@@ -3,18 +3,18 @@ import { stylesheet } from './Stylesheet';
 
 /** The banner's own row, read from the stylesheet. Out here rather than beside the component for
  * the reason the other layout tests are: it reads a file with `node:fs`, and widening the app's
- * TypeScript `types` to allow that would let browser code import Node built-ins. And it reads the
- * file rather than rendering the component, because truncation is invisible to a test runner.
- * happy-dom does not lay out a flex row and does not clip an element, so a rendered `Banner`
- * asserts nothing about the one thing these rules exist to decide. */
+ * TypeScript `types` to allow that would let browser code import Node built-ins. And it reads
+ * the file rather than rendering the component, because truncation is invisible to a test
+ * runner. happy-dom does not lay out a flex row and does not clip an element, so a rendered
+ * `Banner` asserts nothing about the one thing these rules exist to decide. */
 const sheet = stylesheet('../Source/Design/Components/Banner/Banner.module.css');
 
 /** Both spans in one rule, since they are truncated the same way. */
 const truncating = /\.Text\s*,\s*\.Value\s*\{([^}]*)\}/;
 
-/** The value's own rule, which is the one after the shared truncation rule rather than the `.Value`
- * inside it: the two spellings differ only by what precedes the selector, so the rule is matched
- * after a brace to keep the shared rule from answering for it. */
+/** The value's own rule, which is the one after the shared truncation rule rather than the
+ * `.Value` inside it: the two spellings differ only by what precedes the selector, so the rule
+ * is matched after a brace to keep the shared rule from answering for it. */
 const value = /\}\s*\.Value\s*\{([^}]*)\}/;
 
 /** The mark's own rule, matched the same way. */

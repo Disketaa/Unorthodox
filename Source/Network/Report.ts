@@ -1,4 +1,6 @@
-import type { LogLevel } from '@/Core';
+import { createLogger, type LogLevel } from '@/Core';
+
+const log = createLogger('Diagnostics');
 
 /** Lines kept for the on-screen report, oldest dropped once it is full. A phone cannot open a
  * console, so this is the only way a failing join can be read from one. */
@@ -66,4 +68,15 @@ export function fold(stamp: string, body: string): boolean {
  * user agent and the address, and no TURN credentials, which are deliberately never logged. */
 export function getDiagnosticsReport(): string {
   return [`agent ${navigator.userAgent}`, `href ${window.location.href}`, ...report].join('\n');
+}
+
+/** Log to the console and keep a copy, so the report and the console stay the same lines. The
+ * logger wants a message and extra detail apart; the report joins them back into one line. A
+ * repeat goes to the report and not the console, which is the whole point of folding. */
+export function note(level: LogLevel, ...parts: unknown[]): void {
+  const [message, ...rest] = parts;
+  const { stamp, body } = reportLine(level, show(message), rest);
+  if (fold(stamp, body)) {
+    log(level, show(message), ...rest);
+  }
 }

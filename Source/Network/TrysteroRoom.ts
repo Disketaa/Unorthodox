@@ -157,7 +157,11 @@ export function openRoom(options: {
   isHost: boolean;
   handlers: RoomHandlers;
 }): OpenRoom {
-  const room = joinRoom(roomConfig(options.appId), options.roomCode);
+  const room = joinRoom(roomConfig(options.appId), options.roomCode, {
+    // The one signal of a peer that answered but would not connect. Nothing else reports it, and
+    // a handshake failure looks identical to a peer that never arrived.
+    onJoinError: ({ peerId, error }) => log('warn', `peer ${peerId} failed to connect:`, error),
+  });
   const hostToClient = room.makeAction(HostToClientAction);
   const clientToHost = room.makeAction(ClientToHostAction);
   const hostPeer = wireRoom(

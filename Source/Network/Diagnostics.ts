@@ -1,35 +1,13 @@
-import { createLogger, LogLevel, setLogLevel } from '@/Core';
+import { createLogger, setLogLevel } from '@/Core';
 import { relayPool } from './Signaling';
-import { fold, reportLine } from './Report';
+import { fold, note, reportLine } from './Report';
+import { reportClockSkew, reportIceGathering } from './PeerWatch';
 import { getRelaySockets } from 'trystero';
 
 const log = createLogger('Diagnostics');
 
 /** How often the connection snapshot is written to the console. */
 const PollIntervalMs = 3_000;
-
-/** One value as text, without throwing on something that will not serialise. */
-function show(value: unknown): string {
-  if (typeof value === 'string') {
-    return value;
-  }
-  try {
-    return JSON.stringify(value) ?? String(value);
-  } catch {
-    return String(value);
-  }
-}
-
-/** Log to the console and keep a copy, so the report and the console stay the same lines. The
- * logger wants a message and extra detail apart; the report joins them back into one line. A
- * repeat goes to the report and not the console, which is the whole point of folding. */
-function note(level: LogLevel, ...parts: unknown[]): void {
-  const [message, ...rest] = parts;
-  const { stamp, body } = reportLine(level, show(message), rest);
-  if (fold(stamp, body)) {
-    log(level, show(message), ...rest);
-  }
-}
 
 /** What the host toggled in the lobby, which beats the flags below: a link may carry ?debug and
  * the host may still want it off, and back the other way. Null until someone actually toggles,
@@ -134,22 +112,7 @@ function snapshot(label: string, getPeers: () => Record<string, RTCPeerConnectio
   }
 }
 
-/** Log ICE gathering transitions, which is where a blocked network shows up. Candidate types say
- * which of STUN and TURN got through: no srflx means STUN never answered, no relay means TURN
- * was unreachable, and either one looks the same as an ordinary NAT from the state alone. */
-function reportIceGathering(getPeers: () => Record<string, RTCPeerConnection>): void {
-  for (const [peerId, connection] of Object.entries(getPeers())) {
-    connection.addEventListener('icecandidate', (event) => {
-      note('info', `candidate for ${peerId}`, event.candidate?.type ?? 'end of candidates');
-    });
-    connection.addEventListener('icegatheringstatechange', () => {
-      note('info', `ice gathering for ${peerId} is ${connection.iceGatheringState}`);
-    });
-    connection.addEventListener('connectionstatechange', () => {
-      note('info', `connection for ${peerId} is ${connection.connectionState}`);
-    });
-  }
-}
+
 
 /** Start periodic connection logging. All of it is written at `info` so it is visible without
  * any extra flag, since a silent connection is the failure mode that matters most here. */
@@ -177,9 +140,13 @@ export function startDiagnostics(getPeers: () => Record<string, RTCPeerConnectio
     note('error', 'unhandled rejection', String(event.reason));
   });
 
-  const timer = setInterval(() => snapshot('status', getPeers), PollIntervalMs);
+  const timer = setInterval(() => {
+    snapshot('status', getPeers);
+    reportIceGathering(getPeers);
+  }, PollIntervalMs);
   snapshot('initial', getPeers);
   reportIceGathering(getPeers);
+  void reportClockSkew();
   return () => {
     clearInterval(timer);
     console.warn = consoleWarn;
