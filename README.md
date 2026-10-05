@@ -46,6 +46,12 @@ what you changed instead of all 936.
 - A changed `.css` file runs the `Tests/` suites as well. Those read stylesheets with `node:fs`
   rather than importing them, so the import graph cannot see a token change at all.
 
+## File endings
+Every file ends with exactly one newline, and no two blank lines sit together. The newline is
+`eol-last` in ESLint for code and the `eof` verdict of `npm run comments:css` for stylesheets, so
+`uq fix` adds it back if an editor drops it. Prettier is a devDependency and drives
+`eslint-config-prettier`, but no script runs it, so it is not the gate — these two are.
+
 To put `Tools\Cli` on the PATH yourself:
 ```powershell
 [Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path','User') + ';C:\Projects\Unorthodox\Tools\Cli', 'User')

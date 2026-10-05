@@ -45,6 +45,14 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   prettier,
 
+  // Every linted file ends with exactly one newline. Prettier emits one unconditionally, so this
+  // agrees with the formatter the repo already depends on rather than ruling against it, and
+  // `uq fix` supplies the newline. CSS is not linted here, so the audit reports it instead.
+  {
+    files: ["**/*.{js,mjs,cjs,ts,tsx,mts}"],
+    rules: { "eol-last": ["error", "always"] },
+  },
+
   // General rules for Source/ only
   {
     files: ["Source/**/*.{ts,tsx}"],

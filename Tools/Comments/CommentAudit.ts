@@ -12,7 +12,15 @@ import { canonicalShape } from "./CommentShape.mjs";
 /** `over-budget` is its own verdict rather than being folded into `stale`. A stale comment says
  * something untrue; an over-budget one may be entirely accurate and merely too long. Reporting
  * both as `stale` hides which one a fix has to address. */
-type Verdict = "kept" | "noisy" | "stale" | "over-budget" | "split" | "trailing" | "shape";
+type Verdict =
+  | "kept"
+  | "noisy"
+  | "stale"
+  | "over-budget"
+  | "split"
+  | "trailing"
+  | "shape"
+  | "eof";
 
 interface Finding {
   readonly file: string;
@@ -442,6 +450,18 @@ function main(): void {
     const sourceLines = source.split(/\r?\n/);
     const comments = collectComments(source, isCss);
     const adjacent = findAdjacent(source, comments);
+    // `eof` is not a comment finding, but this is the only gate a stylesheet passes through:
+    // ESLint does not read CSS, so a file that ends without a newline is reported here rather
+    // than left to a formatter nobody runs. TypeScript gets the same rule from `eol-last`.
+    if (isCss && !source.endsWith("\n")) {
+      findings.push({
+        file: relative(process.cwd(), file).split(sep).join("/"),
+        line: sourceLines.length,
+        verdict: "eof",
+        reasons: ["no newline at end of file"],
+        text: "",
+      });
+    }
     for (const comment of findTrailing(comments)) {
       findings.push({
         file: relative(process.cwd(), file).split(sep).join("/"),
@@ -491,6 +511,7 @@ function main(): void {
   const split = findings.filter((finding) => finding.verdict === "split");
   const trailing = findings.filter((finding) => finding.verdict === "trailing");
   const shape = findings.filter((finding) => finding.verdict === "shape");
+  const eof = findings.filter((finding) => finding.verdict === "eof");
 
   for (const [label, group] of [
     ["STALE", stale],
@@ -499,6 +520,7 @@ function main(): void {
     ["SPLIT", split],
     ["TRAILING", trailing],
     ["SHAPE", shape],
+    ["EOF", eof],
   ] as const) {
     if (group.length === 0) continue;
     console.log(`\n${label} (${group.length})`);
@@ -510,7 +532,7 @@ function main(): void {
   }
 
   console.log(
-    `\n${noisy.length} noisy, ${stale.length} stale, ${overBudget.length} over budget, ${split.length} split, ${trailing.length} trailing, ${shape.length} shape, of ${files.length} files.`,
+    `\n${noisy.length} noisy, ${stale.length} stale, ${overBudget.length} over budget, ${split.length} split, ${trailing.length} trailing, ${shape.length} shape, ${eof.length} eof, of ${files.length} files.`,
   );
   if (
     stale.length > 0 ||
@@ -518,7 +540,8 @@ function main(): void {
     overBudget.length > 0 ||
     split.length > 0 ||
     trailing.length > 0 ||
-    shape.length > 0
+    shape.length > 0 ||
+    eof.length > 0
   ) {
     process.exitCode = 1;
   }

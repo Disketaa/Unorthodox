@@ -198,6 +198,3 @@ that against an expectation built with an indent on line one made 16 of HostRost
   - Comment-form check: 371 one-line and 322 guttered doc comments, zero exceptions after fixing
     `App/RoomCode.ts:12` and `Network/Payload.ts:47`, which had a one-line doc comment with the code
     jammed onto the same line.
-
-
-

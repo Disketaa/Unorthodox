@@ -1,5 +1,14 @@
 ﻿# DECISIONS
 
+## 2026-10-05 — every file ends with exactly one newline
+The tree was split: 221 files ended with one newline and 136 with none, and Prettier wants one
+unconditionally, so `prettier --check` was failing on 136 files for a reason nobody was acting on.
+Enforced in the two places each file type already passes through rather than by wiring up Prettier,
+which would have reformatted style the repo does not otherwise hold ESLint to: `eol-last` for code
+across `Source`, `Tools` and `Tests`, and an `eof` verdict in the CSS audit, since ESLint does not
+read stylesheets. Blank lines are not linted, because the scan found zero files with two in a row
+anywhere in the tree, and a rule with no violations in 377 files is a rule nobody needs.
+
 ## 2026-10-05 — one folder per kind of file, and a `uq` alias that runs only what changed
 `Scripts/` held two unrelated things: the comment toolchain and the stylesheet layout suites. The
 comment tooling moved to `Tools/Comments/` and the suites to `Tests/`, so a folder now says what

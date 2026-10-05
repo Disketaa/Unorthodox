@@ -28,6 +28,11 @@ wide one before handing over.
 A changed `.css` also runs the `Tests/` suites: they read stylesheets with `node:fs` rather than
 importing them, so the import graph alone would report no tests for a token change.
 
+**Every file ends with exactly one newline**, and no two blank lines ever sit together. The
+newline is `eol-last` in ESLint for code and the `eof` verdict in the CSS audit, so `uq fix`
+supplies it. Prettier emits a final newline unconditionally, so this agrees with the formatter
+rather than ruling against it. Blank lines are not linted: nothing in the tree has two.
+
 # ARCHITECTURE: MODULES AND DEPENDENCY DIRECTION
 ```
 Source/
