@@ -1,173 +1,121 @@
-/*
- * The frame a screen's containers are laid out on.
- *
- * One container per row by default, and the whole set side by side only when the
- * frame is wide enough for all of them. A grid rather than a wrapping flex row, and
- * the reason is `align-content` below: a flex row wraps into lines too, but it has no
- * way to say where those lines sit when the whole set is shorter than the viewport.
- * That is the one thing a screen decides for itself here, so the layout that can
- * express it is the one to use.
- *
- * Tracks are a fixed container width rather than `1fr`, so two cards on a wide
- * screen stay the size a card is meant to be and do not stretch to fill the row. The
- * `min()` floor is what keeps a phone narrower than a container from overflowing it:
- * a `minmax` whose floor is above the available width resolves to the floor, and the
- * floor here is the container width capped at the width available.
- */
+/* The frame a screen's containers are laid out on. One container per row by default, and the
+ * whole set side by side only when the frame is wide enough for all of them. A grid rather than
+ * a wrapping flex row, and the reason is `align-content` below: a flex row wraps into lines
+ * too, but it has no way to say where those lines sit when the whole set is shorter than the
+ * viewport. That is the one thing a screen decides for itself here, so the layout that can
+ * express it is the one to use. Tracks are a fixed container width rather than `1fr`, so two
+ * cards on a wide screen stay the size a card is meant to be and do not stretch to fill the
+ * row. The `min()` floor is what keeps a phone narrower than a container from overflowing it: a
+ * `minmax` whose floor is above the available width resolves to the floor, and the floor here
+ * is the container width capped at the width available. */
 .Root {
   display: grid;
-  /*
-   * A single track, and the track is the width one container wants to be. Below the
-   * query below, this is the whole layout: one container per row, each at the
-   * readable line length, centred by `justify-content` further down.
-   */
+  /* A single track, and the track is the width one container wants to be. Below the query
+   * below, this is the whole layout: one container per row, each at the readable line length,
+   * centred by `justify-content` further down. */
   grid-template-columns: min(var(--Layout-ContainerMaxWidth), 100%);
   gap: var(--Space-Lg);
-  /*
-   * Takes the height `#root` has left, rather than asking for a viewport of its own.
-   *
-   * `1 0 auto` is grow, never shrink, at its own height: short of the room it grows
-   * to fill it, and taller than the room it keeps its height and the page scrolls. A
-   * `100dvh` of its own would be a viewport plus `#root`'s padding, which is how every
-   * screen came to scroll whether its content fitted or not.
-   */
+  /* Takes the height `#root` has left, rather than asking for a viewport of its own. `1 0 auto`
+   * is grow, never shrink, at its own height: short of the room it grows to fill it, and taller
+   * than the room it keeps its height and the page scrolls. A `100dvh` of its own would be a
+   * viewport plus `#root`'s padding, which is how every screen came to scroll whether its
+   * content fitted or not. */
   flex: 1 0 auto;
-  /*
-   * As many tracks as a row is allowed, and not one more. This is the whole of the
-   * cap: the frame is never wider than this, so a row of containers can never be
-   * wider than this either, and a container past the third wraps to a new line by
-   * itself. A `max-width` rather than a hand-picked breakpoint, which is why the
-   * number is written as a count of tokens.
-   */
+  /* As many tracks as a row is allowed, and not one more. This is the whole of the cap: the
+   * frame is never wider than this, so a row of containers can never be wider than this either,
+   * and a container past the third wraps to a new line by itself. A `max-width` rather than a
+   * hand-picked breakpoint, which is why the number is written as a count of tokens. */
   max-width: calc(
     var(--Layout-ColumnsMax) * var(--Layout-ContainerMaxWidth) + (var(
         --Layout-ColumnsMax
       ) - 1) * var(--Space-Lg)
   );
-  /*
-   * The tracks are a fixed width rather than `1fr`, so a row that is not full has
-   * empty space at its end rather than cards stretched across it. That space is
-   * centred rather than left where it lands, or two cards on a wide screen would sit
-   * against the page's left padding with the gap on the wrong side.
-   */
+  /* The tracks are a fixed width rather than `1fr`, so a row that is not full has empty space
+   * at its end rather than cards stretched across it. That space is centred rather than left
+   * where it lands, or two cards on a wide screen would sit against the page's left padding
+   * with the gap on the wrong side. */
   justify-content: center;
   margin: 0 auto;
 }
 
-/*
- * The whole set side by side, and only then.
- *
- * `auto-fit` on its own cannot express this. It fits as many tracks as the frame is
- * wide, so a row of three containers was three across on a desktop, two across and
- * one below on a laptop, and one per row on a phone — and the middle of those is a
- * layout nobody chose: two cards sharing a row read as the pair the screen is about,
- * with the third left over underneath it. There is no setting of `auto-fit` that
- * answers "all of them or none of them", because fitting a track is a per-track
- * question and this is a question about the row.
- *
- * So the row count is decided here instead, by the one comparison that can answer it:
- * is the frame wide enough for every container it is going to hold? The threshold is
- * the same `max-width` written out a second time, plus the page's own horizontal
- * padding, because a media query measures the window and the frame is drawn inside
- * that padding rather than across the whole of it.
- *
- * A width query, where before there was none, and the older claim that this file has
- * no width query in it no longer holds. `Scripts/ScreenLayout.test.ts` was the other
- * half of that claim and was changed with it. The threshold is still written as
- * tokens rather than as a number, so it moves with the cap above rather than needing
- * to be retyped when either does — which is what keeps it a measurement of the
- * layout rather than a breakpoint someone picked and then forgot.
- */
-/*
- * The width is a literal, and the only bare pixel value in this file.
- *
- * A media query condition cannot hold a `var()`: custom properties are not resolved
- * there at all, which is a rule of the language rather than of a tool, and a `calc()`
- * with a `var()` inside is no different. So this cannot be a token the way every other
- * length in the interface is, and a token nothing reads would be a number that looks
- * load-bearing and is not.
- *
- * Which leaves the number here and the arithmetic over the tokens in
- * `Tokens.css`, which is what the value stands for: three columns at
- * `--Layout-ColumnMinWidth`, the two `--Space-Lg` gaps between them, and the page's own
- * margin either side, which is the width a window has to be before the space inside it
- * is as wide as a full row.
- *
- * `Scripts/ScreenLayout.test.ts` recomputes it from those tokens and compares, which is
- * what makes a duplicated number safe: change a column width and the suite fails rather
- * than leaving a room that opens at a width its columns no longer fit into.
- */
+/* The whole set side by side, and only then. `auto-fit` on its own cannot express this. It fits
+ * as many tracks as the frame is wide, so a row of three containers was three across on a
+ * desktop, two across and one below on a laptop, and one per row on a phone — and the middle of
+ * those is a layout nobody chose: two cards sharing a row read as the pair the screen is about,
+ * with the third left over underneath it. There is no setting of `auto-fit` that answers "all
+ * of them or none of them", because fitting a track is a per-track question and this is a
+ * question about the row. So the row count is decided here instead, by the one comparison that
+ * can answer it: is the frame wide enough for every container it is going to hold? The
+ * threshold is the same `max-width` written out a second time, plus the page's own horizontal
+ * padding, because a media query measures the window and the frame is drawn inside that padding
+ * rather than across the whole of it. A width query, where before there was none, and the older
+ * claim that this file has no width query in it no longer holds. `Scripts/ScreenLayout.test.ts`
+ * was the other half of that claim and was changed with it. The threshold is still written as
+ * tokens rather than as a number, so it moves with the cap above rather than needing to be
+ * retyped when either does — which is what keeps it a measurement of the layout rather than a
+ * breakpoint someone picked and then forgot. */
+/* The width is a literal, and the only bare pixel value in this file. A media query condition
+ * cannot hold a `var()`: custom properties are not resolved there at all, which is a rule of
+ * the language rather than of a tool, and a `calc()` with a `var()` inside is no different. So
+ * this cannot be a token the way every other length in the interface is, and a token nothing
+ * reads would be a number that looks load-bearing and is not. Which leaves the number here and
+ * the arithmetic over the tokens in `Tokens.css`, which is what the value stands for: three
+ * columns at `--Layout-ColumnMinWidth`, the two `--Space-Lg` gaps between them, and the page's
+ * own margin either side, which is the width a window has to be before the space inside it is
+ * as wide as a full row. `Scripts/ScreenLayout.test.ts` recomputes it from those tokens and
+ * compares, which is what makes a duplicated number safe: change a column width and the suite
+ * fails rather than leaving a room that opens at a width its columns no longer fit into. */
 @media (min-width: 1056px) {
-  /*
-   * `auto-fit` over a floor wide enough to read in, and only once the window has been
-   * found wide enough for the whole row.
-   *
-   * `auto-fit` over `1fr` tracks, and the `0` floor is the whole of it. The query above
-   * decides the row count; this decides how the containers that are there share the
-   * width, which is a second question and the one `auto-fit` is actually good at.
-   *
-   * A count instead would leave an empty track at the end of a two-container screen, so
-   * the wordmark and the card of fields sit against the left with the gap on the wrong
-   * side. `auto-fit` collapses the empty track and the two share the row, which is what
-   * `justify-content: center` is then free to centre.
-   *
-   * `minmax(0, 1fr)` rather than a floor of the column's own width, and the difference
-   * is what a column is worth on a wide screen. `auto-fit` fits tracks at their
-   * *minimum* and divides what is left over between them, so a 320px floor on a window
-   * wide enough for four tracks made three columns of about 342px and threw the fourth
-   * away — narrower than the readable line length, and shrinking as the window grew. A
-   * `0` floor lets the tracks be created for the containers alone and then share the
-   * frame, and the frame's own `max-width` is what stops a column passing the container
-   * cap: at three across it can be no wider than 480px however wide the window is.
-   *
-   * So nothing here can come to two across either. The query is what admits the row at
-   * all, and inside it the tracks are made for the containers, so a third container
-   * always has a track of its own rather than pushing one out of the row.
-   */
+  /* `auto-fit` over a floor wide enough to read in, and only once the window has been found
+   * wide enough for the whole row. `auto-fit` over `1fr` tracks, and the `0` floor is the whole
+   * of it. The query above decides the row count; this decides how the containers that are
+   * there share the width, which is a second question and the one `auto-fit` is actually good
+   * at. A count instead would leave an empty track at the end of a two-container screen, so the
+   * wordmark and the card of fields sit against the left with the gap on the wrong side.
+   * `auto-fit` collapses the empty track and the two share the row, which is what
+   * `justify-content: center` is then free to centre. `minmax(0, 1fr)` rather than a floor of
+   * the column's own width, and the difference is what a column is worth on a wide screen.
+   * `auto-fit` fits tracks at their *minimum* and divides what is left over between them, so a
+   * 320px floor on a window wide enough for four tracks made three columns of about 342px and
+   * threw the fourth away — narrower than the readable line length, and shrinking as the window
+   * grew. A `0` floor lets the tracks be created for the containers alone and then share the
+   * frame, and the frame's own `max-width` is what stops a column passing the container cap: at
+   * three across it can be no wider than 480px however wide the window is. So nothing here can
+   * come to two across either. The query is what admits the row at all, and inside it the
+   * tracks are made for the containers, so a third container always has a track of its own
+   * rather than pushing one out of the row. */
   .Root {
     grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   }
 }
 
-/*
- * Containers lined up by their top edges, and each only as tall as what is in it.
- *
- * The height is the reason this is not the default. Grid stretches its items to the
- * row, so two containers side by side came out as tall as the taller one and the
- * shorter had its content sitting at the top of a box sized for something else, which
- * reads as padding nobody set.
- */
+/* Containers lined up by their top edges, and each only as tall as what is in it. The height is
+ * the reason this is not the default. Grid stretches its items to the row, so two containers
+ * side by side came out as tall as the taller one and the shorter had its content sitting at
+ * the top of a box sized for something else, which reads as padding nobody set. */
 .AlignStart {
   align-items: start;
 }
 
-/*
- * Containers centred against one another, for containers of noticeably different
- * heights that are meant to read as one arrangement.
- *
- * A wordmark beside a card of fields is a third of its height, and aligned by the top
- * edge it floats beside the middle of the menu rather than sitting in the middle of
- * it. This is the alignment the entry screen asks for and the lobby does not.
- */
+/* Containers centred against one another, for containers of noticeably different heights that
+ * are meant to read as one arrangement. A wordmark beside a card of fields is a third of its
+ * height, and aligned by the top edge it floats beside the middle of the menu rather than
+ * sitting in the middle of it. This is the alignment the entry screen asks for and the lobby
+ * does not. */
 .AlignCenter {
   align-items: center;
 }
 
-/*
- * The rows at the top, for a screen that is a page of controls.
- *
- * `align-content` rather than `justify-content` throughout: the rows are what has to
- * be placed, and a screen taller than the viewport stays at the top and scrolls
- * instead of being pushed off its own top edge with half of it unreachable.
- */
+/* The rows at the top, for a screen that is a page of controls. `align-content` rather than
+ * `justify-content` throughout: the rows are what has to be placed, and a screen taller than
+ * the viewport stays at the top and scrolls instead of being pushed off its own top edge with
+ * half of it unreachable. */
 .VerticalTop {
   align-content: start;
 }
 
-/*
- * In the middle of the viewport, for a screen that is one short block worth arriving
- * at. The same `align-content`, since it is the rows that move rather than the frame.
- */
+/* In the middle of the viewport, for a screen that is one short block worth arriving at. The
+ * same `align-content`, since it is the rows that move rather than the frame. */
 .VerticalCenter {
   align-content: center;
 }

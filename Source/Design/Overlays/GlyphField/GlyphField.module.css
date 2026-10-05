@@ -1,13 +1,8 @@
-/*
- * The margin field, spread across the screen.
- *
- * Below the interface and below the paper texture, which is the last layer: the
- * marks are part of the page's own background rather than laid over the game,
- * and the paper multiplies over them along with everything else.
- *
- * `pointer-events: none` is essential. The layer covers the whole viewport, so
- * without it no button under a mark would be clickable.
- */
+/* The margin field, spread across the screen. Below the interface and below the paper texture,
+ * which is the last layer: the marks are part of the page's own background rather than laid
+ * over the game, and the paper multiplies over them along with everything else.
+ * `pointer-events: none` is essential. The layer covers the whole viewport, so without it no
+ * button under a mark would be clickable. */
 .Root {
   position: fixed;
   inset: 0;
@@ -16,13 +11,10 @@
   overflow: hidden;
 }
 
-/*
- * The bands hang off the two screen edges and take their width from the
- * `--Glyph-BandWidth` token in the column stylesheet, so each one covers the
- * same share of any screen and the middle stays the same share free. They are
- * positioned here rather than sized here, because anchoring to the edges is
- * what keeps the gap between them equal to the gap outside them.
- */
+/* The bands hang off the two screen edges and take their width from the `--Glyph-BandWidth`
+ * token in the column stylesheet, so each one covers the same share of any screen and the
+ * middle stays the same share free. They are positioned here rather than sized here, because
+ * anchoring to the edges is what keeps the gap between them equal to the gap outside them. */
 .Root > * {
   position: absolute;
   top: 0;
@@ -37,15 +29,10 @@
   right: 0;
 }
 
-/*
- * No breakpoint hides the field.
- *
- * The field is one continuous arrangement rather than one per screen size: every
- * value behind it is a share of the viewport with a floor under it, and none of
- * them is behind a breakpoint, so a resize moves the marks to the same relative
- * place instead of jumping them somewhere new. The marks reach well past their
- * bands, so the middle is busier on a phone than on a desktop. That is
- * deliberate: the field stays present on every device, and it sits under the
- * interface and under the paper, so a busier middle is texture behind the text
- * rather than anything in front of it.
- */
+/* No breakpoint hides the field. The field is one continuous arrangement rather than one per
+ * screen size: every value behind it is a share of the viewport with a floor under it, and none
+ * of them is behind a breakpoint, so a resize moves the marks to the same relative place
+ * instead of jumping them somewhere new. The marks reach well past their bands, so the middle
+ * is busier on a phone than on a desktop. That is deliberate: the field stays present on every
+ * device, and it sits under the interface and under the paper, so a busier middle is texture
+ * behind the text rather than anything in front of it. */

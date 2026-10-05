@@ -2,46 +2,32 @@
   display: flex;
 }
 
-/*
- * The row takes the height its parent has left.
- *
- * Grow, never shrink, at its own height: short of the room it grows to fill it, and taller
- * than the room it keeps its height and the page scrolls rather than the row's contents
- * being squeezed. A `0` basis would be wrong here, since the row's own height is what it
- * is.
- */
+/* The row takes the height its parent has left. Grow, never shrink, at its own height: short of
+ * the room it grows to fill it, and taller than the room it keeps its height and the page
+ * scrolls rather than the row's contents being squeezed. A `0` basis would be wrong here, since
+ * the row's own height is what it is. */
 .Grow {
   flex: 1 0 auto;
 }
 
-/*
- * What is off the bottom of a full-height row is not drawn, and the page does not scroll to it.
- *
- * `overflow: hidden` and nothing else: the row already has the height its parent has left, so the
- * only thing clipping changes is whether the game becomes a page. It is the game's one row — the
- * card above and the bank of cards below — where scrolling puts half the themes on offer below
- * the fold on a device held on its side.
- */
+/* What is off the bottom of a full-height row is not drawn, and the page does not scroll to it.
+ * `overflow: hidden` and nothing else: the row already has the height its parent has left, so
+ * the only thing clipping changes is whether the game becomes a page. It is the game's one row
+ * — the card above and the bank of cards below — where scrolling puts half the themes on offer
+ * below the fold on a device held on its side. */
 .Clip {
   overflow: hidden;
 }
 
-/*
- * Every child one equal share of the row's width.
- *
- * On the children rather than on the row, and with a `0` basis, which is the whole
- * mechanism. `justify-content` only ever moves children around inside a row they do
- * not fill, so it can centre a pair of buttons but cannot widen them: the leftover
- * width stays outside as empty row. Growing the children is what puts it inside.
- *
- * The basis is `0` rather than `auto` so the shares are equal. Left at `auto`, each
- * child starts from its own content width and the leftover is split in proportion to
- * that, so a shorter word still gets a narrower button.
- *
- * `min-width: 0` alongside it, because a flex item's floor is its content by default
- * and a long word would then refuse to shrink below itself and push the row wider
- * than the frame it is in.
- */
+/* Every child one equal share of the row's width. On the children rather than on the row, and
+ * with a `0` basis, which is the whole mechanism. `justify-content` only ever moves children
+ * around inside a row they do not fill, so it can centre a pair of buttons but cannot widen
+ * them: the leftover width stays outside as empty row. Growing the children is what puts it
+ * inside. The basis is `0` rather than `auto` so the shares are equal. Left at `auto`, each
+ * child starts from its own content width and the leftover is split in proportion to that, so a
+ * shorter word still gets a narrower button. `min-width: 0` alongside it, because a flex item's
+ * floor is its content by default and a long word would then refuse to shrink below itself and
+ * push the row wider than the frame it is in. */
 .FillEven > * {
   flex: 1 1 0;
   min-width: 0;

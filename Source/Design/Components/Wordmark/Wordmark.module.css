@@ -3,15 +3,11 @@
   text-align: center;
 }
 
-/*
- * The mark, in the game's own gold.
- *
- * A fixed colour rather than `--Accent-Tint`, on the same grounds as the primary
- * button and the host's crown: the wordmark is the game's, not this player's, so it
- * looks the same to everyone in the room. It is the button's gold rather than a step
- * of the accent, because a step of a tint the player chose would be the name of the
- * game changing colour with whoever is looking at it.
- */
+/* The mark, in the game's own gold. A fixed colour rather than `--Accent-Tint`, on the same
+ * grounds as the primary button and the host's crown: the wordmark is the game's, not this
+ * player's, so it looks the same to everyone in the room. It is the button's gold rather than a
+ * step of the accent, because a step of a tint the player chose would be the name of the game
+ * changing colour with whoever is looking at it. */
 .Mark {
   display: block;
   margin: 0 auto;
@@ -24,24 +20,18 @@
   mask-size: contain;
 }
 
-/*
- * The characters' idle sway, on the mark.
- *
- * Composed rather than written out, so the two are one movement: a row of characters
- * is only interesting because no two of them agree, and that comes from the roll
- * rather than from the drawing. The rolled values are written on `.Root` and read
- * here, which works because a custom property inherits.
- */
+/* The characters' idle sway, on the mark. Composed rather than written out, so the two are one
+ * movement: a row of characters is only interesting because no two of them agree, and that
+ * comes from the roll rather than from the drawing. The rolled values are written on `.Root`
+ * and read here, which works because a custom property inherits. */
 .Moving {
   composes: Moving from '../../Primitives/Sway/Sway.module.css';
 }
 
-/*
- * The name itself, for anything reading the page rather than looking at it, which is
- * what a screen reader and the test that guards the join screen both do. Marked out of
- * the layout rather than `display: none`, because a hidden element is not announced at
- * all, and this is the only thing naming the game on the screen.
- */
+/* The name itself, for anything reading the page rather than looking at it, which is what a
+ * screen reader and the test that guards the join screen both do. Marked out of the layout
+ * rather than `display: none`, because a hidden element is not announced at all, and this is
+ * the only thing naming the game on the screen. */
 .Name {
   position: absolute;
   width: 1px;

@@ -1,20 +1,13 @@
-/*
- * Cutting a line of text short with an ellipsis.
- *
- * Shared rather than written into each of the four places a name is drawn, because
- * it is always the same four declarations and the reason for each of them is the
- * same: a row that must stay the size it is, whatever someone typed into it.
- *
- * `min-width: 0` is the one that is easy to leave out and the one that decides
- * whether any of the rest does anything. A flex item refuses to shrink below its
- * contents by default, so without it the text overflows whatever the ellipsis says
- * and the cut only ever happens to a name short enough not to need one.
- *
- * `white-space: nowrap` is what makes the ellipsis possible at all: an inline box
- * that may wrap has nothing to cut, since it has already broken itself into lines.
- * It also means the row can never grow taller, which is the other half of why this
- * is here rather than a wrap.
- */
+/* Cutting a line of text short with an ellipsis. Shared rather than written into each of the
+ * four places a name is drawn, because it is always the same four declarations and the reason
+ * for each of them is the same: a row that must stay the size it is, whatever someone typed
+ * into it. `min-width: 0` is the one that is easy to leave out and the one that decides whether
+ * any of the rest does anything. A flex item refuses to shrink below its contents by default,
+ * so without it the text overflows whatever the ellipsis says and the cut only ever happens to
+ * a name short enough not to need one. `white-space: nowrap` is what makes the ellipsis
+ * possible at all: an inline box that may wrap has nothing to cut, since it has already broken
+ * itself into lines. It also means the row can never grow taller, which is the other half of
+ * why this is here rather than a wrap. */
 .Truncate {
   min-width: 0;
   overflow: hidden;

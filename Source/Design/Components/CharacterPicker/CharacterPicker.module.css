@@ -1,12 +1,8 @@
-/*
- * The picker: one character, the whole cast, the whole palette.
- *
- * Three stacked rows rather than one scrolling strip. A strip had to be dragged to
- * reveal most of the cast, and it put the character and the tint in the same
- * horizontal space, so neither read as the decision it was. Here the big drawing
- * answers "what will the room see" and the two rows under it are the two choices,
- * side by side and equal.
- */
+/* The picker: one character, the whole cast, the whole palette. Three stacked rows rather than
+ * one scrolling strip. A strip had to be dragged to reveal most of the cast, and it put the
+ * character and the tint in the same horizontal space, so neither read as the decision it was.
+ * Here the big drawing answers "what will the room see" and the two rows under it are the two
+ * choices, side by side and equal. */
 .Root {
   display: flex;
   flex-direction: column;
@@ -14,28 +10,20 @@
   gap: var(--Space-Md);
 }
 
-/*
- * The large drawing.
- *
- * A share of the picker width rather than a fixed size, with `aspect-ratio` keeping
- * it square: the drawing is `Fill`, so it is the box that decides the scale and the
- * same rule fits a narrow phone and a wide card.
- */
+/* The large drawing. A share of the picker width rather than a fixed size, with `aspect-ratio`
+ * keeping it square: the drawing is `Fill`, so it is the box that decides the scale and the
+ * same rule fits a narrow phone and a wide card. */
 .Preview {
   align-self: center;
   width: 100%;
   max-width: var(--Size-Character-Preview);
 }
 
-/*
- * The two rows of choices.
- *
- * Both are grids of eight equal square tracks filling the width, so the cast and
- * the palette line up column for column and the two rows are the same shape. That
- * is what makes them read as the same kind of control: eight of one thing, eight of
- * the other, in one row each. `minmax(0, ...)` keeps a track from refusing to
- * shrink under its contents, which is what pushes padding off a narrow screen.
- */
+/* The two rows of choices. Both are grids of eight equal square tracks filling the width, so
+ * the cast and the palette line up column for column and the two rows are the same shape. That
+ * is what makes them read as the same kind of control: eight of one thing, eight of the other,
+ * in one row each. `minmax(0, ...)` keeps a track from refusing to shrink under its contents,
+ * which is what pushes padding off a narrow screen. */
 .Characters,
 .Colors {
   display: grid;
@@ -44,12 +32,8 @@
   width: 100%;
 }
 
-/*
- * One cell in either row.
- *
- * Square by `aspect-ratio`, so the nine cells fill the width evenly and a disc
- * inside one stays round rather than stretching to a wider cell.
- */
+/* One cell in either row. Square by `aspect-ratio`, so the nine cells fill the width evenly and
+ * a disc inside one stays round rather than stretching to a wider cell. */
 .Choice {
   display: flex;
   align-items: center;
@@ -65,41 +49,32 @@
   transition: border-color var(--Duration-Fast) var(--Easing-Standard);
 }
 
-/*
- * The room's yellow on the pointer over a light grey, both as the icon button does
- * it.
- *
- * Scoped away from the chosen cell, and that is deliberate rather than incidental: a
- * hover rule carrying two classes outranks the single class giving the chosen cell its
- * fill, so hovering the current choice would wash that fill out and the row would lose
- * the one thing marking it. A chosen cell needs no hover of its own — it is already
- * marked, and pressing it is not a second choice.
- */
+/* The room's yellow on the pointer over a light grey, both as the icon button does it. Scoped
+ * away from the chosen cell, and that is deliberate rather than incidental: a hover rule
+ * carrying two classes outranks the single class giving the chosen cell its fill, so hovering
+ * the current choice would wash that fill out and the row would lose the one thing marking it.
+ * A chosen cell needs no hover of its own — it is already marked, and pressing it is not a
+ * second choice. */
 .Choice:not(.Chosen):hover {
   border-color: var(--Color-Room-Yellow);
   background: var(--Color-Surface-Hover);
 }
 
-/*
- * The focus ring lives on the cell's own border rather than on an outline, so the
- * focused cell never shows two borders, one inside the other. The border is always
- * there and only its colour changes, which is what `TextField` does for the same
- * reason: an outline offset from a bordered control reads as a second frame around
- * it, and on a row of eight cells it makes the whole row look selected.
- */
+/* The focus ring lives on the cell's own border rather than on an outline, so the focused cell
+ * never shows two borders, one inside the other. The border is always there and only its colour
+ * changes, which is what `TextField` does for the same reason: an outline offset from a
+ * bordered control reads as a second frame around it, and on a row of eight cells it makes the
+ * whole row look selected. */
 .Choice:focus-visible {
   outline: none;
   border-color: var(--Color-Border-Focus);
 }
 
-/*
- * The current choice in either row, marked the same way in both.
- *
- * The room's yellow rather than the accent's own step. The picker is where the accent
- * is chosen, so a border that changed colour as the pointer moved across the row was
- * showing the choice being made rather than the choice made. The fill marks it too, so
- * the cell is never told apart from a hovered one by the border alone.
- */
+/* The current choice in either row, marked the same way in both. The room's yellow rather than
+ * the accent's own step. The picker is where the accent is chosen, so a border that changed
+ * colour as the pointer moved across the row was showing the choice being made rather than the
+ * choice made. The fill marks it too, so the cell is never told apart from a hovered one by the
+ * border alone. */
 .Chosen {
   border-color: var(--Color-Room-Yellow);
   background: var(--Color-Action-Ghost-Hover);

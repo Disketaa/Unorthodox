@@ -1,62 +1,37 @@
-/*
- * The theme's rounds as a row of ticks under the theme's name.
- *
- * `justify-content: center` because the card centres its own contents on the cross axis and
- * this is one of them: a row ten marks wide inside a card that narrows would otherwise sit
- * against one side, and six cards of the same width would each leave a different amount of
- * space beside their row.
- *
- * No `margin-top: auto` and no `width: 100%`. The card is a column that centres its contents
- * and neither of them grows, so this row falls directly under the name — giving it auto margins
- * as well would pull it back down to the bottom edge, and stretching it across the card would
- * put the card's padding back into the centring and undo it.
- *
- * No margin of its own at all, not even a negative one to close the gap to the name: the card
- * holds that gap, so the pair is one centred thing rather than a word and a row each placed by
- * a different number.
- *
- * Above the card's inner panel and under the grain: see the `z-index` below.
- */
+/* The theme's rounds as a row of ticks under the theme's name. `justify-content: center`
+ * because the card centres its own contents on the cross axis and this is one of them: a row
+ * ten marks wide would otherwise sit against one side, and six cards would each leave a
+ * different amount of space beside their row. No `margin-top: auto` and no `width: 100%`. The
+ * card is a column that centres its contents and neither grows, so this row falls directly
+ * under the name; auto margins would pull it to the bottom and stretching it would put the
+ * padding back into the centring. No margin of its own: the card holds that gap, so the pair is
+ * one centred thing rather than two. */
 .Root {
-  /*
-   * Above the card's inner panel, which is what crops the number.
-   *
-   * Positioned on purpose rather than left in the flow: the panel is absolutely positioned, and
-   * a positioned box paints over everything that is not, so the row of rounds was under the
-   * panel and the card came out with a word on it and no bar. It shares a level with the grain,
-   * which is drawn later in the markup and so still lies over the ticks, as grain in front of
-   * ink is the point of it.
-   */
+  /* Above the card's inner panel, which is what crops the number. Positioned on purpose rather
+   * than left in the flow: the panel is absolutely positioned, and a positioned box paints over
+   * everything that is not, so the row of rounds was under the panel and the card came out with
+   * a word on it and no bar. It shares a level with the grain, which is drawn later in the
+   * markup and so still lies over the ticks, as grain in front of ink is the point of it. */
   position: relative;
   z-index: 2;
   display: flex;
   justify-content: center;
   gap: var(--Space-RoundMeterGap);
   align-items: center;
-  /*
-   * The name's size, so the ticks below are in `em` of something that tracks the card.
-   *
-   * `em` needs a font size to be a proportion of, and this row would otherwise measure its
-   * ticks against whatever the page inherited — the same row of marks would be a different
-   * width on the lobby and on the game. The name's size is already a share of the card's
-   * width, so borrowing it puts the ticks on the same scale as the word above them.
-   */
+  /* The name's size, so the ticks below are in `em` of something that tracks the card. `em`
+   * needs a font size to be a proportion of, and this row would otherwise measure its ticks
+   * against whatever the page inherited — the same row of marks would be a different width on
+   * the lobby and on the game. The name's size is already a share of the card's width, so
+   * borrowing it puts the ticks on the same scale as the word above them. */
   font-size: var(--FontSize-ThemeCard);
 }
 
-/*
- * One round, in the theme's own accent.
- *
- * A tick rather than a dot, and taller than it is wide: a row of dots on a card this size
- * reads as a rating or a strength meter, and ten of them is too many of the same shape to
- * be counted at a glance. A pipe is a mark in a list, which is what a round is.
- *
- * The theme's accent rather than the room's ink, and every tick the same accent rather than
- * one tick in it: the row is one thing the card is saying — this theme, this many rounds —
- * and the single greyed tick is what is left to play. Written by the card's own theme, not
- * passed in as a colour, because a tick showing a different theme's colour than the card it
- * sits on is a mistake nothing else would catch.
- */
+/* One round, in the theme's own accent. A tick rather than a dot, and taller than it is wide: a
+ * row of dots on a card this size reads as a rating, and ten of one shape is too many to count
+ * at a glance. A pipe is a mark in a list. The theme's accent rather than the room's ink,
+ * written by the card's own theme and not passed in, since a tick in a different colour than
+ * the card it sits on is a mistake nothing else would catch. The single greyed tick is what is
+ * left to play. */
 .Mark {
   width: var(--Size-RoundMarkWidth);
   height: var(--Size-RoundMarkHeight);
@@ -66,17 +41,13 @@
   transition: opacity var(--Duration-Fast) var(--Easing-Standard);
 }
 
-/*
- * A round already played: the same shape, the same colour, and greyed.
- *
- * Greyed by opacity rather than by a paler colour, because every tick is the theme's own
- * accent and a spent one has to still be that accent — a bar where the spent part is a
- * different hue is a bar showing two kinds of thing rather than one bar with less in it.
- *
- * Faint rather than empty, and that matters more here than it did as a progress marker: the
- * greyed ticks are still part of the theme and still count towards its ten, so an absent one
- * would read as a round that does not exist. What is spent is drawn, not deleted.
- */
+/* A round already played: the same shape, the same colour, and greyed. Greyed by opacity rather
+ * than by a paler colour, because every tick is the theme's own accent and a spent one has to
+ * still be that accent — a bar where the spent part is a different hue is a bar showing two
+ * kinds of thing rather than one bar with less in it. Faint rather than empty, and that matters
+ * more here than it did as a progress marker: the greyed ticks are still part of the theme and
+ * still count towards its ten, so an absent one would read as a round that does not exist. What
+ * is spent is drawn, not deleted. */
 .Spent {
   opacity: var(--Opacity-RoundMarkSpent);
 }

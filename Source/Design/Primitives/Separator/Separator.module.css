@@ -1,15 +1,9 @@
-/*
- * One row: a run of the rule, the word, a run of the rule.
- *
- * Full width rather than as wide as the word, because the point of a separator is
- * to say a card is in two parts and that reads only if the rule reaches both edges
- * of it. The runs are `flex: 1` rather than fixed lengths, so they share whatever
- * is left equally and the word stays in the middle however long the word is or
- * however narrow the screen.
- *
- * The gap is on the row rather than as margins on the word, so the same spacing
- * applies either side of it and neither side can drift from the other.
- */
+/* One row: a run of the rule, the word, a run of the rule. Full width rather than as wide as
+ * the word, because the point of a separator is to say a card is in two parts and that reads
+ * only if the rule reaches both edges of it. The runs are `flex: 1` rather than fixed lengths,
+ * so they share whatever is left equally and the word stays in the middle however long the word
+ * is or however narrow the screen. The gap is on the row rather than as margins on the word, so
+ * the same spacing applies either side of it and neither side can drift from the other. */
 .Root {
   display: flex;
   align-items: center;
@@ -17,11 +11,9 @@
   width: 100%;
 }
 
-/*
- * A hairline rather than a border, and drawn as a box rather than as a `border-top`
- * on a child, because a child with a rule on it is a child that is one pixel taller
- * than the row and shifts everything below it by a pixel.
- */
+/* A hairline rather than a border, and drawn as a box rather than as a `border-top` on a child,
+ * because a child with a rule on it is a child that is one pixel taller than the row and shifts
+ * everything below it by a pixel. */
 .Line {
   flex: 1 1 0;
   min-width: 0;
@@ -29,21 +21,15 @@
   background: var(--Color-Border-Default);
 }
 
-/*
- * The paper behind the word, so the rule is cut rather than stopped.
- *
- * The card's own surface, because the separator is drawn inside a card and the card
- * is what has to show through the gap: any other fill is a patch of a slightly
- * different colour sitting on top of it. On a surface that is not a card, this is
- * the one place the separator needs a different token.
- */
+/* The paper behind the word, so the rule is cut rather than stopped. The card's own surface,
+ * because the separator is drawn inside a card and the card is what has to show through the
+ * gap: any other fill is a patch of a slightly different colour sitting on top of it. On a
+ * surface that is not a card, this is the one place the separator needs a different token. */
 .Label {
-  /*
-   * Cut rather than allowed to run long, because the word is the one thing on the
-   * rule that has to stay on one line: a word that wrapped would push the two runs
-   * of the rule apart and turn the separator into two lines and a paragraph. The
-   * cut itself is `Truncate`, shared with every other place a name is drawn.
-   */
+  /* Cut rather than allowed to run long, because the word is the one thing on the rule that has
+   * to stay on one line: a word that wrapped would push the two runs of the rule apart and turn
+   * the separator into two lines and a paragraph. The cut itself is `Truncate`, shared with
+   * every other place a name is drawn. */
   composes: Truncate from '../Truncate/Truncate.module.css';
   flex-shrink: 0;
   max-width: 100%;

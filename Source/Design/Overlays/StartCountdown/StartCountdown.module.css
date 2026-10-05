@@ -1,34 +1,23 @@
-/*
- * The countdown's own layer, and the only thing on screen while it counts.
- *
- * `fixed` against the window, like the debug dock, so the numbers are in the middle
- * of what the player is looking at rather than in the middle of one column of it.
- * Above the paper at 1, and one higher than the dock, so a dock sharing the bottom of
- * the window cannot be read through it.
- *
- * It takes the pointer rather than letting it through, which is the whole of the lock:
- * a click landing on the shade reaches the shade and nothing else, so nothing the
- * room would have answered is answered while the room is not there yet.
- *
- * The layer has no animation of its own. It fades in through the shade under it, and
- * when the count is over it is simply taken away — the writing screen arrives on the
- * page's own fade, and a second fade here would have been a second movement racing
- * that one rather than the hand-off being it.
- */
+/* The countdown's own layer, and the only thing on screen while it counts. `fixed` against the
+ * window, like the debug dock, so the numbers are in the middle of what the player is looking
+ * at rather than in the middle of one column of it. Above the paper at 1, and one higher than
+ * the dock, so a dock sharing the bottom of the window cannot be read through it. It takes the
+ * pointer rather than letting it through, which is the whole of the lock: a click landing on
+ * the shade reaches the shade and nothing else, so nothing the room would have answered is
+ * answered while the room is not there yet. The layer has no animation of its own. It fades in
+ * through the shade under it, and when the count is over it is simply taken away — the writing
+ * screen arrives on the page's own fade, and a second fade here would have been a second
+ * movement racing that one rather than the hand-off being it. */
 .Root {
   position: fixed;
   inset: 0;
   z-index: 3;
 }
 
-/*
- * The room behind, which is not there yet.
- *
- * Dark enough to read a white number against, and light enough that the paper and the
- * glyphs behind it are still recognisable, which is what makes it a curtain rather
- * than a cut to black. Its fade-in is the length the code waits before the first
- * number, so the two cannot disagree about when the count begins.
- */
+/* The room behind, which is not there yet. Dark enough to read a white number against, and
+ * light enough that the paper and the glyphs behind it are still recognisable, which is what
+ * makes it a curtain rather than a cut to black. Its fade-in is the length the code waits
+ * before the first number, so the two cannot disagree about when the count begins. */
 .Dim {
   position: absolute;
   inset: 0;
@@ -46,40 +35,29 @@
   }
 }
 
-/*
- * The number, centred on the window.
- *
- * Absolute and centred in both directions rather than a grid place-items centring it,
- * because the shade above is a sibling that fills the layer and the number has to sit
- * over that shade rather than share a row with it.
- */
+/* The number, centred on the window. Absolute and centred in both directions rather than a grid
+ * place-items centring it, because the shade above is a sibling that fills the layer and the
+ * number has to sit over that shade rather than share a row with it. */
 .Stage {
   position: absolute;
   top: 50%;
   left: 50%;
   translate: -50% -50%;
   font-family: var(--FontFamily-Display);
-  /*
-   * A share of the window rather than a size in pixels: the number is meant to be the
-   * same presence on a phone and on a desktop, and a pixel size would be either half
-   * the screen on one or lost in the middle of the other. Capped against the display
-   * size so it cannot outgrow the window on a narrow one.
-   */
+  /* A share of the window rather than a size in pixels: the number is meant to be the same
+   * presence on a phone and on a desktop, and a pixel size would be either half the screen on
+   * one or lost in the middle of the other. Capped against the display size so it cannot
+   * outgrow the window on a narrow one. */
   font-size: min(28vw, calc(var(--FontSize-4xl) * 3));
   line-height: 1;
   color: var(--Color-Text-Inverse);
-  /*
-   * The number arriving, then simply being there until the count is over.
-   *
-   * Over the length of a whole beat rather than the pop's own 380ms, so the number has
-   * arrived before it starts holding rather than arriving into a second that is already
-   * half over. It comes up from well under its size and overshoots on the way, which is
-   * what reads as a pop: the spring easing is what carries it past one and back, and a
-   * straight tween to one reads as a zoom rather than as something turning up.
-   *
-   * It does not fade out on its own — the layer going away is what says the count is
-   * over, and a number fading a moment earlier would take that with it.
-   */
+  /* The number arriving, then simply being there until the count is over. Over the length of a
+   * whole beat rather than the pop's own 380ms, so the number has arrived before it starts
+   * holding rather than arriving into a second that is already half over. It comes up from well
+   * under its size and overshoots on the way, which is what reads as a pop: the spring easing
+   * is what carries it past one and back, and a straight tween to one reads as a zoom rather
+   * than as something turning up. It does not fade out on its own — the layer going away is
+   * what says the count is over, and a number fading a moment earlier would take that with it. */
   animation: CountTick var(--Duration-CountTick) var(--Easing-Spring) both;
 }
 
@@ -100,12 +78,10 @@
   }
 }
 
-/*
- * No growing and shrinking, and the numbers simply change: a count-in is the one
- * thing on screen for four seconds and its movement is the information. The shade's
- * own fade stays, since an opacity change is what says the room is being counted in
- * from rather than dropped into a black screen.
- */
+/* No growing and shrinking, and the numbers simply change: a count-in is the one thing on
+ * screen for four seconds and its movement is the information. The shade's own fade stays,
+ * since an opacity change is what says the room is being counted in from rather than dropped
+ * into a black screen. */
 @media (prefers-reduced-motion: reduce) {
   .Stage {
     animation-name: CountFade;

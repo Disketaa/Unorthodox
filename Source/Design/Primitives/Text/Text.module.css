@@ -3,21 +3,15 @@
   color: var(--Color-Text-Default);
 }
 
-/*
- * A heading, which is a player's name in a lobby and a section name everywhere else.
- *
- * Cut with an ellipsis rather than wrapped. A title sits in a row with controls at
- * its end, and a name long enough to wrap turned that row two lines tall and pushed
- * the control off the end of it, which is the part that has to stay reachable. The
- * cut is in the drawing only: the name is still whole in the data, so anything that
- * reads it gets all of it.
- *
- * `display: block` and `min-width: 0` are both load-bearing. The element is a span,
- * and an inline box ignores `overflow` entirely, so the ellipsis would never be
- * drawn; and a block that is also a flex item still refuses to shrink below its
- * contents by default, which is what let a long name push the row wide instead of
- * being cut.
- */
+/* A heading, which is a player's name in a lobby and a section name everywhere else. Cut with
+ * an ellipsis rather than wrapped. A title sits in a row with controls at its end, and a name
+ * long enough to wrap turned that row two lines tall and pushed the control off the end of it,
+ * which is the part that has to stay reachable. The cut is in the drawing only: the name is
+ * still whole in the data, so anything that reads it gets all of it. `display: block` and
+ * `min-width: 0` are both load-bearing. The element is a span, and an inline box ignores
+ * `overflow` entirely, so the ellipsis would never be drawn; and a block that is also a flex
+ * item still refuses to shrink below its contents by default, which is what let a long name
+ * push the row wide instead of being cut. */
 .VariantTitle {
   composes: Truncate from '../Truncate/Truncate.module.css';
   display: block;
@@ -27,14 +21,10 @@
   color: var(--Color-Text-Title);
 }
 
-/*
- * The game title. Kept separate from Title because it is larger, centred and
- * tinted, none of which suits an in-game topic or a screen heading.
- *
- * The size is clamped to the viewport: the name is a single long word with no
- * break opportunities, so a fixed size overflows a narrow phone instead of
- * wrapping.
- */
+/* The game title. Kept separate from Title because it is larger, centred and tinted, none of
+ * which suits an in-game topic or a screen heading. The size is clamped to the viewport: the
+ * name is a single long word with no break opportunities, so a fixed size overflows a narrow
+ * phone instead of wrapping. */
 .VariantDisplay {
   font-family: var(--FontFamily-Display);
   font-size: clamp(var(--FontSize-Xl), 9vw, var(--FontSize-Display));
@@ -44,8 +34,8 @@
   overflow-wrap: break-word;
   /* Break at a syllable rather than mid-word, which needs lang="ru" on <html>. */
   hyphens: auto;
-  /* A flex item defaults to min-width:auto, which stops a long word from
-     shrinking and pushes the whole layout wider than the screen. */
+  /* A flex item defaults to min-width:auto, which stops a long word from shrinking and pushes
+   * the whole layout wider than the screen. */
   min-width: 0;
 }
 

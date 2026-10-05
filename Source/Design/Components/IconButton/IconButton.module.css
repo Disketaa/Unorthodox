@@ -15,16 +15,11 @@
     background var(--Duration-Fast) var(--Easing-Standard);
 }
 
-/*
- * The room's yellow arrives on the pointer rather than sitting there, so the eye is
- * sent to the control being aimed at.
- *
- * The same yellow as the primary button and the host's crown, and not the accent. An
- * icon in the accent's ink step read as a duller version of the same hue — brown on a
- * yellow accent — and a mark filled with the colour wants the room's yellow rather
- * than the viewer's tint, which is what the crown and the local player's own chip
- * already do.
- */
+/* The room's yellow arrives on the pointer rather than sitting there, so the eye is sent to the
+ * control being aimed at. The same yellow as the primary button and the host's crown, and not
+ * the accent. An icon in the accent's ink step read as a duller version of the same hue — brown
+ * on a yellow accent — and a mark filled with the colour wants the room's yellow rather than
+ * the viewer's tint, which is what the crown and the local player's own chip already do. */
 .Root:hover {
   color: var(--Color-Room-Yellow);
   background: var(--Color-Surface-Hover);
@@ -34,11 +29,9 @@
   background: var(--Color-Surface-Active);
 }
 
-/*
- * The border is transparent rather than absent, and drawn inside the box, so the
- * focus ring lands on the control's own edge. An outline stands off the box and
- * reads as a second frame with a gap around it.
- */
+/* The border is transparent rather than absent, and drawn inside the box, so the focus ring
+ * lands on the control's own edge. An outline stands off the box and reads as a second frame
+ * with a gap around it. */
 .Root:focus-visible {
   outline: none;
   border-color: var(--Color-Border-Focus);
@@ -49,24 +42,19 @@
   height: var(--Size-TouchTarget);
 }
 
-/*
- * Inside a chip the button is sized to the chip rather than to a finger: a full
- * touch target here would be taller than the row it belongs to. The chip it sits in
- * is itself a finger-sized target, so the row stays pressable.
- */
+/* Inside a chip the button is sized to the chip rather than to a finger: a full touch target
+ * here would be taller than the row it belongs to. The chip it sits in is itself a finger-sized
+ * target, so the row stays pressable. */
 .SizeSmall {
   width: var(--Size-Character-Small);
   height: var(--Size-Character-Small);
 }
 
-/*
- * Painted through a mask rather than embedded: every icon file on disk is a solid
- * black silhouette, and a mask is what lets one file be drawn in any colour.
- *
- * Drawn oversize and centred so the shape fills its box rather than sitting inside
- * the margin its own file keeps. Each percentage is that file's padding, measured
- * rather than guessed, which is why they differ.
- */
+/* Painted through a mask rather than embedded: every icon file on disk is a solid black
+ * silhouette, and a mask is what lets one file be drawn in any colour. Drawn oversize and
+ * centred so the shape fills its box rather than sitting inside the margin its own file keeps.
+ * Each percentage is that file's padding, measured rather than guessed, which is why they
+ * differ. */
 .Icon {
   display: block;
   background-color: currentColor;

@@ -4,57 +4,41 @@
   gap: var(--Space-Sm);
   padding: var(--Space-Sm) var(--Space-Md);
   background: var(--Color-Surface-Hover);
-  /*
-   * The border is transparent rather than absent, because the local player's own chip
-   * is this border recoloured. Drawn on the chip's own edge, so marking yourself never
-   * changes the chip's size and never leaves a gap between the ring and the pill.
-   */
+  /* The border is transparent rather than absent, because the local player's own chip is this
+   * border recoloured. Drawn on the chip's own edge, so marking yourself never changes the
+   * chip's size and never leaves a gap between the ring and the pill. */
   border: var(--Border-Width-Default) solid transparent;
   border-radius: var(--Radius-Full);
   /* Keeps the chip the same height whichever character it holds. */
   min-height: var(--Size-Character-Small);
 }
 
-/*
- * The local player, in a room where nobody can otherwise tell which chip is theirs.
- *
- * A border rather than a fill: a filled chip would read as a chosen or disabled
- * control, and the roster is a list, not a set of options.
- *
- * The same fixed yellow as the crown and the primary button, and not the accent. The
- * chip says which seat is yours, which is a fact about the room rather than about
- * whoever is looking at it, so it must not change colour with the viewer's own tint
- * — a border in the accent step read as brown against a yellow accent and said
- * nothing about the seat at all.
- */
+/* The local player, in a room where nobody can otherwise tell which chip is theirs. A border
+ * rather than a fill: a filled chip would read as a chosen or disabled control, and the roster
+ * is a list, not a set of options. The same fixed yellow as the crown and the primary button,
+ * and not the accent. The chip says which seat is yours, which is a fact about the room rather
+ * than about whoever is looking at it, so it must not change colour with the viewer's own tint
+ * — a border in the accent step read as brown against a yellow accent and said nothing about
+ * the seat at all. */
 .Self {
   border-color: var(--Color-Room-Yellow);
 }
 
-/*
- * A player the host has lost.
- *
- * The whole chip is held back rather than the name inside it, so the face, the name
- * and the host arrow all go quiet together and there is nothing to keep in step.
- * Nothing is removed: the seat is still theirs and they may be back, and a roster
- * that loses a row reads as a smaller room rather than as a player who dropped.
- */
+/* A player the host has lost. The whole chip is held back rather than the name inside it, so
+ * the face, the name and the host arrow all go quiet together and there is nothing to keep in
+ * step. Nothing is removed: the seat is still theirs and they may be back, and a roster that
+ * loses a row reads as a smaller room rather than as a player who dropped. */
 .Offline {
   opacity: 0.5;
 }
 
-/*
- * The name takes the free space, so everything after it — the crown, the kick —
- * collects at the right-hand end in reading order.
- *
- * The space is on the name rather than on the marks, because two marks sharing it
- * would each claim half and end up with a gap between them in the middle of the row.
- *
- * Cut short with an ellipsis rather than wrapped or allowed to push the row wider.
- * A name is still there in full for anything that can read it, so it is cut in the
- * drawing rather than in the data. The cut itself is `Truncate`, shared with every
- * other place a name is drawn.
- */
+/* The name takes the free space, so everything after it — the crown, the kick — collects at the
+ * right-hand end in reading order. The space is on the name rather than on the marks, because
+ * two marks sharing it would each claim half and end up with a gap between them in the middle
+ * of the row. Cut short with an ellipsis rather than wrapped or allowed to push the row wider.
+ * A name is still there in full for anything that can read it, so it is cut in the drawing
+ * rather than in the data. The cut itself is `Truncate`, shared with every other place a name
+ * is drawn. */
 .Name {
   composes: Truncate from '../../Primitives/Truncate/Truncate.module.css';
   font-size: var(--FontSize-Body);
@@ -63,18 +47,13 @@
   margin-right: auto;
 }
 
-/*
- * In yellow outright, and not the accent, whatever the player picked.
- *
- * The crown is a fact about who is hosting rather than something to aim at, so it
- * holds its colour permanently instead of waiting for a pointer. It cannot follow
- * the accent either: every player now wears their own tint, so an accent-coloured
- * crown would mark whoever is looking at the screen as the host. A fixed yellow
- * says the same thing to everybody in the room.
- *
- * Drawn in the fill step rather than the text one, because it is a mark rather than
- * text, and it clears 8.7:1 against the chip it sits on.
- */
+/* In yellow outright, and not the accent, whatever the player picked. The crown is a fact about
+ * who is hosting rather than something to aim at, so it holds its colour permanently instead of
+ * waiting for a pointer. It cannot follow the accent either: every player now wears their own
+ * tint, so an accent-coloured crown would mark whoever is looking at the screen as the host. A
+ * fixed yellow says the same thing to everybody in the room. Drawn in the fill step rather than
+ * the text one, because it is a mark rather than text, and it clears 8.7:1 against the chip it
+ * sits on. */
 .Crown {
   display: inline-flex;
   align-items: center;

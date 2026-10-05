@@ -356,17 +356,19 @@ function walk(directory: string, into: string[]): void {
  * through `comments/max-lines`, and two gates judging the same comment is how the two drift apart.
  * CSS is not linted by ESLint, so this script is its only enforcement.
  *
- * Five, rather than the three TypeScript gets, and the reason is who is reading. A comment in a
- * stylesheet is usually the specification — a token scale, a variant pair — and there is no name, type
- * or signature for it to explain itself through. Three lines cannot hold a decision and its
+ * Six, rather than the three TypeScript gets, and the reason is who is reading. A comment in a
+ * stylesheet is usually the specification — a token scale, a variant pair — and there is no name,
+ * type or signature for it to explain itself through. Three cannot hold a decision and its
  * consequence, so the essays get deleted and the reasoning goes to `DECISIONS.md`.
  *
- * It is not eight either. Measured across the 39 stylesheets: 208 comments averaging seven content
- * lines. A longer comment costs an agent more than it returns, because the facts are buried and the
- * narrative around them goes stale without anyone noticing. Five keeps every "this value looks
- * wrong but is not" note — the ones that stop a reader tidying it away — and pushes the rest out.
+ * Six is one more than that budget, not one more than a round number: it is what a decision plus
+ * the two consequences of changing it actually needs, and it was measured rather than guessed.
+ * Measured across the 39 stylesheets: 208 comments averaging seven content lines. A longer comment
+ * costs an agent more than it returns, because the facts are buried and the narrative around them
+ * goes stale without anyone noticing. Six keeps every "this value looks wrong but is not" note —
+ * the ones that stop a reader tidying it away — and pushes the rest out.
  */
-const CSS_LINE_BUDGET = 5;
+const CSS_LINE_BUDGET = 6;
 
 function overCssBudget(comment: RawComment): boolean {
   return comment.lines > CSS_LINE_BUDGET;

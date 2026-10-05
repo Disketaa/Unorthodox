@@ -1,28 +1,21 @@
-/*
- * Six theme cards in a bank, laid flat.
- *
- * No perspective and no per-card turn. The row was a ring of panels turned towards the middle
- * of the screen, which needed a measurement per card on every window resize and left six cards
- * that had to be looked at rather than read; what is worth keeping of it is the arrangement —
- * cards of one size, three across, the fourth wrapping rather than the row scrolling.
- *
- * Wrapping rather than scrolling or squeezing: a card too narrow for its own name is a card
- * nobody can read, and a bank the player has to swipe sideways is a bank they never see whole. A
- * second row is more cards rather than less of them.
- *
- * The row is capped at three cards and no more, which is what
- * `--Layout-ThemeCardsMaxWidth` is for. Six fixed-width cards fit easily across a desktop,
- * and then the fourth starts a second row by itself: a bank of six reading as a row of four
- * with a pair underneath. Capping the row's own width instead of asking how wide the window is
- * means the fourth always wraps, on every screen, and the bank is three and three.
- *
- * `align-content: start`, which is the default and is written down because the other value was
- * here and was wrong. Centring the lines of a box shorter than its own content pushes the first
- * line out through the top of the box, and the top of that box is where this player's own card
- * is: on the odd screens where the bank was still taller than the row, the cards came up through
- * it and drew over it. The rows now start where the row starts and the gap between them is the
- * only thing that spaces them, which cannot put anything anywhere else.
- */
+/* Six theme cards in a bank, laid flat. No perspective and no per-card turn. The row was a ring
+ * of panels turned towards the middle of the screen, which needed a measurement per card on
+ * every window resize and left six cards that had to be looked at rather than read; what is
+ * worth keeping of it is the arrangement — cards of one size, three across, the fourth wrapping
+ * rather than the row scrolling. Wrapping rather than scrolling or squeezing: a card too narrow
+ * for its own name is a card nobody can read, and a bank the player has to swipe sideways is a
+ * bank they never see whole. A second row is more cards rather than less of them. The row is
+ * capped at three cards and no more, which is what `--Layout-ThemeCardsMaxWidth` is for. Six
+ * fixed-width cards fit easily across a desktop, and then the fourth starts a second row by
+ * itself: a bank of six reading as a row of four with a pair underneath. Capping the row's own
+ * width instead of asking how wide the window is means the fourth always wraps, on every
+ * screen, and the bank is three and three. `align-content: start`, which is the default and is
+ * written down because the other value was here and was wrong. Centring the lines of a box
+ * shorter than its own content pushes the first line out through the top of the box, and the
+ * top of that box is where this player's own card is: on the odd screens where the bank was
+ * still taller than the row, the cards came up through it and drew over it. The rows now start
+ * where the row starts and the gap between them is the only thing that spaces them, which
+ * cannot put anything anywhere else. */
 .Root {
   display: flex;
   flex-wrap: wrap;
@@ -34,28 +27,20 @@
   margin: 0 auto;
 }
 
-/*
- * One card, and the box its shape is declared on.
- *
- * The slot rather than the card, so `ThemeCard` stays a closed component that knows nothing
- * about the size it is drawn at: the ratio is the grid's business and is declared on the node
- * the grid owns.
- *
- * A fixed width rather than a share of the row, because the six only read as six matching
- * panels when they do match, and a card that grew to fill whatever room it had would be a
- * slightly different size from its neighbours.
- *
- * The height is capped by the screen rather than left to the ratio alone. A card is as tall as
- * its width says, so on a device turned on its side a bank of six is taller than the window and
- * the second row of it is off the bottom: the six themes on offer, half of them invisible, on a
- * screen wide enough to show all three across. The cap lets a card get shorter and keeps its
- * width, so a scarce screen is a bank of six shorter cards rather than a bank of six where three
- * of them are below the fold. The ratio is the shape and the cap is the limit; on a screen with
- * room the ratio wins and nothing changes.
- *
- * The cap is for both rows rather than for one, since six cards are two rows and it is the pair
- * that has to be on the screen. See the token for why a share of one row was not enough.
- */
+/* One card, and the box its shape is declared on. The slot rather than the card, so `ThemeCard`
+ * stays a closed component that knows nothing about the size it is drawn at: the ratio is the
+ * grid's business and is declared on the node the grid owns. A fixed width rather than a share
+ * of the row, because the six only read as six matching panels when they do match, and a card
+ * that grew to fill whatever room it had would be a slightly different size from its
+ * neighbours. The height is capped by the screen rather than left to the ratio alone. A card is
+ * as tall as its width says, so on a device turned on its side a bank of six is taller than the
+ * window and the second row of it is off the bottom: the six themes on offer, half of them
+ * invisible, on a screen wide enough to show all three across. The cap lets a card get shorter
+ * and keeps its width, so a scarce screen is a bank of six shorter cards rather than a bank of
+ * six where three of them are below the fold. The ratio is the shape and the cap is the limit;
+ * on a screen with room the ratio wins and nothing changes. The cap is for both rows rather
+ * than for one, since six cards are two rows and it is the pair that has to be on the screen.
+ * See the token for why a share of one row was not enough. */
 .Slot {
   flex: 0 0 var(--Size-ThemeCardWidth);
   width: var(--Size-ThemeCardWidth);

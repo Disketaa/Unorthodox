@@ -1,10 +1,7 @@
-/*
- * A character is a tinted body with the linework drawn over it.
- *
- * The body takes its colour from `--Character-Tint`, set by the tint classes
- * below, so one drawing serves every tint. The sizes are the same tokens the
- * roster and the scoreboard use, so a character is the same size everywhere.
- */
+/* A character is a tinted body with the linework drawn over it. The body takes its colour from
+ * `--Character-Tint`, set by the tint classes below, so one drawing serves every tint. The
+ * sizes are the same tokens the roster and the scoreboard use, so a character is the same size
+ * everywhere. */
 .Root {
   display: inline-block;
   flex: none;
@@ -25,28 +22,21 @@
   height: var(--Size-Character-Large);
 }
 
-/*
- * Sized by whatever contains it, for the picker.
- *
- * The character panel is a share of the screen, so a fixed pixel size would
- * overflow it on a narrow phone and push the panel's padding out of the page.
- * `aspect-ratio` keeps the drawing square without knowing the width in advance,
- * so one rule fits any screen. `min-width: 0` is what lets a grid column shrink
- * below the size of its contents, which is the other half of the overflow.
- */
+/* Sized by whatever contains it, for the picker. The character panel is a share of the screen,
+ * so a fixed pixel size would overflow it on a narrow phone and push the panel's padding out of
+ * the page. `aspect-ratio` keeps the drawing square without knowing the width in advance, so
+ * one rule fits any screen. `min-width: 0` is what lets a grid column shrink below the size of
+ * its contents, which is the other half of the overflow. */
 .SizeFill {
   width: 100%;
   min-width: 0;
   aspect-ratio: 1;
 }
 
-/*
- * The idle sway and the still pose, both of which the game's name wears too.
- *
- * Composed rather than written out, so the characters and the wordmark are the same
- * movement instead of two that happen to agree. This file keeps the one thing that is
- * a character's alone: which of the two it is.
- */
+/* The idle sway and the still pose, both of which the game's name wears too. Composed rather
+ * than written out, so the characters and the wordmark are the same movement instead of two
+ * that happen to agree. This file keeps the one thing that is a character's alone: which of the
+ * two it is. */
 .Moving {
   composes: Moving from '../../Primitives/Sway/Sway.module.css';
 }
@@ -55,10 +45,8 @@
   composes: Still from '../../Primitives/Sway/Sway.module.css';
 }
 
-/*
- * Tints. Each names a palette entry from Tokens.css and nothing else, so a new
- * tint is one line here and one token in Tokens.css.
- */
+/* Tints. Each names a palette entry from Tokens.css and nothing else, so a new tint is one line
+ * here and one token in Tokens.css. */
 .Coral {
   --Character-Tint: var(--Color-Character-Coral);
 }

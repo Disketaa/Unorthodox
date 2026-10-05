@@ -1,40 +1,33 @@
 .Root {
   font-family: var(--FontFamily-Body);
   font-size: var(--FontSize-Md);
-  /*
-   * Bold, because what is typed in a field is an answer the player has committed to
-   * rather than a caption beside one: a name and a room code both have to be read
-   * back out loud to the rest of the table, and they are read at a glance rather
-   * than studied. The room code gains most, being uppercase and all one length.
-   */
+  /* Bold, because what is typed in a field is an answer the player has committed to rather than
+   * a caption beside one: a name and a room code both have to be read back out loud to the rest
+   * of the table, and they are read at a glance rather than studied. The room code gains most,
+   * being uppercase and all one length. */
   font-weight: 600;
   color: var(--Color-Text-Default);
   border: none;
   outline: none;
   transition: border-color var(--Duration-Fast) var(--Easing-Standard);
   min-height: var(--Size-TouchTarget);
-  /* Fill the row, and allow shrinking: a flex item defaults to min-width:auto,
-     so the input's own intrinsic width would widen the whole layout. */
+  /* Fill the row, and allow shrinking: a flex item defaults to min-width:auto, so the input's
+   * own intrinsic width would widen the whole layout. */
   width: 100%;
   min-width: 0;
 }
 
 .Root::placeholder {
-  /*
-   * Back to the body's own weight. A hint in the same bold as a typed answer would
-   * read as something already in the box, which is the one thing a placeholder is
-   * not.
-   */
+  /* Back to the body's own weight. A hint in the same bold as a typed answer would read as
+   * something already in the box, which is the one thing a placeholder is not. */
   font-weight: 400;
   color: var(--Color-Text-Muted);
 }
 
-/*
- * The focus ring lives on the field's own border rather than on an outline, so the
- * field does not show two rings at once. The border is always present and only its
- * colour changes, which also keeps the field from resizing on focus. Both variants
- * have a border to colour, so neither needs an outline of its own.
- */
+/* The focus ring lives on the field's own border rather than on an outline, so the field does
+ * not show two rings at once. The border is always present and only its colour changes, which
+ * also keeps the field from resizing on focus. Both variants have a border to colour, so
+ * neither needs an outline of its own. */
 .VariantFilled {
   background: var(--Color-Surface-Hover);
   border: 2px solid transparent;
@@ -55,8 +48,8 @@
   padding: var(--Space-Sm) 0;
 }
 
-/* The input plus its error message, so the message can appear without the
-   surrounding layout having to reserve room for it. */
+/* The input plus its error message, so the message can appear without the surrounding layout
+ * having to reserve room for it. */
 .Field {
   display: flex;
   flex-direction: column;

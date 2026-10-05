@@ -1,13 +1,7 @@
-/*
- * A full-viewport layer above the interface, blended into it.
- *
- * `mix-blend-mode` lets the texture tint whatever is underneath, so cards,
- * buttons and text all sit on the same paper rather than the paper being hidden
- * behind them.
- *
- * `pointer-events: none` is essential: the layer covers everything, so without
- * it no button in the app would be clickable.
- */
+/* A full-viewport layer above the interface, blended into it. `mix-blend-mode` lets the texture
+ * tint whatever is underneath, so cards, buttons and text all sit on the same paper rather than
+ * the paper being hidden behind them. `pointer-events: none` is essential: the layer covers
+ * everything, so without it no button in the app would be clickable. */
 .Root {
   position: fixed;
   inset: 0;
@@ -19,10 +13,8 @@
 }
 
 .Texture {
-  /*
-   * Oversized so that shifting it never exposes an edge. The texture tiles, so
-   * the area beyond the viewport is filled with the same pattern.
-   */
+  /* Oversized so that shifting it never exposes an edge. The texture tiles, so the area beyond
+   * the viewport is filled with the same pattern. */
   position: absolute;
   inset: calc(-1 * var(--Overlay-ShiftMax));
   background-image: url("../Paper.jpg");

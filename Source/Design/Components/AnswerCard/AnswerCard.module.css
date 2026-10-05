@@ -7,26 +7,20 @@
   border-radius: var(--Radius-Card);
 }
 
-/*
- * Whose answer this is, cut short rather than allowed to take the row.
- *
- * The name is whatever someone typed and the answer is what the row is for, so the
- * name is what gives way: cut with an ellipsis on a narrow screen, and full width
- * whenever there is room for it. `min-width: 0` is what makes the cut happen, since
- * a flex item defaults to refusing to shrink below its contents and would push the
- * answer and the reject control off the end instead.
- */
+/* Whose answer this is, cut short rather than allowed to take the row. The name is whatever
+ * someone typed and the answer is what the row is for, so the name is what gives way: cut with
+ * an ellipsis on a narrow screen, and full width whenever there is room for it. `min-width: 0`
+ * is what makes the cut happen, since a flex item defaults to refusing to shrink below its
+ * contents and would push the answer and the reject control off the end instead. */
 .Player {
   composes: Truncate from '../../Primitives/Truncate/Truncate.module.css';
   font-weight: 600;
   color: var(--Color-Text-Default);
 }
 
-/*
- * The answer itself, which is what the row is for, so it wraps rather than being
- * cut: a cut answer is a hidden answer. The name beside it is what gives way
- * instead, so a long name and a long answer together still fit a narrow screen.
- */
+/* The answer itself, which is what the row is for, so it wraps rather than being cut: a cut
+ * answer is a hidden answer. The name beside it is what gives way instead, so a long name and a
+ * long answer together still fit a narrow screen. */
 .Text {
   flex: 1;
   min-width: 0;

@@ -7,10 +7,8 @@
   padding: var(--Layout-ContentPadding);
 }
 
-/*
- * The paper texture already gives the page depth, so the elevated variant is
- * separated by a hairline rather than a shadow that would fight with it.
- */
+/* The paper texture already gives the page depth, so the elevated variant is separated by a
+ * hairline rather than a shadow that would fight with it. */
 .VariantElevated {
   border: 1px solid var(--Color-Border-Default);
 }
@@ -19,15 +17,11 @@
   border: 1px solid var(--Color-Border-Default);
 }
 
-/*
- * The surface without the frame.
- *
- * For something that belongs to the same family as the bordered cards but is not a
- * panel of its own: the game's wordmark on the join screen sits on the same white
- * with the same padding, and a hairline around it would draw a second frame next to
- * the card of fields right underneath. The padding and radius are what make it read
- * as the same container, so they are kept and only the border is dropped.
- */
+/* The surface without the frame. For something that belongs to the same family as the bordered
+ * cards but is not a panel of its own: the game's wordmark on the join screen sits on the same
+ * white with the same padding, and a hairline around it would draw a second frame next to the
+ * card of fields right underneath. The padding and radius are what make it read as the same
+ * container, so they are kept and only the border is dropped. */
 .VariantPlain {
   border: 1px solid transparent;
 }

@@ -12,26 +12,20 @@
   text-align: left;
 }
 
-/*
- * The mark and the words line up as one block when the note is centred, rather
- * than the mark drifting to the far edge of a centred line.
- */
+/* The mark and the words line up as one block when the note is centred, rather than the mark
+ * drifting to the far edge of a centred line. */
 .AlignCenter {
   text-align: center;
   justify-content: center;
 }
 
-/*
- * The mark is painted from the banner's own text colour, so one shape serves every
- * variant without a set of marks to keep in step with the palette. It is masked
- * rather than embedded, because the file on disk is a black silhouette and the mark
- * has to come out of the block in the colour of the words beside it.
- *
- * Sized in `em` against the banner's own text rather than in pixels, so it grows with
- * the wording. The box is a quarter larger than the line it sits on, and a little of
- * that is the margin `contain` fits, so the shape itself comes out at about the
- * text's own height.
- */
+/* The mark is painted from the banner's own text colour, so one shape serves every variant
+ * without a set of marks to keep in step with the palette. It is masked rather than embedded,
+ * because the file on disk is a black silhouette and the mark has to come out of the block in
+ * the colour of the words beside it. Sized in `em` against the banner's own text rather than in
+ * pixels, so it grows with the wording. The box is a quarter larger than the line it sits on,
+ * and a little of that is the margin `contain` fits, so the shape itself comes out at about the
+ * text's own height. */
 .Icon {
   flex-shrink: 0;
   width: 1.25em;
@@ -48,13 +42,11 @@
 
 .MarkLoading {
   mask-image: url('../../Icons/Loading.svg');
-  /*
-   * A third of a turn each way, over the slow duration, easing symmetrically
-   * about the middle. Symmetric is the point: a one-sided curve finishes one pass
-   * at a different speed than it starts the next, and the seam is where a loop
-   * built from one of them visibly hitches. One turn, not three, because a mark
-   * this small cannot show which way it is going and a fast one just shivers.
-   */
+  /* A third of a turn each way, over the slow duration, easing symmetrically about the middle.
+   * Symmetric is the point: a one-sided curve finishes one pass at a different speed than it
+   * starts the next, and the seam is where a loop built from one of them visibly hitches. One
+   * turn, not three, because a mark this small cannot show which way it is going and a fast one
+   * just shivers. */
   animation: BannerSpin var(--Duration-Spin) var(--Easing-Smooth) infinite;
 }
 
@@ -78,13 +70,9 @@
   min-width: 0;
 }
 
-/*
- * The value sits at the far end of the row, and the words take the space between.
- *
- * `margin-left: auto` rather than a `justify-content` on the block, because the
- * block's justify is the alignment variant's business and a value is never paired
- * with a centred one.
- */
+/* The value sits at the far end of the row, and the words take the space between. `margin-left:
+ * auto` rather than a `justify-content` on the block, because the block's justify is the
+ * alignment variant's business and a value is never paired with a centred one. */
 .Value {
   margin-left: auto;
   font-family: var(--FontFamily-Body);
@@ -92,11 +80,9 @@
   white-space: nowrap;
 }
 
-/*
- * White on every fill, so the four variants read as one kind of block. The tones are
- * mid-weight, so this is legible on the deep error and thin on the lighter three:
- * deepening those fills is the way to have both, rather than dropping to ink.
- */
+/* White on every fill, so the four variants read as one kind of block. The tones are
+ * mid-weight, so this is legible on the deep error and thin on the lighter three: deepening
+ * those fills is the way to have both, rather than dropping to ink. */
 .VariantInfo {
   background: var(--Color-Feedback-Info);
   color: var(--Color-Surface-Default);
@@ -117,26 +103,18 @@
   color: var(--Color-Surface-Default);
 }
 
-/*
- * The two quiet variants, and the only ones that are not blocks of status colour: a
- * setting the room chose and a note about this player's own tab, which are facts
- * rather than warnings, and four status fills would make them read as one.
- *
- * The two greys rather than a border, because a row of hairline frames reads as a
- * form to be filled in and this is a readout.
- */
+/* The two quiet variants, and the only ones that are not blocks of status colour: a setting the
+ * room chose and a note about this player's own tab, which are facts rather than warnings, and
+ * four status fills would make them read as one. The two greys rather than a border, because a
+ * row of hairline frames reads as a form to be filled in and this is a readout. */
 .VariantMuted {
   background: var(--Color-Surface-Hover);
   color: var(--Color-Text-Muted);
 }
 
-/*
- * The accent, for a note about this player's own session rather than about the room.
- *
- * The wash and the ink rather than the tint, because the words on it are body-sized:
- * the tint is the character body and is not a text step, while the ink is the step
- * made for exactly this size.
- */
+/* The accent, for a note about this player's own session rather than about the room. The wash
+ * and the ink rather than the tint, because the words on it are body-sized: the tint is the
+ * character body and is not a text step, while the ink is the step made for exactly this size. */
 .VariantAccent {
   background: var(--Accent-Wash);
   color: var(--Color-Accent-Ink);
