@@ -12,10 +12,10 @@ permissions:
 
 concurrency:
   group: pages
-  # Queued, never cancelled. `cancel-in-progress` killed a run while configure-pages still had a
-  # request queued against the Pages API, and the next run's configure-pages saw that stale request
-  # as higher priority and cancelled itself in turn, so no deploy ever completed. Waiting for the
-  # earlier run to finish costs a few minutes and keeps the Pages requests in order.
+  # GitHub's own Pages template value. A concurrency group holds one running and one pending run,
+  # and a new push replaces whatever is pending — `cancel-in-progress: true` would kill the running
+  # deploy as well, so an in-flight Pages deploy is never torn down. Note that pending runs are
+  # still superseded by design; only the newest run matters.
   cancel-in-progress: false
 
 jobs:
