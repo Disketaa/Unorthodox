@@ -1,14 +1,26 @@
 import type { JoinRoomConfig, TurnServerConfig } from 'trystero';
 
-/** Signaling relays used for matchmaking; only one needs to be reachable. Measured from a
- * Russian network in September 2026: nos.lol, relay.snort.social and nostr.mom answered a live
- * Nostr REQ; relay.damus.io and nostr.wine refused the handshake outright. */
+/** Signaling relays for matchmaking; two peers need only one relay in common, so the pool must
+ * be wide enough that any two networks share a survivor. Every host below answered an
+ * unauthenticated ephemeral-kind EVENT live. */
 export const RelayUrls = [
   'wss://nos.lol',
-  'wss://relay.snort.social',
   'wss://nostr.mom',
   'wss://relay.damus.io',
-  'wss://nostr.wine',
+  'wss://relay.snort.social',
+  'wss://relay.primal.net',
+  'wss://offchain.pub',
+  'wss://relay.nostr.net',
+  'wss://nostr-pub.wellorder.net',
+  'wss://nostr.oxtr.dev',
+  'wss://bitcoiner.social',
+  'wss://nostrue.com',
+  'wss://nostr.data.haus',
+  'wss://nostr.sathoarder.com',
+  'wss://nostr-relay.corb.net',
+  'wss://nostr.islandarea.net',
+  'wss://schnorr.me',
+  'wss://relay.mostro.network',
 ];
 
 /** STUN servers used to discover a public address for this device. Trystero's defaults are

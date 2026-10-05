@@ -8,9 +8,15 @@ function urlsOf(servers: RTCIceServer[]): string[] {
 }
 
 describe('Signaling relays', () => {
-  it('offers more relays than are needed, so one being unreachable is survivable', () => {
-    // A single unreachable relay must not take the room down with it.
-    expect(RelayUrls.length).toBeGreaterThan(1);
+  it('offers a pool wide enough that two networks still share a relay', () => {
+    // Peers meet only if one relay in the list is open on both sides, so a
+    // short list fails as soon as one network cannot reach part of it.
+    expect(RelayUrls.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it('keeps no known paywalled or auth-gated relay, which is retired on first announce', () => {
+    // Probed live: these refuse an unauthenticated EVENT, so they shrink the pool.
+    expect(RelayUrls.some(url => /nostr\.wine|nostr\.info|nostr\.land/.test(url))).toBe(false);
   });
 
   it('offers only wss relays, since a page served over https cannot use ws', () => {
