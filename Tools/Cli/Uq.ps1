@@ -71,12 +71,10 @@ function Get-ChangedFiles {
 function Invoke-RelatedTests {
     param([string[]]$Paths)
 
-    $code = $Paths | Where-Object { $_ -notmatch '\.css$' }
-    $css = $Paths | Where-Object { $_ -match '\.css$' }
-    $code = @($code)
-    $css = @($css)
+    # Wrapped in @() so `.Count` is 0 rather than $null when the filter drops everything.
+    $code = @($Paths | Where-Object { $_ -notmatch '\.css$' })
+    $css = @($Paths | Where-Object { $_ -match '\.css$' })
 
-    $failed = $false
     if ($code.Count -gt 0) {
         Invoke-Uq 'npx' (@('vitest', 'related', '--run') + $code) "vitest related ($($code.Count) module(s))"
     }
@@ -155,6 +153,7 @@ switch ($Command) {
         if ($changed.Count -eq 0) {
             Write-Host 'Nothing uncommitted. Running the whole suite.' -ForegroundColor DarkYellow
             Invoke-Uq 'npx' @('vitest', 'run') 'vitest run'
+            return
         }
         Write-Host "Tests related to $($changed.Count) changed file(s)." -ForegroundColor DarkYellow
         Invoke-RelatedTests $changed
