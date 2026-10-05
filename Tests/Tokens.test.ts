@@ -8,7 +8,7 @@ import { contrastRatio, parseHex } from '../Source/Core/Color';
  * the same to every player in the room. So the test reads the stylesheet instead of the
  * palette. It is out here rather than under `Source/` because it reads a file with `node:fs`,
  * and widening the app's TypeScript `types` to allow that would let browser code import Node
- * built-ins. `Scripts/` is outside the app's `tsconfig` and vitest still picks the file up. */
+ * built-ins. `Tests/` is outside the app's `tsconfig` and vitest still picks the file up. */
 const tokens = readFileSync(
   new URL('../Source/Design/Tokens/Tokens.css', import.meta.url),
   'utf8',

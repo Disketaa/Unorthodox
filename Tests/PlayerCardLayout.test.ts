@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { stylesheet } from './Stylesheet';
 
 /** The card of this browser's own seat, read from the stylesheet. Out here for the reason
- * `Scripts/ScreenLayout.test.ts` is: it reads a file with `node:fs`, and happy-dom does not lay
+ * `Tests/ScreenLayout.test.ts` is: it reads a file with `node:fs`, and happy-dom does not lay
  * out a flex column or match a clamp, so a rendered `PlayerCard` says nothing about the sizing. */
 const sheet = stylesheet('../Source/Design/Components/PlayerCard/PlayerCard.module.css');
 

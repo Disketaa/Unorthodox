@@ -231,9 +231,9 @@ body.PageFade {
 
   /* How long the shade over the room takes to come up before the count starts. Not part of the
    * count: `GameConfig.timing.startVeilMs` holds the same number for the code that decides when
-   * the first number belongs on screen, and `Scripts/CountVeil.test.ts` fails rather than
-   * letting the two drift. Under half a second, because this is not a wait the room is meant to
-   * sit through. */
+   * the first number belongs on screen, and `Tests/CountVeil.test.ts` fails rather than letting
+   * the two drift. Under half a second, because this is not a wait the room is meant to sit
+   * through. */
   --Duration-CountVeil: 300ms;
 
   /* How long the pop takes, how far it squashes, and how far apart two appearances in a row
@@ -601,8 +601,7 @@ body.PageFade {
    * the file that is a whole row rather than a single thing. A media query cannot hold a
    * `var()` at all, so the threshold has to be spelled out even though it is arithmetic over
    * the tokens above. Which is why that arithmetic is written here rather than left in the
-   * stylesheet: `Scripts/ScreenLayout.test.ts` resolves the tokens and compares them against
-   * it. */
+   * stylesheet: `Tests/ScreenLayout.test.ts` resolves the tokens and compares them against it. */
   --Layout-ColumnThreshold: 1056px;
 
   --Layout-ContentPadding: var(--Space-Md);

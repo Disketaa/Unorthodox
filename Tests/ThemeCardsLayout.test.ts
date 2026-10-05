@@ -4,7 +4,7 @@ import { stylesheet, tokenReader } from './Stylesheet';
 import { GameConfig } from '../Source/Game';
 import { ThemeIds, dealThemes, createRandom, randomFor } from '../Source/Core';
 /** The bank of theme cards, read from the stylesheet and the token file. Out here for the reason
- * `Scripts/PlayerBarLayout.test.ts` is: happy-dom does not lay out a flex row, so a rendered
+ * `Tests/PlayerBarLayout.test.ts` is: happy-dom does not lay out a flex row, so a rendered
  * `ThemeCards` says nothing about how wide the bank gets or how many cards fit across it. */
 const sheet = stylesheet('../Source/Design/Components/ThemeCards/ThemeCards.module.css');
 const card = stylesheet('../Source/Design/Components/ThemeCard/ThemeCard.module.css');

@@ -2,7 +2,7 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import checkFile from "eslint-plugin-check-file";
 import prettier from "eslint-config-prettier";
-import { commentPlugin } from "./Scripts/CommentRules.js";
+import { commentPlugin } from "./Tools/Comments/CommentRules.js";
 
 // Agent Manager worktrees hold their own tsconfig inside the repo, so the
 // default "walk up from cwd" root is ambiguous and every file fails to parse.
@@ -34,10 +34,10 @@ const layer = (folder, banned, { allowTrystero = false } = {}) => ({
 export default tseslint.config(
   { ignores: ["dist", "node_modules", ".kilo", "Source/Design/Tokens/Tokens.css"] },
   { languageOptions: { parserOptions: { tsconfigRootDir: rootDir } } },
-  // The tooling under Scripts/ is Node, not browser code, so it gets the Node globals and keeps
+  // The tooling under Tools/ is Node, not browser code, so it gets the Node globals and keeps
   // the same no-console rule the rest of the tree has.
   {
-    files: ["Scripts/**/*.{js,mjs}"],
+    files: ["Tools/**/*.{js,mjs}"],
     languageOptions: { globals: { process: "readonly", console: "readonly" } },
     rules: { "no-console": "off" },
   },

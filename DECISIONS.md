@@ -1,5 +1,24 @@
 ﻿# DECISIONS
 
+## 2026-10-05 — one folder per kind of file, and a `uq` alias that runs only what changed
+`Scripts/` held two unrelated things: the comment toolchain and the stylesheet layout suites. The
+comment tooling moved to `Tools/Comments/` and the suites to `Tests/`, so a folder now says what
+it is. Each also got its own `tsconfig.json` (`Tools/`, `Tests/`) off a shared `tsconfig.tools.json`:
+the root config includes only `Source`, so without them the editor reported `Cannot find name
+'node:fs'` on tooling that had been working all along, and `npm run typecheck` did not look at it
+either. `CommentShape.d.mts` declares the shape module's exports so the TypeScript audit typechecks
+without the shared module becoming `.ts` and acquiring a build step.
+
+`uq` is a PowerShell shim in `Tools/Cli`, which is on the PATH. It resolves to `npm run` and `npx`
+only, so it cannot drift from the npm scripts, and it exists for the two things npm cannot express.
+One is a path: `uq lint Source/Game/Reducer.ts`. The other is relatedness — `uq t` runs
+`vitest related` over the uncommitted files, which is 113 tests in half a second against the full
+936 in twenty. Relatedness is honest about its one blind spot: the layout suites read stylesheets
+with `node:fs` instead of importing them, so a token change is invisible to the import graph and a
+changed `.css` additionally runs `Tests/`. The alias derives the project root from its own path and
+records exit codes rather than exiting mid-script, because exiting from inside the run helper cost a
+second pass silently.
+
 ## 2026-10-01 — a theme card is a button that washes in its own accent and numbers itself
 The card is a `<button>` rather than a `Card` with a hover on a wrapper, and that is the only
 place in the design system where a surface is re-declared: `Card` paints an opaque background
@@ -72,7 +91,7 @@ a second screen size: how far a card is from the middle of the *screen* is a fac
 window, so an angle written for the card in that position is right at exactly one width. The
 turn is now measured per card and re-measured on `resize`, written onto each slot as
 `--ThemeCard-Yaw` and `--ThemeCard-Pitch`. `CardTurn.ts` is the arithmetic and is pure;
-`Scripts/ThemeCardsLayout.test.ts` asserts it as arithmetic, since happy-dom neither lays out
+`Tests/ThemeCardsLayout.test.ts` asserts it as arithmetic, since happy-dom neither lays out
 a row nor composes a transform. The angles are read out of the tokens by the hook through
 `getComputedStyle` rather than imported, so `Tokens.css` stays the one place an angle is
 written.
@@ -193,7 +212,7 @@ running total.
 `--Layout-PlayerBarSlots` has always said. They are the same number on purpose: a bar that drops
 a player the room still has is worse than a room that is too big for a bar. The token is the copy
 rather than the other way round because `Design` may not import `Game`, so
-`Scripts/PlayerBarLayout.test.ts` holds the two to each other and fails if either moves.
+`Tests/PlayerBarLayout.test.ts` holds the two to each other and fails if either moves.
 
 The bar's slot count is read off the document rather than written in the component, with a
 fallback for a page that has not loaded `Tokens.css` — and that fallback is a second copy of the
@@ -347,7 +366,7 @@ media query condition does not resolve `var()` at all — that is a rule of the 
 not of a tool, and `calc()` around a `var()` is no different, which the build confirmed
 by refusing to minify the first two attempts. So the number is a literal in the
 stylesheet, and the arithmetic it stands for lives in the token's comment. What keeps
-that duplication from drifting is `Scripts/ScreenLayout.test.ts`, which recomputes the
+that duplication from drifting is `Tests/ScreenLayout.test.ts`, which recomputes the
 threshold from the tokens and compares, so a change to any of the four values fails the
 suite instead of quietly leaving a room that opens at a width its columns no longer fit
 into. A token for the total was written and removed: nothing could read it, and a token
@@ -438,7 +457,7 @@ proportion to each word and "Быстро" is narrower than "Обычно" again
 `min-width: 0` goes with it, since a flex item's floor is its own content and one long
 word would otherwise push the row past the card.
 
-`Scripts/StackLayout.test.ts` reads the stylesheet with `node:fs` for the reason
+`Tests/StackLayout.test.ts` reads the stylesheet with `node:fs` for the reason
 `ScreenLayout.test.ts` does: happy-dom does not lay out a flex row, so a rendered
 `Stack` asserts nothing about the one thing `fill` exists to decide. It also holds
 `justify` and `align` to their own meanings, since folding the fill into either of
@@ -573,7 +592,7 @@ The wordmark went back to the fixed gold rather than the accent, on the same gro
 primary button and the host's crown: the name of the game should look the same to everyone
 in the room rather than wear one player's taste.
 
-`Scripts/ScreenLayout.test.ts` reads the stylesheet with `node:fs`, because none of this is
+`Tests/ScreenLayout.test.ts` reads the stylesheet with `node:fs`, because none of this is
 visible to a test runner: happy-dom does not lay out a grid, resolve a `minmax`, or match a
 width query, so a rendered `Screen` asserts nothing about the one thing it exists to decide.
 
@@ -671,7 +690,7 @@ tab scoping matters more: it is only a starting point the host may override, so 
 sharing a device should not both come back as the same character.
 
 ## 2026-10-01 — a script that names the comments which only repeat the code
-`npm run comments` (`Scripts/CommentAudit.ts`) walks `Source/`, joins each run of `//`
+`npm run comments` (`Tools/Comments/CommentAudit.ts`) walks `Source/`, joins each run of `//`
 lines into one paragraph so a sentence is judged whole, and reports every comment that
 shares little with the code beneath it. Three verdicts, and the split is the point: `noisy`
 is safe to delete, `stale` is an unresolved question or a hedge and needs a decision rather

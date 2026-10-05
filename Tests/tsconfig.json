@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.tools.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "preact",
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "paths": { "@/*": ["../Source/*"] },
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["**/*.ts"]
+}

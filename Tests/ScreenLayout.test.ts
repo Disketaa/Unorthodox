@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { stylesheet, tokenReader } from './Stylesheet';
 
 /** The frame a screen's containers are laid out on, read from the stylesheet. This is out here
- * rather than beside the component for the reason `Scripts/Tokens.test.ts` is: it reads a file
+ * rather than beside the component for the reason `Tests/Tokens.test.ts` is: it reads a file
  * with `node:fs`, and widening the app's TypeScript `types` to allow that would let browser
  * code import Node built-ins. And it has to read the file rather than render the component,
  * because the whole of this layout is invisible to a test runner. happy-dom does not lay out a

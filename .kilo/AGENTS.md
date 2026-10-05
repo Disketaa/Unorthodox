@@ -14,6 +14,20 @@ Vite, TypeScript (strict), Preact, CSS Modules, Vitest, ESLint, Prettier, Tryste
 No UI libraries, Tailwind, CSS-in-JS, state managers. New dependency only with entry in `DECISIONS.md` and reason.
 Before writing network adapter, read current Trystero docs (pin exact version, no `^`). Do not write its API from memory.
 
+# COMMANDS
+`Tools\Cli` is on the PATH: `uq` runs from any directory in a fresh terminal and calls the npm
+scripts, so it is a shortcut and not a second toolchain. Use the narrow form while working and the
+wide one before handing over.
+
+- `uq lint [paths...]` — ESLint, one path or the whole repo. `uq fix` for `--fix`.
+- `uq tc [path]` — `tsc` for `Source`, `Tools` or `Tests` alone; no path runs all three.
+- `uq t` — tests RELATED to uncommitted changes (`vitest related`). `uq t <filter>` for one suite.
+  `uq ta` is the full 936-test run, and `uq check` is `npm run check` in full.
+- `uq cm` / `uq cf` — comment audit / rewrite comments to the canonical shape.
+
+A changed `.css` also runs the `Tests/` suites: they read stylesheets with `node:fs` rather than
+importing them, so the import graph alone would report no tests for a token change.
+
 # ARCHITECTURE: MODULES AND DEPENDENCY DIRECTION
 ```
 Source/
@@ -107,7 +121,7 @@ ownLook: PlayerLook | undefined;
 
 Do not write the shape by hand. `npm run comments:format` rewrites every block comment in the tree
 to the canonical shape and `npm run comments:format:check` fails when one is off it; both run inside
-`npm run check`. The shape is defined once, in `Scripts/CommentShape.mjs`, and the ESLint rule and
+`npm run check`. The shape is defined once, in `Tools/Comments/CommentShape.mjs`, and the ESLint rule and
 the audit both import it — a formatter that disagreed with its own linter would be worse than none.
 Two notes on what it will not touch: a `//` comment, since it has no closing delimiter to reflow
 around, and a trailing comment, which has no indent and is reported by `comments/no-trailing` instead.
