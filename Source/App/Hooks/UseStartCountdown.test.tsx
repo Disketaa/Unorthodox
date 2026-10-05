@@ -131,7 +131,7 @@ describe('who gets counted in', () => {
   it('counts all three numbers even when this device heard about it late', () => {
     // The one that was broken: a device told about the phase after the host had already
     // started counting used to join the count wherever the host's clock said it was,
-    // which on a slow phone was halfway down � so it began at two and never played
+    // which on a slow phone was halfway down — so it began at two and never played
     // three. Counted locally, the news arriving late costs nothing but the delay.
     vi.setSystemTime(1_000_000 + 4_000);
     const room = mount(phaseOf('Writing', 1_000_000));

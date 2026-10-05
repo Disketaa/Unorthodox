@@ -3,6 +3,7 @@ import tseslint from "typescript-eslint";
 import checkFile from "eslint-plugin-check-file";
 import prettier from "eslint-config-prettier";
 import { commentPlugin } from "./Tools/Comments/CommentRules.js";
+import { encodingPlugin } from "./Tools/Encoding/EncodingRules.js";
 
 // Agent Manager worktrees hold their own tsconfig inside the repo, so the
 // default "walk up from cwd" root is ambiguous and every file fails to parse.
@@ -50,7 +51,11 @@ export default tseslint.config(
   // `uq fix` supplies the newline. CSS is not linted here, so the audit reports it instead.
   {
     files: ["**/*.{js,mjs,cjs,ts,tsx,mts}"],
-    rules: { "eol-last": ["error", "always"] },
+    plugins: { encoding: encodingPlugin },
+    rules: {
+      "eol-last": ["error", "always"],
+      "encoding/no-mojibake": "error",
+    },
   },
 
   // General rules for Source/ only

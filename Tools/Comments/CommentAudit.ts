@@ -8,6 +8,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { canonicalShape } from "./CommentShape.mjs";
+import { findMojibake } from "../Encoding/Mojibake.mjs";
 
 /** `over-budget` is its own verdict rather than being folded into `stale`. A stale comment says
  * something untrue; an over-budget one may be entirely accurate and merely too long. Reporting
@@ -20,7 +21,8 @@ type Verdict =
   | "split"
   | "trailing"
   | "shape"
-  | "eof";
+  | "eof"
+  | "mojibake";
 
 interface Finding {
   readonly file: string;
@@ -450,9 +452,9 @@ function main(): void {
     const sourceLines = source.split(/\r?\n/);
     const comments = collectComments(source, isCss);
     const adjacent = findAdjacent(source, comments);
-    // `eof` is not a comment finding, but this is the only gate a stylesheet passes through:
-    // ESLint does not read CSS, so a file that ends without a newline is reported here rather
-    // than left to a formatter nobody runs. TypeScript gets the same rule from `eol-last`.
+    // `eof` and `mojibake` are not comment findings, but this is the only gate a stylesheet passes
+    // through: ESLint does not read CSS, so both are reported here rather than left to a formatter
+    // nobody runs. TypeScript gets `eol-last` and `encoding/no-mojibake` instead.
     if (isCss && !source.endsWith("\n")) {
       findings.push({
         file: relative(process.cwd(), file).split(sep).join("/"),
@@ -461,6 +463,18 @@ function main(): void {
         reasons: ["no newline at end of file"],
         text: "",
       });
+    }
+    if (isCss) {
+      const damaged = findMojibake(source);
+      if (damaged !== null) {
+        findings.push({
+          file: relative(process.cwd(), file).split(sep).join("/"),
+          line: source.slice(0, damaged.index).split(/\r?\n/).length,
+          verdict: "mojibake",
+          reasons: [`decoded twice: ${damaged[0]}`],
+          text: "",
+        });
+      }
     }
     for (const comment of findTrailing(comments)) {
       findings.push({
@@ -512,6 +526,7 @@ function main(): void {
   const trailing = findings.filter((finding) => finding.verdict === "trailing");
   const shape = findings.filter((finding) => finding.verdict === "shape");
   const eof = findings.filter((finding) => finding.verdict === "eof");
+  const mojibake = findings.filter((finding) => finding.verdict === "mojibake");
 
   for (const [label, group] of [
     ["STALE", stale],
@@ -521,6 +536,7 @@ function main(): void {
     ["TRAILING", trailing],
     ["SHAPE", shape],
     ["EOF", eof],
+    ["MOJIBAKE", mojibake],
   ] as const) {
     if (group.length === 0) continue;
     console.log(`\n${label} (${group.length})`);
@@ -532,7 +548,7 @@ function main(): void {
   }
 
   console.log(
-    `\n${noisy.length} noisy, ${stale.length} stale, ${overBudget.length} over budget, ${split.length} split, ${trailing.length} trailing, ${shape.length} shape, ${eof.length} eof, of ${files.length} files.`,
+    `\n${noisy.length} noisy, ${stale.length} stale, ${overBudget.length} over budget, ${split.length} split, ${trailing.length} trailing, ${shape.length} shape, ${eof.length} eof, ${mojibake.length} mojibake, of ${files.length} files.`,
   );
   if (
     stale.length > 0 ||
@@ -541,7 +557,8 @@ function main(): void {
     split.length > 0 ||
     trailing.length > 0 ||
     shape.length > 0 ||
-    eof.length > 0
+    eof.length > 0 ||
+    mojibake.length > 0
   ) {
     process.exitCode = 1;
   }

@@ -1,5 +1,33 @@
 ﻿# DECISIONS
 
+## 2026-10-05 — mojibake is rejected, and half of it cannot be
+Eleven occurrences of decoded-twice text turned up in two files: ten em dashes read as CP1251 in the
+headings of this file, and one U+FFFD in `UseStartCountdown.test.tsx`. Both are fixed. A rule was
+worth it because mojibake is silent — nothing about a file full of it fails to compile, lint or
+render, so a type check will never mention it. `encoding/no-mojibake` in ESLint and a `mojibake`
+verdict in the CSS audit now share one signature list in `Tools/Encoding/Mojibake.mjs`, the same
+arrangement as `CommentShape.mjs`, because two lists would drift and a linter disagreeing with its
+own audit is worse than neither.
+
+The rule stops at four signatures, and the exclusion is the interesting half: `Р` and `С` lead the
+Cyrillic half of exactly the same damage, and this repo is written in Russian, so those two bytes
+cannot be told apart from `Галерея` or `Ромашка`. The first scan of the tree flagged 26 of them and
+every one was a real Russian word. A rule that cries wolf on every string in `Strings.ts` gets
+switched off, so half a detection is not worth having. Markdown passes through no gate at all, which
+is how the ten em dashes survived here in the first place.
+
+## 2026-10-05 — the CSS validator is told about `composes` rather than the stylesheets rewritten
+VS Code's built-in CSS service flagged `composes` as an unknown property on 13 lines across 10
+stylesheets. It is right about the spec and wrong about this code: `composes` is a CSS Modules
+directive that `postcss-modules` consumes and deletes, so a plain-CSS validator sees a property no
+browser will ever receive. ESLint cannot catch it either, because it does not read CSS. The three
+real fixes were all worse: rewriting the composition away loses the shared class, Stylelint is a
+dependency for a false positive, and leaving it trains people to ignore the CSS squiggles. So
+`.vscode/settings.json` sets `css.lint.unknownProperties: "ignore"`, one check off and the rest of the
+validation intact, and that file is now the only thing committed under `.vscode/` — the point of a
+shared setting is that it is shared. The cost is that a genuinely misspelled property in a stylesheet
+is no longer reported by the editor; nothing in CI covered it before either.
+
 ## 2026-10-05 — every file ends with exactly one newline
 The tree was split: 221 files ended with one newline and 136 with none, and Prettier wants one
 unconditionally, so `prettier --check` was failing on 136 files for a reason nobody was acting on.
@@ -817,7 +845,7 @@ together, and they do not — they become "don t" and "dont".
 Files are shorter now, which matters because `max-lines` skips comments and had left the count
 looking worse than it was.
 
-## 2026-09-30 вЂ” happy-dom as a dev dependency for the app smoke test
+## 2026-09-30 — happy-dom as a dev dependency for the app smoke test
 `vitest` runs in a node environment by default, so nothing rendered the app itself. A
 blank page passes every unit test, because the logic modules are tested in isolation.
 `happy-dom` provides a DOM for `Source/App/App.test.tsx`, which renders `<App />` once and
@@ -827,7 +855,7 @@ lost its children, leaving only the sibling background on the page. The same cod
 when the children are taken from a props object, which is the convention used everywhere
 else in the codebase. dev-only, not shipped to the browser.
 
-## 2026-09-30 вЂ” the paper overlay shifts a CSS custom property, set from the ref
+## 2026-09-30 — the paper overlay shifts a CSS custom property, set from the ref
 `design.md` forbids inline styles, but a value that changes every second cannot be a
 static class. `PaperBackground` writes `--Overlay-TextureX` / `--Overlay-TextureY` onto
 its own node through a ref, and the stylesheet consumes them in a `transform`. The
@@ -839,7 +867,7 @@ A looping 138 MB ProRes clip was replaced with a 185 KB seamless JPEG. The image
 enough not to compress, costs one request instead of decoding a video every second, and
 the same look comes from moving it by hand.
 
-## 2026-09-30 вЂ” the character art is inlined as components, not used as image files
+## 2026-09-30 — the character art is inlined as components, not used as image files
 The nine drawings arrived as SVGs with a coloured body and black linework. Tinting needs the
 body to be a fill rather than baked pixels, so each drawing is now a Preact component in
 `Source/Design/Characters/` whose body paths read `var(--Character-Tint)`. The alternative
@@ -848,7 +876,7 @@ black linework on top of the tint, so that needed a second ink-only copy of ever
 file per character with a plain `fill` is smaller, has no `Ink/` folder, and needs no extra
 CSS per character.
 
-## 2026-09-30 вЂ” the host remembers who each name is, so a returning player keeps their character
+## 2026-09-30 — the host remembers who each name is, so a returning player keeps their character
 A player closes the tab and comes back to the lobby, and the character must still be theirs.
 Nothing may be stored in the browser, and `sessionStorage` dies with the tab anyway, so the
 name is the only handle that survives: the host keeps `name -> playerId` in `HostRoster` and
@@ -859,7 +887,7 @@ scores, and a reload no longer adds a duplicate to the roster. The trade-off is 
 people who pick the same name are treated as one player, which is accepted for a party game
 that has no accounts.
 
-## 2026-09-30 вЂ” the character picker lives in the lobby, and is frozen once play starts
+## 2026-09-30 — the character picker lives in the lobby, and is frozen once play starts
 Picking a character needs to be changeable while people are still arriving, so the picker is
 part of `LobbyScreen` rather than the join screen. `SET_LOOK` is ignored by the reducer
 outside the Lobby phase, which freezes everyone's face for the game: a player cannot swap
@@ -867,13 +895,13 @@ characters mid-round, and the scoreboards stay meaningful. The picker is hidden 
 host has told the client which character it kept, so it never shows a character the rest of
 the room is not seeing.
 
-## 2026-09-30 вЂ” the character catalogue lives in Core, and its labels travel as a prop
+## 2026-09-30 — the character catalogue lives in Core, and its labels travel as a prop
 `CharacterId`, `CharacterColor` and `PlayerLook` are in `Core` because `Design` renders them,
 `Game` stores them and `Network` carries them, and `Core` is the only layer all three may
 import. `Design` may not import `Content`, so the picker's display names arrive as a
 `labels` prop rather than being read from `Strings` directly.
 
-## 2026-09-30 вЂ” the picker sizes its characters from the cell, not from a token
+## 2026-09-30 — the picker sizes its characters from the cell, not from a token
 The character grid was three columns of a fixed 96px, so on a narrow phone three drawings
 overflowed the column and pushed the panel's padding off the page. Two things were wrong
 together: the grid used a bare `1fr`, whose floor is `min-content`, so a column cannot shrink
@@ -884,7 +912,7 @@ drawings are square on a 512 viewBox, so that keeps them round at any width with
 query. The tint row is `auto-fill` with a floor of a comfortable target, so the discs wrap on
 a phone and spread on a wide screen rather than all eight squeezing onto one row.
 
-## 2026-09-30 вЂ” one pop, keyed on everything, rippling across a row
+## 2026-09-30 — one pop, keyed on everything, rippling across a row
 A character reacts to three things: it turns up, it changes tint, it is chosen. All three run one
 `Pop`, keyed on the character, its tint and a pulse count, and all three are the same movement.
 There are no variants, and getting there is the lesson: it went through two nested pops, then two
@@ -925,13 +953,13 @@ animates is left to the stylesheet and its own comment, since the test runner re
 imports to an empty module and reading the raw file out of a test is not worth the fight. The
 scoreboard passes `moving={false}`, because those rows re-order as scores land and a sway on top of
 that movement is noise.
-## 2026-09-30 вЂ” phase transitions and round scoring split out of the session and the actions
+## 2026-09-30 — phase transitions and round scoring split out of the session and the actions
 `HostSession` and `Game/GameActions.ts` passed the 150-line limit once the roster grew. The
 rules about when a phase may end now live in `Network/HostPhases.ts`, and the rejection rule
 and totals arithmetic in `Game/RoundScoring.ts`. This is a move, not a change: the same
 transitions are still the only things that can trigger each other.
 
-## 2026-09-30 вЂ” the tint row shows discs, not the artwork again
+## 2026-09-30 — the tint row shows discs, not the artwork again
 The character grid already draws all nine at full size, so repeating that artwork eight more
 times for the tints made the row heavy and harder to scan than the choice needs. `ColorSwatch`
 renders the tint as a plain disc instead, reading the same `--Character-Tint` custom property

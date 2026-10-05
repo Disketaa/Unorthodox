@@ -10,8 +10,10 @@ dist/
 .vite/
 temp/
 
-# IDE
-.vscode/
+# IDE. launch.json and tasks.json stay local, but settings.json is shared: it is where the
+# CSS validator is told that `composes` is a CSS Modules directive and not a typo.
+.vscode/*
+!.vscode/settings.json
 .idea/
 *.suo
 *.ntvs*
