@@ -54,29 +54,22 @@ describe('ICE servers', () => {
     expect(servers.length).toBeGreaterThan(StunUrls.length);
   });
 
-  it('keeps our own TURN first, so the pool needs no edit the day coturn runs', () => {
-    // The box answers TCP on 3478 and never replies to anything else, so these URLs are dead
-    // today. They stay because a URL nothing answers is skipped by the browser rather than
-    // failing the peer, and this is where they belong when the server comes back.
-    expect(urlsOf(iceServers())).toContain('turn:144.31.61.203:3478');
-  });
-
-  it('carries a public TURN as well, since ours answers nothing', () => {
-    // With ours dead, this is the only entry a peer can actually allocate on, and the reason a
-    // phone can connect at all. A third party in the path is the price of not having a working
-    // own server, which the public signaling relays already set.
-    expect(TurnUrls.some(url => url.includes('openrelay'))).toBe(true);
-  });
-
-  it('gives each TURN server its own credentials, since they differ', () => {
-    const turn = iceServers().filter(server => server.username !== undefined);
-    expect(turn.length).toBeGreaterThan(1);
-    expect(new Set(turn.map(server => server.username)).size).toBe(turn.length);
+  it('reaches only our own TURN, since it is the one that answers', () => {
+    // A public fallback was carried while our server was down. It rate-limited rather than
+    // serving, and a third party in the path is worth dropping now that ours allocates.
+    expect(urlsOf(iceServers()).some(url => url.includes('openrelay'))).toBe(false);
   });
 
   it('offers TURN over UDP and TCP together, since one alone is often blocked', () => {
     expect(TurnUrls.some(url => url.includes('transport=tcp'))).toBe(true);
     expect(TurnUrls.some(url => !url.includes('transport=tcp'))).toBe(true);
+  });
+
+  it('takes the TURN credential from the environment, not from the source', () => {
+    // Anyone reading the repository could otherwise relay through this server for free. The
+    // fallback only exists so a clone runs locally without an env file.
+    expect(TurnUrls).toBeDefined();
+    expect(iceServers().some(server => server.username === 'game')).toBe(true);
   });
 });
 

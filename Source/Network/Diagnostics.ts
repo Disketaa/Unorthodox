@@ -1,7 +1,7 @@
 import { createLogger, setLogLevel } from '@/Core';
-import { relayPool, iceServers } from './Signaling';
+import { relayPool } from './Signaling';
 import { fold, note, reportLine } from './Report';
-import { probeIcePath, reportClockSkew, reportIceGathering } from './PeerWatch';
+import { reportClockSkew, reportIceGathering } from './PeerWatch';
 import { getRelaySockets } from 'trystero';
 
 const log = createLogger('Diagnostics');
@@ -147,7 +147,6 @@ export function startDiagnostics(getPeers: () => Record<string, RTCPeerConnectio
   snapshot('initial', getPeers);
   reportIceGathering(getPeers);
   void reportClockSkew();
-  void probeIcePath(iceServers());
   return () => {
     clearInterval(timer);
     console.warn = consoleWarn;
