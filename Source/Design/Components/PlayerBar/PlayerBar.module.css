@@ -152,18 +152,23 @@
   animation: PlayerBarSpin var(--Duration-Spin) var(--Easing-Smooth) infinite;
 }
 
-/* A seat waiting on its player breathes the way a room waits on a host, the same breath the
- * start button takes, over a wash of that player's own tint. The tint is what makes the breath
- * readable at all: the shared movement is a brightness, and on the near-white every other seat
- * wears it clips straight to white and nothing moves. Washing the seat says whose player you
- * are waiting on and gives the brightness somewhere to go. */
-.Waiting {
-  composes: Pulse from '../../Primitives/Sway/Sway.module.css';
+/* A seat waiting on its player breathes the way a room waits on a host, over a wash of that
+ * player's own tint. Animated as the wash itself rather than as a `filter`: a filtered element
+ * is promoted to its own layer, and a layer raster snaps to whole pixels, which drew the seat
+ * one or two pixels off its neighbours. */
+.Waiting .Slot {
+  animation: PlayerBarBreathe var(--Duration-Pulse) var(--Easing-Smooth) infinite;
 }
 
-.Waiting .Slot {
-  background: var(--Color-PlayerBarSeatWash);
-  animation: var(--Pulse-Animation);
+@keyframes PlayerBarBreathe {
+  from,
+  to {
+    background: var(--Color-PlayerBarSeatFill);
+  }
+
+  50% {
+    background: var(--Color-PlayerBarSeatWash);
+  }
 }
 
 @keyframes PlayerBarSpin {
@@ -179,6 +184,11 @@
 @media (prefers-reduced-motion: reduce) {
   .Turning {
     animation: none;
+  }
+
+  .Waiting .Slot {
+    animation: none;
+    background: var(--Color-PlayerBarSeatWash);
   }
 }
 
