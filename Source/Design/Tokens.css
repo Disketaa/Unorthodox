@@ -478,16 +478,19 @@ body.PageFade {
    * there is. Two across is the base because it is the count that reads on the most screens. */
   --Size-ThemeCardWidthMax: 320px;
 
-  /* The narrowest a card may be and still be worth picking, and the number the queries over the
-   * count are derived from. It is a card whose name is not cut to nothing, which is why the row
-   * gives up a column rather than the cards giving up their names. */
+  /* The narrowest a card may be and still be worth picking: a card whose name is not cut to
+   * nothing. Nothing in the layout is derived from it -- both count thresholds sit well above
+   * the width three across would fall to -- but it is the floor the test measures every
+   * arrangement against, which is what keeps a future threshold honest. */
   --Size-ThemeCardWidthMin: 140px;
 
   /* The widths at which the bank changes count, as literals because a query cannot hold a
-   * `var()`. Each is the window at which one column becomes worth giving up or taking back,
-   * written out on `.Root` and checked against here in `Tests/ThemeCardsLayout.test.ts`. */
-  --Size-ThemeCardThreeAcrossWidth: 500px;
-  --Size-ThemeCardOneAcrossWidth: 330px;
+   * `var()`. Chosen rather than derived: two across is readable at 400px and three is readable
+   * below 600px, so these are where the bank stops copying the desktop arrangement. Written out
+   * on `.Root` and checked against here in `Tests/ThemeCardsLayout.test.ts`. */
+  --Size-ThemeCardThreeAcrossWidth: 600px;
+  --Size-ThemeCardOneAcrossWidth: 400px;
+
   /* How far the figure is pushed past the card's centre towards its bottom right corner. In
    * `em` — the figure's own size — rather than a length or a share of the card, so it holds at
    * every card size: the card narrows on a phone and a fixed inset would put the figure back

@@ -51,7 +51,7 @@
    * nothing, since the width is `100cqw` from inside the slot. At the root all five of these
    * were guaranteed-invalid and every element using one fell back to an inherited size. */
   --FontSize-ThemeCardInitial: calc(var(--Size-ThemeCardWidth) * 0.0775);
-  --FontSize-ThemeCard: calc(var(--Size-ThemeCardWidth) * 0.115);
+  --FontSize-ThemeCard: calc(var(--Size-ThemeCardWidth) * 0.14);
   --FontSize-ThemeCardMark: calc(var(--Size-ThemeCardWidth) * 1.45);
   --Space-ThemeCardPadding: calc(var(--Size-ThemeCardWidth) * 0.05);
   --Space-ThemeCardInset: calc(var(--Size-ThemeCardWidth) * 0.025);
@@ -282,6 +282,33 @@
   text-align: center;
   color: inherit;
   transition: font-size var(--Transition-Standard);
+}
+
+/* A card too short for the ticks takes them, so the name takes the height instead and centres
+ * itself in it — a word in the middle of a panel rather than a word and a stub of panel. It
+ * grows only here: on a card that kept its ticks, a growing name leaves them at the bottom edge
+ * rather than directly under it, which is the whole reason the name does not grow above. The
+ * threshold is the one `RoundMeter` hides itself at, restated because a container query holds
+ * no `var()`; `Tests/ThemeCardsLayout.test.ts` checks the two have not drifted apart. */
+@container (max-height: 110px) {
+  /* The card itself, not the name: the background figure and the hover size are both read from
+   * the card's own token, and an override on the name alone would put the two on different
+   * scales and shrink the word again the moment it was hovered. Width alone, because height is
+   * no longer what limits the type — the name below wraps rather than fitting itself to one
+   * line — so the height cap would only shrink text that already fits. */
+  .Root {
+    --Size-ThemeCardWidth: 100cqw;
+  }
+
+  .Name {
+    flex: 1 1 auto;
+    /* Wrapping is what lets the name fill a card far wider than it is tall, and there is no bar
+     * under it here to be pushed out of place by a second line: the ticks are hidden at this
+     * height. */
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
 }
 
 /* The name and the mark open up together on hover, each by its own share, and only the name

@@ -39,6 +39,16 @@
   transition: opacity var(--Transition-Standard);
 }
 
+/* A card too short to carry the row, which is the case when six of them are stacked: the name
+ * and the ticks together do not fit, and the ticks are the half that has to go — ten pipes of
+ * detail under a word that has to be read. Queried against the card rather than the window,
+ * since it is the card that ran out of height and a wide screen can hold either. */
+@container (max-height: 110px) {
+  .Root {
+    display: none;
+  }
+}
+
 /* A round already played: the same shape, the same colour, and greyed. Greyed by opacity rather
  * than by a paler colour, because every tick is the theme's own accent and a spent one has to
  * still be that accent — a bar where the spent part is a different hue is a bar showing two

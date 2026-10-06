@@ -104,14 +104,23 @@ describe('the row of theme cards', () => {
     const gap = narrowestGap();
     const two = (screen: number) => (screen - 2 * margin - gap) / 2;
     const three = (screen: number) => (screen - 2 * margin - 2 * gap) / 3;
-    // Three across starts where the cards stay worth picking, not before it.
+    // The claim these thresholds have to keep is the one that matters: no arrangement, at any
+    // width, ever draws a card too narrow for a name to be read on. Checked at the far edge of
+    // each regime, since that is where the narrowest card of that regime is.
     expect(three(threeAt)).toBeGreaterThanOrEqual(worth);
-    // One across starts where two would have fallen under it, so a narrow screen loses a column
-    // rather than shrinking both its cards below what a name can be read at.
-    expect(two(oneAt)).toBeLessThan(worth);
-    // And in between, two across is the count that reads on a phone.
-    expect(two(375)).toBeGreaterThanOrEqual(worth);
-    expect(three(375)).toBeLessThan(worth);
+    expect(two(oneAt + 1)).toBeGreaterThanOrEqual(worth);
+    // A card in the one-across regime is the screen less its margins, so it is as narrow as it
+    // ever gets at the narrowest screen worth laying out.
+    expect(254 - 2 * margin).toBeGreaterThanOrEqual(worth);
+    // Neither threshold is a readability floor, and pretending otherwise would be a test that
+    // passes for the wrong reason: two across at the one-across width and three across well
+    // below the three-across width are both still readable. They are where the bank stops
+    // copying the desktop arrangement -- six tall cards filling a phone, rather than two rows
+    // in a quarter of it.
+    expect(two(oneAt)).toBeGreaterThanOrEqual(worth);
+    const threeWouldReadAt = 3 * worth + 2 * gap + 2 * margin;
+    expect(threeWouldReadAt).toBeLessThan(threeAt);
+    expect(oneAt).toBeGreaterThan(375);
   });
   it('holds the bank to three cards wide', () => {
     // The fourth would otherwise start a row of its own beside three, reading as a row of four
@@ -128,14 +137,34 @@ describe('the row of theme cards', () => {
     expect(sheet.declaration(Root, 'flex')).toBe('11auto');
     expect(sheet.declaration(Root, 'min-height')).toBe('0');
   });
-  it('sizes the card from the container it is in, and nowhere else', () => {
-    // The card's width is what the row gave it, and the only way a card can read a width it was
-    // not told is by asking the box that was given it. `inline-size` rather than `size`, because
-    // two-dimensional containment makes a stretched `height: 100%` resolve against nothing.
-    expect(sheet.declaration(Slot, 'container-type')).toBe('inline-size');
-    expect(sheet.declaration(SlotCard, '--Size-ThemeCardWidth')).toBe('100cqw');
+  it('sizes the card from the box it was given, on both axes', () => {
+    // The card is not only as wide as its slot: six of them stacked are short, and a card sized
+    // on width alone draws a name belonging on a wide panel onto one sixth of that height, which
+    // overflows it and scrolls the page. Both axes have to be readable to the card, which is why
+    // the container is two-dimensional and the slot is given its height rather than measuring it.
+    expect(sheet.declaration(Slot, 'container-type')).toBe('size');
+    expect(sheet.declaration(Slot, 'height')).toBe('100%');
+    expect(sheet.declaration(SlotCard, '--Size-ThemeCardWidth')).toBe(
+      'min(100cqw,100cqh*10/7)',
+    );
     expect(sheet.declares(Slot, '--Size-ThemeCardWidth')).toBe(false);
     expect(sheet.declares(Root, '--Size-ThemeCardWidth')).toBe(false);
+  });
+  it('takes the ticks and gives the height to the name, at one card height', () => {
+    // Six cards stacked are short: the name and the ticks do not fit together, and the ticks are
+    // the half that goes — ten pipes of detail under a word that has to be read. The name then
+    // takes the card and centres itself in it. Both are asked of the card rather than the window,
+    // since it is the card that ran out of height and a wide screen can hold either.
+    //
+    // The threshold is written out twice, in two components, because a container query holds no
+    // `var()`. Checked here rather than trusted: if the meter hides itself at a height the name
+    // does not know about, one card gets a word pinned to the top and a stub of panel under it.
+    const hiding = meter.text.match(/@container \(max-height: (\d+)px\)/);
+    const filling = card.text.match(/@container \(max-height: (\d+)px\)/);
+    expect(hiding?.[1]).toBeDefined();
+    expect(filling?.[1]).toBe(hiding?.[1]);
+    expect(meter.flat).toContain('display:none');
+    expect(card.flat).toContain('flex:11auto');
   });
   it('puts the card own sizes on the card, since a share resolves where it is declared', () => {
     // A custom property''s value is substituted where it is declared, not where it is used: a
@@ -146,7 +175,7 @@ describe('the row of theme cards', () => {
     expect(tokens).not.toContain('--FontSize-ThemeCard:');
     expect(tokens).not.toContain('--Space-ThemeCardPadding:');
     const shares: [string, string][] = [
-      ['--FontSize-ThemeCard', '0.115'],
+      ['--FontSize-ThemeCard', '0.14'],
       ['--FontSize-ThemeCardMark', '1.45'],
       ['--FontSize-ThemeCardInitial', '0.0775'],
       ['--Space-ThemeCardPadding', '0.05'],
@@ -518,7 +547,7 @@ describe('the tokens behind the bank', () => {
     // heading over something, and a share of the card's width rather than a size of its
     // own: the card narrows on a phone, and a flat size would be a caption again there.
     const size = cardToken('--FontSize-ThemeCard').replace(/\s+/g, '');
-    expect(size).toBe('calc(var(--Size-ThemeCardWidth)*0.115)');
+    expect(size).toBe('calc(var(--Size-ThemeCardWidth)*0.14)');
     expect(card.declaration(Name, 'font-size')).toBe('var(--FontSize-ThemeCard)');
   });
 it('keeps the name off the frame of its own card', () => {

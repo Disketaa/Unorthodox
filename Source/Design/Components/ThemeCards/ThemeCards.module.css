@@ -1,17 +1,15 @@
 /* Six theme cards in a bank, laid flat and filling the room they are given in both directions.
  * `1fr` on both axes, so a card is the width and height that is actually there rather than one
- * predicted from the viewport before the row was laid out, and none is left over. `auto-fit`
- * could not do this: fitting a track is a per-track question and this is about the row filling.
- * The count is a choice between widths rather than a consequence of one, so it is stated — one
- * query per count, each about the cards and not about the window. */
+ * predicted from the viewport before the row was laid out. The count is a choice between widths
+ * rather than a consequence of one, so it is stated: one query per count, each about the cards. */
 .Root {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-auto-rows: minmax(0, 1fr);
   justify-content: center;
   gap: var(--Space-ThemeCardsGap);
-  /* Three cards and the two gaps, so the fourth always starts a row of its own rather than
-   * reading as a row of four and a pair. A cap rather than the count, which is above. */
+  /* Three cards and the two gaps, so the fourth starts a row of its own rather than reading as
+   * a row of four and a pair. */
   max-width: var(--Layout-ThemeCardsMaxWidth);
   margin: 0 auto;
   /* The parent's whole width, because a row of `1fr` tracks cannot size itself: the tracks are
@@ -19,48 +17,48 @@
    * it is inside a centred stack, there is nothing to divide and the bank collapses. */
   width: 100%;
   /* The height its parent has left rather than the height its cards ask for, or six of them
-   * scroll half the themes below the fold. `min-height: 0` is what allows that: a flex item's
-   * floor is its own contents. */
+   * scroll half the themes below the fold. `min-height: 0` is what allows that. */
   flex: 1 1 auto;
   min-height: 0;
 }
 
-/* Three across, from the width where a card stays worth picking: below it the third column is
- * too narrow to read, which is what two across exists for. The threshold restates
- * `--Size-ThemeCardThreeAcrossWidth`, a query holding no `var()`. */
-@media (min-width: 500px) {
+/* Three across, from `--Size-ThemeCardThreeAcrossWidth`, restated because a query holds no
+ * `var()`: a wide screen, where six in a row read as a bank. */
+@media (min-width: 600px) {
   .Root {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-/* One across, on a screen too narrow for two cards worth picking. */
-@media (max-width: 330px) {
+/* One across on a phone, six cards filling it. A choice rather than a necessity — two across is
+ * still readable this far down — and the reason is that two rows in a quarter of a phone is two
+ * rows nobody looks at, where six tall cards fill the screen. */
+@media (max-width: 400px) {
   .Root {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 /* One card, and the box its size is decided on. The slot rather than the card, so `ThemeCard`
- * stays a closed component that knows nothing about the size it is drawn at. `inline-size`
- * rather than `size`: a container cannot be sized by the units resolving against it, and
- * two-dimensional containment makes a stretched `height: 100%` resolve against nothing. No
- * width here either, since containment takes the contents out of the sizing — a slot measured
- * from its own contents would have none. Stretched across its track, it is given one. */
+ * stays a closed component that knows nothing about the size it is drawn at. `size` rather than
+ * `inline-size`, because six of them stacked are short: a card sized on width alone draws a
+ * wide panel's name onto a panel a sixth of that height, which overflows it and scrolls the
+ * page. Containment takes the contents out of the sizing, so the slot measures nothing and is
+ * given both of its axes instead. */
 .Slot {
-  container-type: inline-size;
+  container-type: size;
   /* Full height of the row, which is what keeps the rows touching: a card shorter than its row
    * and centred in it leaves the slack as a band between one row and the next. */
   height: 100%;
 }
 
-/* The card's width, which is the token every size on a card is a share of — the name, the
- * padding, the figure behind it, the ticks — so they follow the width the row gave rather than
- * a guess at it. On the card and not on the slot: container units are substituted when a custom
- * property is computed, against the container of the element declaring it, and on the slot that
- * is its own absent container, which falls back to a constant viewport width. */
+/* The card's width, and the token every size on a card is a share of: the name, the padding,
+ * the figure behind it, the ticks. The smaller of the two axes, the second term being the width
+ * a card this tall needs to keep its shape. On the card and not on the slot, since container
+ * units are substituted against the container of the element declaring them and the slot's own
+ * is absent — which falls back to a constant viewport width. */
 .Slot > * {
-  --Size-ThemeCardWidth: 100cqw;
+  --Size-ThemeCardWidth: min(100cqw, 100cqh * 10 / 7);
   height: 100%;
   width: 100%;
 }
