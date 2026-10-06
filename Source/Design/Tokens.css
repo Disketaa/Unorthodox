@@ -595,32 +595,48 @@ body.PageFade {
   --Layout-ScreenPaddingVertical: clamp(var(--Space-Lg), min(9vw, 7dvh), var(--Space-2xl));
   --Layout-ScreenPaddingHorizontal: var(--Space-Lg);
 
-  /* How wide the card of this browser's own seat is: a plank along the top of the game, and
-   * never wider than the frame it stands in. A wide cap for a short card, because the two lines
-   * of words run along it and the face stands at the end: the card's width is what the name is
-   * written across, so it is a line length rather than a square's side. The `100%` floor is the
-   * frame — a card solved against the viewport is a card that can be wider than the page it is
-   * drawn in. */
-  --Size-PlayerCardWidth: min(180px, 100%);
+  /* How many hexes the bar across the top of a game holds, as a count rather than a length: a
+   * count is something the bar acts on in render, which is what a stylesheet cannot do. Twelve
+   * because that is the room's limit, so the two are one number kept honest by
+   * `Tests/PlayerBarLayout.test.ts`. */
+  --Layout-PlayerBarSlots: 12;
 
-  /* How big the face at the end of the card is. A clamp up from the roster's small face, and
-   * capped well below the picker's: the card is a strip and the face is not allowed to be
-   * taller than the two lines of words beside it, or the strip becomes a square again and takes
-   * the height the theme bank needs. */
-  --Size-PlayerCardCharacter: clamp(var(--Size-Character-Small), 11vw, 56px);
+  /* How wide one hexagon is. Derived from the row rather than guessed, because the bar's width
+   * is a function of it: a seat hands back most of its own width, so twelve seats do not take
+   * twelve of anything. `--Layout-PlayerBarAdvance` is what one seat of width is worth once
+   * that handing back is counted — eleven seats at their reduced advance, plus the last one
+   * whole — and the seat is then the share of the screen that leaves the row exactly filling
+   * it. */
+  --Size-PlayerBarSlot: clamp(
+    24px,
+    calc(
+      (100vw - 2 * var(--Layout-ScreenPaddingHorizontal)) / var(--Layout-PlayerBarAdvance)
+    ),
+    64px
+  );
 
-  /* How big the name in the card is written. A step up from a caption: this is the player's own
-   * name, which is the one thing in the card that is read rather than recognised, and it is
-   * read at a glance from arm's length. */
-  --FontSize-PlayerCardName: clamp(var(--FontSize-Sm), 4.5vw, var(--FontSize-Lg));
+  /* The numbers that turn the row from a line of hexagons into a honeycomb: the width each seat
+   * hands back, and the drop the even seats take. Both are shares of the seat, so they hold
+   * their ratio as the clamp moves. `--Layout-PlayerBarAdvance` is what one seat's width is
+   * worth to the row once that handing back is counted: every seat but the last advances `1 -
+   * 0.6 + 0.06`, and the last one is whole, so the row is `0.54 + 0.46 × seats` across. */
+  --Offset-PlayerBarHoneycomb: calc(var(--Size-PlayerBarSlot) * -0.6);
+  --Offset-PlayerBarZigzag: calc(var(--Size-PlayerBarSlot) * 0.85);
+  --Layout-PlayerBarAdvance: calc(0.54 + var(--Layout-PlayerBarSlots) * 0.46);
+  /* A seam rather than a gap, and thin: two hexagons tiling flat are one shape with a line
+   * drawn across it, and without this the row reads as a band of grey with characters inside
+   * it. */
+  --Space-PlayerBarSeam: calc(var(--Size-PlayerBarSlot) * 0.06);
 
-  /* How big the standing is written, and how tall the line it is written on. Two steps above
-   * the name, because the score is what the card is for: the name says who is looking at it and
-   * the figure says where they stand, and the two are not equally worth a glance. The line
-   * height is a multiple of the size rather than a number, so the figure cannot outgrow the
-   * space the card gives it on a screen where the clamp is at its floor. */
-  --FontSize-PlayerCardScore: clamp(var(--FontSize-Lg), 7vw, var(--FontSize-Xl));
-  --Size-PlayerCardLine: calc(var(--FontSize-PlayerCardScore) * 1.2);
+  /* How far in from the edge of the hexagon the face sits. A share of the seat rather than a
+   * padding, because the hexagon's corners are what make it a hexagon: a face drawn to the
+   * corners spills past the sloped edges and the shape reads as a square. */
+  --Inset-PlayerBarFace: 18%;
+
+  /* How wide the crown on the host's hexagon is, as a share of the seat it sits on. Small,
+   * because it shares the hexagon with the face rather than covering it. Pinned to the seat's
+   * own top edge, which is what keeps it off the sloped corners and clear of the face box. */
+  --Size-PlayerBarCrown: 25%;
 }
 
 :root {

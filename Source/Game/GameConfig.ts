@@ -62,9 +62,9 @@ export const GameConfig = {
     answerMaxLength: 80,
     roomCodeLength: 4,
     minPlayers: 2,
-    /** How many players a room holds. The bar of players across the top of a game holds this
-     * many, so the room and the bar are the same size and nothing is dropped from one and kept
-     * in the other. */
-    maxPlayers: 16,
+    /** How many players a room holds. The bar of hexes across the top of a game holds this many
+     * in one row, so the room and the bar are the same size and nothing is dropped from one and
+     * kept in the other. */
+    maxPlayers: 12,
   },
 };

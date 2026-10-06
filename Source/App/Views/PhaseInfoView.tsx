@@ -4,9 +4,9 @@ import { Strings } from '@/Content';
 import type { GameSessionView } from '../Hooks/UseGameSession';
 import type { PhaseViewProps } from './LobbyView';
 
-/** What the room is doing, in one sentence, on the block above the theme bank. The only thing
- * here that says what phase this is: the bank is the thing being done, the card says where the
- * player stands. In this browser's own voice, since choosing a theme is the point. */
+/** What the room is doing, in one sentence, at the very top of the game. The only thing here
+ * that says what phase this is: the bank is the thing being done and the hexes are who is
+ * playing it. In this browser's own voice, since choosing a theme is the point. */
 function phaseMessage(view: GameSessionView, name: string): string {
   switch (view.phase) {
     case 'Writing':

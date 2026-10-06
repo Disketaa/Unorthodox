@@ -1,0 +1,119 @@
+/* The row of hexes across the top of a game. One strip with no card and no frame of its own: a
+ * border around it would put the game's own content inside something. One row, never wrapping
+ * and never scrolling, because twelve seats have to fit a phone and a second row would push the
+ * game down the screen in every room. Sizing each seat from the viewport rather than from a
+ * length is what lets twelve fit the narrowest one. */
+.Root {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* One seat: the hexagon, plus whatever hangs off it. The column rather than the hexagon itself,
+ * so the crown is outside the mask — a shape cut with a mask cuts anything inside it. Each seat
+ * hands back the part of its box the drawing leaves empty, less the seam kept between
+ * neighbours, and that handing back is the honeycomb: the drawing carries a margin, so
+ * neighbours must advance flat-to-flat rather than box-to-box or the flats never meet. Taken
+ * off the margin, not added as a `gap`, which undoes the tiling. */
+.Seat {
+  position: relative;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  /* The seat's own width, so the shares inside it — the crown, anything hung off a seat — have
+   * a box to resolve against. Without it this box is shrink-to-fit around its hexagon and every
+   * percentage inside it falls back to nothing. */
+  width: var(--Size-PlayerBarSlot);
+  margin-right: calc(var(--Offset-PlayerBarHoneycomb) + var(--Space-PlayerBarSeam));
+}
+
+/* Every other seat drops three quarters of the drawing's height, the other half of the tiling:
+ * a hexagon's ranks are a hexagon apart along and three quarters of a hexagon down, so the
+ * dropped seat lands in the hollow of the two it is threaded between. Even seats only, from the
+ * second onward: the first is the host's and stays on the top edge, where the bar's own top
+ * edge is measured from. */
+.Seat:nth-child(even) {
+  margin-top: var(--Offset-PlayerBarZigzag);
+}
+
+/* The last seat hands nothing back. It has no neighbour to interleave with, and the margin
+ * would otherwise take half a hexagon off the row's own width, which is what left the final
+ * face drawn half off the edge of the screen. */
+.Seat:last-child {
+  margin-right: 0;
+}
+
+/* The seat, cut as the game's own hexagon. A mask rather than a `clip-path` polygon, because
+ * the drawing is not a regular hexagon: its corners are rounded and its top and bottom points
+ * are pulled off centre, and a regular six-point polygon would be a different shape wearing its
+ * place. Filled to the box rather than contained, so the drawing's proportions are the seat's
+ * and the face inside it is measured against the same box. */
+.Slot {
+  position: relative;
+  width: var(--Size-PlayerBarSlot);
+  aspect-ratio: 1;
+  background: var(--Color-Surface-Hover);
+  mask: url('../../Icons/Hexagon.svg') center / 100% 100% no-repeat;
+}
+
+/* The character inside the hexagon. Held well in from the sloped edges, since the crown takes
+ * the top of the seat on the host's hexagon alone and the face has to sit below it either way —
+ * one inset for every seat, so no face moves when a player becomes the host. */
+.Face {
+  position: absolute;
+  inset: var(--Inset-PlayerBarFace);
+}
+
+/* The host's crown, inside the top of the hexagon rather than riding above it. Inside because a
+ * seat is only a quarter of a hexagon wider than the rank beside it, so a crown hung outside
+ * its seat spends most of its width over a neighbour. Out of the flow, so it costs the seat no
+ * height and every face stays on one line. In the room's yellow rather than the viewer's
+ * accent, since who is hosting is a fact the whole room agrees on. Its sway rides `translate`
+ * while the animation uses `transform`, so the two compose rather than overwrite each other. */
+.Crown {
+  composes: Moving from '../../Primitives/Sway/Sway.module.css';
+  /* The sway ships as a variable and whoever wears it writes this one line, so a second copy of
+   * the movement cannot quietly fork from the first. Composing the class alone does nothing: it
+   * publishes the animation, it does not run it. */
+  animation: var(--Sway-Animation);
+  position: absolute;
+  top: 0;
+  left: 50%;
+  translate: -50% 0;
+  width: var(--Size-PlayerBarCrown);
+  aspect-ratio: 1;
+  color: var(--Color-Room-Yellow);
+  pointer-events: none;
+}
+
+/* The fill step rather than the text one, because it is a mark rather than words, and the same
+ * yellow the lobby's crown and the Start button use: it says who is hosting, which is a fact
+ * the whole room would agree on, so it must not follow the viewer's own tint. `display: block`
+ * is load-bearing, not tidiness: this is a span, and a span is inline, and width and height do
+ * not apply to an inline box at all — it draws at nothing. Its parent only blockifies itself by
+ * being absolutely positioned; nothing blockifies this one. */
+.CrownIcon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: currentColor;
+  mask: url('../../Icons/Crown.svg') center / contain no-repeat;
+}
+
+/* The local player, in the accent wash rather than a ring. The same fill the accent banner
+ * uses, and for the same reason: it is the one note in the interface that follows the viewer's
+ * own tint, and marking yourself is that kind of note. A fill rather than a border, because a
+ * border would have to follow the mask and a ring inside a hexagon is a ring inside a ring. */
+.Self .Slot {
+  background: var(--Accent-Wash);
+}
+
+/* A player the host has lost. Held back rather than removed, and by the same half the lobby's
+ * own chip held back: the seat is still theirs and they may be back, and a bar that loses a
+ * seat reads as a smaller room rather than as a player who dropped. The whole hexagon goes
+ * quiet, face and all, so there is nothing left to keep in step. */
+.Offline {
+  opacity: 0.5;
+}

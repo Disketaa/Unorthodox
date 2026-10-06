@@ -11,7 +11,7 @@ import type { GameSessionView } from './Hooks/UseGameSession';
 import { SessionRole, BlockedReason } from './Session';
 import { LobbyView } from './Views/LobbyView';
 import { PhaseInfoView } from './Views/PhaseInfoView';
-import { PlayerCardView } from './Views/PlayerCardView';
+import { PlayerBarView } from './Views/PlayerBarView';
 import { ThemeCardsView } from './Views/ThemeCardsView';
 
 export interface GameRoomProps {
@@ -42,15 +42,15 @@ function blockedMessage(reason: BlockedReason, roomLimit: number): string {
   }
 }
 
-/** The stage the game plays on: a note at the top with this player's card under it, themes
- * below. The bank sits under the card rather than in the middle of what is left: it was
- * measured against the viewport, so it moved as the note above it changed height. */
+/** The stage the game plays on: what the room is doing at the very top, the room's hexes under
+ * it, and the themes below. The bank sits under the note rather than in the middle of what is
+ * left: it was measured against the viewport, so it moved as the note above it changed height. */
 function GameScene({ view }: { view: GameSessionView }) {
   return (
     <Stack align="Center" gap="Md" grow clip>
       <Stack gap="Md" align="Center">
         <PhaseInfoView view={view} />
-        <PlayerCardView view={view} />
+        <PlayerBarView view={view} />
       </Stack>
       <ThemeCardsView roomCode={view.roomCode} />
     </Stack>
