@@ -9,7 +9,9 @@ const SkewWorthWarningAbout = 5;
  * every relay open and nothing logged. */
 export async function reportClockSkew(): Promise<void> {
   try {
-    const response = await fetch(location.origin + '/', { method: 'HEAD', cache: 'no-store' });
+    // The document's own URL rather than the site root: a static host answers `HEAD /` with 404,
+    // and a 404 carries no Date header worth trusting, so the probe read as broken there.
+    const response = await fetch(location.href, { method: 'HEAD', cache: 'no-store' });
     const serverDate = response.headers.get('date');
     if (serverDate === null) {
       note('warn', 'no Date header, so the clock skew could not be read');
