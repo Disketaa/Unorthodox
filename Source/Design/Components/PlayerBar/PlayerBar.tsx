@@ -10,6 +10,9 @@ export interface PlayerBarEntry {
   /** What this player is called, drawn above their hexagon. Cut short in the drawing rather than
    * in the data, so a long name stays whole for anything that can read it. */
   name: string;
+  /** What they are on across the rounds so far, drawn in place of the name under the pointer.
+   * Zero in the phases that send no scores, which is every phase before the first is settled. */
+  score: number;
   character: CharacterId;
   color: CharacterColor;
   /** Whether the host still has this player on the line. */

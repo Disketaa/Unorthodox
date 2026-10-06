@@ -7,7 +7,14 @@ import { PlayerBar, type PlayerBarEntry } from './PlayerBar';
 
 /** A room as the bar draws it. */
 function player(overrides: Partial<PlayerBarEntry> = {}): PlayerBarEntry {
-  return { id: 'p0', name: 'Anya', character: 'Butterfly', color: 'Coral', ...overrides };
+  return {
+    id: 'p0',
+    name: 'Anya',
+    score: 0,
+    character: 'Butterfly',
+    color: 'Coral',
+    ...overrides,
+  };
 }
 
 /** Mount a bar, flushing the effects its characters write on the way in. */
@@ -29,9 +36,15 @@ describe('the bar of hexes', () => {
     );
     expect(root.querySelectorAll('[class*="Slot"]')).toHaveLength(2);
     // A face alone asks a player who has just joined to remember which one they picked, and a
-    // name is what they look for. Cut short in the drawing, never in the data.
+    // name is what they look for. Cut short in the drawing, never in the data. Each name is
+    // followed by its score, which the pointer brings up in its place — so a label walked without
+    // a pointer still carries both.
     expect(root.querySelectorAll('[class*="Name"]')).toHaveLength(2);
-    expect(root.textContent).toBe('AnyaBerenice');
+    expect(root.querySelectorAll('[class*="Score"]')).toHaveLength(2);
+    expect([...root.querySelectorAll('[class*="Name"]')].map((n) => n.textContent)).toEqual([
+      'Anya',
+      'Berenice',
+    ]);
   });
 
   it('draws the name as given, leaving the cutting to the drawing', () => {
@@ -77,8 +90,39 @@ describe('the host', () => {
   it('draws nothing beside a name', () => {
     const seat = mounted(<PlayerBar players={[player({ name: 'Anya' })]} />).firstElementChild;
     const label = seat?.querySelector('[class*="Label"]');
-    expect(label?.textContent).toBe('Anya');
-    expect(label?.children).toHaveLength(1);
+    expect(label?.querySelector('[class*="Name"]')?.textContent).toBe('Anya');
+  });
+});
+
+describe('the score', () => {
+  it('is drawn in the label, beside the name, in the room\'s own order', () => {
+    // Both are always in the DOM and the stylesheet swaps which one is visible, so a client that
+    // walks the label reads the score even where a pointer cannot reach it.
+    const label = mounted(<PlayerBar players={[player({ name: 'Anya', score: 12 })]} />).firstElementChild
+      ?.querySelector('[class*="Label"]');
+    expect(label?.querySelector('[class*="Score"]')?.textContent).toBe('12');
+  });
+
+  it('is zero before anything is scored, rather than missing', () => {
+    // Only the Scores and Final phases send a score at all, so a room in the lobby or mid-round
+    // reads as zero. A missing one would leave the label half a sentence.
+    const label = mounted(<PlayerBar players={[player()]}/>).firstElementChild?.querySelector(
+      '[class*="Label"]',
+    );
+    expect(label?.querySelector('[class*="Score"]')?.textContent).toBe('0');
+  });
+
+  it('draws one per seat, so twelve players are twelve scores', () => {
+    const players = Array.from({ length: 12 }, (_, index) => player({ id: `p${index}`, score: index }));
+    expect(mounted(<PlayerBar players={players} />).querySelectorAll('[class*="Score"]')).toHaveLength(
+      12,
+    );
+  });
+
+  it('is a number and not the name, so a score cannot be mistaken for a label', () => {
+    const label = mounted(<PlayerBar players={[player({ name: 'Kai', score: 19 })]} />).firstElementChild
+      ?.querySelector('[class*="Label"]');
+    expect(label?.textContent).toBe('Kai19');
   });
 });
 

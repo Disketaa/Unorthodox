@@ -638,10 +638,10 @@ body.PageFade {
    * name is cut short rather than wrapped, so its size never changes with what the player is
    * called, and a line at a fixed width would swallow a short name whole at the small end. */
   --Size-PlayerBarNameStroke: 0.24em;
-  /* How wide a name's box may get. Narrower than a seat at its widest, because a name wider
-   * than the hexagon's flat top is a name hanging off both sloping sides and reading as a
-   * neighbour's. A cap rather than a fixed width, so it still follows the seat down on a narrow
-   * screen where the seat itself is the smaller of the two. */
+  /* How wide a name's box is. One width whatever the name is or whatever the seat measures, which
+   * is what puts the fade above on the box rather than on the text: a box that shrank to its
+   * contents would fade a short name's own last letters. Narrower than a seat at its widest,
+   * because a name wider than the hexagon's flat top hangs off both sloping sides. */
   --Size-PlayerBarNameMax: 48px;
   /* How much of a name's box the fade takes, at the far end where it runs out of box. In `em`
    * of the name's own size, so it holds its weight against the text however that is sized. */

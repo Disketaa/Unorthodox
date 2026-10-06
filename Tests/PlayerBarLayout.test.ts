@@ -59,13 +59,23 @@ describe('the bar of hexes', () => {
     expect(declaration('Face', 'inset')).toBe('var(--Inset-PlayerBarFace)');
   });
 
-  it('sets the name on the seat, in a box no wider than the seat', () => {
-    // A fixed width rather than a cap, which is what makes the fade correct: at a cap the box
-    // shrinks to the name, so a short name's own last letters land under the gradient.
-    expect(declaration('Label', 'width')).toBe(
-      'min(var(--Size-PlayerBarSlot),var(--Size-PlayerBarNameMax))',
-    );
+  it('sets the name in one box width, whatever the name or the seat measures', () => {
+    // One width rather than a cap or a shrink-to-fit, which is what makes the fade correct: a box
+    // that fitted its contents would fade a short name's own last letters.
+    expect(declaration('Label', 'width')).toBe('var(--Size-PlayerBarNameMax)');
     expect(sheet.declares(/\.Label\s*\{([^}]*)\}/, 'max-width')).toBe(false);
+    expect(sheet.ruleBody(/\.Label\s*\{([^}]*)\}/)).not.toContain('min(');
+  });
+
+  it('clips a long unbroken name to that box instead of growing it', () => {
+    // Two declarations, and both are load-bearing. An `auto` column is sized by the widest item's
+    // max-content, so one long name widens the column; and a grid item's `min-width` is `auto`,
+    // which resolves to min-content — for a name with no spaces that is the whole name, so the
+    // item refuses to shrink and the fade never lands. A name of any length stays 48px.
+    expect(declaration('Label', 'grid-template-columns')).toBe('minmax(0,1fr)');
+    expect(sheet.ruleBody(/\.Score,\s*\.Name\s*\{([^}]*)\}/)).toContain('min-width:0');
+    expect(declaration('Name', 'text-align')).toBe('center');
+    expect(declaration('Score', 'text-align')).toBe('center');
   });
 
   it('fades the name out rather than cutting it with an ellipsis', () => {
@@ -84,7 +94,8 @@ describe('the bar of hexes', () => {
     expect(fade.match(/var\(--Size-PlayerBarNameFade\)/g)).toHaveLength(1);
     expect(declaration('Name', 'overflow')).toBe('hidden');
     expect(declaration('Name', 'white-space')).toBe('nowrap');
-    expect(declaration('Name', 'min-width')).toBe('0');
+    // No `min-width: 0` here: that is a flex item's floor, and these are grid items in a cell of
+    // a fixed box, which overflow rather than grow.
     // Not composed from the shared primitive: that cuts with an ellipsis, which is what this
     // replaces, and the box has to be the label's width rather than shrink-to-fit.
     expect(sheet.ruleBody(/\.Name\s*\{([^}]*)\}/)).not.toContain('Truncate.module.css');
@@ -101,12 +112,9 @@ describe('the bar of hexes', () => {
     // pixels. Painted first, only the outside half is left showing.
     expect(declaration('Name', '-webkit-text-stroke')).toContain('var(--Size-PlayerBarNameStroke)');
     expect(declaration('Name', 'paint-order')).toBe('strokefill');
-    expect(declaration('Name', '--Color-PlayerBarNameStroke')).toBe('var(--Color-Surface-Hover)');
-    // The local player's hexagon is filled with the wash, so the stroke follows it rather than
-    // standing as a second outline of its own.
-    expect(
-      sheet.declaration(/\.Self\s\.Name\s*\{([^}]*)\}/, '--Color-PlayerBarNameStroke'),
-    ).toBe('var(--Accent-Wash)');
+    // Declared once on the seat and inherited, so the name and the score cannot end up cut against
+    // different colours, and a state is one declaration rather than a rule per element.
+    expect(declaration('Seat', '--Color-PlayerBarNameStroke')).toBe('var(--Color-Surface-Hover)');
     // The seat's fill and the hexagon's have to be the same colour for any of this to work.
     expect(declaration('Slot', 'background')).toBe('var(--Color-Surface-Hover)');
   });
@@ -122,6 +130,74 @@ describe('the bar of hexes', () => {
     expect(declaration('Label', 'translate')).toBe('-50%0');
   });
 
+  it('swaps the name for the score under the pointer, rather than adding a line', () => {
+    // Both in one grid cell, so the label cannot change size: a seat that resized under the
+    // pointer would end the very hover that is doing the swapping, and the row would jump.
+    expect(declaration('Label', 'display')).toBe('grid');
+    expect(sheet.ruleBody(/\.Score,\s*\.Name\s*\{([^}]*)\}/)).toContain('grid-area:1/1');
+    // The swap hangs off the seat, not the label: hovering the label alone would flicker as the
+    // name is replaced under the cursor.
+    expect(sheet.ruleBody(/\.Seat:hover\s\.Name\s*\{([^}]*)\}/)).toContain('opacity:0');
+    expect(sheet.ruleBody(/\.Seat:hover\s\.Score\s*\{([^}]*)\}/)).toContain('opacity:1');
+    // Held at zero rather than removed, so a label walked without a pointer still reads it.
+    expect(declaration('Score', 'opacity')).toBe('0');
+  });
+
+  it('draws the score in the primary yellow and bold, because a standing is a fact about the room', () => {
+    // Not the accent: a score must not wear the reader's own tint, the same rule the crown and
+    // the start button follow. Bold against the name's weight, so the score reads as the stronger
+    // of the two rather than a quieter replacement. Same stroke as the name, so a number reads
+    // against the hexagon the way a name does.
+    expect(declaration('Score', 'color')).toBe('var(--Color-Action-Primary-Background)');
+    expect(declaration('Score', 'font-weight')).toBe('700');
+    expect(declaration('Score', '-webkit-text-stroke')).toContain(
+      'var(--Size-PlayerBarNameStroke)',
+    );
+    expect(declaration('Score', 'paint-order')).toBe('strokefill');
+  });
+
+  it('washes the seat under the pointer in the room\'s yellow, matching the score\'s stroke', () => {
+    // The same note the local player's own seat wears at rest, so "this one" reads the same
+    // whether the pointer found a seat or the pointer is you. A fill outright would hide the
+    // character the seat exists to show.
+    // One colour for every seat: a red player and a green one wash the same yellow under the
+    // pointer, so "hovered" reads as hovered rather than as that player's own tint. Mixed from the
+    // room's yellow and not from `--Accent-Wash`, which is themed — a rose room would wash the
+    // hovered seat rose and the hover would say nothing at all.
+    expect(declaration('Seat', '--Color-PlayerBarHoverWash')).toContain(
+      'color-mix(insrgb,var(--Color-Room-Yellow)25%',
+    );
+    expect(sheet.ruleBody(/\.Seat:hover\s*\{([^}]*)\}/)).toContain(
+      '--Color-PlayerBarNameStroke:var(--Color-PlayerBarHoverWash)',
+    );
+    expect(sheet.ruleBody(/\.Seat:hover\s\.Slot\s*\{([^}]*)\}/)).toContain(
+      'background:var(--Color-PlayerBarHoverWash)',
+    );
+    // The themed wash must not appear anywhere in a hover: it is what made a rose room wash rose.
+    expect(sheet.text).not.toMatch(/:hover[^{]*\{[^}]*--Accent-Wash/);
+    // On the resting rule, not the hover's: a transition declared only under `:hover` eases in
+    // and snaps back out, which is the half of the movement nobody asked for.
+    expect(declaration('Slot', 'transition')).toContain('background-color');
+    expect(sheet.declares(/\.Seat:hover\s\.Slot\s*\{([^}]*)\}/, 'transition')).toBe(false);
+  });
+
+  it('washes the local player\'s seat in their own tint, since that is what is unmistakably theirs', () => {
+    // The tint classes are composed in rather than declared again, so a seat's colour is the same
+    // number the character inside it wears and a new tint is one line in one file.
+    const seat = sheet.ruleBody(/\.Seat\s*\{([^}]*)\}/);
+    for (const tint of ['Coral', 'Amber', 'Yellow', 'Lime', 'Mint', 'Sky', 'Violet', 'Rose']) {
+      expect(seat).toContain(`${tint}from'../Character/Character.module.css'`);
+    }
+    // Derived rather than hand-picked: the character tokens are mid-tones and unreadable as a
+    // seat fill, so they are washed a fifth of the way to white.
+    expect(declaration('Seat', '--Color-PlayerBarSeatWash')).toContain(
+      'color-mix(insrgb,var(--Character-Tint)20%',
+    );
+    expect(sheet.declaration(/\.Self\s*\{([^}]*)\}/, '--Color-PlayerBarNameStroke')).toBe(
+      'var(--Color-PlayerBarSeatWash)',
+    );
+  });
+
   it('draws no crown, since the name already says who this is', () => {
     // A mark beside the name is a second thing to read in a row of twelve, and the host is simply
     // the first name in the room's own order — which is where the room puts them.
@@ -130,8 +206,8 @@ describe('the bar of hexes', () => {
     expect(tokenReader(tokens)('--Color-Room-Yellow')).toBe('#eeb62e');
   });
 
-  it('marks the local player with the accent wash, since a ring inside a hexagon is a ring in a ring', () => {
-    expect(declaration('Self .Slot', 'background')).toBe('var(--Accent-Wash)');
+  it('marks the local player with a wash of their own tint, since a ring inside a hexagon is a ring in a ring', () => {
+    expect(declaration('Self .Slot', 'background')).toBe('var(--Color-PlayerBarSeatWash)');
   });
 
   it('holds a dropped player back rather than removing them from the bar', () => {
@@ -139,12 +215,11 @@ describe('the bar of hexes', () => {
     expect(sheet.declares(/\.Offline\s*\{([^}]*)\}/, 'background')).toBe(false);
   });
 
-  it('draws a character and a name in a seat, and no score', () => {
+  it('draws a character and a name in a seat, and a score beside it', () => {
     // The name is what a player looks for in a room they have just joined, where a face alone
-    // asks them to remember which one they picked. A score is still refused: twelve of those in
-    // one row is arithmetic nobody can do in their head.
+    // asks them to remember which one they picked.
     expect(sheet.flat).toContain('.Name');
-    expect(sheet.flat).not.toContain('.Score');
+    expect(sheet.flat).toContain('.Score');
   });
 });
 

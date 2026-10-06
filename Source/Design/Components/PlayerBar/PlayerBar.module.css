@@ -11,20 +11,46 @@
 }
 
 /* One seat: the hexagon, plus whatever hangs off it. The column rather than the hexagon itself,
- * so the crown is outside the mask — a shape cut with a mask cuts anything inside it. Each seat
+ * so the name is outside the mask — a shape cut with a mask cuts anything inside it. Each seat
  * hands back the part of its box the drawing leaves empty, less the seam kept between
- * neighbours, and that handing back is the honeycomb: the drawing carries a margin, so
- * neighbours must advance flat-to-flat rather than box-to-box or the flats never meet. Taken
- * off the margin, not added as a `gap`, which undoes the tiling. */
+ * neighbours, and that is the honeycomb: the drawing carries a margin, so neighbours must
+ * advance flat-to-flat rather than box-to-box or the flats never meet. The tint classes are
+ * composed in, so a seat's colour is the same number the character inside it wears. */
 .Seat {
+  composes: Coral from '../Character/Character.module.css';
+  composes: Amber from '../Character/Character.module.css';
+  composes: Yellow from '../Character/Character.module.css';
+  composes: Lime from '../Character/Character.module.css';
+  composes: Mint from '../Character/Character.module.css';
+  composes: Sky from '../Character/Character.module.css';
+  composes: Violet from '../Character/Character.module.css';
+  composes: Rose from '../Character/Character.module.css';
   position: relative;
   display: flex;
   flex: none;
   flex-direction: column;
   align-items: center;
-  /* The seat's own width, so the shares inside it — the crown, anything hung off a seat — have
-   * a box to resolve against. Without it this box is shrink-to-fit around its hexagon and every
-   * percentage inside it falls back to nothing. */
+  /* The two washes a seat can take, each inherited by the hexagon's fill and by the label's
+   * stroke, so the text is always cut against the colour actually behind it and the two can
+   * never disagree. Both mixed rather than taken from a token: the character tints are
+   * mid-tones and unreadable as a fill, and `--Accent-Wash` is themed, so a rose room would
+   * wash a hovered seat rose and the hover would say nothing. `--Color-Room-Yellow` is the one
+   * yellow no theme moves. */
+  --Color-PlayerBarSeatWash: color-mix(
+    in srgb,
+    var(--Character-Tint) 20%,
+    var(--Color-Surface-Default)
+  );
+  --Color-PlayerBarHoverWash: color-mix(
+    in srgb,
+    var(--Color-Room-Yellow) 25%,
+    var(--Color-Surface-Default)
+  );
+  /* The colour the label's stroke is cut in at rest, which is the seat's own resting fill. */
+  --Color-PlayerBarNameStroke: var(--Color-Surface-Hover);
+  /* The seat's own width, so the shares inside it have a box to resolve against. Without it
+   * this box is shrink-to-fit around its hexagon and every percentage inside it falls back to
+   * nothing. */
   width: var(--Size-PlayerBarSlot);
   margin-right: calc(var(--Offset-PlayerBarHoneycomb) + var(--Space-PlayerBarSeam));
 }
@@ -32,8 +58,8 @@
 /* Every other seat drops three quarters of the drawing's height, the other half of the tiling:
  * a hexagon's ranks are a hexagon apart along and three quarters of a hexagon down, so the
  * dropped seat lands in the hollow of the two it is threaded between. Even seats only, from the
- * second onward: the first is the host's and stays on the top edge, where the bar's own top
- * edge is measured from. */
+ * second onward: the first stays on the top edge, where the bar's own top edge is measured
+ * from. */
 .Seat:nth-child(even) {
   margin-top: var(--Offset-PlayerBarZigzag);
 }
@@ -49,12 +75,14 @@
  * the drawing is not a regular hexagon: its corners are rounded and its top and bottom points
  * are pulled off centre, and a regular six-point polygon would be a different shape wearing its
  * place. Filled to the box rather than contained, so the drawing's proportions are the seat's
- * and the face inside it is measured against the same box. */
+ * and the face inside it is measured against the same box. The transition sits on the resting
+ * rule, not the hover's, so the colour eases back out on the way away too. */
 .Slot {
   position: relative;
   width: var(--Size-PlayerBarSlot);
   aspect-ratio: 1;
   background: var(--Color-Surface-Hover);
+  transition: background-color var(--Transition-Standard);
   mask: url('../../Icons/Hexagon.svg') center / 100% 100% no-repeat;
 }
 
@@ -64,37 +92,35 @@
 .Face {
   position: absolute;
   inset: var(--Inset-PlayerBarFace);
+  transition: transform var(--Transition-Standard);
 }
 
-/* The name drawn on the hexagon's top point. Over the slot rather than above it, so a seat's
- * name belongs to that seat instead of hanging over the row — which is why it is out of the
- * flow: in it, the label would be a second line and every hexagon would sit a name's height
- * lower than its neighbour. A fixed width rather than a cap, which is what makes the fade below
- * correct: at a cap the box shrinks to the name, so a short name's own last letters land under
- * the gradient. */
+/* The name drawn on the hexagon's top point, with the score over it under the pointer. Over the
+ * slot rather than above it, so a seat's name belongs to that seat instead of hanging over the
+ * row — which is why it is out of the flow: in it, the label would be a second line and every
+ * hexagon would sit a name's height lower than its neighbour. A fixed width rather than a cap,
+ * which is what makes the fade on the name correct: at a cap the box shrinks to the name, so a
+ * short name's own last letters land under the gradient. */
 .Label {
   position: absolute;
   top: 0;
   left: 50%;
   translate: -50% 0;
-  display: flex;
-  align-items: center;
-  gap: var(--Space-Xs);
-  width: min(var(--Size-PlayerBarSlot), var(--Size-PlayerBarNameMax));
+  display: grid;
+  /* `minmax(0, 1fr)` rather than the default `auto`: an auto column is sized by the widest item's
+   * max-content, so one long unbroken name widens the column and the label with it instead of
+   * being clipped to the width set above. */
+  grid-template-columns: minmax(0, 1fr);
+  width: var(--Size-PlayerBarNameMax);
 }
 
-/* Faded out at the far end rather than cut with an ellipsis. Three dots after a name says the
- * name is missing letters; a name running off under the stroke says the same without spending
- * four pixels of a forty-eight-pixel box on punctuation. `mask-image` rather than an opacity
- * gradient, because it takes the stroke with it — an alpha gradient on the text alone would
- * leave a hard grey edge past the last glyph. One end only: a fade at the left dims the start
- * of every name, and a name reads as damaged rather than as running past its box. */
+/* Faded out at the far end rather than cut with an ellipsis: three dots say the name is missing
+ * letters, a name running off under the stroke says the same for free. `mask-image` rather than
+ * an opacity gradient, because it takes the stroke with it — an alpha gradient on the text
+ * alone leaves a hard grey edge past the last glyph. One end only: a fade at the left dims the
+ * start of every name including the ones that fit. `overflow: hidden` against the fixed box
+ * above puts the fade on the box rather than on the name. */
 .Name {
-  /* `flex: 1` so the box is the label's width whatever the name is, which is what keeps the
-   * gradient off the end of a name that fits. `min-width: 0` is what lets it shrink at all: a
-   * flex item refuses to go below its content by default. */
-  flex: 1;
-  min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-align: center;
@@ -103,26 +129,73 @@
     currentColor calc(100% - var(--Size-PlayerBarNameFade)),
     transparent
   );
-  font-size: var(--FontSize-Xs);
   color: var(--Color-Text-Default);
-  --Color-PlayerBarNameStroke: var(--Color-Surface-Hover);
   -webkit-text-stroke: var(--Size-PlayerBarNameStroke) var(--Color-PlayerBarNameStroke);
   paint-order: stroke fill;
 }
 
-/* The local player's hexagon is filled with the accent wash rather than the shared grey, so the
- * name's stroke follows it — a stroke in the wrong fill is a second outline standing on its
- * own. */
-.Self .Name {
-  --Color-PlayerBarNameStroke: var(--Accent-Wash);
+/* Both sit in one grid cell and swap by opacity rather than by display, so a seat's label never
+ * changes height or width and the hexagon under it cannot shift out from under the pointer —
+ * which would end the very hover that is doing the swapping. */
+.Score,
+.Name {
+  grid-area: 1 / 1;
+  /* A grid item's `min-width` is `auto`, which resolves to its min-content — and for a name with
+   * no spaces in it, min-content is the whole name. Without this the box is as wide as the longest
+   * name in the room and nothing is clipped or faded. */
+  min-width: 0;
+  font-size: var(--FontSize-Xs);
+  transition: opacity var(--Transition-Standard);
 }
 
-/* The local player, in the accent wash rather than a ring. The same fill the accent banner
- * uses, and for the same reason: it is the one note in the interface that follows the viewer's
- * own tint, and marking yourself is that kind of note. A fill rather than a border, because a
- * border would have to follow the mask and a ring inside a hexagon is a ring inside a ring. */
+/* The score, which the pointer brings up in place of the name. Held at zero rather than
+ * removed, so it costs the row nothing and is still read aloud by anything that walks the
+ * label. The primary yellow rather than the accent: a score is a fact about the room's
+ * standings and must not wear the reader's tint. Bold, so a standing reads as the stronger of
+ * the two rather than a quieter replacement. Its stroke is inherited from the seat, so a number
+ * is always cut against the fill behind it. */
+.Score {
+  opacity: 0;
+  font-weight: 700;
+  text-align: center;
+  color: var(--Color-Action-Primary-Background);
+  -webkit-text-stroke: var(--Size-PlayerBarNameStroke) var(--Color-PlayerBarNameStroke);
+  paint-order: stroke fill;
+}
+
+/* The seat under the pointer, in the room's yellow wash. The same note the local player's own
+ * seat wears at rest, so "this one" reads the same whether the pointer found a seat or the
+ * pointer is you. The stroke follows the fill through the inherited custom property, so a
+ * number is always cut out against the colour actually behind it. */
+.Seat:hover {
+  --Color-PlayerBarNameStroke: var(--Color-PlayerBarHoverWash);
+}
+
+.Seat:hover .Slot {
+  background: var(--Color-PlayerBarHoverWash);
+  transform: scale(1.08);
+}
+
+/* The swap itself, on the seat rather than the label: the pointer belongs to the whole seat,
+ * and hovering the name alone would flicker as the name is replaced under the cursor. */
+.Seat:hover .Name {
+  opacity: 0;
+}
+
+.Seat:hover .Score {
+  opacity: 1;
+}
+
+/* The local player, in a wash of their own tint rather than the yellow everyone else hovers to.
+ * Their character is the one thing that is unmistakably theirs, and a seat marked in the room's
+ * shared yellow would say only "hovered". A fill rather than a border, because a border would
+ * have to follow the mask and a ring inside a hexagon is a ring inside a ring. */
+.Self {
+  --Color-PlayerBarNameStroke: var(--Color-PlayerBarSeatWash);
+}
+
 .Self .Slot {
-  background: var(--Accent-Wash);
+  background: var(--Color-PlayerBarSeatWash);
 }
 
 /* A player the host has lost. Held back rather than removed, and by the same half the lobby's

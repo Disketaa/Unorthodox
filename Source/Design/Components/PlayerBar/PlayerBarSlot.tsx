@@ -9,8 +9,9 @@ export interface PlayerBarSlotProps {
   isSelf: boolean;
 }
 
-/** One player in the bar: their name over a hexagon. The name is what a player looks for in a
- * room they have just joined, where a face alone asks them to remember who they picked. */
+/** One player in the bar: their name over a hexagon, and their score over it instead while the
+ * pointer is on the seat. The name is what a player looks for in a room they have just joined,
+ * where a face alone asks them to remember who they picked. */
 export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
   const offline = entry.isOnline === false;
   const classes = [styles.Seat, isSelf ? styles.Self : '', offline ? styles.Offline : '']
@@ -26,6 +27,7 @@ export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
       </span>
       <span class={styles.Label}>
         <span class={styles.Name}>{entry.name}</span>
+        <span class={styles.Score}>{entry.score}</span>
       </span>
     </div>
   );

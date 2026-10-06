@@ -5,14 +5,14 @@ import type { PlayerBarEntry } from './PlayerBar';
 /** A room of eight, the most a room that is still worth drawing looks like. The long name is
  * here on purpose: a seat has to hold a name of any length without pushing the row along. */
 const room: PlayerBarEntry[] = [
-  { id: 'p1', name: 'Anya', character: 'Butterfly', color: 'Coral' },
-  { id: 'p2', name: 'Berenice', character: 'Ghost', color: 'Sky' },
-  { id: 'p3', name: 'Kai', character: 'Daisy', color: 'Mint' },
-  { id: 'p4', name: 'Maximiliana', character: 'Star', color: 'Violet' },
-  { id: 'p5', name: 'Rue', character: 'Hat', color: 'Rose' },
-  { id: 'p6', name: 'Tobias', character: 'Heart', color: 'Amber' },
-  { id: 'p7', name: 'Wren', character: 'Mask', color: 'Yellow' },
-  { id: 'p8', name: 'Xiomara', character: 'Explosion', color: 'Lime' },
+  { id: 'p1', name: 'Anya', score: 12, character: 'Butterfly', color: 'Coral' },
+  { id: 'p2', name: 'Berenice', score: 7, character: 'Ghost', color: 'Sky' },
+  { id: 'p3', name: 'Kai', score: 19, character: 'Daisy', color: 'Mint' },
+  { id: 'p4', name: 'Maximiliana', score: 3, character: 'Star', color: 'Violet' },
+  { id: 'p5', name: 'Rue', score: 21, character: 'Hat', color: 'Rose' },
+  { id: 'p6', name: 'Tobias', score: 0, character: 'Heart', color: 'Amber' },
+  { id: 'p7', name: 'Wren', score: 14, character: 'Mask', color: 'Yellow' },
+  { id: 'p8', name: 'Xiomara', score: 9, character: 'Explosion', color: 'Lime' },
 ];
 
 export function PlayerBarGallery() {
