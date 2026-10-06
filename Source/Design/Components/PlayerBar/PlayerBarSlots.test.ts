@@ -6,7 +6,7 @@ import { slotsFor } from './PlayerBarSlots';
 function room(count: number): PlayerBarEntry[] {
   const players: PlayerBarEntry[] = [];
   for (let index = 0; index < count; index += 1) {
-    players.push({ id: `p${index}`, character: 'Butterfly', color: 'Coral' });
+    players.push({ id: `p${index}`, name: `P${index}`, character: 'Butterfly', color: 'Coral' });
   }
   return players;
 }

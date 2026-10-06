@@ -59,23 +59,75 @@ describe('the bar of hexes', () => {
     expect(declaration('Face', 'inset')).toBe('var(--Inset-PlayerBarFace)');
   });
 
-  it('hangs the crown half above the host\'s seat, and out of the flow', () => {
-    // Half above: lifted by its own height, so it sits on the top edge like a mark on a seat
-    // rather than as a fourth line under a name. `translate` rather than `transform`, since the
-    // sway animates `transform` on this same node and the centring has to compose with it.
-    expect(declaration('Crown', 'position')).toBe('absolute');
-    expect(declaration('Crown', 'top')).toBe('0');
-    expect(declaration('Crown', 'left')).toBe('50%');
-    expect(declaration('Crown', 'translate')).toBe('-50%-50%');
-    expect(sheet.declares(/\.Crown\s*\{([^}]*)\}/, 'background')).toBe(false);
+  it('sets the name on the seat, in a box no wider than the seat', () => {
+    // A fixed width rather than a cap, which is what makes the fade correct: at a cap the box
+    // shrinks to the name, so a short name's own last letters land under the gradient.
+    expect(declaration('Label', 'width')).toBe(
+      'min(var(--Size-PlayerBarSlot),var(--Size-PlayerBarNameMax))',
+    );
+    expect(sheet.declares(/\.Label\s*\{([^}]*)\}/, 'max-width')).toBe(false);
   });
 
-  it('draws the host crown in the room\'s yellow, like the Start button', () => {
-    expect(declaration('Crown', 'color')).toBe('var(--Color-Room-Yellow)');
-    expect(sheet.ruleBody(/\.CrownIcon\s*\{([^}]*)\}/)).toContain('Crown.svg');
-    // Composed from the shared primitive: two copies of the sway would be one movement that had
-    // quietly forked.
-    expect(sheet.ruleBody(/\.Crown\s*\{([^}]*)\}/)).toContain('Sway.module.css');
+  it('fades the name out rather than cutting it with an ellipsis', () => {
+    // Three dots after a name says the name is missing letters; a name running off under the
+    // stroke says the same without spending four pixels of a forty-eight-pixel box on
+    // punctuation. `mask-image` and not an opacity gradient, so the stroke fades with the glyph
+    // instead of leaving a hard grey edge past the last letter. `min-width: 0` is what lets a
+    // flex item shrink below its content at all — without it the name widens the label instead.
+    expect(sheet.declares(/\.Name\s*\{([^}]*)\}/, 'text-overflow')).toBe(false);
+    expect(declaration('Name', 'text-align')).toBe('center');
+    // One fade, at the right. Two of them dims the start of every name including the ones that
+    // fit, and a name reads as damaged rather than as continuing past its box.
+    const fade = declaration('Name', 'mask-image');
+    expect(fade).toContain('linear-gradient');
+    expect(fade).toContain('currentColorcalc(100%-var(--Size-PlayerBarNameFade))');
+    expect(fade.match(/var\(--Size-PlayerBarNameFade\)/g)).toHaveLength(1);
+    expect(declaration('Name', 'overflow')).toBe('hidden');
+    expect(declaration('Name', 'white-space')).toBe('nowrap');
+    expect(declaration('Name', 'min-width')).toBe('0');
+    // Not composed from the shared primitive: that cuts with an ellipsis, which is what this
+    // replaces, and the box has to be the label's width rather than shrink-to-fit.
+    expect(sheet.ruleBody(/\.Name\s*\{([^}]*)\}/)).not.toContain('Truncate.module.css');
+    expect(tokenValue('--Size-PlayerBarNameFade')).toBe('1.5em');
+    // The cap, resolved: a name wider than the hexagon's flat top hangs off both sloping sides
+    // and reads as a neighbour's.
+    expect(tokenValue('--Size-PlayerBarNameMax')).toBe('48px');
+  });
+
+  it('strokes the name in the hexagon\'s own fill, and paints that stroke under the glyph', () => {
+    // The name crosses the hexagon's top point, so plain text there is a word lying on a shape.
+    // `paint-order: stroke fill` is the part that keeps it readable: the default paints fill then
+    // stroke, and a stroke centred on the outline eats half the glyph — thin and grey at twelve
+    // pixels. Painted first, only the outside half is left showing.
+    expect(declaration('Name', '-webkit-text-stroke')).toContain('var(--Size-PlayerBarNameStroke)');
+    expect(declaration('Name', 'paint-order')).toBe('strokefill');
+    expect(declaration('Name', '--Color-PlayerBarNameStroke')).toBe('var(--Color-Surface-Hover)');
+    // The local player's hexagon is filled with the wash, so the stroke follows it rather than
+    // standing as a second outline of its own.
+    expect(
+      sheet.declaration(/\.Self\s\.Name\s*\{([^}]*)\}/, '--Color-PlayerBarNameStroke'),
+    ).toBe('var(--Accent-Wash)');
+    // The seat's fill and the hexagon's have to be the same colour for any of this to work.
+    expect(declaration('Slot', 'background')).toBe('var(--Color-Surface-Hover)');
+  });
+
+  it('draws the name on top of the hexagon, out of the flow', () => {
+    // On the seat rather than above it, so a name belongs to that seat instead of hanging over
+    // the row. Out of the flow because in it the label is a second line, and every hexagon would
+    // sit a name's height lower than the one beside it. Centred with `translate` rather than
+    // `transform`, which the sway animates on a mark inside it.
+    expect(declaration('Label', 'position')).toBe('absolute');
+    expect(declaration('Label', 'top')).toBe('0');
+    expect(declaration('Label', 'left')).toBe('50%');
+    expect(declaration('Label', 'translate')).toBe('-50%0');
+  });
+
+  it('draws no crown, since the name already says who this is', () => {
+    // A mark beside the name is a second thing to read in a row of twelve, and the host is simply
+    // the first name in the room's own order — which is where the room puts them.
+    expect(sheet.text).not.toMatch(/\.Crown\b/);
+    expect(sheet.text).not.toContain('Crown.svg');
+    expect(tokenReader(tokens)('--Color-Room-Yellow')).toBe('#eeb62e');
   });
 
   it('marks the local player with the accent wash, since a ring inside a hexagon is a ring in a ring', () => {
@@ -87,10 +139,11 @@ describe('the bar of hexes', () => {
     expect(sheet.declares(/\.Offline\s*\{([^}]*)\}/, 'background')).toBe(false);
   });
 
-  it('draws a character and a crown and nothing else in a seat', () => {
-    // No name and no score: twelve of those in one row would not fit, and a face is what a
-    // player recognises rather than reads.
-    expect(sheet.flat).not.toContain('.Name');
+  it('draws a character and a name in a seat, and no score', () => {
+    // The name is what a player looks for in a room they have just joined, where a face alone
+    // asks them to remember which one they picked. A score is still refused: twelve of those in
+    // one row is arithmetic nobody can do in their head.
+    expect(sheet.flat).toContain('.Name');
     expect(sheet.flat).not.toContain('.Score');
   });
 });

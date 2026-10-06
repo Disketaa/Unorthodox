@@ -58,48 +58,63 @@
   mask: url('../../Icons/Hexagon.svg') center / 100% 100% no-repeat;
 }
 
-/* The character inside the hexagon. Held well in from the sloped edges, since the crown takes
- * the top of the seat on the host's hexagon alone and the face has to sit below it either way —
- * one inset for every seat, so no face moves when a player becomes the host. */
+/* The character inside the hexagon. Held well in from the sloped edges, since the top of the
+ * drawing is narrow and a face drawn to it spills past them — one inset for every seat, so no
+ * face is measured differently from another's. */
 .Face {
   position: absolute;
   inset: var(--Inset-PlayerBarFace);
 }
 
-/* The host's crown, inside the top of the hexagon rather than riding above it. Inside because a
- * seat is only a quarter of a hexagon wider than the rank beside it, so a crown hung outside
- * its seat spends most of its width over a neighbour. Out of the flow, so it costs the seat no
- * height and every face stays on one line. In the room's yellow rather than the viewer's
- * accent, since who is hosting is a fact the whole room agrees on. Its sway rides `translate`
- * while the animation uses `transform`, so the two compose rather than overwrite each other. */
-.Crown {
-  composes: Moving from '../../Primitives/Sway/Sway.module.css';
-  /* The sway ships as a variable and whoever wears it writes this one line, so a second copy of
-   * the movement cannot quietly fork from the first. Composing the class alone does nothing: it
-   * publishes the animation, it does not run it. */
-  animation: var(--Sway-Animation);
+/* The name drawn on the hexagon's top point. Over the slot rather than above it, so a seat's
+ * name belongs to that seat instead of hanging over the row — which is why it is out of the
+ * flow: in it, the label would be a second line and every hexagon would sit a name's height
+ * lower than its neighbour. A fixed width rather than a cap, which is what makes the fade below
+ * correct: at a cap the box shrinks to the name, so a short name's own last letters land under
+ * the gradient. */
+.Label {
   position: absolute;
   top: 0;
   left: 50%;
   translate: -50% 0;
-  width: var(--Size-PlayerBarCrown);
-  aspect-ratio: 1;
-  color: var(--Color-Room-Yellow);
-  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: var(--Space-Xs);
+  width: min(var(--Size-PlayerBarSlot), var(--Size-PlayerBarNameMax));
 }
 
-/* The fill step rather than the text one, because it is a mark rather than words, and the same
- * yellow the lobby's crown and the Start button use: it says who is hosting, which is a fact
- * the whole room would agree on, so it must not follow the viewer's own tint. `display: block`
- * is load-bearing, not tidiness: this is a span, and a span is inline, and width and height do
- * not apply to an inline box at all — it draws at nothing. Its parent only blockifies itself by
- * being absolutely positioned; nothing blockifies this one. */
-.CrownIcon {
-  display: block;
-  width: 100%;
-  height: 100%;
-  background-color: currentColor;
-  mask: url('../../Icons/Crown.svg') center / contain no-repeat;
+/* Faded out at the far end rather than cut with an ellipsis. Three dots after a name says the
+ * name is missing letters; a name running off under the stroke says the same without spending
+ * four pixels of a forty-eight-pixel box on punctuation. `mask-image` rather than an opacity
+ * gradient, because it takes the stroke with it — an alpha gradient on the text alone would
+ * leave a hard grey edge past the last glyph. One end only: a fade at the left dims the start
+ * of every name, and a name reads as damaged rather than as running past its box. */
+.Name {
+  /* `flex: 1` so the box is the label's width whatever the name is, which is what keeps the
+   * gradient off the end of a name that fits. `min-width: 0` is what lets it shrink at all: a
+   * flex item refuses to go below its content by default. */
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+  mask-image: linear-gradient(
+    to right,
+    currentColor calc(100% - var(--Size-PlayerBarNameFade)),
+    transparent
+  );
+  font-size: var(--FontSize-Xs);
+  color: var(--Color-Text-Default);
+  --Color-PlayerBarNameStroke: var(--Color-Surface-Hover);
+  -webkit-text-stroke: var(--Size-PlayerBarNameStroke) var(--Color-PlayerBarNameStroke);
+  paint-order: stroke fill;
+}
+
+/* The local player's hexagon is filled with the accent wash rather than the shared grey, so the
+ * name's stroke follows it — a stroke in the wrong fill is a second outline standing on its
+ * own. */
+.Self .Name {
+  --Color-PlayerBarNameStroke: var(--Accent-Wash);
 }
 
 /* The local player, in the accent wash rather than a ring. The same fill the accent banner

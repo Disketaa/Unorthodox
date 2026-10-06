@@ -7,6 +7,9 @@ import styles from './PlayerBar.module.css';
 /** One player as the bar draws them: who they are, and whether they are still here. */
 export interface PlayerBarEntry {
   id: PlayerId;
+  /** What this player is called, drawn above their hexagon. Cut short in the drawing rather than
+   * in the data, so a long name stays whole for anything that can read it. */
+  name: string;
   character: CharacterId;
   color: CharacterColor;
   /** Whether the host still has this player on the line. */
@@ -21,8 +24,7 @@ export interface PlayerBarProps {
 }
 
 /** Every player in the room along the top of the game, one hexagon each. The same bar for every
- * phase, so a face does not move between writing and the scores; the host is the roster's first
- * player, which is where the room puts them, so the bar asks for no crown of its own. */
+ * phase, so a seat does not move between writing and the scores. */
 export function PlayerBar({ players, ownPlayerId = null }: PlayerBarProps) {
   const slots = slotsFor(players, ownPlayerId, slotLimit());
 
@@ -34,7 +36,6 @@ export function PlayerBar({ players, ownPlayerId = null }: PlayerBarProps) {
           entry={player}
           index={index}
           isSelf={player.id === ownPlayerId}
-          isHost={index === 0}
         />
       ))}
     </div>
