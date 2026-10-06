@@ -326,3 +326,40 @@
   opacity: var(--Opacity-ThemeCardMarkHover);
   color: var(--ThemeCard-Tint, var(--Accent-Tint));
 }
+
+/* The chosen card, which is the hover's values held after the pointer leaves. A class rather
+ * than a state beside `:hover`, and the same surface token the hover writes, so the card has
+ * one fill. */
+.Chosen {
+  --ThemeCard-Surface: var(--ThemeCard-Wash, var(--Accent-Wash));
+  background: var(--ThemeCard-Surface);
+  color: var(--ThemeCard-Tint, var(--Accent-Tint));
+}
+
+.Chosen .Name {
+  font-size: calc(var(--FontSize-ThemeCard) * var(--Scale-ThemeCardHover));
+}
+
+.Chosen .Mark {
+  transform: scale(var(--Scale-ThemeCardMarkHover));
+  opacity: var(--Opacity-ThemeCardMarkHover);
+  color: var(--ThemeCard-Tint, var(--Accent-Tint));
+}
+
+.Chosen .Noise {
+  opacity: var(--Opacity-ThemeCardNoiseHover);
+}
+
+/* The corner letter with them: the chosen card is locked, so no hover will bring the ink back. */
+.Chosen .Initial {
+  color: var(--ThemeCard-Ink, var(--Accent-Ink));
+}
+
+/* A card that has stopped taking presses. `pointer-events` rather than a restatement of every
+ * hover value: `:hover` still matches a disabled button in every browser, and taking the
+ * pointer off the card takes the hover with it, since nothing on the card changes when it is
+ * locked. */
+.Root:disabled {
+  cursor: var(--Cursor-Default);
+  pointer-events: none;
+}

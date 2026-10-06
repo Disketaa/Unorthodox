@@ -39,6 +39,36 @@
   }
 }
 
+/* The bank once the room has picked: the wash behind the cards is the chosen theme's own. On
+ * the bank rather than on a card, since the cards are opaque and this is the ground they sit
+ * on. */
+.Settled {
+  background: var(--ThemeCards-Chosen, var(--Accent-Wash));
+  transition: background var(--Transition-Standard);
+  /* One track rather than six cards' worth, so the chosen slot covering the whole area is the
+   * whole bank and not the first row of a grid still cut for six. */
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* The chosen card's slot, across every column and the whole height. `grid-area` rather than
+ * `grid-column: 1 / -1`, since the leaving cards share the cell and a slot given only a column
+ * would land on the row below them and leave a band of empty track under the card that won.
+ * Above them, because all six are in one cell and the drawn order would put the last theme on
+ * top. */
+.Chosen {
+  grid-area: 1 / 1 / -1 / -1;
+  z-index: 1;
+}
+
+/* The cards left behind, fading in that same cell. Faded rather than removed: a card taken out
+ * of the flow collapses the bank under the chosen one in a single frame. */
+.Gone {
+  grid-area: 1 / 1 / -1 / -1;
+  opacity: 0;
+  scale: var(--Scale-ThemeCardsGone);
+  pointer-events: none;
+}
+
 /* One card, and the box its size is decided on. The slot rather than the card, so `ThemeCard`
  * stays a closed component that knows nothing about the size it is drawn at. `size` rather than
  * `inline-size`, because six of them stacked are short: a card sized on width alone draws a
@@ -50,6 +80,9 @@
   /* Full height of the row, which is what keeps the rows touching: a card shorter than its row
    * and centred in it leaves the slack as a band between one row and the next. */
   height: 100%;
+  transition:
+    opacity var(--Transition-Slow),
+    scale var(--Transition-Slow);
 }
 
 /* The card's width, and the token every size on a card is a share of: the name, the padding,

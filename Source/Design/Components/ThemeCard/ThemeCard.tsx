@@ -29,6 +29,13 @@ export interface ThemeCardProps {
   /** Whether the card blinks. On by default for a bank of them being offered, where the row is
    * the thing being drawn to; off wherever the card is a record of something already chosen. */
   blink?: boolean;
+  /** Whether this is the card the room settled on. It holds the accent the pointer gave it,
+   * which is what leaves one thing on screen wearing a colour while the rest of the bank fades
+   * out. */
+  chosen?: boolean;
+  /** Whether the card has stopped taking presses, because the room has already answered. Every
+   * card including the chosen one: the answer is in. */
+  locked?: boolean;
 }
 
 /** The theme's own first letter, as the card's substance. One letter, not an abbreviation: the
@@ -48,6 +55,16 @@ function writeTheme(node: HTMLElement, theme: ThemeId, index: number) {
   node.style.setProperty('--Blink-Offset', String(index - 1));
 }
 
+/** What the card is drawn as. The blink goes with the chosen state, since a card the room has
+ * answered is no longer one of a row being offered. */
+
+function cardClasses(moving: boolean, blink: boolean, chosen: boolean): string {
+  const classes = [styles.Root, moving ? styles.Moving : styles.Still];
+  if (blink && !chosen) classes.push(styles.Blink);
+  if (chosen) classes.push(styles.Chosen);
+  return classes.join(' ');
+}
+
 /** One theme, as a card with its name on it. A button rather than a `Card` inside one, since
  * `Card` paints an opaque surface and takes no `className`, so a wash underneath would never be
  * seen. */
@@ -60,6 +77,8 @@ export function ThemeCard({
   onPick,
   moving = true,
   blink = true,
+  chosen = false,
+  locked = false,
 }: ThemeCardProps) {
   const motion = useSwayMotion<HTMLButtonElement>();
 
@@ -69,17 +88,12 @@ export function ThemeCard({
     }
   }, [theme, index, motion]);
 
-  const classes = [
-    styles.Root,
-    moving ? styles.Moving : styles.Still,
-    blink ? styles.Blink : '',
-  ].join(' ');
-
   return (
     <button
       type="button"
       ref={motion}
-      class={classes}
+      class={cardClasses(moving, blink, chosen)}
+      disabled={locked}
       onClick={() => {
         playSound('Pop');
         onPick?.(theme);

@@ -1,4 +1,5 @@
-import { ThemeId } from '@/Core';
+import { ThemeId, themeAccent } from '@/Core';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { ThemeCard } from '../ThemeCard';
 import styles from './ThemeCards.module.css';
 
@@ -17,21 +18,46 @@ export interface ThemeCardsProps {
   spent?: number;
 }
 
-/** The themes a lobby is being offered, six cards in a bank. The cards lie flat and the row is a
- * row: the bank was once six screens in a ring facing the middle of the viewport, and the ring
- * was a thing to be measured on every resize. */
+function slotClass(theme: ThemeId, picked: ThemeId | undefined): string {
+  if (theme === picked) return `${styles.Slot} ${styles.Chosen}`;
+  if (picked !== undefined) return `${styles.Slot} ${styles.Gone}`;
+  return styles.Slot;
+}
+
+/** The themes a lobby is being offered, six cards in a bank, lying flat: the bank was once six
+ * screens in a ring facing the middle of the viewport, and the ring was measured on every
+ * resize. The pick is local, and the theme it settled on has its wash written onto the page. */
 export function ThemeCards({ themes, names, onPick, roundsPerTheme, spent }: ThemeCardsProps) {
+  const [picked, setPicked] = useState<ThemeId | undefined>(undefined);
+  const bank = useRef<HTMLDivElement>(null);
+  const settled = picked !== undefined;
+
+  useEffect(() => {
+    if (picked === undefined) {
+      return;
+    }
+    const wash = themeAccent(picked).wash;
+    document.body.style.setProperty('--Color-Page-Fill', wash);
+    bank.current?.style.setProperty('--ThemeCards-Chosen', wash);
+    return () => document.body.style.removeProperty('--Color-Page-Fill');
+  }, [picked]);
+
   return (
-    <div class={styles.Root} role="group">
+    <div class={settled ? `${styles.Root} ${styles.Settled}` : styles.Root} ref={bank} role="group">
       {themes.map((theme, index) => (
-        <div class={styles.Slot} key={theme}>
+        <div class={slotClass(theme, picked)} key={theme}>
           <ThemeCard
             theme={theme}
             name={names[theme]}
             index={index + 1}
             rounds={roundsPerTheme}
             spent={spent}
-            onPick={onPick}
+            chosen={theme === picked}
+            locked={settled}
+            onPick={(next) => {
+              setPicked(next);
+              onPick?.(next);
+            }}
           />
         </div>
       ))}

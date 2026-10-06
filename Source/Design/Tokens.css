@@ -22,6 +22,11 @@ body {
   font-family: var(--FontFamily-Body);
   color: var(--Color-Text-Default);
   -webkit-font-smoothing: antialiased;
+  /* The page's own fill, on a token rather than on the element, so a screen repaints the
+   * document by moving one property and the fade is a transition here. */
+
+  background-color: var(--Color-Page-Fill, var(--Color-Surface-Default));
+  transition: background-color var(--Transition-Standard);
 }
 
 /* The page's own scrollbar, painted in the accent. `scrollbar-width: auto` is load-bearing, not
@@ -507,6 +512,9 @@ body.PageFade {
    * of a figure already larger than the card moves almost nothing inside the crop. */
   --Scale-ThemeCardHover: 1.12;
   --Scale-ThemeCardMarkHover: 1.5;
+  /* How far the cards left behind shrink as they fade. Just short of nothing, since a card that
+   * reaches zero while still visible is a card being switched off rather than one put away. */
+  --Scale-ThemeCardsGone: 0.94;
   /* How far the mark is held back at rest, and under the pointer. Both values are well short of
    * one and they are not ordered against each other: the mark is a figure on a card, not a
    * highlight, and which way it moves on hover is a matter of what the card is doing rather
@@ -548,7 +556,7 @@ body.PageFade {
    * subtracted from. A share of the *window* has no such problem — a third of the gap between
    * cards at the narrowest screen is enough to tell two cards apart, and a fixed 16px there is
    * a fifth of a card and a row of six with more space between them than on them. */
---Space-ThemeCardsGap: clamp(6px, 3vw, 16px);
+  --Space-ThemeCardsGap: clamp(6px, 3vw, 16px);
   /* How wide the bank of cards is allowed to be: three cards at the cap and the two gaps
    * between them, and not one card more. Three because the count never goes past three, so a
    * row that could be four wide is stopped here rather than by another query. */
