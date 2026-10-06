@@ -15,6 +15,7 @@ export interface PlayerBarSlotProps {
  * where a face alone asks them to remember who they picked. */
 export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
   const offline = entry.isOnline === false;
+  const turning = entry.isTurning === true;
   // The seat wears the player's own tint, the same class the character inside it wears. The seat
   // cannot read that off the character, since a custom property set on it stays down there.
   const classes = [
@@ -30,7 +31,11 @@ export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
     <div class={classes}>
       <span class={styles.Slot}>
         <span class={styles.Face}>
-          <Character character={entry.character} color={entry.color} size="Fill" index={index} />
+          {turning ? (
+            <span class={styles.Turning} aria-hidden="true" />
+          ) : (
+            <Character character={entry.character} color={entry.color} size="Fill" index={index} />
+          )}
         </span>
       </span>
       <span class={styles.Label}>

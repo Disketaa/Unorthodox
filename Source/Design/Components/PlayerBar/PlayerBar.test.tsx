@@ -126,6 +126,30 @@ describe('the score', () => {
   });
 });
 
+describe('a player at work', () => {
+  it('shows the loading mark in place of the character', () => {
+    // A character drawn for someone who has not answered yet says they are in; the mark says they
+    // are working. One seat each, so the mark replaced the character rather than joining it.
+    const root = mounted(<PlayerBar players={[player({ isTurning: true })]} />);
+    expect(root.querySelector('[class*="Turning"]')).not.toBeNull();
+    expect(root.querySelector('[class*="Face"] svg')).toBeNull();
+  });
+
+  it('keeps the seat and the name, because the seat is still theirs while they work', () => {
+    const root = mounted(
+      <PlayerBar players={[player({ name: 'Anya', isTurning: true })]} ownPlayerId="p0" />,
+    );
+    expect(root.querySelector('[class*="Seat"]')).not.toBeNull();
+    expect(root.querySelector('[class*="Name"]')?.textContent).toBe('Anya');
+    expect(root.querySelector('[class*="Self"]')).not.toBeNull();
+  });
+
+  it('draws the character as usual when nobody says otherwise', () => {
+    const root = mounted(<PlayerBar players={[player()]} />);
+    expect(root.querySelector('[class*="Turning"]')).toBeNull();
+  });
+});
+
 describe('a player the host has lost', () => {
   it('is held back rather than removed, because the seat is still theirs', () => {
     const root = mounted(<PlayerBar players={[player({ isOnline: false })]} />);

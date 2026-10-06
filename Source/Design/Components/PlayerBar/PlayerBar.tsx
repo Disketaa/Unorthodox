@@ -18,6 +18,9 @@ export interface PlayerBarEntry {
   color: CharacterColor;
   /** Whether the host still has this player on the line. */
   isOnline?: boolean;
+  /** Whether this player is still at work, which draws the loading mark in place of their
+   * character. Purely what the bar shows; nothing in the room turns on it yet. */
+  isTurning?: boolean;
 }
 
 export interface PlayerBarProps {

@@ -132,6 +132,37 @@
   inset: var(--Inset-PlayerBarFace);
 }
 
+/* A player at work: the loading mark where their character would be, in their own tint so the
+ * seat does not change colour to say something that its name can. The same mark, spin and
+ * easing the banner's uses, so a room waiting and a banner waiting are visibly one wait. */
+.Turning {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  background-color: var(--Character-Tint);
+  mask: url('../../Icons/Loading.svg') center / contain no-repeat;
+  /* A third of a turn each way, over the slow duration, easing symmetrically about the middle:
+   * a one-sided curve finishes one pass at a different speed than it starts the next, and the
+   * seam is where a loop built from one of them hitches. */
+  animation: PlayerBarSpin var(--Duration-Spin) var(--Easing-Smooth) infinite;
+}
+
+@keyframes PlayerBarSpin {
+  from {
+    rotate: 0deg;
+  }
+
+  to {
+    rotate: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .Turning {
+    animation: none;
+  }
+}
+
 /* The name drawn on the hexagon's top point, with the score over it under the pointer. Over the
  * slot rather than above it, so a seat's name belongs to that seat instead of hanging over the
  * row — which is why it is out of the flow: in it, the label would be a second line and every
