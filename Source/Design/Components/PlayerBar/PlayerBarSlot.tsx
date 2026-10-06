@@ -22,6 +22,7 @@ export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
     styles.Seat,
     characterStyles[entry.color],
     isSelf ? styles.Self : '',
+    turning ? styles.Waiting : '',
     offline ? styles.Offline : '',
   ]
     .filter(Boolean)

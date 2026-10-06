@@ -136,7 +136,6 @@
  * seat does not change colour to say something that its name can. The same mark, spin and
  * easing the banner's uses, so a room waiting and a banner waiting are visibly one wait. */
 .Turning {
-  composes: Pulse from '../../Primitives/Sway/Sway.module.css';
   /* Centred by the absolute trick rather than by auto margins: `aspect-ratio` gives the mark a
    * height from its width and leaves it sitting on the top edge of the face, which is square,
    * so `inset: 0` with auto margins is what puts it in the middle of both. */
@@ -147,15 +146,24 @@
   aspect-ratio: 1;
   background-color: var(--Character-Tint);
   mask: url('../../Icons/Loading.svg') center / contain no-repeat;
-  /* The shared breath alongside the spin, rather than instead of it: a seat waiting on someone
-   * is the same wait as a room waiting on a host. Two animations in one declaration, which is
-   * why the breath is handed over as a variable. A third of a turn each way, over the slow
-   * duration, easing symmetrically about the middle: a one-sided curve finishes one pass at a
-   * different speed than it starts the next, and the seam is where a loop built from one of
-   * them hitches. */
-  animation:
-    var(--Pulse-Animation),
-    PlayerBarSpin var(--Duration-Spin) var(--Easing-Smooth) infinite;
+  /* A third of a turn each way, over the slow duration, easing symmetrically about the middle:
+   * a one-sided curve finishes one pass at a different speed than it starts the next, and the
+   * seam is where a loop built from one of them hitches. */
+  animation: PlayerBarSpin var(--Duration-Spin) var(--Easing-Smooth) infinite;
+}
+
+/* A seat waiting on its player breathes the way a room waits on a host, the same breath the
+ * start button takes, over a wash of that player's own tint. The tint is what makes the breath
+ * readable at all: the shared movement is a brightness, and on the near-white every other seat
+ * wears it clips straight to white and nothing moves. Washing the seat says whose player you
+ * are waiting on and gives the brightness somewhere to go. */
+.Waiting {
+  composes: Pulse from '../../Primitives/Sway/Sway.module.css';
+}
+
+.Waiting .Slot {
+  background: var(--Color-PlayerBarSeatWash);
+  animation: var(--Pulse-Animation);
 }
 
 @keyframes PlayerBarSpin {
