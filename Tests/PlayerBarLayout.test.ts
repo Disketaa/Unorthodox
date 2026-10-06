@@ -23,35 +23,38 @@ describe('the bar of hexes', () => {
     expect(sheet.flat).not.toContain('overflow-x');
   });
 
-  it('cuts its seats as hexagons, which a border radius cannot do', () => {
-    // Eight points rather than four corners: the shape is what tells two seats apart in a row of
-    // twelve, and it is the reason nothing inside a seat needs a frame of its own.
-    expect(declaration('Slot', 'clip-path')).toContain('polygon');
-    // Taller than wide, since a hexagon is; a square would be a rounded square again.
-    expect(declaration('Slot', 'aspect-ratio')).toBe('1/1.1547');
-  });
-
-  it('chamfers the hexagon\'s corners in the polygon rather than through `round()`', () => {
-    // A browser that will not parse `round()` discards the whole declaration with it, which leaves
-    // the seat an uncut square: the shape has to survive in the points themselves. Twelve points
-    // rather than six, two at each corner, and none of them a vertex.
-    const points = declaration('Slot', 'clip-path').match(/%/g)?.length ?? 0;
-    expect(points).toBe(24);
-    expect(declaration('Slot', 'clip-path')).not.toContain('round');
+  it('cuts its seats with the game\'s own hexagon rather than a polygon it could redraw', () => {
+    // The drawing is not a regular hexagon: its corners are rounded and its top and bottom points
+    // are pulled off centre, so a six-point polygon would be a different shape wearing its place.
+    // Filled to the box rather than contained, so the drawing's proportions are the seat's.
+    expect(declaration('Slot', 'mask')).toContain('Hexagon.svg');
+    expect(declaration('Slot', 'mask')).toContain('100%100%');
+    expect(declaration('Slot', 'aspect-ratio')).toBe('1');
   });
 
   it('keeps a thin seam between the seats, since tiling flat reads as one grey band', () => {
-    // Two hexagons with nothing between them are one shape with a line drawn across it. Thin,
-    // because the seam is a line rather than a gap: the tiling has to survive it.
-    expect(tokenValue('--Space-PlayerBarSeam')).toBe('calc(var(--Size-PlayerBarSlot) * 0.06)');
+    // Two hexagons with nothing between them are one shape with a line drawn across it. A share of
+    // the seat rather than a length, so it holds its weight against the hexagon at either end of
+    // the clamp, and the same number in both arrangements so a seat does not jump when the row
+    // changes shape under it.
+    expect(tokenValue('--Space-PlayerBarSeam')).toBe('0.06');
     expect(declaration('Seat', 'margin-right')).toBe(
-      'calc(var(--Offset-PlayerBarHoneycomb) + var(--Space-PlayerBarSeam))',
+      'calc(var(--Size-PlayerBarSeat)*var(--Space-PlayerBarSeam))',
     );
   });
 
-  it('sizes a seat from a token, so one edit moves the whole row', () => {
-    expect(declaration('Slot', 'width')).toBe('var(--Size-PlayerBarSlot)');
-    expect(sheet.text).not.toMatch(/\d+px/);
+  it('sizes a seat from the viewport and the count, so a bar of six is not a bar of twelve shrunk', () => {
+    // The count arrives from the bar itself; everything else is derived. The floor is what decides
+    // the arrangement, so it has to be a token rather than a number buried in a `clamp`.
+    expect(tokenValue('--Size-PlayerBarSeatMin')).toBe('40px');
+    expect(tokenValue('--Size-PlayerBarSeatMax')).toBe('64px');
+    expect(tokenValue('--Layout-PlayerBarStraight')).toBe('1.06');
+    const seat = sheet.ruleBody(/\.Seat\s*\{([^}]*)\}/);
+    expect(seat).toContain('--Size-PlayerBarSeat:clamp(');
+    expect(seat).toContain('var(--Layout-PlayerBarSeats,12)');
+    expect(seat).toContain('100vw');
+    expect(declaration('Seat', 'width')).toBe('var(--Size-PlayerBarSeat)');
+    expect(declaration('Slot', 'width')).toBe('var(--Size-PlayerBarSeat)');
     expect(sheet.text).not.toMatch(/#[0-9a-f]{3,8}\b/i);
   });
 
@@ -114,9 +117,22 @@ describe('the bar of hexes', () => {
     expect(declaration('Name', 'paint-order')).toBe('strokefill');
     // Declared once on the seat and inherited, so the name and the score cannot end up cut against
     // different colours, and a state is one declaration rather than a rule per element.
-    expect(declaration('Seat', '--Color-PlayerBarNameStroke')).toBe('var(--Color-Surface-Hover)');
+    expect(declaration('Seat', '--Color-PlayerBarNameStroke')).toBe(
+      'var(--Color-PlayerBarSeatFill)',
+    );
     // The seat's fill and the hexagon's have to be the same colour for any of this to work.
-    expect(declaration('Slot', 'background')).toBe('var(--Color-Surface-Hover)');
+    expect(declaration('Slot', 'background')).toBe('var(--Color-PlayerBarSeatFill)');
+  });
+
+  it('shades its seats off the page rather than fixing them to one grey', () => {
+    // A theme writes its wash onto `--Color-Page-Fill`, so a seat in a hardcoded neutral is the one
+    // thing on a themed page that does not belong to it. Shaded a few percent off the page rather
+    // than mixed toward a grey, which keeps the page's hue and still leaves the seat a step off the
+    // ground. Inked rather than filled, so the fallback is the page rather than a token that would
+    // be one step off nothing.
+    expect(declaration('Seat', '--Color-PlayerBarSeatFill')).toContain(
+      'color-mix(insrgb,var(--Color-Page-Fill,var(--Color-Surface-Default))95%',
+    );
   });
 
   it('draws the name on top of the hexagon, out of the flow', () => {
@@ -182,16 +198,13 @@ describe('the bar of hexes', () => {
   });
 
   it('washes the local player\'s seat in their own tint, since that is what is unmistakably theirs', () => {
-    // The tint classes are composed in rather than declared again, so a seat's colour is the same
-    // number the character inside it wears and a new tint is one line in one file.
-    const seat = sheet.ruleBody(/\.Seat\s*\{([^}]*)\}/);
-    for (const tint of ['Coral', 'Amber', 'Yellow', 'Lime', 'Mint', 'Sky', 'Violet', 'Rose']) {
-      expect(seat).toContain(`${tint}from'../Character/Character.module.css'`);
-    }
-    // Derived rather than hand-picked: the character tokens are mid-tones and unreadable as a
-    // seat fill, so they are washed a fifth of the way to white.
+    // The seat carries the tint class of the player it belongs to, the same one the character
+    // inside it wears. Composing every tint onto every seat instead would leave the last one in
+    // source order winning for the whole row, so every seat would wear one colour whatever player
+    // it held.
+    expect(sheet.ruleBody(/\.Seat\s*\{([^}]*)\}/)).not.toContain('composes:');
     expect(declaration('Seat', '--Color-PlayerBarSeatWash')).toContain(
-      'color-mix(insrgb,var(--Character-Tint)20%',
+      'color-mix(insrgb,var(--Character-Tint)26%',
     );
     expect(sheet.declaration(/\.Self\s*\{([^}]*)\}/, '--Color-PlayerBarNameStroke')).toBe(
       'var(--Color-PlayerBarSeatWash)',
@@ -243,24 +256,35 @@ describe('the tokens behind it', () => {
     // The whole of the honeycomb, in one number: a pointy-topped hexagon tiles in ranks a hexagon
     // apart along, so the row has to advance a half seat per seat. A seat that keeps its full
     // width puts its rank-mate a hexagon and a half away and the ranks fan apart with daylight
-    // between them, which is the row looking stacked rather than tiled.
-    expect(tokenValue('--Offset-PlayerBarHoneycomb')).toBe(
-      'calc(var(--Size-PlayerBarSlot) * -0.5)',
-    );
+    // between them, which is the row looking stacked rather than tiled. A share of the seat, so it
+    // holds its ratio to the hexagon as the clamp moves.
+    expect(tokenValue('--Offset-PlayerBarHoneycomb')).toBe('-0.525');
   });
 
   it('drops every other seat three quarters of a hexagon, into the hollows', () => {
-    // Three quarters of the hexagon's height, which is the seat's width times the row's own
-    // aspect ratio, so the two cannot drift apart as the clamp moves.
-    expect(sheet.declaration(/\.Seat:nth-child\(even\)\s*\{([^}]*)\}/, 'margin-top')).toBe(
-      'var(--Offset-PlayerBarZigzag)',
-    );
-    expect(tokenValue('--Offset-PlayerBarZigzag')).toBe(
-      'calc(var(--Size-PlayerBarSlot) * 1.1547 * 0.75)',
-    );
-    // And the offset is on the drop alone: a horizontal margin here as well would compound the
-    // half seat down the row instead of cancelling it, which is what fanned the ranks apart.
-    expect(sheet.declares(/\.Seat:nth-child\(even\)\s*\{([^}]*)\}/, 'margin-left')).toBe(false);
+    // Applied only in the tiled arrangement, and on the drop alone: a horizontal margin here as
+    // well would compound the half seat down the row instead of cancelling it, which is what fanned
+    // the ranks apart.
+    expect(tokenValue('--Offset-PlayerBarZigzag')).toBe('0.925');
+    expect(
+      sheet.declaration(/\.Root\.Compact\s\.Seat:nth-child\(even\)\s*\{([^}]*)\}/, 'margin-top'),
+    ).toBe('calc(var(--Size-PlayerBarSeat)*var(--Offset-PlayerBarZigzag))');
+    expect(
+      sheet.declares(/\.Root\.Compact\s\.Seat:nth-child\(even\)\s*\{([^}]*)\}/, 'margin-left'),
+    ).toBe(false);
+    expect(sheet.text).not.toContain(':nth-child(odd)');
+  });
+
+  it('pays for the squeeze in width and height together, or neither', () => {
+    // The overlap without the drop reads as collision rather than as a honeycomb, and the drop
+    // without the overlap spends height the row has no use for. Both live on the one class.
+    const compact = /\.Root\.Compact\s\.Seat\s*\{([^}]*)\}/;
+    expect(sheet.ruleBody(compact)).toContain('var(--Offset-PlayerBarHoneycomb)');
+    expect(sheet.text).toContain('.Root.Compact .Seat:nth-child(even)');
+    // The tiled row is re-sized against the tiling rather than kept at the floor, since a tiled row
+    // of floor-sized hexagons is still too wide for a narrow screen.
+    expect(sheet.ruleBody(compact)).toContain('var(--Size-PlayerBarSeatLimit)');
+    expect(tokenValue('--Size-PlayerBarSeatLimit')).toBe('16px');
   });
 
   it('leaves no gap of its own between the seats', () => {
@@ -270,17 +294,12 @@ describe('the tokens behind it', () => {
     expect(sheet.text).not.toContain('--Space-PlayerBarGap');
   });
 
-  it('takes six and a half seats of width and a hexagon and three quarters of height', () => {
-    // Twelve seats advancing half a seat each: the row is half as wide as a straight line of
-    // them and shorter than two staggered rows, which is what lets a phone hold a full room.
-    const seat = Number(tokenValue('--Size-PlayerBarSlot').match(/7vw/)?.[0].replace('vw', ''));
-    expect(seat * (6 + 0.5)).toBeLessThan(320);
-  });
-
-  it('keeps the seat the host on the top edge, since the row is measured from there', () => {
-    // Only the even seats drop: the first is the host's, and it is the one a crown hangs above,
-    // so it cannot be the seat that moved down.
-    expect(sheet.text).toContain('.Seat:nth-child(even)');
-    expect(sheet.text).not.toContain(':nth-child(odd)');
+  it('takes less of a straight line of twelve in the tiling than a line would', () => {
+    // The point of the arrangement: twelve seats tiled are barely half as wide as twelve in a row,
+    // which is what lets a phone hold a full room at a readable hexagon.
+    const honeycomb = Number(tokenValue('--Offset-PlayerBarHoneycomb'));
+    const seam = Number(tokenValue('--Space-PlayerBarSeam'));
+    const advance = 1 + honeycomb + seam;
+    expect(12 * advance + (1 - advance)).toBeLessThan(7);
   });
 });

@@ -1,44 +1,54 @@
 /* The row of hexes across the top of a game. One strip with no card and no frame of its own: a
  * border around it would put the game's own content inside something. One row, never wrapping
  * and never scrolling, because twelve seats have to fit a phone and a second row would push the
- * game down the screen in every room. Sizing each seat from the viewport rather than from a
- * length is what lets twelve fit the narrowest one. */
+ * game down the screen in every room. Its width is the viewport's rather than its parent's,
+ * which shrink-wraps to the very seats the width exists to measure. */
 .Root {
   display: flex;
   flex-wrap: nowrap;
   align-items: flex-start;
   justify-content: center;
+  width: calc(100vw - 2 * var(--Layout-ScreenPaddingHorizontal));
 }
 
 /* One seat: the hexagon, plus whatever hangs off it. The column rather than the hexagon itself,
- * so the name is outside the mask — a shape cut with a mask cuts anything inside it. Each seat
- * hands back the part of its box the drawing leaves empty, less the seam kept between
- * neighbours, and that is the honeycomb: the drawing carries a margin, so neighbours must
- * advance flat-to-flat rather than box-to-box or the flats never meet. The tint classes are
- * composed in, so a seat's colour is the same number the character inside it wears. */
+ * so the name is outside the mask — a shape cut with a mask cuts anything inside it. The seat
+ * carries its own player's tint class, the same one the character inside it wears, so the fill
+ * and the face cannot be two different colours. */
 .Seat {
-  composes: Coral from '../Character/Character.module.css';
-  composes: Amber from '../Character/Character.module.css';
-  composes: Yellow from '../Character/Character.module.css';
-  composes: Lime from '../Character/Character.module.css';
-  composes: Mint from '../Character/Character.module.css';
-  composes: Sky from '../Character/Character.module.css';
-  composes: Violet from '../Character/Character.module.css';
-  composes: Rose from '../Character/Character.module.css';
   position: relative;
   display: flex;
   flex: none;
   flex-direction: column;
   align-items: center;
-  /* The two washes a seat can take, each inherited by the hexagon's fill and by the label's
-   * stroke, so the text is always cut against the colour actually behind it and the two can
-   * never disagree. Both mixed rather than taken from a token: the character tints are
-   * mid-tones and unreadable as a fill, and `--Accent-Wash` is themed, so a rose room would
-   * wash a hovered seat rose and the hover would say nothing. `--Color-Room-Yellow` is the one
-   * yellow no theme moves. */
+  /* The resting fill, taken off the page rather than fixed to one grey. A theme writes its wash
+   * onto `--Color-Page-Fill`, so a seat in a hardcoded neutral is the one thing on a themed
+   * page that does not belong to it. Shaded a few percent off the page rather than mixed toward
+   * a grey: on the default page that lands on the neutral the bar has always worn, and on a
+   * themed one it keeps the page's hue instead of greying it out. */
+  --Color-PlayerBarSeatFill: color-mix(
+    in srgb,
+    var(--Color-Page-Fill, var(--Color-Surface-Default)) 95%,
+    var(--Color-Character-Ink)
+  );
+  /* The colour the label's stroke is cut in at rest: the seat's own resting fill, so the name
+   * is cut against what is actually behind it. */
+  --Color-PlayerBarNameStroke: var(--Color-PlayerBarSeatFill);
+  /* A name in a dark version of its own player's tint, so the colour says whose name it is
+   * without the accent the reader brought with them. Mixed toward the linework the character is
+   * drawn in rather than used straight: the tints are mid-tones, unreadable as small text on a
+   * light hexagon, and mixed down they stay that character's own ink. */
+  --Color-PlayerBarNameInk: color-mix(
+    in srgb,
+    var(--Character-Tint) 62%,
+    var(--Color-Character-Ink)
+  );
+  /* The wash the local player's own seat takes. Mixed rather than taken from a token: the
+   * character tints are mid-tones and unreadable as a fill, and `--Accent-Wash` is themed, so a
+   * rose room would wash the seat rose and say nothing about whose it is. */
   --Color-PlayerBarSeatWash: color-mix(
     in srgb,
-    var(--Character-Tint) 20%,
+    var(--Character-Tint) 26%,
     var(--Color-Surface-Default)
   );
   --Color-PlayerBarHoverWash: color-mix(
@@ -46,29 +56,57 @@
     var(--Color-Room-Yellow) 25%,
     var(--Color-Surface-Default)
   );
-  /* The colour the label's stroke is cut in at rest, which is the seat's own resting fill. */
-  --Color-PlayerBarNameStroke: var(--Color-Surface-Hover);
-  /* The seat's own width, so the shares inside it have a box to resolve against. Without it
-   * this box is shrink-to-fit around its hexagon and every percentage inside it falls back to
-   * nothing. */
-  width: var(--Size-PlayerBarSlot);
-  margin-right: calc(var(--Offset-PlayerBarHoneycomb) + var(--Space-PlayerBarSeam));
+  /* Sized from the row and the count the bar was given, so a room of six draws big hexagons and
+   * a room of twelve draws small ones. The floor is the arrangement: a straight row would need
+   * hexagons below the floor to fit this many seats, so the row tiles instead. */
+  --Size-PlayerBarSeat: clamp(
+    var(--Size-PlayerBarSeatMin),
+    calc(
+      (100vw - 2 * var(--Layout-ScreenPaddingHorizontal)) /
+        (var(--Layout-PlayerBarSeats, 12) * var(--Layout-PlayerBarStraight))
+    ),
+    var(--Size-PlayerBarSeatMax)
+  );
+  width: var(--Size-PlayerBarSeat);
+  margin-right: calc(var(--Size-PlayerBarSeat) * var(--Space-PlayerBarSeam));
 }
 
-/* Every other seat drops three quarters of the drawing's height, the other half of the tiling:
- * a hexagon's ranks are a hexagon apart along and three quarters of a hexagon down, so the
- * dropped seat lands in the hollow of the two it is threaded between. Even seats only, from the
- * second onward: the first stays on the top edge, where the bar's own top edge is measured
- * from. */
-.Seat:nth-child(even) {
-  margin-top: var(--Offset-PlayerBarZigzag);
-}
-
-/* The last seat hands nothing back. It has no neighbour to interleave with, and the margin
- * would otherwise take half a hexagon off the row's own width, which is what left the final
- * face drawn half off the edge of the screen. */
+/* The last seat hands nothing back. It has no neighbour to keep a seam from. */
 .Seat:last-child {
   margin-right: 0;
+}
+
+/* The row that cannot keep its hexagons at the floor hands most of each seat's width back and
+ * drops every other seat into the hollows beside it. Both halves arrive together: the overlap
+ * without the drop reads as collision, and the drop without the overlap spends height the row
+ * has no use for. The seat is re-sized to the tiling rather than kept at the floor, since a
+ * tiled row of floor-sized hexagons is still too wide for a narrow screen and would run off it. */
+.Root.Compact .Seat {
+  /* `1 + overlap + seam` is what each seat but the last advances in the tiling, and the last
+   * one whole, so the row is `seats * advance + 1 - advance` across. */
+  --Size-PlayerBarSeat: clamp(
+    var(--Size-PlayerBarSeatLimit),
+    calc(
+      (100vw - 2 * var(--Layout-ScreenPaddingHorizontal)) /
+        (
+          var(--Layout-PlayerBarSeats, 12) *
+            (1 + var(--Offset-PlayerBarHoneycomb) + var(--Space-PlayerBarSeam)) -
+            var(--Offset-PlayerBarHoneycomb) - var(--Space-PlayerBarSeam)
+        )
+    ),
+    var(--Size-PlayerBarSeatMin)
+  );
+  margin-right: calc(
+    var(--Size-PlayerBarSeat) * (var(--Offset-PlayerBarHoneycomb) + var(--Space-PlayerBarSeam))
+  );
+}
+
+.Root.Compact .Seat:last-child {
+  margin-right: 0;
+}
+
+.Root.Compact .Seat:nth-child(even) {
+  margin-top: calc(var(--Size-PlayerBarSeat) * var(--Offset-PlayerBarZigzag));
 }
 
 /* The seat, cut as the game's own hexagon. A mask rather than a `clip-path` polygon, because
@@ -79,9 +117,9 @@
  * rule, not the hover's, so the colour eases back out on the way away too. */
 .Slot {
   position: relative;
-  width: var(--Size-PlayerBarSlot);
+  width: var(--Size-PlayerBarSeat);
   aspect-ratio: 1;
-  background: var(--Color-Surface-Hover);
+  background: var(--Color-PlayerBarSeatFill);
   transition: background-color var(--Transition-Standard);
   mask: url('../../Icons/Hexagon.svg') center / 100% 100% no-repeat;
 }
@@ -92,7 +130,6 @@
 .Face {
   position: absolute;
   inset: var(--Inset-PlayerBarFace);
-  transition: transform var(--Transition-Standard);
 }
 
 /* The name drawn on the hexagon's top point, with the score over it under the pointer. Over the
@@ -107,9 +144,9 @@
   left: 50%;
   translate: -50% 0;
   display: grid;
-  /* `minmax(0, 1fr)` rather than the default `auto`: an auto column is sized by the widest item's
-   * max-content, so one long unbroken name widens the column and the label with it instead of
-   * being clipped to the width set above. */
+  /* `minmax(0, 1fr)` rather than the default `auto`: an auto column is sized by the widest
+   * item's max-content, so one long unbroken name widens the column and the label with it
+   * instead of being clipped to the width set above. */
   grid-template-columns: minmax(0, 1fr);
   width: var(--Size-PlayerBarNameMax);
 }
@@ -129,7 +166,7 @@
     currentColor calc(100% - var(--Size-PlayerBarNameFade)),
     transparent
   );
-  color: var(--Color-Text-Default);
+  color: var(--Color-PlayerBarNameInk);
   -webkit-text-stroke: var(--Size-PlayerBarNameStroke) var(--Color-PlayerBarNameStroke);
   paint-order: stroke fill;
 }
@@ -140,9 +177,9 @@
 .Score,
 .Name {
   grid-area: 1 / 1;
-  /* A grid item's `min-width` is `auto`, which resolves to its min-content — and for a name with
-   * no spaces in it, min-content is the whole name. Without this the box is as wide as the longest
-   * name in the room and nothing is clipped or faded. */
+  /* A grid item's `min-width` is `auto`, which resolves to its min-content — and for a name
+   * with no spaces in it, min-content is the whole name. Without this the box is as wide as the
+   * longest name in the room and nothing is clipped or faded. */
   min-width: 0;
   font-size: var(--FontSize-Xs);
   transition: opacity var(--Transition-Standard);
@@ -189,13 +226,18 @@
 /* The local player, in a wash of their own tint rather than the yellow everyone else hovers to.
  * Their character is the one thing that is unmistakably theirs, and a seat marked in the room's
  * shared yellow would say only "hovered". A fill rather than a border, because a border would
- * have to follow the mask and a ring inside a hexagon is a ring inside a ring. */
+ * have to follow the mask and a ring inside a hexagon is a ring inside a ring. Their own name
+ * carries the weight too, which is what finds you in a row of twelve without reading them. */
 .Self {
   --Color-PlayerBarNameStroke: var(--Color-PlayerBarSeatWash);
 }
 
 .Self .Slot {
   background: var(--Color-PlayerBarSeatWash);
+}
+
+.Self .Name {
+  font-weight: 700;
 }
 
 /* A player the host has lost. Held back rather than removed, and by the same half the lobby's

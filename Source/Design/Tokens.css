@@ -601,32 +601,28 @@ body.PageFade {
    * `Tests/PlayerBarLayout.test.ts`. */
   --Layout-PlayerBarSlots: 12;
 
-  /* How wide one hexagon is. Derived from the row rather than guessed, because the bar's width
-   * is a function of it: a seat hands back most of its own width, so twelve seats do not take
-   * twelve of anything. `--Layout-PlayerBarAdvance` is what one seat of width is worth once
-   * that handing back is counted — eleven seats at their reduced advance, plus the last one
-   * whole — and the seat is then the share of the screen that leaves the row exactly filling
-   * it. */
-  --Size-PlayerBarSlot: clamp(
-    24px,
-    calc(
-      (100vw - 2 * var(--Layout-ScreenPaddingHorizontal)) / var(--Layout-PlayerBarAdvance)
-    ),
-    64px
-  );
+  /* How wide one hexagon is. Sized from the row and the room's own count rather than fixed to
+   * the full room, so a bar of six draws big hexagons and a bar of twelve draws small ones. The
+   * floor is what chooses the arrangement: a straight row would need hexagons below it to fit
+   * this many seats, so the row tiles instead. The limit is the floor's own floor, for the
+   * viewport where even a tiled row cannot hold hexagons that big and something has to give. */
+  --Size-PlayerBarSeatMin: 40px;
+  --Size-PlayerBarSeatLimit: 16px;
+  --Size-PlayerBarSeatMax: 64px;
 
-  /* The numbers that turn the row from a line of hexagons into a honeycomb: the width each seat
-   * hands back, and the drop the even seats take. Both are shares of the seat, so they hold
-   * their ratio as the clamp moves. `--Layout-PlayerBarAdvance` is what one seat's width is
-   * worth to the row once that handing back is counted: every seat but the last advances `1 -
-   * 0.6 + 0.06`, and the last one is whole, so the row is `0.54 + 0.46 × seats` across. */
-  --Offset-PlayerBarHoneycomb: calc(var(--Size-PlayerBarSlot) * -0.6);
-  --Offset-PlayerBarZigzag: calc(var(--Size-PlayerBarSlot) * 0.85);
-  --Layout-PlayerBarAdvance: calc(0.54 + var(--Layout-PlayerBarSlots) * 0.46);
+  /* What one hexagon is worth to a straight row: itself plus the seam it keeps from its
+   * neighbour. The row's width divided by this is the seat that leaves the row exactly filling
+   * the screen, at whatever count the room holds. */
+  --Layout-PlayerBarStraight: 1.06;
   /* A seam rather than a gap, and thin: two hexagons tiling flat are one shape with a line
    * drawn across it, and without this the row reads as a band of grey with characters inside
-   * it. */
-  --Space-PlayerBarSeam: calc(var(--Size-PlayerBarSlot) * 0.06);
+   * it. Shares of a seat from here down, so they hold their ratio to the hexagon as it moves. */
+  --Space-PlayerBarSeam: 0.06;
+
+  /* The numbers that turn the row from a line of hexagons into a honeycomb: the width each seat
+   * hands back to its neighbour, and the drop the even seats take into the hollows beside them. */
+  --Offset-PlayerBarHoneycomb: -0.525;
+  --Offset-PlayerBarZigzag: 0.925;
 
   /* How far in from the edge of the hexagon the face sits. A share of the seat rather than a
    * padding, because the hexagon's corners are what make it a hexagon: a face drawn to the
@@ -638,10 +634,10 @@ body.PageFade {
    * name is cut short rather than wrapped, so its size never changes with what the player is
    * called, and a line at a fixed width would swallow a short name whole at the small end. */
   --Size-PlayerBarNameStroke: 0.24em;
-  /* How wide a name's box is. One width whatever the name is or whatever the seat measures, which
-   * is what puts the fade above on the box rather than on the text: a box that shrank to its
-   * contents would fade a short name's own last letters. Narrower than a seat at its widest,
-   * because a name wider than the hexagon's flat top hangs off both sloping sides. */
+  /* How wide a name's box is. One width whatever the name is or whatever the seat measures,
+   * which is what puts the fade above on the box rather than on the text: a box that shrank to
+   * its contents would fade a short name's own last letters. Narrower than a seat at its
+   * widest, because a name wider than the hexagon's flat top hangs off both sloping sides. */
   --Size-PlayerBarNameMax: 48px;
   /* How much of a name's box the fade takes, at the far end where it runs out of box. In `em`
    * of the name's own size, so it holds its weight against the text however that is sized. */

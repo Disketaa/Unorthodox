@@ -1,4 +1,5 @@
 import { Character } from '../Character';
+import characterStyles from '../Character/Character.module.css';
 import type { PlayerBarEntry } from './PlayerBar';
 import styles from './PlayerBar.module.css';
 
@@ -14,7 +15,14 @@ export interface PlayerBarSlotProps {
  * where a face alone asks them to remember who they picked. */
 export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
   const offline = entry.isOnline === false;
-  const classes = [styles.Seat, isSelf ? styles.Self : '', offline ? styles.Offline : '']
+  // The seat wears the player's own tint, the same class the character inside it wears. The seat
+  // cannot read that off the character, since a custom property set on it stays down there.
+  const classes = [
+    styles.Seat,
+    characterStyles[entry.color],
+    isSelf ? styles.Self : '',
+    offline ? styles.Offline : '',
+  ]
     .filter(Boolean)
     .join(' ');
 
