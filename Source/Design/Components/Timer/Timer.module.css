@@ -1,10 +1,16 @@
 .Root {
+  display: flex;
+  align-items: center;
+  gap: var(--Space-Sm);
+}
+
+.Track {
   position: relative;
-  height: 8px;
-  background: var(--Color-Surface-Hover);
-  border-radius: var(--Radius-Input);
+  flex: 1;
+  height: var(--Space-Sm);
+  background: var(--Color-Surface-Active);
+  border-radius: var(--Radius-Badge);
   overflow: hidden;
-  margin-top: var(--Space-Sm);
 }
 
 .Bar {
@@ -12,21 +18,16 @@
   top: 0;
   left: 0;
   height: 100%;
-  background: var(--Color-Action-Primary-Background);
+  background: var(--Color-Feedback-Info);
   transition: width var(--Duration-Normal) var(--Easing-Standard);
 }
 
-.Urgent {
-  background: var(--Color-Feedback-Error);
-}
-
+/* Tabular figures, or the seconds change width ten times a second and the bar beside them
+ * twitches under it. A copy of the `Caption` primitive's type rather than the primitive itself,
+ * which takes no `className` and so cannot be given the figures. */
 .Text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   font-family: var(--FontFamily-Body);
-  font-size: var(--FontSize-Sm);
-  color: var(--Color-Text-Default);
-  font-weight: 600;
+  font-size: var(--FontSize-Caption);
+  color: var(--Color-Text-Muted);
+  font-variant-numeric: tabular-nums;
 }

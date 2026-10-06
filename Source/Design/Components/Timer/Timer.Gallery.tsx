@@ -1,15 +1,14 @@
-import { Timer } from "./Timer";
-import { Stack } from "@/Design/Primitives";
-import { Text } from "@/Design/Primitives";
+import { Timer } from './Timer';
+import { Stack, Text } from '@/Design/Primitives';
 
 export function TimerGallery() {
   return (
     <Stack direction="Vertical" gap="Md">
-      <Text variant="Body">Timer Examples</Text>
-      <Timer remainingMs={30000} totalMs={60000} />
-      <Timer remainingMs={10000} totalMs={60000} />
-      <Timer remainingMs={5000} totalMs={60000} />
-      <Timer remainingMs={1000} totalMs={60000} />
+      <Text variant="Body">Timer</Text>
+      <Timer remainingMs={60_000} totalMs={60_000} />
+      <Timer remainingMs={30_000} totalMs={60_000} />
+      <Timer remainingMs={10_000} totalMs={60_000} />
+      <Timer remainingMs={0} totalMs={60_000} />
     </Stack>
   );
 }
