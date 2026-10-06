@@ -32,7 +32,12 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test -- --run
+      # Vite inlines import.meta.env at build time, so the TURN credential has to reach the build
+      # as an environment variable rather than as a file in the repository. It is a repository
+      # secret, which keeps it out of git history and out of the built bundle's source map.
       - run: npm run build
+        env:
+          VITE_TURN_CREDENTIAL: ${{ secrets.VITE_TURN_CREDENTIAL }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
