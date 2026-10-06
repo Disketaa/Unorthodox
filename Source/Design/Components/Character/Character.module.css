@@ -39,10 +39,14 @@
  * two it is. */
 .Moving {
   composes: Moving from '../../Primitives/Sway/Sway.module.css';
+  /* Named here rather than in the sway itself: the sway ships as a variable, so whoever wears
+   * it writes the one `animation` list. See `Sway.module.css` for why it is not a property. */
+  animation: var(--Sway-Animation);
 }
 
 .Still {
   composes: Still from '../../Primitives/Sway/Sway.module.css';
+  animation: var(--Sway-Animation);
 }
 
 /* Tints. Each names a palette entry from Tokens.css and nothing else, so a new tint is one line

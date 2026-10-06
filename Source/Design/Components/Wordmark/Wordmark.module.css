@@ -26,6 +26,9 @@
  * and read here, which works because a custom property inherits. */
 .Moving {
   composes: Moving from '../../Primitives/Sway/Sway.module.css';
+  /* The sway ships as a variable rather than as the `animation` property, so this is where the
+   * list is named. Nothing else wears a second movement on this node, so the list is the sway. */
+  animation: var(--Sway-Animation);
 }
 
 /* The name itself, for anything reading the page rather than looking at it, which is what a

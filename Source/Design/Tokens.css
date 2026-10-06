@@ -248,6 +248,24 @@ body.PageFade {
    * because a lift a player can name stops being a breath and becomes a flash. */
   --Scale-Pulse-Brightness: 1.15;
 
+  /* How long the blink on a card takes, up to its peak and back down. Half a turn: the movement
+   * and the rest are two halves of one, so a card cannot drift out of step with itself. */
+  --Duration-Blink: 2000ms;
+
+  /* How long the whole turn runs, the blink and the rest both. Written out rather than summed
+   * from `--Duration-Blink`, because `calc()` inside a keyframe selector is stripped by the
+   * build and leaves an invalid stop that drops the whole movement. */
+  --Duration-BlinkTurn: 4000ms;
+
+  /* How much brighter a blinking card goes at its peak. A ratio, so the whole card lifts by the
+   * same amount whatever colour the theme wrote into it, and shallow for the same reason the
+   * button's is: a lift a player can name is a flash. */
+  --Scale-Blink-Brightness: 0.95;
+
+  /* How far into its own turn each card starts, per place in the row: the one number that turns
+   * six cards blinking at once into a wave travelling along them. */
+  --Blink-Stagger: 500ms;
+
   /* How long the pop takes, how far it squashes, and how far apart two appearances in a row
    * wait. One duration and one squash for every reaction, whether a character is arriving or
    * reacting to being chosen, so the two are unmistakably the same movement. Over-tall rather

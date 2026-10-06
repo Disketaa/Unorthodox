@@ -26,6 +26,9 @@ export interface ThemeCardProps {
   /** Whether the card idles. On by default, since a still card is the odd one out; off for a
    * gallery row or anything already moving. */
   moving?: boolean;
+  /** Whether the card blinks. On by default for a bank of them being offered, where the row is
+   * the thing being drawn to; off wherever the card is a record of something already chosen. */
+  blink?: boolean;
 }
 
 /** The theme's own first letter, as the card's substance. One letter, not an abbreviation: the
@@ -35,12 +38,15 @@ function initialOf(name: string) {
   return [...name.trim()][0] ?? '';
 }
 
-/** The custom properties the stylesheet reads the theme's own accent out of. */
-const Properties = {
-  wash: '--ThemeCard-Wash',
-  ink: '--ThemeCard-Ink',
-  tint: '--ThemeCard-Tint',
-} as const;
+/** The card's own place in the turn of the blink, as places from the first, so the wave is one
+ * value per card rather than six cards handed six delays. */
+function writeTheme(node: HTMLElement, theme: ThemeId, index: number) {
+  const accent = themeAccent(theme);
+  node.style.setProperty('--ThemeCard-Wash', accent.wash);
+  node.style.setProperty('--ThemeCard-Ink', accent.ink);
+  node.style.setProperty('--ThemeCard-Tint', accent.tint);
+  node.style.setProperty('--Blink-Offset', String(index - 1));
+}
 
 /** One theme, as a card with its name on it. A button rather than a `Card` inside one, since
  * `Card` paints an opaque surface and takes no `className`, so a wash underneath would never be
@@ -53,21 +59,21 @@ export function ThemeCard({
   spent = 0,
   onPick,
   moving = true,
+  blink = true,
 }: ThemeCardProps) {
   const motion = useSwayMotion<HTMLButtonElement>();
 
   useEffect(() => {
-    const node = motion.current;
-    if (node === null) {
-      return;
+    if (motion.current !== null) {
+      writeTheme(motion.current, theme, index);
     }
-    const accent = themeAccent(theme);
-    node.style.setProperty(Properties.wash, accent.wash);
-    node.style.setProperty(Properties.ink, accent.ink);
-    node.style.setProperty(Properties.tint, accent.tint);
-  }, [theme, motion]);
+  }, [theme, index, motion]);
 
-  const classes = `${styles.Root} ${moving ? styles.Moving : styles.Still}`;
+  const classes = [
+    styles.Root,
+    moving ? styles.Moving : styles.Still,
+    blink ? styles.Blink : '',
+  ].join(' ');
 
   return (
     <button

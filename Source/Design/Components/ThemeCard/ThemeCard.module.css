@@ -31,6 +31,9 @@
    * ends up with the word high and the bar low and neither of them at the middle of the card. */
   gap: var(--Space-Xs);
   --ThemeCard-Surface: var(--Color-Surface-Hover);
+  /* The one place on this node that writes `animation`: the sway lands later in the built
+   * stylesheet, so two declarations of it means the blink is dropped every time. */
+  animation: var(--Sway-Animation), var(--ThemeCard-Animation);
   background: var(--ThemeCard-Surface);
   color: var(--Color-Text-Default);
   /* No border, and the surface is one step down rather than the white the rest of the game
@@ -70,6 +73,40 @@
 
 .Still {
   composes: Still from '../../Primitives/Sway/Sway.module.css';
+}
+
+/* A filter rather than a layer over the fill, so the name and the ticks lift with the wash
+ * instead of the fill moving under writing that stayed put. `--Blink-Offset` shifts the turn
+ * per card, so a bank of six is a wave rather than a row blinking in unison. */
+.Blink {
+  --ThemeCard-Animation: ThemeCardBlink var(--Duration-BlinkTurn) var(--Easing-Smooth)
+    calc(var(--Blink-Stagger) * var(--Blink-Offset, 0)) infinite;
+}
+
+/* The blink and the rest drawn as one turn, since a pause as a second animation is a second
+ * thing to keep in step. Literal percentages, not the turn split multiplied in: the build
+ * strips a `calc()` out of a keyframe selector and drops the movement. */
+@keyframes ThemeCardBlink {
+  0% {
+    filter: none;
+  }
+
+  /* A quarter in rather than a half, because half this turn is the rest. */
+  25% {
+    filter: brightness(var(--Scale-Blink-Brightness));
+  }
+
+  /* Down at the half, then still for the rest of the turn. */
+  50%,
+  100% {
+    filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .Blink {
+    --ThemeCard-Animation: none;
+  }
 }
 
 /* The press, as a scale on `scale` rather than on `transform`. The sway animates `transform` on

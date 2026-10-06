@@ -4,14 +4,13 @@
  * behind it is rolled per instance, so no two move alike: the resting lean, the swing width,
  * the tempo, the step count, the jump keyword and the place in the cycle. */
 .Moving {
-  /* The fallbacks are what a thing looks like for the frame before its own values are written.
-   * The step count and the keyword travel as one finished `steps()` call, because the build
-   * strips a `var()` used *inside* the function and would leave an invalid timing that cancels
-   * the animation. */
-  animation: SwayBob 3s var(--Sway-Timing, steps(2, jump-none)) infinite;
-  /* A negative delay starts it partway into its cycle, which is what desynchronises them.
-   * Without it everything in a row would move in lockstep, which looks mechanical. */
-  animation-delay: calc(var(--Sway-Duration, 3s) * var(--Sway-Offset, 0) * -1);
+  /* One finished `steps()` call: the build strips a `var()` used *inside* the function and
+   * leaves a timing that cancels the animation. */
+  --Sway-Animation: SwayBob 3s var(--Sway-Timing, steps(2, jump-none))
+    calc(var(--Sway-Duration, 3s) * var(--Sway-Offset, 0) * -1) infinite;
+  /* Handed over rather than written onto `animation`, which is one property: a caller adding a
+   * second movement would be dropped by cascade order. The delay rides inside for the same
+   * reason, since a separate `animation-delay` would strip it from the caller's own entry. */
 }
 
 @keyframes SwayBob {
@@ -48,14 +47,18 @@
  * less motion. It keeps its resting lean, so a still row still looks like a row rather than a
  * row of upright icons. */
 .Still {
-  animation: none;
+  /* An empty movement rather than an `animation: none` declaration, so a caller writing the one
+   * `animation` list is not overwritten by this class landing later in the stylesheet. */
+  --Sway-Animation: none;
   transform: rotate(var(--Sway-Tilt, 0deg));
 }
 
-/* Honours the system setting, rather than swaying regardless. */
+/* Honours the system setting, rather than swaying regardless. Also a variable, so turning the
+ * sway off under `reduce` leaves the caller's list standing with this one item dropped out of
+ * it rather than dropping the whole list. */
 @media (prefers-reduced-motion: reduce) {
   .Moving {
-    animation: none;
+    --Sway-Animation: none;
     transform: rotate(var(--Sway-Tilt, 0deg));
   }
 }
