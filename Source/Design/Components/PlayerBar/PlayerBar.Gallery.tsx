@@ -29,7 +29,7 @@ export function PlayerBarGallery() {
         )}
         ownPlayerId="p3"
       />
-      <Text variant="Body">A player still at work, where their character would be</Text>
+      <Text variant="Body">The player whose turn it is, where their character would be</Text>
       <PlayerBar
         players={room.map((player) =>
           player.id === 'p2' ? { ...player, isTurning: true } : player,

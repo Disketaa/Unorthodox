@@ -26,6 +26,7 @@ function phaseOf(name: SessionPhaseName, startedAt = Date.now()): SessionPhase {
     playerPresence: new Map(),
     playerCount: 2,
     submittedCount: 0,
+    turnPlayerId: null,
   };
 }
 
@@ -62,16 +63,12 @@ function mount(phase: SessionPhase): {
 } {
   const container = document.createElement('div');
   document.body.appendChild(container);
-  act(() => {
-    render(<Count phase={phase} room={roomCode} />, container);
-  });
+  act(() => render(<Count phase={phase} room={roomCode} />, container));
   flush();
   return {
     read: () => container.textContent ?? '',
     move: (next: SessionPhase) => {
-      act(() => {
-        render(<Count phase={next} room={roomCode} />, container);
-      });
+      act(() => render(<Count phase={next} room={roomCode} />, container));
       flush();
     },
   };
@@ -179,8 +176,7 @@ describe('the numbers themselves', () => {
     const room = mount(phaseOf('Writing'));
     const seen = [room.read()];
     // Checked in the middle of each number's own second rather than on its boundary,
-    // so a count that started a beat early or late fails rather than passing on the
-    // seam between two of them.
+    // so a count that started a beat early or late fails rather than passing on the seam.
     pass(startVeilMs + 100);
     seen.push(room.read());
     pass(1000);

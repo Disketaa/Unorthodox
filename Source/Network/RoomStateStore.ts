@@ -2,6 +2,7 @@
  * refreshes has not left the room: without this, the room they come back to is a new one. In
  * `localStorage` rather than `sessionStorage`, because what survives a refresh is per-tab. */
 import type { HostState } from '@/Game';
+import * as Game from '@/Game';
 import { clearCountIn } from './CountIn';
 import { forgetHosting } from './RoomOwnership';
 import { decodeRoomState, encodeRoomState } from './RoomStateCodec';
@@ -15,12 +16,7 @@ function keyFor(roomCode: string): string {
 
 /** A room with nobody in it, which is what a code this tab has never hosted means. */
 export function freshLobby(): HostState {
-  return {
-    phase: 'Lobby',
-    players: new Map(),
-    cumulativeScores: new Map(),
-    pace: 'Standard',
-  };
+  return Game.freshLobbyState();
 }
 
 /** Write the room's state. Nothing here is worth breaking a round over: a tab with storage

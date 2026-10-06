@@ -178,6 +178,12 @@ export class HostSession {
     this.apply({ type: 'KICK', playerId });
   }
 
+  /** Hand the turn to the next player in lobby join order. Only the host calls this, and a
+   * client pressing it would be two people moving the same turn. */
+  nextTurn(): void {
+    this.apply({ type: 'NEXT_TURN' });
+  }
+
   rejectOwnGroup(groupId: number): void {
     this.apply({ type: 'REJECT_GROUP', playerId: HostPlayerId, groupId });
   }

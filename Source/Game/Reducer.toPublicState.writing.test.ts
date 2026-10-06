@@ -12,6 +12,7 @@ describe('toPublicState Writing state', () => {
       answers: new Map([['p1', 'Ans1'], ['p2', 'Ans2']]),
       players: new Map(),
       cumulativeScores: new Map(),
+      turnPlayerId: null,
     };
     const publicState = toPublicState(state);
     expect(publicState.phase).toBe('Writing');

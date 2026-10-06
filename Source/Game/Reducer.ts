@@ -1,19 +1,14 @@
-import { PlayerId } from '@/Core';
-import { HostState } from './GameState';
+import { HostState, freshLobbyState } from './GameState';
 import { assertNever } from '@/Core';
 import { GameAction, handleStartGame, handleSubmitAnswer, handleStartReviewing, handleRejectGroup, handleEndReviewing, handleNextRound, handleFinal } from './GameActions';
+import { handleNextTurn } from './Turns';
 import { handleJoin, handleSetLook, handleSetOnline, handleKick, handleSetPace } from './LobbyActions';
 
 export function reducer(
   currentState: HostState | undefined,
   action: GameAction
 ): HostState {
-  const state: HostState = currentState ?? {
-    phase: 'Lobby',
-    players: new Map(),
-    cumulativeScores: new Map<PlayerId, number>(),
-    pace: 'Standard',
-  };
+  const state: HostState = currentState ?? freshLobbyState();
 
   switch (action.type) {
     case 'JOIN':
@@ -38,6 +33,8 @@ export function reducer(
       return handleEndReviewing(state, action);
     case 'NEXT_ROUND':
       return handleNextRound(state, action);
+    case 'NEXT_TURN':
+      return handleNextTurn(state);
     case 'FINAL':
       return handleFinal(state);
     default:

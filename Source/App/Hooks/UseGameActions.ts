@@ -11,6 +11,7 @@ export interface GameActions {
   setLook: (character: CharacterId, color: CharacterColor) => void;
   setPace: (pace: Pace) => void;
   addBot: () => void;
+  nextTurn: () => void;
   submitAnswer: (text: string) => void;
   rejectGroup: (groupId: number) => void;
   playAgain: () => void;
@@ -48,6 +49,7 @@ export function useGameActions(
     setLook: (character, color) => session.setLook({ character, color }),
     setPace: (pace) => session.setPace(pace),
     addBot: () => session.addBot(),
+    nextTurn: () => session.nextTurn(),
     submitAnswer: (text: string) => {
       session.submitAnswer(text);
       onSubmitted();

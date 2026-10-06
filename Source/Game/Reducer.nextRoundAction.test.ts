@@ -11,6 +11,7 @@ describe('reducer NEXT_ROUND action', () => {
       scores: new Map([['p1', 3]]),
       players: new Map(),
       cumulativeScores: new Map(),
+      turnPlayerId: null,
     };
     state = reducer(state, { type: 'NEXT_ROUND', topic: 'New Topic', durationMs: 60000, startedAt: 2000 });
     expect(state.phase).toBe('Writing');

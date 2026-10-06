@@ -36,6 +36,8 @@ export interface Session {
   addBot(): void;
   submitAnswer(text: string): void;
   rejectGroup(groupId: number): void;
+  /** Give the room's turn to the next player in join order. Only the host calls this. */
+  nextTurn(): void;
   startGame(topic: string, durationMs: number): void;
   closePhase(durationMs: number): void;
   startNextRound(topic: string, durationMs: number): void;

@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { InfoScreen, LobbyDebugTools } from '@/Screens';
+import { InfoScreen, LobbyDebugTools, TurnDebugTools } from '@/Screens';
 import { Strings } from '@/Content';
 import { PlayerLook, assertNever } from '@/Core';
 import { Stack } from '@/Design/Primitives';
@@ -133,7 +133,10 @@ function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
       {!counting && (
         <DebugDock enabled={debugEnabled} label={Strings.lobby.debugOn}>
           {view.isHost && (
-            <LobbyDebugTools publicState={view.publicState} onAddBot={view.addBot} />
+            <>
+              <LobbyDebugTools publicState={view.publicState} onAddBot={view.addBot} />
+              <TurnDebugTools publicState={view.publicState} onNextTurn={view.nextTurn} />
+            </>
           )}
         </DebugDock>
       )}

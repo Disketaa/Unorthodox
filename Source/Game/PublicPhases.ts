@@ -8,6 +8,7 @@ import type {
   PublicReviewingState,
   PublicScoresState,
   PublicWritingState,
+  PublicTurn,
 } from './PublicState';
 
 /** One phase of the host's state, as a client is told about it. Every phase sends the roster, so
@@ -28,11 +29,16 @@ function totalsOf(scores: ReadonlyMap<PlayerId, number>): { id: PlayerId; score:
   return totals;
 }
 
+/** The room's turn, as every phase carries it. */
+function turn(state: HostState): PublicTurn {
+  return { turnPlayerId: state.turnPlayerId };
+}
+
 export function toPublicLobbyState(state: HostState): PublicLobbyState {
   if (state.phase !== 'Lobby') {
     throw new Error('Invalid state for Lobby');
   }
-  return { phase: 'Lobby', players: publicPlayers(state), pace: state.pace };
+  return { ...turn(state), phase: 'Lobby', players: publicPlayers(state), pace: state.pace };
 }
 
 export function toPublicWritingState(state: HostState): PublicWritingState {
@@ -40,6 +46,7 @@ export function toPublicWritingState(state: HostState): PublicWritingState {
     throw new Error('Invalid state for Writing');
   }
   return {
+    ...turn(state),
     phase: 'Writing',
     topic: state.topic,
     durationMs: state.durationMs,
@@ -61,6 +68,7 @@ export function toPublicReviewingState(state: HostState): PublicReviewingState {
     playerCount: group.answers.length,
   }));
   return {
+    ...turn(state),
     phase: 'Reviewing',
     topic: state.topic,
     durationMs: state.durationMs,
@@ -75,6 +83,7 @@ export function toPublicScoresState(state: HostState): PublicScoresState {
     throw new Error('Invalid state for Scores');
   }
   return {
+    ...turn(state),
     phase: 'Scores',
     durationMs: state.durationMs,
     startedAt: state.startedAt,
@@ -89,6 +98,7 @@ export function toPublicFinalState(state: HostState): PublicFinalState {
     throw new Error('Invalid state for Final');
   }
   return {
+    ...turn(state),
     phase: 'Final',
     durationMs: 0,
     players: publicPlayers(state),

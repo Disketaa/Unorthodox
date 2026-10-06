@@ -24,6 +24,7 @@ const writingPhase: HostState = {
   answers: new Map([['host', 'раз']]),
   players: new Map(),
   cumulativeScores: new Map([['host', 7]]),
+  turnPlayerId: null,
 };
 
 /** The same round once the room has moved on to reading the answers. */
@@ -36,6 +37,7 @@ const reviewingPhase: HostState = {
   groupRejections: new Map([[1, new Set(['host', 'p1'])]]),
   players: new Map(),
   cumulativeScores: new Map([['host', 7]]),
+  turnPlayerId: null,
 };
 
 const scoresPhase: HostState = {
@@ -45,12 +47,14 @@ const scoresPhase: HostState = {
   scores: new Map([['host', 10]]),
   players: new Map(),
   cumulativeScores: new Map([['host', 10]]),
+  turnPlayerId: null,
 };
 
 const finalPhase: HostState = {
   phase: 'Final',
   players: new Map(),
   cumulativeScores: new Map([['host', 10]]),
+  turnPlayerId: null,
 };
 
 describe('a room that outlives its tab', () => {
@@ -126,5 +130,15 @@ describe('what comes back', () => {
   it('round-trips a state it was never asked about', () => {
     const lobby = freshLobby();
     expect(resume(lobby)).toEqual(lobby);
+  });
+
+  it('comes back with the turn still held, since a turn outlives the tab holding it', () => {
+    const held = { ...writingPhase, turnPlayerId: 'p1' };
+    expect(resume(held)?.turnPlayerId).toBe('p1');
+  });
+
+  it('comes back with nobody holding the turn in a room stored before turns existed', () => {
+    const stored = { ...encodeRoomState(writingPhase), turnPlayerId: undefined };
+    expect(decodeRoomState(stored)?.turnPlayerId).toBeNull();
   });
 });

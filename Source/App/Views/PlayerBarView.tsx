@@ -30,6 +30,7 @@ export function PlayerBarView({ view }: PhaseViewProps) {
       character: look.character,
       color: look.color,
       isOnline: view.playerPresence.get(id) ?? true,
+      isTurning: id === view.turnPlayerId,
     };
   });
 

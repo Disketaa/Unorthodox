@@ -14,6 +14,7 @@ describe('toPublicState Lobby state', () => {
         ['p2', { name: 'Bob', look: otherLook, isOnline: false }],
       ]),
       cumulativeScores: new Map(),
+      turnPlayerId: null,
       pace: 'Standard',
     };
     const publicState = toPublicState(state);

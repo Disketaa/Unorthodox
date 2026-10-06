@@ -16,6 +16,7 @@ function lobby(): HostState {
       ['p2', { name: 'Боря', look, isOnline: true }],
     ]),
     cumulativeScores: new Map(),
+    turnPlayerId: null,
     pace: 'Standard',
   };
 }

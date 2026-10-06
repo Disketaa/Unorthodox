@@ -8,6 +8,7 @@ describe('toPublicState Final state', () => {
       phase: 'Final',
       players: new Map(),
       cumulativeScores: new Map([['p1', 10], ['p2', 5]]),
+      turnPlayerId: null,
     };
     const publicState = toPublicState(state);
     expect(publicState.phase).toBe('Final');

@@ -15,6 +15,7 @@ export type GameAction =
   | { type: 'REJECT_GROUP'; playerId: PlayerId; groupId: number }
   | { type: 'END_REVIEWING'; startedAt: number; durationMs: number }
   | { type: 'NEXT_ROUND'; topic: string; durationMs: number; startedAt: number }
+  | { type: 'NEXT_TURN' }
   | { type: 'FINAL' };
 
 export type ActionOf<T extends GameAction['type']> = Extract<GameAction, { type: T }>;
@@ -31,6 +32,7 @@ export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>
     answers: new Map<PlayerId, string>(),
     players: state.players,
     cumulativeScores: state.cumulativeScores,
+    turnPlayerId: state.turnPlayerId,
   };
 }
 
@@ -51,6 +53,7 @@ export function handleSubmitAnswer(
     answers: newAnswers,
     players: state.players,
     cumulativeScores: state.cumulativeScores,
+    turnPlayerId: state.turnPlayerId,
   };
 }
 
@@ -70,6 +73,7 @@ export function handleStartReviewing(
     groupRejections: new Map<number, Set<PlayerId>>(),
     players: state.players,
     cumulativeScores: state.cumulativeScores,
+    turnPlayerId: state.turnPlayerId,
   };
 }
 
@@ -93,6 +97,7 @@ export function handleRejectGroup(
     groupRejections: newGroupRejections,
     players: state.players,
     cumulativeScores: state.cumulativeScores,
+    turnPlayerId: state.turnPlayerId,
   };
 }
 
@@ -111,6 +116,7 @@ export function handleEndReviewing(
     scores: roundScores,
     players: state.players,
     cumulativeScores,
+    turnPlayerId: state.turnPlayerId,
   };
 }
 
@@ -129,6 +135,7 @@ export function handleNextRound(state: HostState, action: ActionOf<'NEXT_ROUND'>
     answers: new Map<PlayerId, string>(),
     players: state.players,
     cumulativeScores: state.cumulativeScores,
+    turnPlayerId: state.turnPlayerId,
   };
 }
 
@@ -140,5 +147,6 @@ export function handleFinal(state: HostState): HostState {
     phase: 'Final',
     players: state.players,
     cumulativeScores: state.cumulativeScores,
+    turnPlayerId: state.turnPlayerId,
   };
 }

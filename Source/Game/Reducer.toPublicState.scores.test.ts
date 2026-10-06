@@ -11,6 +11,7 @@ describe('toPublicState Scores state', () => {
       scores: new Map([['p1', 3], ['p2', 1]]),
       players: new Map(),
       cumulativeScores: new Map(),
+      turnPlayerId: null,
     };
     const publicState = toPublicState(state);
     expect(publicState.phase).toBe('Scores');

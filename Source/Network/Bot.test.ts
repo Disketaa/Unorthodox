@@ -13,7 +13,7 @@ function lobby(...names: string[]): HostState {
   names.forEach((name, index) => {
     players.set(`p${index + 1}`, { name, look, isOnline: true });
   });
-  return { phase: 'Lobby', players, cumulativeScores: new Map(), pace: 'Standard' };
+  return { phase: 'Lobby', players, cumulativeScores: new Map(), turnPlayerId: null, pace: 'Standard' };
 }
 
 /** A fixed seed, so a roll is the same on every run and the test means something. */
@@ -53,6 +53,7 @@ describe('botJoin', () => {
       answers: new Map(),
       players: new Map(),
       cumulativeScores: new Map(),
+      turnPlayerId: null,
     };
     expect(botJoin(writing, 1, seeded())).toBeUndefined();
   });

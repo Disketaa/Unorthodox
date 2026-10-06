@@ -54,7 +54,11 @@ export function encodeRoomState(state: HostState): Record<string, unknown> {
   const scores = [...state.cumulativeScores.entries()];
   // Every phase writes the roster out: the seats are how a returning player is recognised and how
   // the bar of players knows who to draw, so a resumed room without them is a room of faceless seats.
-  const members = { players: [...state.players.entries()], scores };
+  const members = {
+    players: [...state.players.entries()],
+    scores,
+    turnPlayerId: state.turnPlayerId,
+  };
   if (state.phase === 'Lobby') {
     return { ...members, phase: state.phase, pace: state.pace };
   }
@@ -101,56 +105,72 @@ function clockOf(fields: Fields): { durationMs: number; startedAt: number } {
   return { durationMs: number(fields, 'durationMs'), startedAt: number(fields, 'startedAt') };
 }
 
+/** What every phase of a stored room carries whatever it is doing. One shape, because the seats,
+ * the totals and the turn all outlive the phase they were written in. */
+interface Members {
+  scores: Map<PlayerId, number>;
+  players: Map<PlayerId, Player>;
+  turnPlayerId: PlayerId | null;
+}
+
+/** The room's turn, absent in a room stored before turns existed. */
+function turnFrom(fields: Fields): PlayerId | null {
+  const value = fields.get('turnPlayerId');
+  return typeof value === 'string' ? value : null;
+}
+
+/** The seats, totals and turn a stored room comes back with. */
+function membersFrom(fields: Fields): Members {
+  return {
+    scores: toMap(rawPairs(fields, 'scores'), isNumber),
+    players: toMap(rawPairs(fields, 'players'), isPlayer),
+    turnPlayerId: turnFrom(fields),
+  };
+}
+
 /** The two untimed phases, which carry no clock at all. */
-function plainFrom(
-  fields: Fields,
-  members: { scores: Map<PlayerId, number>; players: Map<PlayerId, Player> },
-): HostState | undefined {
-  const { scores, players } = members;
+function plainFrom(fields: Fields, members: Members): HostState | undefined {
+  const { scores, players, turnPlayerId } = members;
   switch (fields.get('phase')) {
     case 'Lobby':
       return {
         phase: 'Lobby',
         players,
         cumulativeScores: scores,
+        turnPlayerId,
         pace: fields.get('pace') === 'Fast' ? 'Fast' : 'Standard',
       };
     case 'Final':
-      return { phase: 'Final', players, cumulativeScores: scores };
+      return { phase: 'Final', players, cumulativeScores: scores, turnPlayerId };
     default:
       return undefined;
   }
 }
 
-/** The three timed phases, which all read the same clock and the same roster. */
-function timedFrom(
-  fields: Fields,
-  members: { scores: Map<PlayerId, number>; players: Map<PlayerId, Player> },
-): HostState | undefined {
-  const clock = clockOf(fields);
-  const topic = text(fields, 'topic');
-  const answers = toMap(rawPairs(fields, 'answers'), isText);
-  const { scores, players } = members;
+/** The three timed phases, which all read the same clock, roster and turn. */
+function timedFrom(fields: Fields, members: Members): HostState | undefined {
+  const { scores, players, turnPlayerId } = members;
+  const common = {
+    ...clockOf(fields),
+    topic: text(fields, 'topic'),
+    answers: toMap(rawPairs(fields, 'answers'), isText),
+    players,
+    cumulativeScores: scores,
+    turnPlayerId,
+  };
   switch (fields.get('phase')) {
     case 'Writing':
-      return { phase: 'Writing', ...clock, topic, answers, players, cumulativeScores: scores };
+      return { phase: 'Writing', ...common };
     case 'Reviewing':
-      return {
-        phase: 'Reviewing',
-        ...clock,
-        topic,
-        answers,
-        groupRejections: toRejections(fields),
-        players,
-        cumulativeScores: scores,
-      };
+      return { phase: 'Reviewing', ...common, groupRejections: toRejections(fields) };
     case 'Scores':
       return {
         phase: 'Scores',
-        ...clock,
+        ...clockOf(fields),
         scores: toMap(rawPairs(fields, 'round'), isNumber),
         players,
         cumulativeScores: scores,
+        turnPlayerId,
       };
     default:
       return undefined;
@@ -160,9 +180,6 @@ function timedFrom(
 /** The state back, or undefined when what was stored is not a state we can resume. */
 export function decodeRoomState(stored: unknown): HostState | undefined {
   const fields = fieldsOf(stored);
-  const members = {
-    scores: toMap(rawPairs(fields, 'scores'), isNumber),
-    players: toMap(rawPairs(fields, 'players'), isPlayer),
-  };
+  const members = membersFrom(fields);
   return plainFrom(fields, members) ?? timedFrom(fields, members);
 }

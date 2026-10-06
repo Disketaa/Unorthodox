@@ -11,6 +11,7 @@ function lobby(): HostState {
     phase: 'Lobby',
     players: new Map([['p1', { name: 'Alice', look, isOnline: true }]]),
     cumulativeScores: new Map(),
+    turnPlayerId: null,
     pace: 'Standard',
   };
 }
@@ -42,6 +43,7 @@ describe('reducer SET_PACE action', () => {
       answers: new Map(),
       players: new Map(),
       cumulativeScores: new Map(),
+      turnPlayerId: null,
     };
     expect(reducer(writing, { type: 'SET_PACE', pace: 'Fast' })).toBe(writing);
   });

@@ -18,7 +18,14 @@ export interface PublicPlayer {
   isOnline: boolean;
 }
 
-export type PublicLobbyState = {
+/** What every phase tells a client about the room itself. The turn rides on all of them rather
+ * than on one, because it outlives phases and the bar of players reads it in every one. */
+export interface PublicTurn {
+  /** Whose turn it is, or null in a room nobody has played in yet. */
+  turnPlayerId: PlayerId | null;
+}
+
+export type PublicLobbyState = PublicTurn & {
   phase: 'Lobby';
   players: PublicPlayer[];
   /** The pace the host has set. Sent to every client because the settings card is drawn for
@@ -27,7 +34,7 @@ export type PublicLobbyState = {
   pace: Pace;
 };
 
-export type PublicWritingState = {
+export type PublicWritingState = PublicTurn & {
   phase: 'Writing';
   topic: string;
   durationMs: number;
@@ -40,7 +47,7 @@ export type PublicWritingState = {
   players: PublicPlayer[];
 };
 
-export type PublicReviewingState = {
+export type PublicReviewingState = PublicTurn & {
   phase: 'Reviewing';
   topic: string;
   durationMs: number;
@@ -49,7 +56,7 @@ export type PublicReviewingState = {
   groups: { groupId: number; text: string; playerCount: number }[];
 };
 
-export type PublicScoresState = {
+export type PublicScoresState = PublicTurn & {
   phase: 'Scores';
   durationMs: number;
   startedAt: number;
@@ -59,7 +66,7 @@ export type PublicScoresState = {
   cumulative: { id: PlayerId; score: number }[];
 };
 
-export type PublicFinalState = {
+export type PublicFinalState = PublicTurn & {
   phase: 'Final';
   durationMs: number;
   players: PublicPlayer[];

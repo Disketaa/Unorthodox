@@ -112,6 +112,11 @@ Coral: 'Коралл',
     nextRound: 'Следующий раунд',
     waitingForHost: 'Ждём следующий раунд',
   },
+  /** The room's own turn, said from the console rather than drawn as a game rule. */
+  turn: {
+    /** Hands the turn to the next player, whoever the room has seated next. */
+    next: 'Следующий ход',
+  },
   /** What the game is doing right now, on the block above the theme bank. One sentence per
    * phase, in the first person: the sentence is about this browser's own moment, and a block
    * reading about somebody else while the player is doing it has to be translated. */

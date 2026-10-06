@@ -12,6 +12,7 @@ describe('reducer JOIN action', () => {
       phase: 'Lobby',
       players: new Map(),
       cumulativeScores: new Map(),
+      turnPlayerId: null,
       pace: 'Standard',
     };
     state = reducer(state, { type: 'JOIN', playerId: 'p1', name: 'Alice', look });
@@ -33,6 +34,7 @@ describe('reducer SET_LOOK action', () => {
     phase: 'Lobby',
     players: new Map([['p1', { name: 'Alice', look, isOnline: true }]]),
     cumulativeScores: new Map(),
+    turnPlayerId: null,
     pace: 'Standard',
   };
 
@@ -60,6 +62,7 @@ describe('reducer SET_LOOK action', () => {
       answers: new Map(),
       players: new Map(),
       cumulativeScores: new Map(),
+      turnPlayerId: null,
     };
     const state = reducer(writing, { type: 'SET_LOOK', playerId: 'p1', look: otherLook });
     // The roster is not carried into Writing, so the change is dropped and the

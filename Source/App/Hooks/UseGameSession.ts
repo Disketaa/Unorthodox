@@ -42,6 +42,8 @@ export interface GameSessionView extends SessionPhase {
   setPace: (pace: Pace) => void;
   /** Put an invented player in the room. Only the host's, and only while debugging. */
   addBot: () => void;
+  /** Hand the room's turn to the next player. Only the host's, and only while debugging. */
+  nextTurn: () => void;
   startGame: () => void;
   submitAnswer: (text: string) => void;
   rejectGroup: (groupId: number) => void;

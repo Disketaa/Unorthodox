@@ -19,6 +19,9 @@ export interface SessionPhase {
   playerPresence: ReadonlyMap<PlayerId, boolean>;
   playerCount: number;
   submittedCount: number;
+  /** Whose turn it is in the room, or null before anyone has had one. Sent by every phase, so
+   * this is the room's and not the round's. */
+  turnPlayerId: PlayerId | null;
 }
 
 /** The room, read as the three lookups the screens ask it for. The roster arrives in every
@@ -63,5 +66,6 @@ export function useSessionPhase(
     playerPresence: roster.presence,
     playerCount: roster.names.size,
     submittedCount: publicState?.phase === 'Writing' ? publicState.submittedCount : 0,
+    turnPlayerId: publicState?.turnPlayerId ?? null,
   };
 }

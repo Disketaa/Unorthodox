@@ -16,6 +16,9 @@ export interface Player {
 export interface RoomMembers {
   players: Map<PlayerId, Player>;
   cumulativeScores: Map<PlayerId, number>;
+  /** Whose turn it is, in roster order, or null in a room nobody has played in yet. Carried by
+   * every phase rather than by one, since a turn is the room's and not the round's. */
+  turnPlayerId: PlayerId | null;
 }
 
 export type LobbyState = RoomMembers & {
@@ -61,3 +64,15 @@ export type HostState =
   | ReviewingState
   | ScoresState
   | FinalState;
+
+/** A room with nobody in it and nobody holding the turn. One function rather than three
+ * literals, so a new room cannot be shaped differently from a resumed one. */
+export function freshLobbyState(): LobbyState {
+  return {
+    phase: 'Lobby',
+    players: new Map(),
+    cumulativeScores: new Map(),
+    turnPlayerId: null,
+    pace: 'Standard',
+  };
+}

@@ -12,6 +12,7 @@ describe('reducer SUBMIT_ANSWER action', () => {
       answers: new Map(),
       players: new Map(),
       cumulativeScores: new Map(),
+      turnPlayerId: null,
     };
     state = reducer(state, { type: 'SUBMIT_ANSWER', playerId: 'p1', text: 'Answer1' });
     if (state.phase === 'Writing') {
@@ -30,6 +31,7 @@ describe('reducer SUBMIT_ANSWER action', () => {
       answers: new Map([['p1', 'Answer1']]),
       players: new Map(),
       cumulativeScores: new Map(),
+      turnPlayerId: null,
     };
     state = reducer(state, { type: 'SUBMIT_ANSWER', playerId: 'p1', text: 'Answer2' });
     if (state.phase === 'Writing') {

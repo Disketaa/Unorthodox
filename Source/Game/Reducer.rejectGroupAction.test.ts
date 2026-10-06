@@ -14,6 +14,7 @@ describe('reducer REJECT_GROUP action', () => {
       groupRejections: new Map(),
       players: new Map(),
       cumulativeScores: new Map(),
+      turnPlayerId: null,
     };
     // We need to know the groupId for the answer. For simplicity, we'll assume the groupId is 0.
     // In reality, the groupId is determined by the grouping algorithm.

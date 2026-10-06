@@ -28,7 +28,10 @@ function phaseMessage(view: GameSessionView, name: string): string {
  * The same block as the connecting screen, being the same situation seen during the game. No
  * line under it, so it does not read as progress: nothing here is measured. */
 export function PhaseInfoView({ view }: PhaseViewProps) {
-  const name = view.playerId === null ? '' : (view.playerNames.get(view.playerId) ?? '');
+  // The name is the turn holder's rather than this browser's own, so the sentence reads the same
+  // on every screen in the room: a player reading about somebody else is looking at the same
+  // sentence as everybody else.
+  const name = view.turnPlayerId === null ? '' : (view.playerNames.get(view.turnPlayerId) ?? '');
   return (
     <Stack align="Center">
       <Banner align="Center" mark="Loading">
