@@ -2,7 +2,7 @@ import { useState } from 'preact/hooks';
 import { InfoScreen, LobbyDebugTools } from '@/Screens';
 import { Strings } from '@/Content';
 import { PlayerLook, assertNever } from '@/Core';
-import { Stack, ViewportCenter } from '@/Design/Primitives';
+import { Stack } from '@/Design/Primitives';
 import { DebugDock, StartCountdown } from '@/Design/Overlays';
 import { useGameSession } from './Hooks/UseGameSession';
 import { useDebugToggle } from './Hooks/UseDebugToggle';
@@ -43,8 +43,8 @@ function blockedMessage(reason: BlockedReason, roomLimit: number): string {
 }
 
 /** The stage the game plays on: a note at the top with this player's card under it, themes
- * below. A `Stack` filling the height rather than a `Screen`, which is a grid of fixed-width
- * containers that capped every row at one readable column. */
+ * below. The bank sits under the card rather than in the middle of what is left: it was
+ * measured against the viewport, so it moved as the note above it changed height. */
 function GameScene({ view }: { view: GameSessionView }) {
   return (
     <Stack align="Center" gap="Md" grow clip>
@@ -52,9 +52,7 @@ function GameScene({ view }: { view: GameSessionView }) {
         <PhaseInfoView view={view} />
         <PlayerCardView view={view} />
       </Stack>
-      <ViewportCenter>
-        <ThemeCardsView roomCode={view.roomCode} />
-      </ViewportCenter>
+      <ThemeCardsView roomCode={view.roomCode} />
     </Stack>
   );
 }

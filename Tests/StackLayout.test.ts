@@ -38,11 +38,17 @@ describe('the row that fills itself', () => {
     expect(sheet.text).not.toContain('.FillContent');
   });
 
-  it('grows into the room its parent has left, and never shrinks below its contents', () => {
+  it('grows into the room its parent has left, and gives it back rather than overflowing it', () => {
     // `Screen` answers this for a whole page of containers; a row inside a page needs it
     // too, or a child that centres itself below a sibling has no space to be given.
-    // Shrink at 0 would squeeze the contents instead of letting the page scroll.
-    expect(sheet.ruleBody(/\.Grow\s*\{([^}]*)\}/)).toContain('flex:10auto');
+    //
+    // Shrinkable, at `0`, because a flex item's floor is its own contents: a bank of six cards
+    // stacked one per row is taller than the room on a phone, and a row that cannot shrink
+    // grows past the viewport instead, so the page scrolls and half the themes are below the
+    // fold. Shrinking is the whole of what stops that, and it only works with `min-height: 0`.
+    const grow = sheet.ruleBody(/\.Grow\s*\{([^}]*)\}/);
+    expect(grow).toContain('flex:11auto');
+    expect(grow).toContain('min-height:0');
   });
 
   it('leaves every other row at the height of what is in it', () => {

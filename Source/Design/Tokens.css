@@ -471,64 +471,23 @@ body.PageFade {
   --FontSize-Mono: var(--FontSize-Sm);
   --FontSize-Display: var(--FontSize-4xl);
 
-  /* How wide one theme card is, and the shape it keeps. Landscape on purpose: the names are one
-   * or two words, so a card taller than it is wide is mostly empty. Three across on a wide
-   * screen and two on a narrow one, decided by arithmetic rather than a width query — a card
-   * count is not something a `calc()` can hold, but the count a row ends up with only follows
-   * from the card's width, so this is the smaller of what two across and what three across
-   * allow. */
-  --Size-ThemeCardWidthThreeAcross: 140px;
+  /* How wide one theme card may be, and the cap the bank is held to. Not the width a card is
+   * actually drawn at: that is the row it is in, which only the row knows, and every size on a
+   * card follows the real width through `100cqw` rather than a prediction of it. This is the
+   * ceiling, so a bank is never wider than three cards and their gaps no matter how much room
+   * there is. Two across is the base because it is the count that reads on the most screens. */
+  --Size-ThemeCardWidthMax: 320px;
 
-  --Size-ThemeCardWidth: min(
-    320px,
-    min(
-      calc(
-        (100vw - var(--Space-ThemeCardsGap) - 2 * var(--Layout-ScreenPaddingHorizontal)) / 2
-      ),
-      max(
-        var(--Size-ThemeCardWidthThreeAcross),
-        calc(
-          (100vw - 2 * var(--Space-ThemeCardsGap) - 2 * var(--Layout-ScreenPaddingHorizontal)) /
-            3
-        )
-      )
-    )
-  );
-  /* How big the theme's own initial is on the card. A share of the card's width rather than a
-   * length, so it is the same fraction of a narrow card as of a wide one: the card narrows on a
-   * phone to fit two across, and a flat size would be a letter in the corner on one screen and
-   * a letter filling the card on another. A mark in the corner rather than the card's
-   * substance: roughly a sixth of the width, which is a letter you read without reading it. */
-  --FontSize-ThemeCardInitial: calc(var(--Size-ThemeCardWidth) * 0.0775);
+  /* The narrowest a card may be and still be worth picking, and the number the queries over the
+   * count are derived from. It is a card whose name is not cut to nothing, which is why the row
+   * gives up a column rather than the cards giving up their names. */
+  --Size-ThemeCardWidthMin: 140px;
 
-  /* The shape of a theme card, as a ratio of its width. A ratio rather than a height, so a card
-   * that narrows on a phone gets shorter with it and the six keep the proportions of the
-   * desktop arrangement. Ten by seven rather than a rounder figure: the name is set large on
-   * the card, and a squarer panel would put a word and a half of empty card above and below it. */
-  --Ratio-ThemeCard: 10 / 7;
-
-  /* How tall one theme card is allowed to be. The card's shape is its width through
-   * `--Ratio-ThemeCard`, which on a screen with room is the whole of its height. On a device
-   * turned on its side it is not: six cards are two rows of three, and at that shape they are
-   * taller than the window, so the second row is off the bottom. The room for two rows rather
-   * than a share of the screen, because two rows are what has to fit — what is left after the
-   * page's margins and the one gap, halved. The card keeps its width and loses height. */
-  --Size-ThemeCardHeightMax: calc(
-    (100dvh - 2 * var(--Layout-ScreenPaddingVertical) - var(--Space-ThemeCardsGap)) / 2
-  );
-  /* How large a theme's name is drawn. Its own token rather than one of the `--FontSize-H*`
-   * steps because it is the only name in the game that is the whole content of a panel: a
-   * single word with a third of a card under it, and at the section-heading step it read as a
-   * caption. A share of the card's own width rather than a size, so it shrinks with the card —
-   * a flat size would be right at one window and wrong at every other, since a fixed 36px name
-   * in a card half that wide is a caption again. */
-  --FontSize-ThemeCard: calc(var(--Size-ThemeCardWidth) * 0.115);
-  /* How large a card's own number is drawn behind its name. Far larger than the name and larger
-   * than the card, so the frame cuts it on two sides and what is left is most of a figure
-   * rather than the whole of one: a mark that fits inside the card is a second label, and this
-   * one is meant to be the panel's substance. A share of the card's width, so it holds on a
-   * phone as well as on a desktop. */
-  --FontSize-ThemeCardMark: calc(var(--Size-ThemeCardWidth) * 1.45);
+  /* The widths at which the bank changes count, as literals because a query cannot hold a
+   * `var()`. Each is the window at which one column becomes worth giving up or taking back,
+   * written out on `.Root` and checked against here in `Tests/ThemeCardsLayout.test.ts`. */
+  --Size-ThemeCardThreeAcrossWidth: 500px;
+  --Size-ThemeCardOneAcrossWidth: 330px;
   /* How far the figure is pushed past the card's centre towards its bottom right corner. In
    * `em` — the figure's own size — rather than a length or a share of the card, so it holds at
    * every card size: the card narrows on a phone and a fixed inset would put the figure back
@@ -579,21 +538,6 @@ body.PageFade {
    * long. */
   --Opacity-RoundMark: 1;
   --Opacity-RoundMarkSpent: 0.16;
-  /* How much room a theme name keeps inside its card. A share of the card's width, and that is
-   * the whole of how a narrow screen is handled: at a flat 16px a card on a phone is a
-   * twentieth of its width in padding twice over, and a card with that much of itself in
-   * padding has no room for a name. Sharing the width means the card is narrowed and then
-   * scaled — the name, the number behind it, the letter in its corner, the row of rounds and
-   * the panel that crops the number are all shares of the same width. */
-  --Space-ThemeCardPadding: calc(var(--Size-ThemeCardWidth) * 0.05);
-
-  /* How far the card's inner panel sits in from its edge. The panel is what crops the number
-   * behind the name, so this is the margin the figure is cut at: a panel flush with the edge
-   * would crop it where the card already did, and a panel set in further than the card's own
-   * padding would crop the name and the row of rounds with it. A share of the card's width
-   * rather than a length, for the reason the padding is one: on a phone a flat inset is a panel
-   * inside a card with almost nothing between them. */
-  --Space-ThemeCardInset: calc(var(--Size-ThemeCardWidth) * 0.025);
 
   /* The gap between theme cards: a bezel rather than a field. `clamp` against the window rather
    * than a share of the card, and that is forced: the card's width is measured from this gap,
@@ -601,15 +545,12 @@ body.PageFade {
    * subtracted from. A share of the *window* has no such problem — a third of the gap between
    * cards at the narrowest screen is enough to tell two cards apart, and a fixed 16px there is
    * a fifth of a card and a row of six with more space between them than on them. */
-  --Space-ThemeCardsGap: clamp(6px, 3vw, 16px);
-  /* How wide the bank of cards is allowed to be: three cards and the two gaps between them, and
-   * not one card more. The cap rather than a breakpoint, for the reason `--Layout-ColumnsMax`
-   * is one. The row wraps because the cards are a fixed width, so on a wide screen six of them
-   * would fit and the fourth would start a second row on its own — the middle of a bank of six
-   * reading as a row of four with a pair underneath. Capping the row at three means the fourth
-   * always starts a new row, without a stylesheet having to know how wide the window is. */
+--Space-ThemeCardsGap: clamp(6px, 3vw, 16px);
+  /* How wide the bank of cards is allowed to be: three cards at the cap and the two gaps
+   * between them, and not one card more. Three because the count never goes past three, so a
+   * row that could be four wide is stopped here rather than by another query. */
   --Layout-ThemeCardsMaxWidth: calc(
-    3 * var(--Size-ThemeCardWidth) + 2 * var(--Space-ThemeCardsGap)
+    3 * var(--Size-ThemeCardWidthMax) + 2 * var(--Space-ThemeCardsGap)
   );
 
   /* Layout, and how wide one container of a screen may be, and how many may sit side by side.

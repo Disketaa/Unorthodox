@@ -45,6 +45,16 @@
   border: none;
   border-radius: var(--Radius-Card);
   cursor: var(--Cursor-Pointer);
+  /* The card's own sizes, as shares of its width, resolved here rather than in the token file.
+   * A custom property's value is substituted where it is declared, not where it is used, so a
+   * chain at the root resolves against whatever the width token holds there — and it holds
+   * nothing, since the width is `100cqw` from inside the slot. At the root all five of these
+   * were guaranteed-invalid and every element using one fell back to an inherited size. */
+  --FontSize-ThemeCardInitial: calc(var(--Size-ThemeCardWidth) * 0.0775);
+  --FontSize-ThemeCard: calc(var(--Size-ThemeCardWidth) * 0.115);
+  --FontSize-ThemeCardMark: calc(var(--Size-ThemeCardWidth) * 1.45);
+  --Space-ThemeCardPadding: calc(var(--Size-ThemeCardWidth) * 0.05);
+  --Space-ThemeCardInset: calc(var(--Size-ThemeCardWidth) * 0.025);
   transition:
     background var(--Transition-Standard),
     border-color var(--Transition-Standard),

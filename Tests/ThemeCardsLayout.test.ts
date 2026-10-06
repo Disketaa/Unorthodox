@@ -14,23 +14,30 @@ const tokens = readFileSync(
   'utf8',
 );
 const tokenValue = tokenReader(tokens);
-/** A token written as a share of the card's width, as the number it multiplies it by. Several
- * things drawn on a theme card are shares of one width rather than lengths, which is how a
- * narrow screen scales the card instead of crowding it. Reading them as numbers is what lets a
- * test compare them with each other — an inset against a padding, a name's size against a
- * card's — without resolving a `calc()` a test DOM cannot lay out. */
 /** The gap between cards at the narrowest screen, which is the floor of its `clamp`. */
 function narrowestGap(): number {
   const match = tokenValue('--Space-ThemeCardsGap').match(/clamp\(\s*([0-9.]+)px/);
   if (match?.[1] === undefined) throw new Error('no floor in the gap between cards');
   return Number(match[1]);
 }
+/** A token written as a share of the card's width, as the number it multiplies it by. Several
+ * things drawn on a theme card are shares of one width rather than lengths, which is how a
+ * narrow screen scales the card instead of crowding it. Read from the card rather than the
+ * token file, since a share of a width the row decides can only be resolved where that width
+ * is. */
 function widthShare(name: string): number {
-  const match = tokens.match(
+  const match = card.text.match(
     new RegExp(`${name}:\\s*calc\\(\\s*var\\(--Size-ThemeCardWidth\\)\\s*\\*\\s*([0-9.]+)\\s*\\)`, 'i'),
   );
   if (match?.[1] === undefined) throw new Error(`no width share found for ${name}`);
   return Number(match[1]);
+}
+
+/** The value of a custom property the card declares for itself, whitespace gone. */
+function cardToken(name: string): string {
+  const match = card.text.match(new RegExp(`${name}:\\s*([^;]+);`, 'i'));
+  if (match?.[1] === undefined) throw new Error(`no ${name} on the card`);
+  return match[1].replace(/\s+/g, '');
 }
 /** The row of round ticks, and one of them. */
 const Meter = /\.Root\s*\{([^}]*)\}/;
@@ -40,6 +47,8 @@ const Spent = /\.Spent\s*\{([^}]*)\}/;
 const Root = /\.Root\s*\{([^}]*)\}/;
 /** One card's slot, which is where the card's shape is declared. */
 const Slot = /\.Slot\s*\{([^}]*)\}/;
+/** The card itself as the slot holds it, which is where the width is read. */
+const SlotCard = /\.Slot > \*\s*\{([^}]*)\}/;
 /** The card itself, and what is layered on it. */
 const Card = /\.Root\s*\{([^}]*)\}/;
 const CardMark = /\.Mark\s*\{([^}]*)\}/;
@@ -48,51 +57,104 @@ const InitialHover = /\.Root:hover \.Initial\s*\{([^}]*)\}/;
 const Noise = /\.Noise\s*\{([^}]*)\}/;
 const Name = /\.Name\s*\{([^}]*)\}/;
 describe('the row of theme cards', () => {
-  it('wraps into rows of three rather than scrolling sideways', () => {
-    // A bank the player has to swipe is a bank they never see whole, so the row wraps instead
-    // and the cap is what makes it three and three rather than four and two.
-    expect(sheet.declaration(Root, 'flex-wrap')).toBe('wrap');
-    expect(sheet.declaration(Root, 'gap')).toBe('var(--Space-ThemeCardsGap)');
-    expect(sheet.declaration(Root, 'max-width')).toBe('var(--Layout-ThemeCardsMaxWidth)');
+  it('fills the width it is given rather than sizing itself to its cards', () => {
+    // A row of `1fr` tracks cannot measure itself: the tracks are fractions of the row, and the
+    // row is as wide as the tracks. Inside a centred stack the row is measured from its contents
+    // instead, there is nothing to divide, and the whole bank collapses to nothing.
+    expect(sheet.declaration(Root, 'display')).toBe('grid');
+    expect(sheet.declaration(Root, 'width')).toBe('100%');
+    expect(sheet.declaration(Root, 'grid-template-columns')).toBe('repeat(2,minmax(0,1fr))');
   });
-  it('is three cards across or two, decided by the card width rather than a width query', () => {
-    // A card count is not something a `calc()` can hold, but the count a row ends up with is
-    // only ever a consequence of how wide the card is. So the width is the smaller of what two
-    // across would allow and what three across would allow, and the row is whatever that leaves
-    // room for -- which is why there is no query over the row and no second copy of the card.
-    //
-    // The smaller of the two rather than always the three: below about five hundred pixels the
-    // three-across card is around a hundred and forty wide, and a theme name cut to three
-    // letters on every one of six cards is not a choice anybody can make.
-    expect(tokenValue('--Size-ThemeCardWidth').replace(/\s+/g, '')).toBe(
-      'min(320px,min(calc((100vw-var(--Space-ThemeCardsGap)-2*var(--Layout-ScreenPaddingHorizontal))/2),' +
-        'max(var(--Size-ThemeCardWidthThreeAcross),' +
-          'calc((100vw-2*var(--Space-ThemeCardsGap)-2*var(--Layout-ScreenPaddingHorizontal))/3))))',
-    );
-const gap = narrowestGap();
-    const margin = Number(tokenValue('--Layout-ScreenPaddingHorizontal').replace('px', ''));
-    const worthThree = Number(tokenValue('--Size-ThemeCardWidthThreeAcross').replace('px', ''));
-    for (const screen of [254, 340, 375, 400, 500, 667, 1024]) {
-      const room = screen - 2 * margin;
-      const two = (room - gap) / 2;
-      const three = (room - 2 * gap) / 3;
-      const width = Math.min(320, Math.min(two, Math.max(worthThree, three)));
-      // A card is never wider than two across would allow and never wider than the cap, so the
-      // row always has two of them in it and only ever takes a third where three fit. The
-      // three-across floor is what makes a third column give up first on a narrow screen, which
-      // is the point of it: a card stays readable rather than shrinking to make room for a third.
-      expect(width).toBeLessThanOrEqual(two);
-      expect(2 * width + gap <= room).toBe(true);
+  it('gives every card the same width, so the six read as one bank', () => {
+    // Equal tracks rather than each card taking a share of its content: six panels of different
+    // sizes are not a bank, and a `1fr` track is the only way a grid says equal.
+    expect(sheet.declaration(Root, 'grid-auto-rows')).toBe('minmax(0,1fr)');
+    expect(sheet.declares(Root, 'flex-wrap')).toBe(false);
+  });
+  it('gives every row an equal share of the height, so the rows touch', () => {
+    // A card shorter than its row and centred in it leaves the slack as a band between one row
+    // and the next. `minmax(0, 1fr)` and not `auto`: the rows are sized to fill, not to measure.
+    expect(sheet.declaration(Root, 'grid-auto-rows')).toBe('minmax(0,1fr)');
+    expect(sheet.declaration(Slot, 'height')).toBe('100%');
+  });
+  it('is three, two or one across, and the count is a query over the cards', () => {
+    // A card count is a choice between widths rather than a consequence of one: at every width
+    // the card could be three-across-some-width or two-across-a-bigger-one, and which is wanted
+    // is not a comparison `min()` and `max()` can make, since they move in opposite directions
+    // as the window narrows. So each count is stated, about the cards and not the window.
+    expect(sheet.flat).toContain('repeat(3,minmax(0,1fr))');
+    expect(sheet.flat).toContain('grid-template-columns:minmax(0,1fr)');
+  });
+  it('restates each query threshold as a token, and one as a test', () => {
+    // A query cannot hold a `var()`, so the literal has to be written out beside the token that
+    // says what it means. Resolved here rather than trusted: a threshold that drifts from the
+    // card width it was derived from is a threshold that no longer describes anything.
+    for (const token of ['--Size-ThemeCardThreeAcrossWidth', '--Size-ThemeCardOneAcrossWidth']) {
+      const literal = tokenValue(token).replace('px', '');
+      expect(sheet.text).toContain(`width: ${literal}px`);
     }
   });
-
-  it('takes the row cap with it when the card width changes', () => {
-    // The cap is three widths and two gaps rather than a length, so a card that narrows on a
-    // phone takes its cap with it. Without this the row would keep a desktop's cap while its
-    // cards were phone-sized, and the fourth card would land wherever the arithmetic left it.
+  it('gives up a column before a card is too narrow to read', () => {
+    // The thresholds are where a card would cross `--Size-ThemeCardWidthMin`, not round numbers.
+    // Under it a name is cut to nothing, which is the thing the count exists to avoid.
+    const margin = Number(tokenValue('--Layout-ScreenPaddingHorizontal').replace('px', ''));
+    const worth = Number(tokenValue('--Size-ThemeCardWidthMin').replace('px', ''));
+    const threeAt = Number(tokenValue('--Size-ThemeCardThreeAcrossWidth').replace('px', ''));
+    const oneAt = Number(tokenValue('--Size-ThemeCardOneAcrossWidth').replace('px', ''));
+    const gap = narrowestGap();
+    const two = (screen: number) => (screen - 2 * margin - gap) / 2;
+    const three = (screen: number) => (screen - 2 * margin - 2 * gap) / 3;
+    // Three across starts where the cards stay worth picking, not before it.
+    expect(three(threeAt)).toBeGreaterThanOrEqual(worth);
+    // One across starts where two would have fallen under it, so a narrow screen loses a column
+    // rather than shrinking both its cards below what a name can be read at.
+    expect(two(oneAt)).toBeLessThan(worth);
+    // And in between, two across is the count that reads on a phone.
+    expect(two(375)).toBeGreaterThanOrEqual(worth);
+    expect(three(375)).toBeLessThan(worth);
+  });
+  it('holds the bank to three cards wide', () => {
+    // The fourth would otherwise start a row of its own beside three, reading as a row of four
+    // and a pair. A cap rather than a count, since the count is a query above.
+    expect(sheet.declaration(Root, 'max-width')).toBe('var(--Layout-ThemeCardsMaxWidth)');
     expect(tokenValue('--Layout-ThemeCardsMaxWidth').replace(/\s+/g, '')).toBe(
-      'calc(3*var(--Size-ThemeCardWidth)+2*var(--Space-ThemeCardsGap))',
+      'calc(3*var(--Size-ThemeCardWidthMax)+2*var(--Space-ThemeCardsGap))',
     );
+  });
+  it('takes the height its parent has left, so six cards never scroll', () => {
+    // A bank sized to its cards grows past the room under the player bar and scrolls, and half
+    // the themes on offer end up below the fold. `min-height: 0` is half of it: a flex item's
+    // floor is its own contents, and without it the bank cannot be smaller than six cards.
+    expect(sheet.declaration(Root, 'flex')).toBe('11auto');
+    expect(sheet.declaration(Root, 'min-height')).toBe('0');
+  });
+  it('sizes the card from the container it is in, and nowhere else', () => {
+    // The card's width is what the row gave it, and the only way a card can read a width it was
+    // not told is by asking the box that was given it. `inline-size` rather than `size`, because
+    // two-dimensional containment makes a stretched `height: 100%` resolve against nothing.
+    expect(sheet.declaration(Slot, 'container-type')).toBe('inline-size');
+    expect(sheet.declaration(SlotCard, '--Size-ThemeCardWidth')).toBe('100cqw');
+    expect(sheet.declares(Slot, '--Size-ThemeCardWidth')).toBe(false);
+    expect(sheet.declares(Root, '--Size-ThemeCardWidth')).toBe(false);
+  });
+  it('puts the card own sizes on the card, since a share resolves where it is declared', () => {
+    // A custom property''s value is substituted where it is declared, not where it is used: a
+    // chain at the root resolves against whatever the width token holds there, and it holds
+    // nothing, because the width is `100cqw` from inside the slot. At the root every one of
+    // these was guaranteed-invalid and each element using one fell back to an inherited size —
+    // the name at body size, the corner letter without its inset, the figure too small to see.
+    expect(tokens).not.toContain('--FontSize-ThemeCard:');
+    expect(tokens).not.toContain('--Space-ThemeCardPadding:');
+    const shares: [string, string][] = [
+      ['--FontSize-ThemeCard', '0.115'],
+      ['--FontSize-ThemeCardMark', '1.45'],
+      ['--FontSize-ThemeCardInitial', '0.0775'],
+      ['--Space-ThemeCardPadding', '0.05'],
+      ['--Space-ThemeCardInset', '0.025'],
+    ];
+    for (const [name, share] of shares) {
+      expect(cardToken(name)).toBe(`calc(var(--Size-ThemeCardWidth)*${share})`);
+    }
   });
   it('cuts a name that will not fit rather than wrapping it onto two lines', () => {
     // A wrap is a second line on the cards that need one and not on the cards that do not: a
@@ -101,50 +163,6 @@ const gap = narrowestGap();
     expect(card.text).toContain('Truncate from');
     expect(card.declares(Name, 'white-space')).toBe(false);
     expect(card.declares(Name, 'text-overflow')).toBe(false);
-  });
-  it('shortens a card so both rows of the bank are on a short screen', () => {
-    // A card is as tall as its width says, so on a device turned on its side a bank of six is
-    // taller than the window and the second row is off the bottom: half the themes on offer,
-    // not on screen, on a screen wide enough to show three across. The slot's `max-height` is
-    // the ceiling, and it keeps the width — a card that narrowed instead would be a card nobody
-    // could read.
-    //
-    // The ceiling is for both rows, not for one. A flat share of a short screen is more than
-    // half of what two rows can have, so the second row ran off the bottom at 667x375 and the
-    // bank came to be drawn over the player bar. What is left after the page's own margins and
-    // the one gap between two rows, divided by two, is the only height at which both fit.
-    expect(sheet.declaration(Slot, 'max-height')).toBe('var(--Size-ThemeCardHeightMax)');
-    const ceiling = tokenValue('--Size-ThemeCardHeightMax').replace(/\s+/g, '');
-    expect(ceiling).toBe(
-      'calc((100dvh-2*var(--Layout-ScreenPaddingVertical)-var(--Space-ThemeCardsGap))/2)',
-    );
-    // Two cards and the gap between them fit a landscape phone once each is held to that
-    // ceiling, which is the whole claim. Checked against the largest margin the screen is allowed
-    // to take rather than a fixed one: the margin is a clamp now, and a claim that holds only at
-    // one end of a clamp holds on one screen.
-    const screen = 375;
-    const margin = Number(tokenValue('--Space-2xl').replace('px', ''));
-    const ceilingAt = (screen - 2 * margin - narrowestGap()) / 2;
-    expect(2 * ceilingAt + narrowestGap()).toBeLessThanOrEqual(screen - 2 * margin);
-  });
-  it('starts the rows where the row starts, so nothing can be drawn over the bar above', () => {
-    // Centring the lines of a box shorter than its own content pushes the first line out
-    // through the top of the box, which is where the player bar is. The gap between the rows is
-    // the only thing that spaces them now.
-    expect(sheet.declaration(Root, 'align-content')).toBe('start');
-    expect(sheet.declaration(Root, 'align-items')).toBe('center');
-  });
-  it('gives every card the same width, so the six read as one bank', () => {
-    // A card that grew to fill whatever room it had would be a slightly different size from
-    // its neighbours, and six panels that do not match are not a bank.
-    expect(sheet.declaration(Slot, 'flex')).toBe('00var(--Size-ThemeCardWidth)');
-    expect(sheet.declaration(Slot, 'width')).toBe('var(--Size-ThemeCardWidth)');
-  });
-  it('takes the card shape from the slot, so the card knows nothing about its own size', () => {
-    // The ratio is the grid's business and is declared on the node the grid owns; a card
-    // taller or wider than the grid meant would be a card out of line with the five beside it.
-    expect(sheet.declaration(Slot, 'aspect-ratio')).toBe('var(--Ratio-ThemeCard)');
-    expect(card.declares(Name, 'height')).toBe(false);
   });
   it('lays the cards flat, with nothing turning them towards the middle of the screen', () => {
     // The row was a ring of panels and needed a measurement per card on every resize to keep
@@ -238,7 +256,7 @@ it('draws the theme initial as one letter in a pale grey, at full strength', () 
     expect(card.declaration(Initial, 'top')).toBe('var(--Space-ThemeCardPadding)');
     expect(card.declaration(Initial, 'left')).toBe('var(--Space-ThemeCardPadding)');
     expect(card.declaration(Initial, 'font-size')).toBe('var(--FontSize-ThemeCardInitial)');
-    expect(tokenValue('--FontSize-ThemeCardInitial').replace(/\s+/g, '')).toBe(
+    expect(cardToken('--FontSize-ThemeCardInitial').replace(/\s+/g, '')).toBe(
       'calc(var(--Size-ThemeCardWidth)*0.0775)',
     );
   });
@@ -299,9 +317,9 @@ it('crops the number at a panel of its own rather than at the edge of the card',
   });
   it('is drawn far larger than the card, or it is a number on a card', () => {
     const mark = Number(
-      tokenValue('--FontSize-ThemeCardMark').match(/[\d.]+/)?.[0],
+      cardToken('--FontSize-ThemeCardMark').match(/[\d.]+/)?.[0],
     );
-    const name = Number(tokenValue('--FontSize-ThemeCard').match(/[\d.]+/)?.[0]);
+    const name = Number(cardToken('--FontSize-ThemeCard').match(/[\d.]+/)?.[0]);
     expect(mark).toBeGreaterThan(name * 8);
   });
 it('is held back with opacity rather than with a colour of its own', () => {
@@ -495,15 +513,11 @@ it('draws every tick in the theme accent, and greys the spent ones by opacity', 
   });
 });
 describe('the tokens behind the bank', () => {
-  it('holds a card wider than it is tall, so six of them read as panels and not columns', () => {
-    const ratio = tokenValue('--Ratio-ThemeCard').split('/').map(Number);
-    expect(ratio[0]).toBeGreaterThan(ratio[1] as number);
-  });
   it('names a theme large enough to be the content of a panel, not a caption on one', () => {
     // The only name in the game drawn as the whole content of a card rather than as a
     // heading over something, and a share of the card's width rather than a size of its
     // own: the card narrows on a phone, and a flat size would be a caption again there.
-    const size = tokenValue('--FontSize-ThemeCard').replace(/\s+/g, '');
+    const size = cardToken('--FontSize-ThemeCard').replace(/\s+/g, '');
     expect(size).toBe('calc(var(--Size-ThemeCardWidth)*0.115)');
     expect(card.declaration(Name, 'font-size')).toBe('var(--FontSize-ThemeCard)');
   });

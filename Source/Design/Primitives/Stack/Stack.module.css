@@ -2,12 +2,15 @@
   display: flex;
 }
 
-/* The row takes the height its parent has left. Grow, never shrink, at its own height: short of
- * the room it grows to fill it, and taller than the room it keeps its height and the page
- * scrolls rather than the row's contents being squeezed. A `0` basis would be wrong here, since
- * the row's own height is what it is. */
+/* The row takes the height its parent has left, and gives it back rather than overflowing it.
+ * Shrinkable and `min-height: 0`, since a flex item's floor is its own contents by default: a
+ * bank of six cards stacked one per row is taller than the room on a phone, and a row that
+ * cannot shrink grows past the viewport and the page scrolls — half the themes below the fold,
+ * which is the one thing this row exists to prevent. A `0` basis would be wrong here, since the
+ * row's own height is what it is. */
 .Grow {
-  flex: 1 0 auto;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* What is off the bottom of a full-height row is not drawn, and the page does not scroll to it.
