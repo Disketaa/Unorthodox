@@ -3,7 +3,7 @@ import { ComponentType } from "preact";
 import styles from "./GalleryPage.module.css";
 
 interface GalleryModule {
-  default: ComponentType;
+  [name: string]: ComponentType;
 }
 
 const galleryModules = import.meta.glob<GalleryModule>("../../Design/**/*.Gallery.tsx", { eager: true });
@@ -19,8 +19,10 @@ export function GalleryPage() {
         <Text variant="Title">Component Gallery</Text>
         <Stack direction="Vertical" gap="Md">
           {Object.entries(galleryModules).map(([path, module]) => {
-            const Component = module.default;
             const componentName = path.split("/").pop()?.replace(".Gallery.tsx", "") || "Unknown";
+            // Named after the file rather than a default export: `Banner.Gallery.tsx` holds
+            // `BannerGallery`, and a default here would be one more convention to keep to.
+            const Component = module[`${componentName}Gallery`];
             return (
               <div key={path} className={styles.Item}>
                 <Text variant="Body" fontWeight="Bold">

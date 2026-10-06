@@ -53,12 +53,37 @@
   transform: rotate(var(--Sway-Tilt, 0deg));
 }
 
+/* The breath on something waiting on the room rather than moving of its own accord: the whole
+ * thing brightens and settles. Handed over as a variable for the same reason the sway is — a
+ * caller that is already animating adds this to its own list instead of one `animation`
+ * declaration overwriting the other. */
+.Pulse {
+  --Pulse-Animation: PulseBreath var(--Duration-Pulse) var(--Easing-Smooth) infinite;
+}
+
+/* Up and back, resting at no change at both ends so the loop joins without a step. */
+@keyframes PulseBreath {
+  0%,
+  100% {
+    filter: none;
+  }
+
+  50% {
+    filter: brightness(var(--Scale-Pulse-Brightness));
+  }
+}
+
 /* Honours the system setting, rather than swaying regardless. Also a variable, so turning the
  * sway off under `reduce` leaves the caller's list standing with this one item dropped out of
  * it rather than dropping the whole list. */
 @media (prefers-reduced-motion: reduce) {
-  .Moving {
+  .Moving,
+  .Pulse {
     --Sway-Animation: none;
+    --Pulse-Animation: none;
+  }
+
+  .Moving {
     transform: rotate(var(--Sway-Tilt, 0deg));
   }
 }

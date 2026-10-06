@@ -629,6 +629,11 @@ body.PageFade {
    * corners spills past the sloped edges and the shape reads as a square. */
   --Inset-PlayerBarFace: 18%;
 
+  /* How big the loading mark is inside the face. Under the face's own width, because the mark
+   * is a wait rather than a face and a full-width one would read as a character still being
+   * drawn. */
+  --Scale-PlayerBarTurning: 0.85;
+
   /* How wide the line round a player's name is, in the seat's own fill so the text reads
    * against the hexagon rather than on top of it. A share of the text rather than a length: the
    * name is cut short rather than wrapped, so its size never changes with what the player is
