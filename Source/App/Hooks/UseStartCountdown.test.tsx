@@ -87,11 +87,11 @@ afterEach(() => {
 
 describe('the count-in', () => {
   it('shows the shade first, and no number', () => {
-    expect(mount(phaseOf('Writing')).read()).toBe('veil');
+    expect(mount(phaseOf('Choosing')).read()).toBe('veil');
   });
 
   it('plays one note per number, climbing as it goes, and none for the shade', () => {
-    const room = mount(phaseOf('Writing'));
+    const room = mount(phaseOf('Choosing'));
     // A tick short of the shade being up: the first number belongs on screen the
     // moment the shade has finished arriving, and not one moment before it.
     pass(startVeilMs - uiTickMs);
@@ -106,19 +106,19 @@ describe('the count-in', () => {
     ]);
   });
 
-  it('counts nothing at all outside the writing phase', () => {
+  it('counts nothing at all outside the phase the host pressed Start in', () => {
     expect(mount(phaseOf('Lobby')).read()).toBe('');
     expect(playSound).not.toHaveBeenCalled();
   });
 
   it('counts the game in once, and not every round', () => {
-    const room = mount(phaseOf('Writing'));
+    const room = mount(phaseOf('Choosing'));
     pass(startVeilMs + startCountdownMs);
     expect(room.read()).toBe('');
     expect(playSound).toHaveBeenCalledTimes(3);
-    // The next round's writing phase: these players are already writing, so there is
-    // nothing to count them in from.
-    room.move(phaseOf('Writing'));
+    // The next round chooses a theme too: these players were already here for the first one,
+    // so there is nothing to count them in from.
+    room.move(phaseOf('Choosing'));
     expect(room.read()).toBe('');
     expect(playSound).toHaveBeenCalledTimes(3);
   });
@@ -131,7 +131,7 @@ describe('who gets counted in', () => {
     // which on a slow phone was halfway down — so it began at two and never played
     // three. Counted locally, the news arriving late costs nothing but the delay.
     vi.setSystemTime(1_000_000 + 4_000);
-    const room = mount(phaseOf('Writing', 1_000_000));
+    const room = mount(phaseOf('Choosing', 1_000_000));
     const seen = [room.read()];
     pass(startVeilMs + 100);
     seen.push(room.read());
@@ -143,11 +143,11 @@ describe('who gets counted in', () => {
   });
 
   it('does not count a room this device has already watched count in', () => {
-    // A refresh mid-round, or the same room opened in a new tab: the game has already
+    // A refresh mid-game, or the same room opened in a new tab: the game has already
     // been counted in on this device, and announcing the start again to players who are
-    // already writing in it is the mistake.
+    // already in it is the mistake.
     markCountedIn(roomCode);
-    const room = mount(phaseOf('Writing'));
+    const room = mount(phaseOf('Choosing'));
     expect(room.read()).toBe('');
     pass(1000);
     expect(room.read()).toBe('');
@@ -155,17 +155,17 @@ describe('who gets counted in', () => {
   });
 
   it('counts a room in again once the room has been left', () => {
-    const room = mount(phaseOf('Writing'));
+    const room = mount(phaseOf('Choosing'));
     pass(startVeilMs + startCountdownMs);
     expect(room.read()).toBe('');
     markCountedIn(roomCode);
-    expect(mount(phaseOf('Writing')).read()).toBe('');
+    expect(mount(phaseOf('Choosing')).read()).toBe('');
     // Leaving forgets that it was counted in: a new game under the same code is a new
     // game, and it announces itself.
     clearCountIn(roomCode);
     const again = document.createElement('div');
     document.body.appendChild(again);
-    act(() => render(<Count phase={phaseOf('Writing')} room={roomCode} />, again));
+    act(() => render(<Count phase={phaseOf('Choosing')} room={roomCode} />, again));
     flush();
     expect(again.textContent).toBe('veil');
   });
@@ -173,7 +173,7 @@ describe('who gets counted in', () => {
 
 describe('the numbers themselves', () => {
   it('counts three, two and one, one second each, and then stops', () => {
-    const room = mount(phaseOf('Writing'));
+    const room = mount(phaseOf('Choosing'));
     const seen = [room.read()];
     // Checked in the middle of each number's own second rather than on its boundary,
     // so a count that started a beat early or late fails rather than passing on the seam.

@@ -120,27 +120,23 @@ interface CountedRoomProps {
   debugEnabled: boolean;
 }
 
-/** The room as it is being counted in to. The screen under the shade is the lobby held until the
- * count is over, not the screen the room has moved to, which would appear under the numbers in
- * the same frame as the press. */
+/** The room as it is being counted in to. The screen under the shade is the lobby they pressed
+ * Start on: the theme cards would otherwise arrive under the numbers in the same frame as the
+ * press, so the count would be counting over a screen nobody has looked at yet. */
 function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
   const { veiling, count } = useStartCountdown(view, roomCode);
   const counting = veiling || count !== null;
-  // Kept while the room is being counted in to, and dropped the moment it is not, so
-  // the lobby is what the shade is over rather than the screen the room has already
-  // moved on to.
-  const [held, setHeld] = useState<GameSessionView | null>(null);
-  if (counting && held === null) {
-    setHeld(view);
-  }
-  if (!counting && view.phase === 'Lobby') {
-    setHeld(view);
+  // The last lobby seen, which is the screen the count belongs over. Set while rendering, so the
+  // frame the room leaves the lobby on still has it: by the time an effect ran, it would be gone.
+  const [lobby, setLobby] = useState<GameSessionView | null>(null);
+  if (view.phase === 'Lobby') {
+    setLobby(view);
   }
 
   return (
     <>
       {counting && <StartCountdown veiling={veiling} count={count} />}
-      <PhaseScreen view={counting && held !== null ? held : view} />
+      <PhaseScreen view={counting && lobby !== null ? lobby : view} />
       {!counting && (
         <DebugDock enabled={debugEnabled} label={Strings.lobby.debugOn}>
           {view.isHost && (

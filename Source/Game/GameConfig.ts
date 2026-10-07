@@ -18,9 +18,9 @@ const timing = {
   scoresDurationMs: 15000,
   graceMs: 3000,
   uiTickMs: 100,
-  /** The count-in before the first round, and the writing time it is added to. Writing is this
-   * much longer than the pace says, so the count-in is time the players get. Two parts, the
-   * shade first, so the first number is not already half faded. */
+  /** The count-in: the shade goes up over the lobby the moment the host presses Start and comes
+   * down on the theme being picked. Two parts, the shade first, so the first number is not
+   * already half faded. No phase is made longer for it — it plays out over the theme choice. */
   startVeilMs: 300,
   startCountdownMs: 3000,
 };

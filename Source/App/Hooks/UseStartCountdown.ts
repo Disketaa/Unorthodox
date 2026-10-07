@@ -29,16 +29,21 @@ function countInMs(): number {
   return GameConfig.timing.startVeilMs + GameConfig.timing.startCountdownMs;
 }
 
-/** Where this device is in the count-in, once the room has started writing. Counted on this
- * device's clock from when it heard the phase, not the host's, and only once per room: a late
- * arrival counts in, a mid-round refresh does not. */
+/** The phase the count belongs to. The host pressing Start is the moment the room leaves the
+ * lobby, and that is what the count announces: the shade goes up over the lobby they were just
+ * looking at, and comes down on the theme they are about to pick. */
+const CountInPhase = 'Choosing';
+
+/** Where this device is in the count-in, once the room has started. Counted on this device's
+ * clock from when it heard the phase, not the host's, and only once per room: a late arrival
+ * counts in, a mid-round refresh does not. */
 export function useStartCountdown(phase: SessionPhase, roomCode: string): StartCount {
   const countedRef = useRef(hasCountedIn(roomCode));
   const now = Date.now();
-  const counting = phase.phase === 'Writing' && !countedRef.current;
+  const counting = phase.phase === CountInPhase && !countedRef.current;
   // Set while rendering rather than in an effect, because the count has to be running
   // on the very first render of the phase: an effect runs after the paint, and that
-  // paint would be the room's writing screen with nothing counted over it.
+  // paint would be the theme cards with nothing counted over them.
   const startedRef = useRef<number | null>(null);
   if (counting && startedRef.current === null) {
     startedRef.current = now;
@@ -63,11 +68,11 @@ export function useStartCountdown(phase: SessionPhase, roomCode: string): StartC
   useEffect(() => {
     // Marked once the whole count-in has run: the shade is a moment with no number, and treating
     // that as the end would stop the count before it began. Written down so a refresh counts.
-    if (phase.phase === 'Writing' && remainingMs <= 0) {
+    if (counting && remainingMs <= 0) {
       countedRef.current = true;
       markCountedIn(roomCode);
     }
-  }, [phase.phase, remainingMs, roomCode]);
+  }, [counting, remainingMs, roomCode]);
 
   useEffect(() => {
     if (count === null) {
