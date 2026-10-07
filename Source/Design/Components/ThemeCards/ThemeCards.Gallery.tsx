@@ -17,12 +17,25 @@ const names: Readonly<Record<ThemeId, string>> = {
   Random: 'Random',
 };
 
+/** Four rounds played in the theme the room just came out of, and a full bar everywhere else:
+ * the bank is the same six themes every round, so this is what the second Choosing looks like. */
+function partlySpent(first: ThemeId | undefined): Map<ThemeId, number> {
+  return new Map(first === undefined ? [] : [[first, 4]]);
+}
+
+/** The same, with the next theme in the bank run out: a card held back and left there, since
+ * nothing is ever going to come to it. */
+function withOneFinished(themes: readonly ThemeId[], first: ThemeId | undefined) {
+  const spent = partlySpent(first);
+  const second = themes[1] ?? first;
+  if (second !== undefined) spent.set(second, 10);
+  return spent;
+}
+
 export function ThemeCardsGallery() {
   const themes: readonly ThemeId[] = dealThemes(createRandom(7), 6);
   const first = themes[0];
-  // Four rounds played in the theme the room just came out of, and a full bar everywhere else:
-  // the bank is the same six themes every round, so this is what the second Choosing looks like.
-  const spent = new Map<ThemeId, number>(first === undefined ? [] : [[first, 4]]);
+  const spent = partlySpent(first);
   return (
     <Stack gap="Lg">
       {/* The bank on offer, to the player whose turn it is. */}
@@ -37,6 +50,13 @@ export function ThemeCardsGallery() {
         <>
           {/* The same bank on somebody else's turn: held back, still under the pointer. */}
           <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={spent} />
+          {/* And a bank with a theme in it that the room has finished. */}
+          <ThemeCards
+            themes={themes}
+            names={names}
+            roundsPerTheme={10}
+            spent={withOneFinished(themes, first)}
+          />
           {/* And the room's answer, at full strength on every screen: whoever pressed it and
            * whoever did not, the expanded card is drawn the same either way. */}
           <ThemeCards

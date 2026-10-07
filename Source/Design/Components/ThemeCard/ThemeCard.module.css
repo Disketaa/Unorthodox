@@ -384,3 +384,46 @@
 .Waiting:hover {
   opacity: 1;
 }
+
+/* A theme the room has spent every round it had. The same held-back look as a card on somebody
+ * else's turn, because both say one thing: this card is not on offer. Deeper than waiting,
+ * because nothing is ever going to come to this one — a card held back for a moment reads as
+ * quiet, a finished theme reads as spent. */
+.SpentOut {
+  opacity: var(--Opacity-ThemeCardSpentOut);
+}
+
+/* Nor does it lift under the pointer, which is the other thing that separates it from waiting:
+ * that card is still being read and has a theme to be identified by, this one has nothing left
+ * to name. Each hover value is put back rather than the hover switched off, since `:hover`
+ * matches the card whatever else it is. */
+.SpentOut:hover {
+  --ThemeCard-Surface: var(--Color-Surface-Hover);
+  opacity: var(--Opacity-ThemeCardSpentOut);
+  background: var(--ThemeCard-Surface);
+  color: var(--Color-Text-Default);
+}
+
+.SpentOut:hover .Name {
+  font-size: var(--FontSize-ThemeCard);
+}
+
+.SpentOut:hover .Mark {
+  transform: scale(1);
+  opacity: var(--Opacity-ThemeCardMark);
+  color: var(--Color-Text-Quiet);
+}
+
+.SpentOut:hover .Initial {
+  color: var(--Color-Neutral-300);
+}
+
+.SpentOut:hover .Noise {
+  opacity: var(--Opacity-ThemeCardNoise);
+}
+
+/* Nor does it press: a card with nothing left has no answer to give, so it must not look like
+ * it took one. */
+.SpentOut:active {
+  scale: 1;
+}

@@ -64,12 +64,14 @@ function cardClasses(
   moving: boolean,
   blink: boolean,
   chosen: boolean,
-  waiting: boolean
+  waiting: boolean,
+  spentOut: boolean
 ): string {
   const classes = [styles.Root, moving ? styles.Moving : styles.Still];
   if (blink && !chosen) classes.push(styles.Blink);
   if (chosen) classes.push(styles.Chosen);
-  if (waiting) classes.push(styles.Waiting);
+  if (waiting || spentOut) classes.push(styles.Waiting);
+  if (spentOut) classes.push(styles.SpentOut);
   return classes.join(' ');
 }
 
@@ -115,6 +117,9 @@ export function ThemeCard({
   waiting = false,
 }: ThemeCardProps) {
   const motion = useSwayMotion<HTMLButtonElement>();
+  // A theme the room has already spent every round it had. Read off the counts rather than taken
+  // as a prop, because the card is what knows its own rounds and its own count of them.
+  const spentOut = spent >= rounds;
 
   useEffect(() => {
     if (motion.current !== null) {
@@ -126,13 +131,13 @@ export function ThemeCard({
     <button
       type="button"
       ref={motion}
-      class={cardClasses(moving, blink, chosen, waiting)}
+      class={cardClasses(moving, blink, chosen, waiting, spentOut)}
       disabled={locked}
       // Announced rather than disabled: the card is on screen and readable, so a screen reader is
       // told it cannot be pressed instead of being left to find a button that does nothing.
-      aria-disabled={waiting || undefined}
+      aria-disabled={waiting || spentOut || undefined}
       onClick={() => {
-        if (waiting) {
+        if (waiting || spentOut) {
           return;
         }
         playSound('Pop');
