@@ -1,5 +1,5 @@
 import { ThemeId, themeAccent } from '@/Core';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useRef } from 'preact/hooks';
 import type { RefObject } from 'preact';
 import { ThemeCard } from '../ThemeCard';
 import styles from './ThemeCards.module.css';
@@ -14,6 +14,10 @@ export interface ThemeCardsProps {
   onPick?: (theme: ThemeId) => void;
   /** How many rounds each theme is played for, from the game's own rules. */
   roundsPerTheme: number;
+  /** The theme the room settled on, which expands to fill the bank. The room's answer, read off
+   * the state every client is sent rather than kept per screen, so a press opens the same card
+   * in every browser in the room at the same moment. */
+  picked?: ThemeId;
   /** How many of each theme's rounds have been played. Left out, it is none on every card: a
    * bank of full bars, themes nobody has chosen yet. Every card carries the same count, which
    * is why it is here rather than on one card. */
@@ -44,8 +48,14 @@ function useWash(picked: ThemeId | undefined, bank: RefObject<HTMLDivElement>): 
 /** The themes a lobby is being offered, six cards in a bank, lying flat: the bank was once six
  * screens in a ring facing the middle of the viewport, and the ring was measured on every
  * resize. The pick is local, and the theme it settled on has its wash written onto the page. */
-export function ThemeCards({ themes, names, onPick, roundsPerTheme, spent }: ThemeCardsProps) {
-  const [picked, setPicked] = useState<ThemeId | undefined>(undefined);
+export function ThemeCards({
+  themes,
+  names,
+  onPick,
+  roundsPerTheme,
+  spent,
+  picked,
+}: ThemeCardsProps) {
   const bank = useRef<HTMLDivElement>(null);
   const settled = picked !== undefined;
   // A bank with nothing to ask for is a bank being read rather than played, so its cards are held
@@ -53,11 +63,6 @@ export function ThemeCards({ themes, names, onPick, roundsPerTheme, spent }: The
   const waiting = onPick === undefined;
 
   useWash(picked, bank);
-
-  const pick = (next: ThemeId) => {
-    setPicked(next);
-    onPick?.(next);
-  };
 
   return (
     <div
@@ -76,7 +81,7 @@ export function ThemeCards({ themes, names, onPick, roundsPerTheme, spent }: The
             chosen={theme === picked}
             locked={settled}
             waiting={waiting}
-            onPick={pick}
+            onPick={onPick}
           />
         </div>
       ))}

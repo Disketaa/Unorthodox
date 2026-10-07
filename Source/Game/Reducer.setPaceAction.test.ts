@@ -45,6 +45,7 @@ describe('reducer SET_PACE action', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      theme: undefined,
     };
     expect(reducer(writing, { type: 'SET_PACE', pace: 'Fast' })).toBe(writing);
   });

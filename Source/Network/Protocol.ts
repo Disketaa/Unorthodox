@@ -1,4 +1,4 @@
-import { PlayerId, PlayerLook, isPlayerLook } from '@/Core';
+import { PlayerId, PlayerLook, ThemeId, isPlayerLook, isThemeId } from '@/Core';
 import * as Game from '@/Game';
 
 /** Messages sent from clients to the host. `groupId` is the numeric index assigned by the
@@ -6,6 +6,7 @@ import * as Game from '@/Game';
 export type ClientMessage =
   | { type: 'Join'; name: string; look: PlayerLook; clientId: string }
   | { type: 'SetLook'; playerId: PlayerId; look: PlayerLook }
+  | { type: 'ChooseTheme'; theme: ThemeId; playerId: PlayerId }
   | { type: 'SubmitAnswer'; text: string; playerId: PlayerId }
   | { type: 'RejectGroup'; groupId: number; playerId: PlayerId }
   | { type: 'Sync' };
@@ -58,6 +59,10 @@ export function isClientMessage(value: unknown): value is ClientMessage {
       );
     case 'SetLook':
       return typeof record.playerId === 'string' && isPlayerLook(record.look);
+    case 'ChooseTheme':
+      // The theme is checked against the whole set rather than accepted as a string: the host
+      // turns it into a card, and a theme nobody has heard of is a card that cannot be drawn.
+      return isThemeId(record.theme) && typeof record.playerId === 'string';
     case 'SubmitAnswer':
       return typeof record.text === 'string' && typeof record.playerId === 'string';
     case 'RejectGroup':

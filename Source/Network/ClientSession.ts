@@ -4,7 +4,7 @@ import { refusalFor } from './ClientRefusals';
 import { JoinRetry } from './JoinRetry';
 import { clientId } from './ClientIdentity';
 import * as Game from '@/Game';
-import { PlayerLook, createLogger, measureClockOffset } from '@/Core';
+import { PlayerLook, ThemeId, createLogger, measureClockOffset } from '@/Core';
 
 export type { BlockedReason } from './Protocol';
 
@@ -175,6 +175,14 @@ export class ClientSession {
       return;
     }
     this.transport.sendToHost({ type: 'RejectGroup', groupId, playerId: this.playerId });
+  }
+
+  /** Ask the host to play this round in this theme. The host refuses a press from anybody but
+   * the player on turn, so the muted cards are not merely a promise the client keeps to itself. */
+  chooseTheme(theme: ThemeId): void {
+    if (this.seated('choose a theme')) {
+      this.transport.sendToHost({ type: 'ChooseTheme', theme, playerId: this.playerId });
+    }
   }
 
   getState(): Game.PublicState | undefined {

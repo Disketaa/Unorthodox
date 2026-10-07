@@ -1,4 +1,4 @@
-import { PlayerId, PlayerLook } from '@/Core';
+import { PlayerId, PlayerLook, ThemeId } from '@/Core';
 import { Pace } from './GameConfig';
 
 /** What the room remembers about one player: who they are, how they look, and whether they are
@@ -33,6 +33,9 @@ export type ChoosingState = RoomMembers & {
   phase: 'Choosing';
   durationMs: number;
   startedAt: number;
+  /** The theme the room settled on. The room's answer rather than one player's, so a press is
+   * seen by everybody rather than by its author. Undefined while the bank is still open. */
+  theme: ThemeId | undefined;
 };
 
 export type WritingState = RoomMembers & {
@@ -41,6 +44,10 @@ export type WritingState = RoomMembers & {
   durationMs: number;
   startedAt: number;
   answers: Map<PlayerId, string>;
+  /** The theme this round is being played in, carried on from the choice rather than chosen
+   * again: the bank stays on screen through the round, and it can only show one of its cards as
+   * the chosen one. */
+  theme: ThemeId | undefined;
 };
 
 export type ReviewingState = RoomMembers & {
@@ -51,6 +58,8 @@ export type ReviewingState = RoomMembers & {
   answers: Map<PlayerId, string>;
   /** groupId -> the playerIds who voted that group not suitable */
   groupRejections: Map<number, Set<PlayerId>>;
+  /** As in Writing: the round's theme, so the bank on screen still shows what is being played. */
+  theme: ThemeId | undefined;
 };
 
 export type ScoresState = RoomMembers & {
@@ -58,10 +67,15 @@ export type ScoresState = RoomMembers & {
   durationMs: number;
   startedAt: number;
   scores: Map<PlayerId, number>;
+  /** As in Writing: the round's theme, which the bank on screen is still showing off. */
+  theme: ThemeId | undefined;
 };
 
 export type FinalState = RoomMembers & {
   phase: 'Final';
+  /** The theme the game was finally played in. The bank is on the last screen too, and a bank
+   * with nothing chosen on it reads as a game that was never about anything. */
+  theme: ThemeId | undefined;
 };
 
 export type HostState =

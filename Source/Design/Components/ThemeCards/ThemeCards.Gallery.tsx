@@ -19,13 +19,26 @@ const names: Readonly<Record<ThemeId, string>> = {
 
 export function ThemeCardsGallery() {
   const themes: readonly ThemeId[] = dealThemes(createRandom(7), 6);
+  const first = themes[0];
   return (
     <Stack gap="Lg">
       <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={4} />
-      {/* The same bank with nothing to press, which is every phase but Choosing and every player
-       * whose turn it is not. `onPick` left off rather than a flag passed, since that is what a
-       * non-turning player's props actually hold. */}
-      <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={4} />
+      {first !== undefined && (
+        <>
+          {/* The room has answered: one card open across the bank and the rest gone. */}
+          <ThemeCards
+            themes={themes}
+            names={names}
+            roundsPerTheme={10}
+            spent={4}
+            picked={first}
+          />
+          {/* A bank with nothing to press, which is every phase but Choosing and every player
+           * whose turn it is not. `onPick` left off rather than a flag passed, since that is what
+           * a non-turning player's props actually hold. */}
+          <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={4} />
+        </>
+      )}
     </Stack>
   );
 }

@@ -1,4 +1,4 @@
-import { PlayerLook } from '@/Core';
+import { PlayerLook, ThemeId } from '@/Core';
 import { PublicState, Pace } from '@/Game';
 
 export type SessionRole = 'Host' | 'Player';
@@ -42,7 +42,12 @@ export interface Session {
   startGame(): void;
   /** The topic comes from whoever picked the theme, not from the session: the session does not
    * know what a theme asks about. */
+  /** The topic comes from whoever picked the theme, not from the session: the session does not
+   * know what a theme asks about. */
   startWriting(topic: string): void;
+  /** Answer the theme bank on this player's behalf. Refused by the host from anybody but the
+   * player whose turn it is. */
+  chooseTheme(theme: ThemeId): void;
   /** Advance out of the Writing phase once everyone has answered, or out of the Reviewing phase
    * (once reviewing time is up, going to Scores). */
   endReviewing(durationMs: number): void;

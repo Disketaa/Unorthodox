@@ -1,7 +1,7 @@
 /** The host's game state read back out of plain data, guarded field by field: a cast promises a
  * shape nothing checked. The writing half is RoomStateEncoder. */
 import type { HostState, Player, Pace } from '@/Game';
-import type { PlayerId } from '@/Core';
+import { isThemeId, type PlayerId, type ThemeId } from '@/Core';
 import { toRejections } from './RoomRejections';
 
 /** Plain data as name/value pairs, so a value can be read without a cast. `Object.entries` is
@@ -59,6 +59,14 @@ function paceFrom(fields: Fields): Pace {
   return value === 'Fast' ? 'Fast' : 'Standard';
 }
 
+/** The theme the room settled on, or undefined when nothing is stored or what is stored is not
+ * one this build has. The bank is drawn from the theme, so a theme that cannot be named is a
+ * card that cannot be drawn, which is the same as no theme having been chosen. */
+function themeFrom(fields: Fields): ThemeId | undefined {
+  const value = fields.get('theme');
+  return isThemeId(value) ? value : undefined;
+}
+
 /** The clock every timed phase carries, counted from the host that started it. */
 function clockOf(fields: Fields): { durationMs: number; startedAt: number } {
   return { durationMs: number(fields, 'durationMs'), startedAt: number(fields, 'startedAt') };
@@ -102,7 +110,14 @@ function plainFrom(fields: Fields, members: Members): HostState | undefined {
         pace,
       };
     case 'Final':
-      return { phase: 'Final', players, cumulativeScores: scores, turnPlayerId, pace };
+      return {
+        phase: 'Final',
+        players,
+        cumulativeScores: scores,
+        turnPlayerId,
+        pace,
+        theme: themeFrom(fields),
+      };
     default:
       return undefined;
   }
@@ -120,13 +135,14 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
     turnPlayerId,
     pace,
   };
+  const theme = themeFrom(fields);
   switch (fields.get('phase')) {
     case 'Choosing':
-      return { phase: 'Choosing', ...common };
+      return { phase: 'Choosing', ...common, theme };
     case 'Writing':
-      return { phase: 'Writing', ...common };
+      return { phase: 'Writing', ...common, theme };
     case 'Reviewing':
-      return { phase: 'Reviewing', ...common, groupRejections: toRejections(fields) };
+      return { phase: 'Reviewing', ...common, groupRejections: toRejections(fields), theme };
     case 'Scores':
       return {
         phase: 'Scores',
@@ -136,6 +152,7 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
         cumulativeScores: scores,
         turnPlayerId,
         pace,
+        theme,
       };
     default:
       return undefined;

@@ -64,6 +64,7 @@ describe('reducer SET_LOOK action', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      theme: undefined,
     };
     const state = reducer(writing, { type: 'SET_LOOK', playerId: 'p1', look: otherLook });
     // The roster is not carried into Writing, so the change is dropped and the

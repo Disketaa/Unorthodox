@@ -25,6 +25,10 @@ export function handleGoToPhase(state: HostState, action: ActionOf<'GO_TO_PHASE'
     ...membersOf(state),
     durationMs: action.durationMs,
     startedAt: action.startedAt,
+    // A jump carries whatever theme the room had already settled on, so jumping through a round
+    // does not leave the bank with nothing pressed on it. Into Lobby or a fresh Choosing there is
+    // nothing to carry, which is what `undefined` here says.
+    theme: state.phase === 'Lobby' ? undefined : state.theme,
   };
   return { ...phaseBody(base, state, action.phase, action.topic), ...base };
 }

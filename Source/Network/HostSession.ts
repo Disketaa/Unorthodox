@@ -21,7 +21,7 @@ import { departureOf } from './HostPresence';
 import { freshLobby } from './RoomStateStore';
 import { HostRoom } from './HostRoom';
 import * as Game from '@/Game';
-import { PlayerId, PlayerLook, createLogger } from '@/Core';
+import { PlayerId, PlayerLook, ThemeId, createLogger } from '@/Core';
 
 const log = createLogger('HostSession');
 
@@ -100,6 +100,13 @@ export class HostSession {
   /** Submit the host's own answer, so the host plays the same way as everyone else. */
   submitOwnAnswer(text: string): void {
     this.apply({ type: 'SUBMIT_ANSWER', playerId: HostPlayerId, text });
+  }
+
+  /** The host answering the bank from their own seat. Under the reserved id, like every other
+   * move the host makes about itself, so it is refused when it is not their turn like anybody
+   * else's. */
+  chooseTheme(theme: ThemeId): void {
+    this.apply({ type: 'CHOOSE_THEME', playerId: HostPlayerId, theme });
   }
 
   rejectOwnGroup(groupId: number): void {

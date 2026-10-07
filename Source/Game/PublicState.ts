@@ -7,7 +7,7 @@ import {
   toPublicWritingState,
   toPublicChoosingState,
 } from './PublicPhases';
-import { PlayerId, PlayerLook, assertNever } from '@/Core';
+import { PlayerId, PlayerLook, ThemeId, assertNever } from '@/Core';
 import type { Pace } from './GameConfig';
 
 /** What a client is told about one player. */
@@ -41,6 +41,10 @@ export type PublicChoosingState = PublicRoom & {
   durationMs: number;
   startedAt: number;
   players: PublicPlayer[];
+  /** The theme the room has settled on, once a card has been pressed. Absent while the bank is
+   * still being offered. On the wire rather than decided per client, so every screen in the
+   * room expands the same card at the same moment. */
+  theme?: ThemeId;
 };
 
 export type PublicWritingState = PublicRoom & {
@@ -50,6 +54,7 @@ export type PublicWritingState = PublicRoom & {
   startedAt: number;
   submittedCount: number;
   players: PublicPlayer[];
+  theme?: ThemeId;
 };
 
 export type PublicReviewingState = PublicRoom & {
@@ -59,6 +64,7 @@ export type PublicReviewingState = PublicRoom & {
   startedAt: number;
   players: PublicPlayer[];
   groups: { groupId: number; text: string; playerCount: number }[];
+  theme?: ThemeId;
 };
 
 export type PublicScoresState = PublicRoom & {
@@ -69,6 +75,7 @@ export type PublicScoresState = PublicRoom & {
   scores: { id: PlayerId; score: number }[];
   /** The round total per player, which is what the bar of players shows. */
   cumulative: { id: PlayerId; score: number }[];
+  theme?: ThemeId;
 };
 
 export type PublicFinalState = PublicRoom & {
@@ -76,6 +83,7 @@ export type PublicFinalState = PublicRoom & {
   durationMs: number;
   players: PublicPlayer[];
   scores: { id: PlayerId; score: number }[];
+  theme?: ThemeId;
 };
 
 export type PublicState =

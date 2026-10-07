@@ -58,6 +58,7 @@ function GameScene({ view }: { view: GameSessionView }) {
         roomCode={view.roomCode}
         choosing={view.phase === 'Choosing'}
         isMyTurn={view.turnPlayerId === view.playerId}
+        theme={view.publicState?.phase === 'Lobby' ? undefined : view.publicState?.theme}
         onPickTheme={view.chooseTheme}
       />
     </Stack>

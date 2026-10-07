@@ -3,6 +3,7 @@ import { assertNever } from '@/Core';
 import type { GameAction } from './GameActions';
 import {
   handleStartGame,
+  handleChooseTheme,
   handleStartWriting,
   handleSubmitAnswer,
   handleStartReviewing,
@@ -37,6 +38,8 @@ export function reducer(currentState: HostState | undefined, action: GameAction)
       return handleSetPace(state, action);
     case 'START_GAME':
       return handleStartGame(state, action);
+    case 'CHOOSE_THEME':
+      return handleChooseTheme(state, action);
     case 'START_WRITING':
       return handleStartWriting(state, action);
     case 'SUBMIT_ANSWER':

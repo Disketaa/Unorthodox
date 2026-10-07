@@ -63,6 +63,8 @@ export function toAction(context: IncomingContext): GameAction | undefined {
     }
     case 'SetLook':
       return { type: 'SET_LOOK', playerId: message.playerId, look: message.look };
+    case 'ChooseTheme':
+      return { type: 'CHOOSE_THEME', playerId: message.playerId, theme: message.theme };
     case 'SubmitAnswer':
       return { type: 'SUBMIT_ANSWER', playerId: message.playerId, text: message.text };
     case 'RejectGroup':

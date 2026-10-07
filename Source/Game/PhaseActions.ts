@@ -20,7 +20,20 @@ export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>
     turnPlayerId: state.turnPlayerId ?? nextPlayerInTurn(null, turnOrder(state.players)),
     durationMs: action.durationMs,
     startedAt: action.startedAt,
+    theme: undefined,
   };
+}
+
+/** The room's answer to the bank. Refused from anybody but the player whose turn it is, since
+ * the muted cards are the promise that the turn is what limits the room and not the network. */
+export function handleChooseTheme(
+  state: HostState,
+  action: ActionOf<'CHOOSE_THEME'>
+): HostState {
+  if (state.phase !== 'Choosing' || state.turnPlayerId !== action.playerId) {
+    return state;
+  }
+  return { ...state, theme: action.theme };
 }
 
 export function handleStartWriting(
@@ -37,6 +50,7 @@ export function handleStartWriting(
     durationMs: action.durationMs,
     startedAt: action.startedAt,
     answers: new Map<PlayerId, string>(),
+    theme: state.theme,
   };
 }
 
@@ -97,6 +111,7 @@ export function handleEndReviewing(
     startedAt: action.startedAt,
     scores: roundScores,
     cumulativeScores,
+    theme: state.theme,
   };
 }
 
@@ -112,6 +127,9 @@ export function handleNextRound(state: HostState, action: ActionOf<'NEXT_ROUND'>
     phase: 'Choosing',
     durationMs: action.durationMs,
     startedAt: action.startedAt,
+    // A new bank with nothing chosen on it, which is the whole difference between this Choosing
+    // and the last: the pressed card belonged to the round that has just been scored.
+    theme: undefined,
   };
 }
 
@@ -119,7 +137,7 @@ export function handleFinal(state: HostState): HostState {
   if (state.phase !== 'Scores' && state.phase !== 'Reviewing') {
     return state;
   }
-  return { ...membersOf(state), phase: 'Final' };
+  return { ...membersOf(state), phase: 'Final', theme: state.theme };
 }
 
 /** What every phase carries out of the one it was in: the roster, the totals, the turn and the

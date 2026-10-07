@@ -18,6 +18,7 @@ describe('reducer NEXT_ROUND action', () => {
       cumulativeScores: new Map([['p1', 7]]),
       turnPlayerId: 'p1',
       pace: 'Standard',
+      theme: undefined,
     };
     state = reducer(state, { type: 'NEXT_ROUND', durationMs: 20000, startedAt: 2000 });
     expect(state.phase).toBe('Choosing');
@@ -40,6 +41,7 @@ describe('reducer NEXT_ROUND action', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      theme: undefined,
     };
     expect(reducer(state, { type: 'NEXT_ROUND', durationMs: 20000, startedAt: 2000 })).toBe(
       state

@@ -17,6 +17,7 @@ describe('toPublicState Writing state', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      theme: undefined,
     };
     const publicState = toPublicState(state);
     expect(publicState.phase).toBe('Writing');

@@ -1,4 +1,4 @@
-import { PlayerId } from '@/Core';
+import { PlayerId, ThemeId } from '@/Core';
 import { HostState } from './GameState';
 import { groupAnswers } from './Grouping';
 import type {
@@ -52,7 +52,17 @@ export function toPublicChoosingState(state: HostState): PublicChoosingState {
     durationMs: state.durationMs,
     startedAt: state.startedAt,
     players: publicPlayers(state),
+    // Left off the object entirely rather than sent as undefined, since the state goes out as
+    // plain data: a field that is absent and a field that is null are not the same on the wire.
+    ...(state.theme === undefined ? {} : { theme: state.theme }),
   };
+}
+
+/** The theme every phase after the choice carries, since the bank is on screen through all of
+ * them. A spread rather than a named field on each phase, so a phase added without one still
+ * sends the card the room pressed. */
+function themeOf(state: HostState): { theme?: ThemeId } {
+  return state.phase === 'Lobby' || state.theme === undefined ? {} : { theme: state.theme };
 }
 
 export function toPublicWritingState(state: HostState): PublicWritingState {
@@ -67,6 +77,7 @@ export function toPublicWritingState(state: HostState): PublicWritingState {
     startedAt: state.startedAt,
     submittedCount: state.answers.size,
     players: publicPlayers(state),
+    ...themeOf(state),
   };
 }
 
@@ -87,6 +98,7 @@ export function toPublicReviewingState(state: HostState): PublicReviewingState {
     startedAt: state.startedAt,
     players: publicPlayers(state),
     groups,
+    ...themeOf(state),
   };
 }
 
@@ -102,6 +114,7 @@ export function toPublicScoresState(state: HostState): PublicScoresState {
     players: publicPlayers(state),
     scores: totalsOf(state.scores),
     cumulative: totalsOf(state.cumulativeScores),
+    ...themeOf(state),
   };
 }
 
@@ -115,5 +128,6 @@ export function toPublicFinalState(state: HostState): PublicFinalState {
     durationMs: 0,
     players: publicPlayers(state),
     scores: totalsOf(state.cumulativeScores),
+    ...themeOf(state),
   };
 }

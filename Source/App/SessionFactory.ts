@@ -33,6 +33,7 @@ function createHostSession(roomCode: string, playerName: string, look: PlayerLoo
     nextTurn: () => hostSession.nextTurn(),
     startGame: () => hostSession.startGame(),
     startWriting: (topic) => hostSession.startWriting(topic),
+    chooseTheme: (theme) => hostSession.chooseTheme(theme),
     endReviewing: (durationMs) => hostSession.endReviewing(durationMs),
     nextRound: () => hostSession.nextRound(),
     nextPhase: (topic) => hostSession.nextPhase(topic),
@@ -70,6 +71,9 @@ function createPlayerSession(roomCode: string, playerName: string, look: PlayerL
     // A client asking for a phase change would be every player steering the room, so none of the
     // round flow exists here. What arrives instead is whatever the host decides.
     startWriting: () => {},
+    // Unlike the phase flow, which is the host's alone, choosing a theme is a move every player
+    // makes when it reaches round to them. The host still refuses a press from the wrong seat.
+    chooseTheme: (theme) => clientSession.chooseTheme(theme),
     endReviewing: () => {},
     nextRound: () => {},
     nextPhase: () => {},

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { Pace, PublicState } from '@/Game';
-import { PlayerId, PlayerLook, CharacterColor, CharacterId } from '@/Core';
+import { PlayerId, PlayerLook, CharacterColor, CharacterId, ThemeId } from '@/Core';
 import { createSession } from '../SessionFactory';
 import { navigate } from '../Routes';
 import { Session, SessionRole, BlockedReason } from '../Session';
@@ -45,7 +45,8 @@ export interface GameSessionView extends SessionPhase {
   /** Hand the room's turn to the next player. Only the host's, and only while debugging. */
   nextTurn: () => void;
   startGame: () => void;
-  chooseTheme: () => void;
+  /** Answering the theme bank on this player's behalf. The room sees the answer, not the player. */
+  chooseTheme: (theme: ThemeId) => void;
   nextPhase: () => void;
   submitAnswer: (text: string) => void;
   rejectGroup: (groupId: number) => void;

@@ -13,6 +13,7 @@ describe('toPublicState Final state', () => {
       ]),
       turnPlayerId: null,
       pace: 'Standard',
+      theme: undefined,
     };
     const publicState = toPublicState(state);
     expect(publicState.phase).toBe('Final');

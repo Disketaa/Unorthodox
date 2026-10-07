@@ -12,8 +12,11 @@ export interface ThemeCardsViewProps {
   /** Whether the room is choosing a theme at all. False in every other phase, where the bank is
    * on screen as a backdrop and nothing about it is being asked. */
   choosing: boolean;
-  /** Starting the round the chosen theme asks about. */
-  onPickTheme: () => void;
+  /** The theme the room has settled on, or undefined while the bank is still being offered. The
+   * room's answer rather than this player's, so every screen expands the same card at once. */
+  theme: ThemeId | undefined;
+  /** Answering the bank, from whichever player's turn it happens to be. */
+  onPickTheme: (theme: ThemeId) => void;
   /** How many of each theme's rounds have been played. Nothing counts rounds yet, so the bank is
    * drawn full. Passed in rather than read from a module that does not exist yet, so nothing on
    * the cards changes when the round arrives. */
@@ -27,6 +30,7 @@ export function ThemeCardsView({
   roomCode,
   isMyTurn,
   choosing,
+  theme,
   onPickTheme,
   spent,
 }: ThemeCardsViewProps) {
@@ -40,6 +44,7 @@ export function ThemeCardsView({
       names={Strings.themes.names}
       roundsPerTheme={GameConfig.themes.roundsPerTheme}
       spent={spent}
+      picked={theme}
       // Asked for only where it is the room's turn to answer. Absent anywhere else is what holds
       // the cards back: nothing to press, rather than a press that goes nowhere.
       onPick={choosing && isMyTurn ? onPickTheme : undefined}

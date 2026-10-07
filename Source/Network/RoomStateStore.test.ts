@@ -27,6 +27,7 @@ const writingPhase: HostState = {
   cumulativeScores: new Map([['host', 7]]),
   turnPlayerId: null,
   pace: 'Standard',
+  theme: 'Nature' as const,
 };
 
 /** The same round once the room has moved on to reading the answers. */
@@ -41,6 +42,7 @@ const reviewingPhase: HostState = {
   cumulativeScores: new Map([['host', 7]]),
   turnPlayerId: null,
   pace: 'Standard',
+  theme: 'Nature' as const,
 };
 
 const scoresPhase: HostState = {
@@ -52,6 +54,7 @@ const scoresPhase: HostState = {
   cumulativeScores: new Map([['host', 10]]),
   turnPlayerId: null,
   pace: 'Standard',
+  theme: 'Nature' as const,
 };
 
 const finalPhase: HostState = {
@@ -60,6 +63,7 @@ const finalPhase: HostState = {
   cumulativeScores: new Map([['host', 10]]),
   turnPlayerId: null,
   pace: 'Standard',
+  theme: 'Nature' as const,
 };
 
 describe('a room that outlives its tab', () => {
@@ -88,6 +92,35 @@ describe('a room that outlives its tab', () => {
     saveRoomState('2', finalPhase);
     expect(loadRoomState('1')).toEqual(scoresPhase);
     expect(loadRoomState('2')).toEqual(finalPhase);
+  });
+
+  it('comes back with the theme, since the bank is drawn from it and not from the room code', () => {
+    // The six in front of the room are rolled from its code, but which of them is pressed is
+    // not: a refreshed host that lost it would offer a bank with nothing chosen on it.
+    saveRoomState('1234', writingPhase);
+    const state = loadRoomState('1234');
+    expect(state !== undefined && state.phase !== 'Lobby' ? state.theme : null).toBe('Nature');
+  });
+
+  it('comes back with no theme where none had been chosen', () => {
+    saveRoomState('1234', { ...writingPhase, theme: undefined });
+    const state = loadRoomState('1234');
+    expect(
+      state !== undefined && state.phase !== 'Lobby' ? state.theme : 'missing'
+    ).toBeUndefined();
+  });
+
+  it('drops a stored theme this build has never heard of', () => {
+    // The card is drawn from the theme, so a name that is not one cannot be drawn at all, which
+    // is the same position as a bank nobody has pressed yet.
+    const stored: Record<string, unknown> = JSON.parse(
+      JSON.stringify(encodeRoomState(writingPhase))
+    );
+    stored.theme = 'Astrology';
+    const state = decodeRoomState(stored);
+    expect(
+      state !== undefined && state.phase !== 'Lobby' ? state.theme : 'missing'
+    ).toBeUndefined();
   });
 
   it('is forgotten when the room is left, and kept apart from other rooms', () => {

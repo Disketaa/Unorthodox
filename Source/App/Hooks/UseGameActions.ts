@@ -1,15 +1,15 @@
 import { useCallback, useRef } from 'preact/hooks';
 import { GameConfig, Pace } from '@/Game';
-import { CharacterColor, CharacterId } from '@/Core';
+import { CharacterColor, CharacterId, ThemeId } from '@/Core';
 import { topicAt } from '@/Content';
 import { Session } from '../Session';
 import { navigate } from '../Routes';
 
 export interface GameActions {
   startGame: () => void;
-  /** Out of the theme choice and into the round it chose. The topic comes from the round counter
-   * rather than from the click, so the same round asks the same thing whoever picks. */
-  chooseTheme: () => void;
+  /** Answering the theme bank. The room's answer rather than this screen's, so the picked card
+   * opens in every browser at once. Refused by the host from anybody but the player on turn. */
+  chooseTheme: (theme: ThemeId) => void;
   nextRound: () => void;
   /** Wherever the phase table says goes next, for the host's dock. */
   nextPhase: () => void;
@@ -30,14 +30,15 @@ function useRoundFlow(session: Session) {
 
   const startGame = useCallback(() => {
     roundsRef.current = 1;
-    // The count-in is inside the writing phase rather than in front of it, so the
-    // numbers the whole room is counting cost the round none of its answering time.
     session.startGame();
   }, [session]);
 
-  const chooseTheme = useCallback(() => {
-    session.startWriting(topicAt(roundsRef.current - 1));
-  }, [session]);
+  const chooseTheme = useCallback(
+    (theme: ThemeId) => {
+      session.chooseTheme(theme);
+    },
+    [session]
+  );
 
   const nextRound = useCallback(() => {
     const next = roundsRef.current + 1;

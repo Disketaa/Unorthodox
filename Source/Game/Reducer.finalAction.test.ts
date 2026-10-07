@@ -16,6 +16,7 @@ describe('reducer FINAL action', () => {
       ]),
       turnPlayerId: null,
       pace: 'Standard',
+      theme: undefined,
     };
     const next = reducer(state, { type: 'FINAL' });
     expect(next.phase).toBe('Final');
