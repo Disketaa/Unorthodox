@@ -20,6 +20,9 @@ const names: Readonly<Record<ThemeId, string>> = {
 export function ThemeCardsGallery() {
   const themes: readonly ThemeId[] = dealThemes(createRandom(7), 6);
   const first = themes[0];
+  // Four rounds played in the theme the room just came out of, and a full bar everywhere else:
+  // the bank is the same six themes every round, so this is what the second Choosing looks like.
+  const spent = new Map<ThemeId, number>(first === undefined ? [] : [[first, 4]]);
   return (
     <Stack gap="Lg">
       {/* The bank on offer, to the player whose turn it is. */}
@@ -27,20 +30,20 @@ export function ThemeCardsGallery() {
         themes={themes}
         names={names}
         roundsPerTheme={10}
-        spent={4}
+        spent={spent}
         onPick={() => {}}
       />
       {first !== undefined && (
         <>
           {/* The same bank on somebody else's turn: held back, still under the pointer. */}
-          <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={4} />
+          <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={spent} />
           {/* And the room's answer, at full strength on every screen: whoever pressed it and
            * whoever did not, the expanded card is drawn the same either way. */}
           <ThemeCards
             themes={themes}
             names={names}
             roundsPerTheme={10}
-            spent={4}
+            spent={spent}
             picked={first}
           />
         </>

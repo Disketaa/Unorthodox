@@ -6,21 +6,20 @@ import { GameConfig } from '@/Game';
 export interface ThemeCardsViewProps {
   /** The room's code, which is what the deal is rolled from. */
   roomCode: string;
-  /** Whether it is this player's turn to pick. A client whose turn it is not sees the same six
-   * cards held back rather than a different six, since the bank is the room's and not theirs. */
-  isMyTurn: boolean;
   /** Whether the room is choosing a theme at all. False in every other phase, where the bank is
    * on screen as a backdrop and nothing about it is being asked. */
   choosing: boolean;
+  /** Whether the turn to pick a theme is this player's. False holds the bank back — muted and
+   * unpressable, still under the pointer — rather than letting a press be sent and refused by
+   * the host, which would look like a dead card rather than as somebody else's turn. */
+  myTurn: boolean;
   /** The theme the room has settled on, or undefined while the bank is still being offered. The
    * room's answer rather than this player's, so every screen expands the same card at once. */
   theme: ThemeId | undefined;
   /** Answering the bank, from whichever player's turn it happens to be. */
   onPickTheme: (theme: ThemeId) => void;
-  /** How many of each theme's rounds have been played. Nothing counts rounds yet, so the bank is
-   * drawn full. Passed in rather than read from a module that does not exist yet, so nothing on
-   * the cards changes when the round arrives. */
-  spent?: number;
+  /** How many rounds have been played in each theme so far, keyed the same way as `theme`. */
+  spent?: ReadonlyMap<ThemeId, number>;
 }
 
 /** The themes this lobby is playing, on the game screen. Rolled from the room code rather than
@@ -28,8 +27,8 @@ export interface ThemeCardsViewProps {
  * same six from the same four letters. */
 export function ThemeCardsView({
   roomCode,
-  isMyTurn,
   choosing,
+  myTurn,
   theme,
   onPickTheme,
   spent,
@@ -45,9 +44,9 @@ export function ThemeCardsView({
       roundsPerTheme={GameConfig.themes.roundsPerTheme}
       spent={spent}
       picked={theme}
-      // Asked for only where it is the room's turn to answer. Absent anywhere else is what holds
-      // the cards back: nothing to press, rather than a press that goes nowhere.
-      onPick={choosing && isMyTurn ? onPickTheme : undefined}
+      // Asked for only where it is this player's turn to answer. Absent anywhere else is what holds
+      // the cards back: nothing to press, rather than a press the host refuses.
+      onPick={choosing && myTurn ? onPickTheme : undefined}
     />
   );
 }

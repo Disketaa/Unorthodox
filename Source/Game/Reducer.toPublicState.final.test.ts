@@ -13,6 +13,7 @@ describe('toPublicState Final state', () => {
       ]),
       turnPlayerId: null,
       pace: 'Standard',
+      themeRounds: new Map(),
       theme: undefined,
     };
     const publicState = toPublicState(state);

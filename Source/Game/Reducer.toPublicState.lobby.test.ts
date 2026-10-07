@@ -16,6 +16,7 @@ describe('toPublicState Lobby state', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      themeRounds: new Map(),
     };
     const publicState = toPublicState(state);
     expect(publicState.phase).toBe('Lobby');

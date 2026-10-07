@@ -30,9 +30,21 @@ function totalsOf(scores: ReadonlyMap<PlayerId, number>): { id: PlayerId; score:
   return totals;
 }
 
-/** The room's turn and pace, as every phase carries them. */
+/** The room's turn, pace and per-theme round counts, as every phase carries them. */
 function room(state: HostState): PublicRoom {
-  return { turnPlayerId: state.turnPlayerId, pace: state.pace };
+  return {
+    turnPlayerId: state.turnPlayerId,
+    pace: state.pace,
+    spent: spentByTheme(state.themeRounds),
+  };
+}
+
+/** The rounds already played in each theme, as pairs rather than a map, since this goes out as
+ * plain data and a Map does not survive being sent any more than a field set to undefined does. */
+function spentByTheme(themeRounds: ReadonlyMap<ThemeId, number>): PublicRoom['spent'] {
+  const spent: PublicRoom['spent'] = [];
+  themeRounds.forEach((rounds, theme) => spent.push({ theme, rounds }));
+  return spent;
 }
 
 export function toPublicLobbyState(state: HostState): PublicLobbyState {

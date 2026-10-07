@@ -2,7 +2,7 @@ import { useState } from 'preact/hooks';
 import type { ComponentChildren } from 'preact';
 import { InfoScreen, LobbyDebugTools, PhaseDebugTools, TurnDebugTools } from '@/Screens';
 import { Strings } from '@/Content';
-import { PlayerLook, assertNever } from '@/Core';
+import { PlayerLook, ThemeId, assertNever } from '@/Core';
 import { Stack } from '@/Design/Primitives';
 import { DebugDock, StartCountdown } from '@/Design/Overlays';
 import { useGameSession } from './Hooks/UseGameSession';
@@ -54,15 +54,28 @@ function GameScene({ view }: { view: GameSessionView }) {
         <PhaseInfoView view={view} />
         <PlayerBarView view={view} />
       </Stack>
-      <ThemeCardsView
-        roomCode={view.roomCode}
-        choosing={view.phase === 'Choosing'}
-        isMyTurn={view.turnPlayerId === view.playerId}
-        theme={view.publicState?.phase === 'Lobby' ? undefined : view.publicState?.theme}
-        onPickTheme={view.chooseTheme}
-      />
+      {view.phase === 'Choosing' && (
+        <ThemeCardsView
+          roomCode={view.roomCode}
+          choosing={view.phase === 'Choosing'}
+          myTurn={view.playerId !== null && view.playerId === view.turnPlayerId}
+          theme={view.publicState?.phase === 'Lobby' ? undefined : view.publicState?.theme}
+          onPickTheme={view.chooseTheme}
+          spent={spentByTheme(view.publicState)}
+        />
+      )}
     </Stack>
   );
+}
+
+/** The room's per-theme round counts as the map the cards read, built here because the state
+ * arrives as the pairs it went out as. Nothing counted is an empty map rather than a full one,
+ * so a room that has not played a round draws a bank of full bars. */
+function spentByTheme(state: GameSessionView['publicState']): Map<ThemeId, number> | undefined {
+  if (state === undefined) {
+    return undefined;
+  }
+  return new Map(state.spent.map(({ theme, rounds }) => [theme, rounds]));
 }
 
 /** Still reaching the host. The same screen as the failures, a moment earlier: the mark says it

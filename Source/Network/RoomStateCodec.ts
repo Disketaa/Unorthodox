@@ -52,6 +52,18 @@ const isText = (value: unknown): value is string => typeof value === 'string';
 const isPlayer = (value: unknown): value is Player =>
   typeof value === 'object' && value !== null;
 
+/** The rounds played in each theme, keyed by theme. The key is guarded as well as the count: a
+ * count filed under a name this build has no card for is a count nothing can ever read. */
+function themeRoundsFrom(fields: Fields): Map<ThemeId, number> {
+  const counts = new Map<ThemeId, number>();
+  for (const pair of rawPairs(fields, 'themeRounds')) {
+    if (!Array.isArray(pair) || pair.length !== 2) continue;
+    const [theme, count] = pair;
+    if (isThemeId(theme) && isNumber(count)) counts.set(theme, count);
+  }
+  return counts;
+}
+
 /** The stored pace, or Standard when what is in storage names a pace this build has dropped:
  * every phase is timed off the pace, so an unrecognised one is a room that cannot start. */
 function paceFrom(fields: Fields): Pace {
@@ -79,6 +91,7 @@ interface Members {
   players: Map<PlayerId, Player>;
   turnPlayerId: PlayerId | null;
   pace: Pace;
+  themeRounds: Map<ThemeId, number>;
 }
 
 /** The room's turn, absent in a room stored before turns existed. */
@@ -87,19 +100,20 @@ function turnFrom(fields: Fields): PlayerId | null {
   return typeof value === 'string' ? value : null;
 }
 
-/** The seats, totals, turn and pace a stored room comes back with. */
+/** The seats, totals, turn, pace and theme counts a stored room comes back with. */
 function membersFrom(fields: Fields): Members {
   return {
     scores: toMap(rawPairs(fields, 'scores'), isNumber),
     players: toMap(rawPairs(fields, 'players'), isPlayer),
     turnPlayerId: turnFrom(fields),
     pace: paceFrom(fields),
+    themeRounds: themeRoundsFrom(fields),
   };
 }
 
 /** The two untimed phases, which carry no clock at all. */
 function plainFrom(fields: Fields, members: Members): HostState | undefined {
-  const { scores, players, turnPlayerId, pace } = members;
+  const { scores, players, turnPlayerId, pace, themeRounds } = members;
   switch (fields.get('phase')) {
     case 'Lobby':
       return {
@@ -108,6 +122,7 @@ function plainFrom(fields: Fields, members: Members): HostState | undefined {
         cumulativeScores: scores,
         turnPlayerId,
         pace,
+        themeRounds,
       };
     case 'Final':
       return {
@@ -116,6 +131,7 @@ function plainFrom(fields: Fields, members: Members): HostState | undefined {
         cumulativeScores: scores,
         turnPlayerId,
         pace,
+        themeRounds,
         theme: themeFrom(fields),
       };
     default:
@@ -125,7 +141,7 @@ function plainFrom(fields: Fields, members: Members): HostState | undefined {
 
 /** The three timed phases, which all read the same clock, roster and turn. */
 function timedFrom(fields: Fields, members: Members): HostState | undefined {
-  const { scores, players, turnPlayerId, pace } = members;
+  const { scores, players, turnPlayerId, pace, themeRounds } = members;
   const common = {
     ...clockOf(fields),
     topic: text(fields, 'topic'),
@@ -134,6 +150,7 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
     cumulativeScores: scores,
     turnPlayerId,
     pace,
+    themeRounds,
   };
   const theme = themeFrom(fields);
   switch (fields.get('phase')) {
@@ -152,6 +169,7 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
         cumulativeScores: scores,
         turnPlayerId,
         pace,
+        themeRounds,
         theme,
       };
     default:

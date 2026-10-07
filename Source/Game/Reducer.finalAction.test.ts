@@ -16,6 +16,7 @@ describe('reducer FINAL action', () => {
       ]),
       turnPlayerId: null,
       pace: 'Standard',
+      themeRounds: new Map(),
       theme: undefined,
     };
     const next = reducer(state, { type: 'FINAL' });

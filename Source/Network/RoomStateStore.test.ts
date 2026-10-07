@@ -27,6 +27,7 @@ const writingPhase: HostState = {
   cumulativeScores: new Map([['host', 7]]),
   turnPlayerId: null,
   pace: 'Standard',
+  themeRounds: new Map(),
   theme: 'Nature' as const,
 };
 
@@ -42,6 +43,7 @@ const reviewingPhase: HostState = {
   cumulativeScores: new Map([['host', 7]]),
   turnPlayerId: null,
   pace: 'Standard',
+  themeRounds: new Map(),
   theme: 'Nature' as const,
 };
 
@@ -54,6 +56,7 @@ const scoresPhase: HostState = {
   cumulativeScores: new Map([['host', 10]]),
   turnPlayerId: null,
   pace: 'Standard',
+  themeRounds: new Map(),
   theme: 'Nature' as const,
 };
 
@@ -63,6 +66,7 @@ const finalPhase: HostState = {
   cumulativeScores: new Map([['host', 10]]),
   turnPlayerId: null,
   pace: 'Standard',
+  themeRounds: new Map(),
   theme: 'Nature' as const,
 };
 
@@ -71,6 +75,7 @@ describe('a room that outlives its tab', () => {
     const lobby = {
       ...freshLobby(),
       pace: 'Fast' as const,
+      themeRounds: new Map(),
       players: new Map([['host', { name: 'Danya', look, isOnline: true }]]),
     };
     saveRoomState('1234', lobby);

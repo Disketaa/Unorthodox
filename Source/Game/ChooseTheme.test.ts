@@ -3,6 +3,7 @@ import { reducer } from './Reducer';
 import { freshLobbyState } from './GameState';
 import { toPublicState } from './PublicState';
 import type { HostState } from './GameState';
+import type { ThemeId } from '@/Core';
 
 /** A lobby with two players in it, which is the smallest room a game can start in. */
 function lobby(): HostState {
@@ -115,5 +116,37 @@ describe('choosing a theme', () => {
     });
     const again = reducer(scored, { type: 'NEXT_ROUND', durationMs: 20_000, startedAt: 5000 });
     expect(again.phase === 'Choosing' && again.theme).toBeUndefined();
+  });
+
+  it('spends one round of that theme as the card is pressed', () => {
+    // The expanded card's own row of ticks has to be one shorter the moment the room commits,
+    // on every screen at once, or the row reads as a bar that never drains.
+    const state = reducer(choosingRoom(), {
+      type: 'CHOOSE_THEME',
+      playerId: 'p1',
+      theme: 'Nature',
+    });
+    expect([...state.themeRounds]).toEqual([['Nature', 1]]);
+  });
+
+  it('spends against a theme already part spent, and leaves the rest of the bank alone', () => {
+    const room = { ...choosingRoom(), themeRounds: new Map<ThemeId, number>([['Nature', 3]]) };
+    const state = reducer(room, { type: 'CHOOSE_THEME', playerId: 'p1', theme: 'Nature' });
+    expect([...state.themeRounds]).toEqual([['Nature', 4]]);
+  });
+
+  it('spends nothing on a press that is refused, since no round was committed', () => {
+    const state = choosingRoom();
+    const refused = reducer(state, { type: 'CHOOSE_THEME', playerId: 'p2', theme: 'Nature' });
+    expect(refused.themeRounds).toBe(state.themeRounds);
+  });
+
+  it('tells a client the counts, since the bank is drawn from them', () => {
+    const state = reducer(choosingRoom(), {
+      type: 'CHOOSE_THEME',
+      playerId: 'p1',
+      theme: 'Nature',
+    });
+    expect(toPublicState(state).spent).toEqual([{ theme: 'Nature', rounds: 1 }]);
   });
 });

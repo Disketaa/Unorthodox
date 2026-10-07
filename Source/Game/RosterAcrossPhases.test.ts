@@ -18,6 +18,7 @@ function lobby(): HostState {
     cumulativeScores: new Map(),
     turnPlayerId: null,
     pace: 'Standard',
+    themeRounds: new Map(),
   };
 }
 

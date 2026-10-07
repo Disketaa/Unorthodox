@@ -8,13 +8,16 @@ import { rejectionsOut } from './RoomRejections';
 /** The phases that carry a clock, which is every phase but Lobby and Final. */
 type TimedHostState = Extract<HostState, { durationMs: number }>;
 
-/** The roster, totals, turn and pace every phase carries whatever it is doing. */
+/** The roster, totals, turn, pace and per-theme round counts every phase carries. The counts
+ * among them, since a resumed room that forgot them would refill every row of ticks on the
+ * bank. */
 function membersOf(state: HostState) {
   return {
     players: [...state.players.entries()],
     scores: [...state.cumulativeScores.entries()],
     turnPlayerId: state.turnPlayerId,
     pace: state.pace,
+    themeRounds: [...state.themeRounds.entries()],
   };
 }
 

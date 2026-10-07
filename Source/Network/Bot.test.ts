@@ -19,6 +19,7 @@ function lobby(...names: string[]): HostState {
     cumulativeScores: new Map(),
     turnPlayerId: null,
     pace: 'Standard',
+    themeRounds: new Map(),
   };
 }
 
@@ -62,6 +63,7 @@ describe('botJoin', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      themeRounds: new Map(),
       theme: undefined,
     };
     expect(botJoin(writing, 1, seeded())).toBeUndefined();

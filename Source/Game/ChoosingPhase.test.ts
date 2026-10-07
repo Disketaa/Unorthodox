@@ -87,6 +87,26 @@ describe('the Choosing phase', () => {
     expect(reducer(empty, writing)).toBe(empty);
   });
 
+  it('hands the turn on as the round starts, so the next bank belongs to another player', () => {
+    // Choosing a theme is the one thing a turn limits, so a turn that never moved would leave
+    // every player after the first holding a muted bank and no round to play.
+    const two = reducer(
+      reducer(lobby(), {
+        type: 'JOIN',
+        playerId: 'p2',
+        name: 'Bob',
+        look: { character: 'Ghost', color: 'Sky' },
+      }),
+      choosing
+    );
+    expect(two.turnPlayerId).toBe('p1');
+    expect(reducer(two, writing).turnPlayerId).toBe('p2');
+  });
+
+  it('gives the turn straight back in a room of one', () => {
+    expect(reducer(reducer(lobby(), choosing), writing).turnPlayerId).toBe('p1');
+  });
+
   it('comes round again, so a second round is another Choosing', () => {
     const answered = reducer(reducer(reducer(lobby(), choosing), writing), {
       type: 'SUBMIT_ANSWER',

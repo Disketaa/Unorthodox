@@ -23,6 +23,9 @@ export interface RoomMembers {
    * UI, so a client is told the answer rather than guessing it from its own click. The lobby
    * buttons are drawn for clients too, to show what a pace would mean. */
   pace: Pace;
+  /** How many rounds have been played in each theme. Per theme rather than one running total,
+   * since the bank is the same six themes every round and each of them drains at its own rate. */
+  themeRounds: Map<ThemeId, number>;
 }
 
 export type LobbyState = RoomMembers & {
@@ -90,5 +93,6 @@ export function freshLobbyState(): LobbyState {
     cumulativeScores: new Map(),
     turnPlayerId: null,
     pace: 'Standard',
+    themeRounds: new Map<ThemeId, number>(),
   };
 }

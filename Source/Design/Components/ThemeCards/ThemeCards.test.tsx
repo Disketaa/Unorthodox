@@ -18,6 +18,11 @@ const names: Readonly<Record<ThemeId, string>> = {
   Random: 'Random',
 };
 
+/** Four rounds already played in the first theme dealt, and a full bar on the rest. */
+const spent = new Map<ThemeId, number>();
+const first = themes[0];
+if (first !== undefined) spent.set(first, 4);
+
 /** Mount a bank and hand back the cards as the browser sees them. */
 function mount(props: {
   onPick?: (theme: ThemeId) => void;
@@ -27,7 +32,7 @@ function mount(props: {
   document.body.appendChild(container);
   act(() => {
     render(
-      <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={4} {...props} />,
+      <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={spent} {...props} />,
       container
     );
   });

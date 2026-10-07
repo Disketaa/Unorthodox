@@ -18,10 +18,10 @@ export interface ThemeCardsProps {
    * the state every client is sent rather than kept per screen, so a press opens the same card
    * in every browser in the room at the same moment. */
   picked?: ThemeId;
-  /** How many of each theme's rounds have been played. Left out, it is none on every card: a
-   * bank of full bars, themes nobody has chosen yet. Every card carries the same count, which
-   * is why it is here rather than on one card. */
-  spent?: number;
+  /** How many rounds have been played in each theme. A count per theme rather than one number
+   * for the bank, because the bank is the same six themes every round and each drains on its
+   * own. */
+  spent?: ReadonlyMap<ThemeId, number>;
 }
 
 function slotClass(theme: ThemeId, picked: ThemeId | undefined): string {
@@ -79,7 +79,7 @@ export function ThemeCards({
             name={names[theme]}
             index={index + 1}
             rounds={roundsPerTheme}
-            spent={spent}
+            spent={spent?.get(theme) ?? 0}
             chosen={theme === picked}
             locked={settled}
             waiting={waiting}

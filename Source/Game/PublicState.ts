@@ -29,6 +29,9 @@ export interface PublicRoom {
    * the settings card is drawn for clients too, and a card showing one pace while the room
    * plays another is worse than no card. */
   pace: Pace;
+  /** How many rounds have been played in each theme, as pairs rather than a map, since this goes
+   * out as plain data. On every phase because the bank is on screen through all of them. */
+  spent: { theme: ThemeId; rounds: number }[];
 }
 
 export type PublicLobbyState = PublicRoom & {

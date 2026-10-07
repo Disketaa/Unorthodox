@@ -214,6 +214,7 @@
   color: var(--Color-Neutral-300);
   user-select: none;
   pointer-events: none;
+  transition: font-size var(--Transition-Standard);
 }
 
 /* The initial answers the pointer with the theme's ink, the way the name answers with the tint.
@@ -350,9 +351,13 @@
   opacity: var(--Opacity-ThemeCardNoiseHover);
 }
 
-/* The corner letter with them: the chosen card is locked, so no hover will bring the ink back. */
+/* The corner letter with them: the chosen card is locked, so no hover will bring the ink back.
+ * And smaller, since the chosen card has already had its answer and the letter has given up its
+ * share of the card to the name underneath it — the same opening-up the name and the mark do,
+ * in the other direction. */
 .Chosen .Initial {
   color: var(--ThemeCard-Ink, var(--Accent-Ink));
+  font-size: calc(var(--FontSize-ThemeCardInitial) * var(--Scale-ThemeCardInitialChosen));
 }
 
 /* A card that has stopped taking presses. `pointer-events` rather than a restatement of every

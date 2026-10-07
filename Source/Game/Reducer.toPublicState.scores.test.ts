@@ -16,6 +16,7 @@ describe('toPublicState Scores state', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      themeRounds: new Map(),
       theme: undefined,
     };
     const publicState = toPublicState(state);
@@ -27,5 +28,23 @@ describe('toPublicState Scores state', () => {
       expect(publicState.scores).toContainEqual({ id: 'p1', score: 3 });
       expect(publicState.scores).toContainEqual({ id: 'p2', score: 1 });
     }
+  });
+
+  test('sends the per-theme round counts on every phase, not only on Choosing', () => {
+    // The bank is on screen through all of them, and a card that only drained while the room was
+    // choosing would fill back up the moment the round started.
+    const state: HostState = {
+      phase: 'Scores',
+      durationMs: 30000,
+      startedAt: 1000,
+      scores: new Map(),
+      players: new Map(),
+      cumulativeScores: new Map(),
+      turnPlayerId: null,
+      pace: 'Standard',
+      themeRounds: new Map([['Nature', 3]]),
+      theme: undefined,
+    };
+    expect(toPublicState(state).spent).toEqual([{ theme: 'Nature', rounds: 3 }]);
   });
 });

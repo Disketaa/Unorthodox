@@ -512,6 +512,11 @@ body.PageFade {
    * of a figure already larger than the card moves almost nothing inside the crop. */
   --Scale-ThemeCardHover: 1.12;
   --Scale-ThemeCardMarkHover: 1.5;
+  /* How far the corner letter comes down on the chosen card, the other side of the same opening
+   * the name and the mark do the other way. Well short of nothing: a letter reduced to a smudge
+   * in the corner of a card the room has answered would be read as a printing fault rather than
+   * as a letter that has stepped back. */
+  --Scale-ThemeCardInitialChosen: 0.6;
   /* How far the cards left behind shrink as they fade. Just short of nothing, since a card that
    * reaches zero while still visible is a card being switched off rather than one put away. */
   --Scale-ThemeCardsGone: 0.94;

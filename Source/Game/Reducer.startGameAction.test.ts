@@ -15,6 +15,7 @@ describe('reducer START_GAME action', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      themeRounds: new Map(),
     };
     state = reducer(state, { type: 'START_GAME', durationMs: 20000, startedAt: 1000 });
     expect(state.phase).toBe('Choosing');
@@ -33,6 +34,7 @@ describe('reducer START_GAME action', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      themeRounds: new Map(),
     };
     expect(reducer(state, { type: 'START_GAME', durationMs: 20000, startedAt: 1000 })).toBe(
       state

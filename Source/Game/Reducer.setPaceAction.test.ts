@@ -13,6 +13,7 @@ function lobby(): HostState {
     cumulativeScores: new Map(),
     turnPlayerId: null,
     pace: 'Standard',
+    themeRounds: new Map(),
   };
 }
 
@@ -45,6 +46,7 @@ describe('reducer SET_PACE action', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      themeRounds: new Map(),
       theme: undefined,
     };
     expect(reducer(writing, { type: 'SET_PACE', pace: 'Fast' })).toBe(writing);
