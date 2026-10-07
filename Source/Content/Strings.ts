@@ -23,8 +23,8 @@ export const Strings = {
   lobby: {
     startButton: 'Начать игру',
     waitingForHost: 'Ждём хоста',
-    /** Names the list of players, on the rule that divides it from the room code. */
-    roster: 'Лобби',
+    /** Built from the count and limit, so the hint cannot drift from the actual roster. */
+    roster: (count: number, max: number) => `Лобби (${count}/${max})`,
     /** Built from the limit, so the hint cannot drift from the actual rule. */
     notEnoughPlayers: (min: number) => `Нужно минимум ${min} игрока`,
     roomFull: 'Комната заполнена',

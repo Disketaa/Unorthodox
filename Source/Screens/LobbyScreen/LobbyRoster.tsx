@@ -12,15 +12,23 @@ export interface LobbyRosterProps {
   isHost: boolean;
   /** Only the host gets this: the room's way to remove a player. */
   onKick: (playerId: PlayerId) => void;
+  /** The room's player limit, shown in the roster header. */
+  maxPlayers: number;
 }
 
 /** The roster: each player drawn as the character the host has them as, under a rule that names
  * it. The word is on the rule rather than in the card's title, since the card above is titled
  * by the room code: that is the room, and the list inside it is one part of it. */
-export function LobbyRoster({ players, ownPlayerId, isHost, onKick }: LobbyRosterProps) {
+export function LobbyRoster({
+  players,
+  ownPlayerId,
+  isHost,
+  onKick,
+  maxPlayers,
+}: LobbyRosterProps) {
   return (
     <Stack gap="Md">
-      <Separator>{Strings.lobby.roster}</Separator>
+      <Separator>{Strings.lobby.roster(players.length, maxPlayers)}</Separator>
       <Stack gap="Sm">
         {players.map((player, index) => (
           <PlayerChip

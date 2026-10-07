@@ -11,7 +11,7 @@ export function SeparatorGallery() {
           <Text variant="Body">Above the rule</Text>
           <Separator />
           <Text variant="Body">Below a bare rule</Text>
-          <Separator>Лобби</Separator>
+          <Separator>Лобби (3/12)</Separator>
           <Text variant="Body">Below a named rule</Text>
         </Stack>
       </Card>

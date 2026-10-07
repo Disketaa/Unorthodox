@@ -20,21 +20,21 @@ describe('Separator', () => {
   });
 
   it('puts the word it was given in the rule', () => {
-    const root = renderSeparator('Лобби');
-    expect(root.textContent ?? '').toContain('Лобби');
+    const root = renderSeparator('Лобби (3/12)');
+    expect(root.textContent ?? '').toContain('Лобби (3/12)');
   });
 
   it('is not a separator once it carries a word, which is a label on the part', () => {
     // A labelled rule is announcing the name of a boundary when read as a
     // separator, and the word is naming what sits below it instead.
-    const root = renderSeparator('Лобби');
+    const root = renderSeparator('Лобби (3/12)');
     expect(root.querySelector('[role="separator"]')).toBeNull();
   });
 
   it('draws the rule on both sides of the word, not only one', () => {
     // One run of the rule is a line that stops short, which reads as two unrelated
     // lines rather than as one rule broken by a label.
-    const root = renderSeparator('Лобби');
+    const root = renderSeparator('Лобби (3/12)');
     expect(root.querySelectorAll('span')).toHaveLength(3);
   });
 });

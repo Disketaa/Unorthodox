@@ -18,18 +18,12 @@ export interface LobbyRoomProps {
   onKick: (playerId: PlayerId) => void;
 }
 
-/** Whether the room is ready to start, and whether it is already full. Counted from the players
- * actually here: a seat whose owner has dropped is still on the roster, but starting would wait
- * on an answer that can no longer arrive, so a room of one live player is one. */
-function readiness(players: readonly PublicPlayer[]): {
-  enoughPlayers: boolean;
-  roomFull: boolean;
-} {
+/** Whether there are enough players to start. Counted from the players actually here: a seat
+ * whose owner has dropped is still on the roster, but starting would wait on an answer that can
+ * no longer arrive, so a room of one live player is one. */
+function enoughPlayers(players: readonly PublicPlayer[]): boolean {
   const hereCount = players.filter((player) => player.isOnline).length;
-  return {
-    enoughPlayers: hereCount >= GameConfig.limits.minPlayers,
-    roomFull: players.length >= GameConfig.limits.maxPlayers,
-  };
+  return hereCount >= GameConfig.limits.minPlayers;
 }
 
 /** Whether there is a seat left for one more player. Exported because the host's dock asks the
@@ -49,7 +43,7 @@ export function LobbyRoom({
   onExit,
   onKick,
 }: LobbyRoomProps) {
-  const { enoughPlayers, roomFull } = readiness(players);
+  const enoughPlayersReady = enoughPlayers(players);
   return (
     <LobbyCategory
       title={<RoomCodeBadge code={roomCode} />}
@@ -57,17 +51,13 @@ export function LobbyRoom({
     >
       {/* Start sits above the roster, not under it: the roster grows as players join, and a
        * control that slides down with them is a control the host has to hunt for. */}
-      <LobbyStart
-        enoughPlayers={enoughPlayers}
-        roomFull={roomFull}
-        isHost={isHost}
-        onStart={onStart}
-      />
+      <LobbyStart enoughPlayers={enoughPlayersReady} isHost={isHost} onStart={onStart} />
       <LobbyRoster
         players={players}
         ownPlayerId={ownPlayerId}
         isHost={isHost}
         onKick={onKick}
+        maxPlayers={GameConfig.limits.maxPlayers}
       />
     </LobbyCategory>
   );
