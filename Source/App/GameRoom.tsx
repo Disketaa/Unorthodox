@@ -54,7 +54,12 @@ function GameScene({ view }: { view: GameSessionView }) {
         <PhaseInfoView view={view} />
         <PlayerBarView view={view} />
       </Stack>
-      <ThemeCardsView roomCode={view.roomCode} />
+      <ThemeCardsView
+        roomCode={view.roomCode}
+        choosing={view.phase === 'Choosing'}
+        isMyTurn={view.turnPlayerId === view.playerId}
+        onPickTheme={view.chooseTheme}
+      />
     </Stack>
   );
 }

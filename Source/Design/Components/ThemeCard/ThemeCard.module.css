@@ -363,3 +363,19 @@
   cursor: var(--Cursor-Default);
   pointer-events: none;
 }
+
+/* A card belonging to another player's turn: it cannot be pressed, but it still answers the
+ * pointer. Held back rather than taken away, since the bank is being read while it waits and a
+ * card that vanished under the cursor would be a card the reader lost. `:disabled` is the wrong
+ * tool here — it takes the hover with it, and the hover is how a card says which theme it is. */
+.Waiting {
+  opacity: var(--Opacity-ThemeCardWaiting);
+  cursor: var(--Cursor-NotAllowed);
+}
+
+/* Lifted back to full over the hover, so a card nobody may press still opens under the pointer
+ * like any other. Without it the held-back card is the one card in the bank that does not
+ * answer, which reads as broken rather than as waiting. */
+.Waiting:hover {
+  opacity: 1;
+}

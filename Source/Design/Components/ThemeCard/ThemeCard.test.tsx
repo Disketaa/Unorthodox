@@ -6,14 +6,17 @@ import { ThemeCard } from './ThemeCard';
 import { Accents, ThemeId, ThemeIds, themeAccent } from '@/Core';
 
 /** The card as one role sees it, mounted with its effects flushed. */
-function card(theme: ThemeId = 'Internet', index?: number) {
+function card(theme: ThemeId = 'Internet', index?: number, waiting = false) {
   const container = document.createElement('div');
   document.body.appendChild(container);
   // The accent and the sway are both written from effects, so the card is mounted inside
   // `act`: without it the write has not happened yet and the card reads as having no colour
   // and no movement at all.
   act(() => {
-    render(<ThemeCard theme={theme} name="Интернет" index={index} />, container);
+    render(
+      <ThemeCard theme={theme} name="Интернет" index={index} waiting={waiting} />,
+      container
+    );
   });
   const button = container.querySelector('button');
   if (button === null) {
@@ -88,6 +91,59 @@ describe('one theme card', () => {
   it('lets two themes share a tint, since the palette holds fewer tints than themes', () => {
     const used = new Set(ThemeIds.map((theme) => themeAccent(theme)));
     expect(used.size).toBeLessThan(ThemeIds.length);
+  });
+});
+
+describe("a card that is not this player's to press", () => {
+  it('is still a button, since the bank is being read while it waits', () => {
+    // `disabled` would take the card out of the tab order and kill the hover with it, and the
+    // hover is how a card says which theme it is. Held back and announced instead.
+    expect(card(undefined, undefined, true).button.disabled).toBe(false);
+  });
+
+  it('is announced as unpressable rather than left looking live', () => {
+    expect(card(undefined, undefined, true).button.getAttribute('aria-disabled')).toBe('true');
+    expect(card().button.getAttribute('aria-disabled')).toBeNull();
+  });
+
+  it('does not pick, so a press on a card of another player goes nowhere', () => {
+    const picked: string[] = [];
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    act(() => {
+      render(
+        <ThemeCard theme="Nature" name="Природа" waiting onPick={(t) => picked.push(t)} />,
+        container
+      );
+    });
+    const button = container.querySelector('button');
+    if (button === null) {
+      throw new Error('no card rendered');
+    }
+    act(() => {
+      button.click();
+    });
+    expect(picked).toEqual([]);
+  });
+
+  it('picks when the turn comes round, off the same card', () => {
+    const picked: string[] = [];
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    act(() => {
+      render(
+        <ThemeCard theme="Nature" name="Природа" onPick={(t) => picked.push(t)} />,
+        container
+      );
+    });
+    const button = container.querySelector('button');
+    if (button === null) {
+      throw new Error('no card rendered');
+    }
+    act(() => {
+      button.click();
+    });
+    expect(picked).toEqual(['Nature']);
   });
 });
 

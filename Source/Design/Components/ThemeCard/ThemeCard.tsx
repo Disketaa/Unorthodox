@@ -36,6 +36,9 @@ export interface ThemeCardProps {
   /** Whether the card has stopped taking presses, because the room has already answered. Every
    * card including the chosen one: the answer is in. */
   locked?: boolean;
+  /** Whether the card belongs to another player's turn. Held back and given the pointer, rather
+   * than `locked`, which takes the hover with it: the bank is still being read while it waits. */
+  waiting?: boolean;
 }
 
 /** The theme's own first letter, as the card's substance. One letter, not an abbreviation: the
@@ -57,10 +60,16 @@ function writeTheme(node: HTMLElement, theme: ThemeId, index: number) {
 
 /** What the card is drawn as. The blink goes with the chosen state, since a card the room has
  * answered is no longer one of a row being offered. */
-function cardClasses(moving: boolean, blink: boolean, chosen: boolean): string {
+function cardClasses(
+  moving: boolean,
+  blink: boolean,
+  chosen: boolean,
+  waiting: boolean
+): string {
   const classes = [styles.Root, moving ? styles.Moving : styles.Still];
   if (blink && !chosen) classes.push(styles.Blink);
   if (chosen) classes.push(styles.Chosen);
+  if (waiting) classes.push(styles.Waiting);
   return classes.join(' ');
 }
 
@@ -103,6 +112,7 @@ export function ThemeCard({
   blink = true,
   chosen = false,
   locked = false,
+  waiting = false,
 }: ThemeCardProps) {
   const motion = useSwayMotion<HTMLButtonElement>();
 
@@ -116,9 +126,15 @@ export function ThemeCard({
     <button
       type="button"
       ref={motion}
-      class={cardClasses(moving, blink, chosen)}
+      class={cardClasses(moving, blink, chosen, waiting)}
       disabled={locked}
+      // Announced rather than disabled: the card is on screen and readable, so a screen reader is
+      // told it cannot be pressed instead of being left to find a button that does nothing.
+      aria-disabled={waiting || undefined}
       onClick={() => {
+        if (waiting) {
+          return;
+        }
         playSound('Pop');
         onPick?.(theme);
       }}

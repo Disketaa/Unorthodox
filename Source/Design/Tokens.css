@@ -523,6 +523,11 @@ body.PageFade {
    * arrives. */
   --Opacity-ThemeCardMark: 0.075;
   --Opacity-ThemeCardMarkHover: 0.1;
+  /* How far a card that is not this player's to press is held back. Three fifths, which is the
+   * same step a disabled button is held back to, so a bank waiting on its turn and a button the
+   * room has not unlocked read as the same quietness. Not less: under half and the name stops
+   * being readable, and a card nobody can press is still a card being read. */
+  --Opacity-ThemeCardWaiting: 0.6;
   /* The grain on a theme card: the tile, how big it is drawn, how it blends and how much of
    * itself it is worth. A separate texture from the paper, which is a surface the whole page is
    * printed on; this is a coat over one panel. Drawn at its own size rather than scaled —

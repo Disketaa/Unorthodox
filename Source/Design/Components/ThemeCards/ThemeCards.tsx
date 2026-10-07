@@ -1,5 +1,6 @@
 import { ThemeId, themeAccent } from '@/Core';
 import { useEffect, useRef, useState } from 'preact/hooks';
+import type { RefObject } from 'preact';
 import { ThemeCard } from '../ThemeCard';
 import styles from './ThemeCards.module.css';
 
@@ -8,7 +9,8 @@ export interface ThemeCardsProps {
   themes: readonly ThemeId[];
   /** Names for the themes, by the same key as `ThemeId`. */
   names: Readonly<Record<ThemeId, string>>;
-  /** Asking for a theme. Every card is live for now; who may press is not settled. */
+  /** Asking for a theme. Left out where nothing is being chosen, which is every phase but
+   * Choosing, and on the cards of a player who is not the one whose turn it is. */
   onPick?: (theme: ThemeId) => void;
   /** How many rounds each theme is played for, from the game's own rules. */
   roundsPerTheme: number;
@@ -24,14 +26,10 @@ function slotClass(theme: ThemeId, picked: ThemeId | undefined): string {
   return styles.Slot;
 }
 
-/** The themes a lobby is being offered, six cards in a bank, lying flat: the bank was once six
- * screens in a ring facing the middle of the viewport, and the ring was measured on every
- * resize. The pick is local, and the theme it settled on has its wash written onto the page. */
-export function ThemeCards({ themes, names, onPick, roundsPerTheme, spent }: ThemeCardsProps) {
-  const [picked, setPicked] = useState<ThemeId | undefined>(undefined);
-  const bank = useRef<HTMLDivElement>(null);
-  const settled = picked !== undefined;
-
+/** The wash of the theme the room settled on, written onto the page behind everything and onto
+ * the bank itself. An effect rather than a render-time write, since it is the page rather than
+ * this component that changes, and it is undone on the way out. */
+function useWash(picked: ThemeId | undefined, bank: RefObject<HTMLDivElement>): void {
   useEffect(() => {
     if (picked === undefined) {
       return;
@@ -40,7 +38,26 @@ export function ThemeCards({ themes, names, onPick, roundsPerTheme, spent }: The
     document.body.style.setProperty('--Color-Page-Fill', wash);
     bank.current?.style.setProperty('--ThemeCards-Chosen', wash);
     return () => document.body.style.removeProperty('--Color-Page-Fill');
-  }, [picked]);
+  }, [picked, bank]);
+}
+
+/** The themes a lobby is being offered, six cards in a bank, lying flat: the bank was once six
+ * screens in a ring facing the middle of the viewport, and the ring was measured on every
+ * resize. The pick is local, and the theme it settled on has its wash written onto the page. */
+export function ThemeCards({ themes, names, onPick, roundsPerTheme, spent }: ThemeCardsProps) {
+  const [picked, setPicked] = useState<ThemeId | undefined>(undefined);
+  const bank = useRef<HTMLDivElement>(null);
+  const settled = picked !== undefined;
+  // A bank with nothing to ask for is a bank being read rather than played, so its cards are held
+  // back rather than dead: the room is watching whose turn it is come round.
+  const waiting = onPick === undefined;
+
+  useWash(picked, bank);
+
+  const pick = (next: ThemeId) => {
+    setPicked(next);
+    onPick?.(next);
+  };
 
   return (
     <div
@@ -58,10 +75,8 @@ export function ThemeCards({ themes, names, onPick, roundsPerTheme, spent }: The
             spent={spent}
             chosen={theme === picked}
             locked={settled}
-            onPick={(next) => {
-              setPicked(next);
-              onPick?.(next);
-            }}
+            waiting={waiting}
+            onPick={pick}
           />
         </div>
       ))}

@@ -1,4 +1,5 @@
 import { ThemeId, createRandom, dealThemes } from '@/Core';
+import { Stack } from '@/Design/Primitives';
 import { ThemeCards } from './ThemeCards';
 
 /** The bank as the gallery runs it, with the ids standing in for the names. Written out rather
@@ -18,5 +19,13 @@ const names: Readonly<Record<ThemeId, string>> = {
 
 export function ThemeCardsGallery() {
   const themes: readonly ThemeId[] = dealThemes(createRandom(7), 6);
-  return <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={4} />;
+  return (
+    <Stack gap="Lg">
+      <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={4} />
+      {/* The same bank with nothing to press, which is every phase but Choosing and every player
+       * whose turn it is not. `onPick` left off rather than a flag passed, since that is what a
+       * non-turning player's props actually hold. */}
+      <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={4} />
+    </Stack>
+  );
 }
