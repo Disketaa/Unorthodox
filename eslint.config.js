@@ -107,12 +107,16 @@ export default tseslint.config(
     rules: { "no-console": "off" },
   },
 
-  // Tests keep room for prose: an expectation table with a note per row is the clearest form.
-  // The one-style rule stays, because a second dialect is what the rule exists to prevent.
+  // Tests keep room for prose and for length: an expectation table with a note per row is the
+  // clearest form, and one fixture plus every case that reads it is a single table rather than a
+  // helper per test. The one-style comment rule stays, because a second dialect is what that
+  // rule exists to prevent.
   {
     files: ["Source/**/*.test.{ts,tsx}"],
     rules: {
       "comments/max-lines": "off",
+      "max-lines": "off",
+      "max-lines-per-function": "off",
     },
   },
 

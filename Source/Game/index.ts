@@ -1,4 +1,5 @@
 export * from './GameConfig';
+export * from './PhaseFlow';
 export * from './Normalization';
 export * from './Grouping';
 export * from './Scoring';

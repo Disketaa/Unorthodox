@@ -35,7 +35,8 @@ describe('Client state sync', () => {
     const { hostSession, clientSession } = joinRoom();
     expect(clientSession.getPlayerId()).not.toBeNull();
 
-    hostSession.startGame('A topic', 60_000);
+    hostSession.startGame();
+    hostSession.startWriting('A topic');
     clientSession.submitAnswer('An answer');
     hostSession.submitOwnAnswer('Another answer');
     hostSession.endReviewing(90_000);
@@ -79,7 +80,8 @@ describe('Client clock sync', () => {
 
   it('carries the host phase start time, so a late catch-up does not reset the clock', () => {
     const { hostSession, clientSession } = joinRoom();
-    hostSession.startGame('A topic', 60_000);
+    hostSession.startGame();
+    hostSession.startWriting('A topic');
     vi.setSystemTime(Date.now() + 30_000);
     vi.advanceTimersByTime(SyncIntervalMs);
 
@@ -93,7 +95,8 @@ describe('Client clock sync', () => {
 
   it('exposes a finite clock offset so the countdown can be corrected', () => {
     const { hostSession, clientSession } = joinRoom();
-    hostSession.startGame('A topic', 60_000);
+    hostSession.startGame();
+    hostSession.startWriting('A topic');
     vi.advanceTimersByTime(SyncIntervalMs);
     // Under fake timers both clocks read the same instant, so there is no skew
     // to correct. What matters is that the offset is measured and exposed.
@@ -105,7 +108,8 @@ describe('Public state timing', () => {
   it('exposes the phase start time for every timed phase', () => {
     const hostSession = new HostSession(new InMemoryTransport());
     hostSession.start(roomCode, 'Host', hostLook);
-    hostSession.startGame('A topic', 60_000);
+    hostSession.startGame();
+    hostSession.startWriting('A topic');
 
     const hostState = hostSession.getState();
     const writing = hostState === undefined ? undefined : toPublicState(hostState);

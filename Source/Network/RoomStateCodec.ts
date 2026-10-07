@@ -1,8 +1,9 @@
 /** The host's game state, as plain data and back again. Split from the storage that holds it, so
  * a round's shape can be checked without a tab. Written out per phase and read back field by
  * field, because a cast promises a shape nothing checked. */
-import type { HostState, Player } from '@/Game';
+import type { HostState, Player, Pace } from '@/Game';
 import type { PlayerId } from '@/Core';
+import { rejectionsOut, toRejections } from './RoomRejections';
 
 /** Plain data as name/value pairs, so a value can be read without a cast. `Object.entries` is
  * what makes this possible: it reads an object of unknown shape where reading a property off
@@ -49,6 +50,13 @@ const isNumber = (value: unknown): value is number => typeof value === 'number';
 const isText = (value: unknown): value is string => typeof value === 'string';
 const isPlayer = (value: unknown): value is Player => typeof value === 'object' && value !== null;
 
+/** The stored pace, or Standard when what is in storage names a pace this build has dropped:
+ * every phase is timed off the pace, so an unrecognised one is a room that cannot start. */
+function paceFrom(fields: Fields): Pace {
+  const value = fields.get('pace');
+  return value === 'Fast' ? 'Fast' : 'Standard';
+}
+
 /** The state as plain data, one shape per phase. */
 export function encodeRoomState(state: HostState): Record<string, unknown> {
   const scores = [...state.cumulativeScores.entries()];
@@ -58,9 +66,13 @@ export function encodeRoomState(state: HostState): Record<string, unknown> {
     players: [...state.players.entries()],
     scores,
     turnPlayerId: state.turnPlayerId,
+    pace: state.pace,
   };
   if (state.phase === 'Lobby') {
     return { ...members, phase: state.phase, pace: state.pace };
+  }
+  if (state.phase === 'Choosing') {
+    return { ...members, phase: state.phase, durationMs: state.durationMs, startedAt: state.startedAt };
   }
   if (state.phase === 'Final') {
     return { ...members, phase: state.phase };
@@ -68,36 +80,24 @@ export function encodeRoomState(state: HostState): Record<string, unknown> {
   // Every remaining phase is timed and reads the same clock: how long it runs, and when it started,
   // which is what a phase resumed after a refresh counts from.
   const clock = { durationMs: state.durationMs, startedAt: state.startedAt };
+  if (state.phase === 'Writing') {
+    return { ...members, ...clock, phase: state.phase, topic: state.topic, answers: [...state.answers] };
+  }
+  if (state.phase === 'Reviewing') {
+    return {
+      ...members,
+      ...clock,
+      phase: state.phase,
+      topic: state.topic,
+      answers: [...state.answers],
+      rejections: rejectionsOut(state.groupRejections),
+    };
+  }
   if (state.phase === 'Scores') {
     return { ...members, ...clock, phase: state.phase, round: [...state.scores] };
   }
-  const answers = [...state.answers];
-  if (state.phase === 'Writing') {
-    return { ...members, ...clock, phase: state.phase, topic: state.topic, answers };
-  }
-  return {
-    ...members,
-    ...clock,
-    phase: state.phase,
-    topic: state.topic,
-    answers,
-    // The sets go out as lists of names: the only shape that survives JSON, and the only one a
-    // rejection is ever compared in.
-    rejections: [...state.groupRejections].map(([groupId, rejected]) => [groupId, [...rejected]]),
-  };
-}
-
-/** The stored names of every rejected group, dropping anything that is not one. */
-function toRejections(fields: Fields): Map<number, Set<PlayerId>> {
-  const rejections = new Map<number, Set<PlayerId>>();
-  for (const pair of rawPairs(fields, 'rejections')) {
-    if (!Array.isArray(pair)) continue;
-    const [groupId, names] = pair;
-    if (typeof groupId === 'number' && Array.isArray(names)) {
-      rejections.set(groupId, new Set(names.filter((entry) => typeof entry === 'string')));
-    }
-  }
-  return rejections;
+  // unreachable
+  return {};
 }
 
 /** The clock every timed phase carries, counted from the host that started it. */
@@ -111,6 +111,7 @@ interface Members {
   scores: Map<PlayerId, number>;
   players: Map<PlayerId, Player>;
   turnPlayerId: PlayerId | null;
+  pace: Pace;
 }
 
 /** The room's turn, absent in a room stored before turns existed. */
@@ -119,18 +120,19 @@ function turnFrom(fields: Fields): PlayerId | null {
   return typeof value === 'string' ? value : null;
 }
 
-/** The seats, totals and turn a stored room comes back with. */
+/** The seats, totals, turn and pace a stored room comes back with. */
 function membersFrom(fields: Fields): Members {
   return {
     scores: toMap(rawPairs(fields, 'scores'), isNumber),
     players: toMap(rawPairs(fields, 'players'), isPlayer),
     turnPlayerId: turnFrom(fields),
+    pace: paceFrom(fields),
   };
 }
 
 /** The two untimed phases, which carry no clock at all. */
 function plainFrom(fields: Fields, members: Members): HostState | undefined {
-  const { scores, players, turnPlayerId } = members;
+  const { scores, players, turnPlayerId, pace } = members;
   switch (fields.get('phase')) {
     case 'Lobby':
       return {
@@ -138,10 +140,10 @@ function plainFrom(fields: Fields, members: Members): HostState | undefined {
         players,
         cumulativeScores: scores,
         turnPlayerId,
-        pace: fields.get('pace') === 'Fast' ? 'Fast' : 'Standard',
+        pace,
       };
     case 'Final':
-      return { phase: 'Final', players, cumulativeScores: scores, turnPlayerId };
+      return { phase: 'Final', players, cumulativeScores: scores, turnPlayerId, pace };
     default:
       return undefined;
   }
@@ -149,7 +151,7 @@ function plainFrom(fields: Fields, members: Members): HostState | undefined {
 
 /** The three timed phases, which all read the same clock, roster and turn. */
 function timedFrom(fields: Fields, members: Members): HostState | undefined {
-  const { scores, players, turnPlayerId } = members;
+  const { scores, players, turnPlayerId, pace } = members;
   const common = {
     ...clockOf(fields),
     topic: text(fields, 'topic'),
@@ -157,8 +159,11 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
     players,
     cumulativeScores: scores,
     turnPlayerId,
+    pace,
   };
   switch (fields.get('phase')) {
+    case 'Choosing':
+      return { phase: 'Choosing', ...common };
     case 'Writing':
       return { phase: 'Writing', ...common };
     case 'Reviewing':
@@ -171,6 +176,7 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
         players,
         cumulativeScores: scores,
         turnPlayerId,
+        pace,
       };
     default:
       return undefined;

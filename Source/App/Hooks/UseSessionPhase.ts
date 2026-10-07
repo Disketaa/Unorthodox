@@ -1,8 +1,11 @@
 import { PlayerId, PlayerLook, hostTimeToLocal } from '@/Core';
 import { PublicPlayer, PublicState } from '@/Game';
+import type { PhaseName } from '@/Game';
 
-/** Every phase a player can be in, which is what the screens are chosen from. */
-export type SessionPhaseName = 'Connecting' | 'Lobby' | 'Writing' | 'Reviewing' | 'Scores' | 'Final';
+/** Every phase a player can be in, which is what the screens are chosen from. Connecting is the
+ * one that is not a game phase: it is what this browser is in before the host has said
+ * anything, so nothing about it comes from the phase table. */
+export type SessionPhaseName = PhaseName | 'Connecting';
 
 export interface SessionPhase {
   phase: SessionPhaseName;

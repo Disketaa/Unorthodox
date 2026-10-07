@@ -17,7 +17,6 @@ export function WritingView({ view }: PhaseViewProps) {
     <WritingScreen
       topic={topic}
       remainingMs={remainingMs}
-      totalMs={view.durationMs}
       value={draft}
       submitted={view.hasSubmitted}
       submittedCount={view.submittedCount}

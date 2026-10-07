@@ -1,7 +1,9 @@
-import { PlayerId, PlayerLook } from '@/Core';
-import { HostState } from './GameState';
-import { scoreRound } from './RoundScoring';
+/** Every change the room can be put through, as one union. The handlers live beside what they
+ * touch: the roster in `LobbyActions.ts`, the turn in `Turns.ts`, and everything that moves the
+ * room between phases in `PhaseActions.ts`. */
+import type { PlayerId, PlayerLook } from '@/Core';
 import type { Pace } from './GameConfig';
+import type { PhaseName } from './PhaseFlow';
 
 export type GameAction =
   | { type: 'JOIN'; playerId: PlayerId; name: string; look: PlayerLook }
@@ -9,144 +11,22 @@ export type GameAction =
   | { type: 'KICK'; playerId: PlayerId }
   | { type: 'SET_LOOK'; playerId: PlayerId; look: PlayerLook }
   | { type: 'SET_PACE'; pace: Pace }
-  | { type: 'START_GAME'; topic: string; durationMs: number; startedAt: number }
+  /** The lobby into the first phase of play, which chooses a theme rather than answering one. */
+  | { type: 'START_GAME'; durationMs: number; startedAt: number }
+  /** The room into a round, once the theme is chosen. Carries the topic rather than reading one
+   * from a catalogue, since what a theme asks about is the content's business and not the
+   * state's. */
+  | { type: 'START_WRITING'; topic: string; durationMs: number; startedAt: number }
   | { type: 'SUBMIT_ANSWER'; playerId: PlayerId; text: string }
   | { type: 'START_REVIEWING'; startedAt: number; durationMs: number }
   | { type: 'REJECT_GROUP'; playerId: PlayerId; groupId: number }
   | { type: 'END_REVIEWING'; startedAt: number; durationMs: number }
-  | { type: 'NEXT_ROUND'; topic: string; durationMs: number; startedAt: number }
+  /** The end of one round into the next one's theme choice. */
+  | { type: 'NEXT_ROUND'; durationMs: number; startedAt: number }
   | { type: 'NEXT_TURN' }
-  | { type: 'FINAL' };
+  | { type: 'FINAL' }
+  /** The host's console putting the room straight into a phase, without playing there. Carries
+   * the round's own data because a phase is a state and not only a screen. */
+  | { type: 'GO_TO_PHASE'; phase: PhaseName; topic: string; durationMs: number; startedAt: number };
 
 export type ActionOf<T extends GameAction['type']> = Extract<GameAction, { type: T }>;
-
-export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>): HostState {
-  if (state.phase !== 'Lobby' || state.players.size === 0) {
-    return state;
-  }
-  return {
-    phase: 'Writing',
-    topic: action.topic,
-    durationMs: action.durationMs,
-    startedAt: action.startedAt,
-    answers: new Map<PlayerId, string>(),
-    players: state.players,
-    cumulativeScores: state.cumulativeScores,
-    turnPlayerId: state.turnPlayerId,
-  };
-}
-
-export function handleSubmitAnswer(
-  state: HostState,
-  action: ActionOf<'SUBMIT_ANSWER'>
-): HostState {
-  if (state.phase !== 'Writing') {
-    return state;
-  }
-  const newAnswers = new Map(state.answers);
-  newAnswers.set(action.playerId, action.text);
-  return {
-    phase: 'Writing',
-    topic: state.topic,
-    durationMs: state.durationMs,
-    startedAt: state.startedAt,
-    answers: newAnswers,
-    players: state.players,
-    cumulativeScores: state.cumulativeScores,
-    turnPlayerId: state.turnPlayerId,
-  };
-}
-
-export function handleStartReviewing(
-  state: HostState,
-  action: ActionOf<'START_REVIEWING'>
-): HostState {
-  if (state.phase !== 'Writing') {
-    return state;
-  }
-  return {
-    phase: 'Reviewing',
-    topic: state.topic,
-    durationMs: action.durationMs,
-    startedAt: action.startedAt,
-    answers: state.answers,
-    groupRejections: new Map<number, Set<PlayerId>>(),
-    players: state.players,
-    cumulativeScores: state.cumulativeScores,
-    turnPlayerId: state.turnPlayerId,
-  };
-}
-
-export function handleRejectGroup(
-  state: HostState,
-  action: ActionOf<'REJECT_GROUP'>
-): HostState {
-  if (state.phase !== 'Reviewing') {
-    return state;
-  }
-  const newGroupRejections = new Map(state.groupRejections);
-  const currentSet = newGroupRejections.get(action.groupId) ?? new Set<PlayerId>();
-  currentSet.add(action.playerId);
-  newGroupRejections.set(action.groupId, currentSet);
-  return {
-    phase: 'Reviewing',
-    topic: state.topic,
-    durationMs: state.durationMs,
-    startedAt: state.startedAt,
-    answers: state.answers,
-    groupRejections: newGroupRejections,
-    players: state.players,
-    cumulativeScores: state.cumulativeScores,
-    turnPlayerId: state.turnPlayerId,
-  };
-}
-
-export function handleEndReviewing(
-  state: HostState,
-  action: ActionOf<'END_REVIEWING'>
-): HostState {
-  if (state.phase !== 'Reviewing') {
-    return state;
-  }
-  const { roundScores, cumulativeScores } = scoreRound(state);
-  return {
-    phase: 'Scores',
-    durationMs: action.durationMs,
-    startedAt: action.startedAt,
-    scores: roundScores,
-    players: state.players,
-    cumulativeScores,
-    turnPlayerId: state.turnPlayerId,
-  };
-}
-
-export function handleNextRound(state: HostState, action: ActionOf<'NEXT_ROUND'>): HostState {
-  if (state.phase !== 'Reviewing' && state.phase !== 'Scores') {
-    return state;
-  }
-  // Round points were already folded into `cumulativeScores` by END_REVIEWING, so
-  // totals carry over untouched here. A round abandoned from Reviewing never
-  // scored, so it also carries over as-is.
-  return {
-    phase: 'Writing',
-    topic: action.topic,
-    durationMs: action.durationMs,
-    startedAt: action.startedAt,
-    answers: new Map<PlayerId, string>(),
-    players: state.players,
-    cumulativeScores: state.cumulativeScores,
-    turnPlayerId: state.turnPlayerId,
-  };
-}
-
-export function handleFinal(state: HostState): HostState {
-  if (state.phase !== 'Scores' && state.phase !== 'Reviewing') {
-    return state;
-  }
-  return {
-    phase: 'Final',
-    players: state.players,
-    cumulativeScores: state.cumulativeScores,
-    turnPlayerId: state.turnPlayerId,
-  };
-}

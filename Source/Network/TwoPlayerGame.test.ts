@@ -61,7 +61,8 @@ describe('Two player round', () => {
     const { hostSession, clientSession } = startTwoPlayerRoom();
     expect(clientSession.getPlayerId()).not.toBeNull();
 
-    hostSession.startGame('A topic', 60_000);
+    hostSession.startGame();
+    hostSession.startWriting('A topic');
     clientSession.submitAnswer('Something blue');
     hostSession.submitOwnAnswer('Something green');
 
@@ -88,7 +89,8 @@ describe('Two player scoring', () => {
 
   it('scores a pair higher than a solo answer', () => {
     const { hostSession, clientSession } = startTwoPlayerRoom();
-    hostSession.startGame('A topic', 60_000);
+    hostSession.startGame();
+    hostSession.startWriting('A topic');
     // Matching answers put both players in one group of two.
     clientSession.submitAnswer('The same thing');
     hostSession.submitOwnAnswer('the same thing!');

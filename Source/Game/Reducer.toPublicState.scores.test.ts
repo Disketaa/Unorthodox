@@ -4,7 +4,7 @@ import { HostState } from './GameState';
 
 describe('toPublicState Scores state', () => {
   test('converts correctly', () => {
-    const state: HostState = {
+const state: HostState = {
       phase: 'Scores',
       durationMs: 30000,
       startedAt: 1000,
@@ -12,6 +12,7 @@ describe('toPublicState Scores state', () => {
       players: new Map(),
       cumulativeScores: new Map(),
       turnPlayerId: null,
+      pace: 'Standard',
     };
     const publicState = toPublicState(state);
     expect(publicState.phase).toBe('Scores');

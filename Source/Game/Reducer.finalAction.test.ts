@@ -12,6 +12,7 @@ describe('reducer FINAL action', () => {
       players: new Map(),
       cumulativeScores: new Map([['p1', 6], ['p2', 2]]),
       turnPlayerId: null,
+      pace: 'Standard',
     };
     const next = reducer(state, { type: 'FINAL' });
     expect(next.phase).toBe('Final');

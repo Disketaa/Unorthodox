@@ -45,6 +45,8 @@ export interface GameSessionView extends SessionPhase {
   /** Hand the room's turn to the next player. Only the host's, and only while debugging. */
   nextTurn: () => void;
   startGame: () => void;
+  chooseTheme: () => void;
+  nextPhase: () => void;
   submitAnswer: (text: string) => void;
   rejectGroup: (groupId: number) => void;
   nextRound: () => void;

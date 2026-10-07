@@ -4,7 +4,7 @@ import { HostState } from './GameState';
 
 describe('reducer SUBMIT_ANSWER action', () => {
   test('adds answer in Writing phase', () => {
-    let state: HostState = {
+let state: HostState = {
       phase: 'Writing',
       topic: 'Test',
       durationMs: 60000,
@@ -13,6 +13,7 @@ describe('reducer SUBMIT_ANSWER action', () => {
       players: new Map(),
       cumulativeScores: new Map(),
       turnPlayerId: null,
+      pace: 'Standard',
     };
     state = reducer(state, { type: 'SUBMIT_ANSWER', playerId: 'p1', text: 'Answer1' });
     if (state.phase === 'Writing') {
@@ -32,6 +33,7 @@ describe('reducer SUBMIT_ANSWER action', () => {
       players: new Map(),
       cumulativeScores: new Map(),
       turnPlayerId: null,
+      pace: 'Standard',
     };
     state = reducer(state, { type: 'SUBMIT_ANSWER', playerId: 'p1', text: 'Answer2' });
     if (state.phase === 'Writing') {

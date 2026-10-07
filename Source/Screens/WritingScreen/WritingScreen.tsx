@@ -1,12 +1,11 @@
 import { Stack, Screen, Text } from '@/Design/Primitives';
-import { Card, Timer, Banner } from '@/Design/Components';
+import { Card, Banner } from '@/Design/Components';
 import { Strings } from '@/Content';
 import { AnswerInput } from './AnswerInput';
 
 export interface WritingScreenProps {
   topic: string;
   remainingMs: number;
-  totalMs: number;
   value: string;
   submitted: boolean;
   submittedCount: number;
@@ -19,7 +18,6 @@ export interface WritingScreenProps {
 export function WritingScreen({
   topic,
   remainingMs,
-  totalMs,
   value,
   submitted,
   submittedCount,
@@ -31,7 +29,6 @@ export function WritingScreen({
 
   return (
     <Screen>
-      <Timer remainingMs={remainingMs} totalMs={totalMs} />
       <Stack gap="Lg" align="Stretch">
         <Text variant="Caption">{Strings.writing.topicLabel}</Text>
         <Text variant="Title">{topic}</Text>

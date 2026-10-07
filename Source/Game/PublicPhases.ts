@@ -8,12 +8,13 @@ import type {
   PublicReviewingState,
   PublicScoresState,
   PublicWritingState,
-  PublicTurn,
+  PublicChoosingState,
+  PublicRoom,
 } from './PublicState';
 
-/** One phase of the host's state, as a client is told about it. Every phase sends the roster, so
- * the bar of players runs across the whole game and a client that refreshed mid-round is handed
- * the room back rather than an empty strip. */
+/** One phase of the host's state, as a client is told about it. Every phase sends the roster and
+ * the room's pace, so the bar of players runs across the whole game and a client that refreshed
+ * mid-round is handed the room back rather than an empty strip. */
 function publicPlayers(state: HostState): PublicPlayer[] {
   const players: PublicPlayer[] = [];
   state.players.forEach((player, id) => {
@@ -29,16 +30,23 @@ function totalsOf(scores: ReadonlyMap<PlayerId, number>): { id: PlayerId; score:
   return totals;
 }
 
-/** The room's turn, as every phase carries it. */
-function turn(state: HostState): PublicTurn {
-  return { turnPlayerId: state.turnPlayerId };
+/** The room's turn and pace, as every phase carries them. */
+function room(state: HostState): PublicRoom {
+  return { turnPlayerId: state.turnPlayerId, pace: state.pace };
 }
 
 export function toPublicLobbyState(state: HostState): PublicLobbyState {
   if (state.phase !== 'Lobby') {
     throw new Error('Invalid state for Lobby');
   }
-  return { ...turn(state), phase: 'Lobby', players: publicPlayers(state), pace: state.pace };
+  return { ...room(state), phase: 'Lobby', players: publicPlayers(state) };
+}
+
+export function toPublicChoosingState(state: HostState): PublicChoosingState {
+  if (state.phase !== 'Choosing') {
+    throw new Error('Invalid state for Choosing');
+  }
+  return { ...room(state), phase: 'Choosing', durationMs: state.durationMs, startedAt: state.startedAt, players: publicPlayers(state) };
 }
 
 export function toPublicWritingState(state: HostState): PublicWritingState {
@@ -46,7 +54,7 @@ export function toPublicWritingState(state: HostState): PublicWritingState {
     throw new Error('Invalid state for Writing');
   }
   return {
-    ...turn(state),
+    ...room(state),
     phase: 'Writing',
     topic: state.topic,
     durationMs: state.durationMs,
@@ -60,15 +68,13 @@ export function toPublicReviewingState(state: HostState): PublicReviewingState {
   if (state.phase !== 'Reviewing') {
     throw new Error('Invalid state for Reviewing');
   }
-  // The representative text is whichever answer in the group was read first: the room
-  // shows one answer per group and never says which of them wrote it.
   const groups = groupAnswers([...state.answers.values()]).map((group) => ({
     groupId: group.groupId,
     text: group.answers[0],
     playerCount: group.answers.length,
   }));
   return {
-    ...turn(state),
+    ...room(state),
     phase: 'Reviewing',
     topic: state.topic,
     durationMs: state.durationMs,
@@ -83,7 +89,7 @@ export function toPublicScoresState(state: HostState): PublicScoresState {
     throw new Error('Invalid state for Scores');
   }
   return {
-    ...turn(state),
+    ...room(state),
     phase: 'Scores',
     durationMs: state.durationMs,
     startedAt: state.startedAt,
@@ -98,7 +104,7 @@ export function toPublicFinalState(state: HostState): PublicFinalState {
     throw new Error('Invalid state for Final');
   }
   return {
-    ...turn(state),
+    ...room(state),
     phase: 'Final',
     durationMs: 0,
     players: publicPlayers(state),

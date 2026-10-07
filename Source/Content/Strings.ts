@@ -116,6 +116,9 @@ Coral: 'Коралл',
   turn: {
     /** Hands the turn to the next player, whoever the room has seated next. */
     next: 'Следующий ход',
+    /** Steps the room along the phase table by hand, so every phase can be walked without
+     * waiting any of them out. */
+    nextPhase: 'Следующая фаза',
   },
   /** What the game is doing right now, on the block above the theme bank. One sentence per
    * phase, in the first person: the sentence is about this browser's own moment, and a block

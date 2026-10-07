@@ -4,7 +4,7 @@ import { HostState } from './GameState';
 
 describe('reducer REJECT_GROUP action', () => {
   test('adds rejection in Reviewing phase', () => {
-    let state: HostState = {
+let state: HostState = {
       phase: 'Reviewing',
       topic: 'Test',
       durationMs: 30000,
@@ -15,6 +15,7 @@ describe('reducer REJECT_GROUP action', () => {
       players: new Map(),
       cumulativeScores: new Map(),
       turnPlayerId: null,
+      pace: 'Standard',
     };
     // We need to know the groupId for the answer. For simplicity, we'll assume the groupId is 0.
     // In reality, the groupId is determined by the grouping algorithm.

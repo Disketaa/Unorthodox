@@ -10,23 +10,29 @@ export interface Player {
   isOnline: boolean;
 }
 
-/** What every phase carries, whatever the room is doing. The roster and the totals outlive the
- * phase, and have to: a player who refreshes mid-round is let back in because their seat is
- * still here, and the standings are the totals of every round. */
+/** What every phase carries, whatever the room is doing. The roster, the totals and the pace
+ * outlive the phase, and have to: a player who refreshes mid-round is let back in because their
+ * seat is still here, and the standings are the totals of every round. */
 export interface RoomMembers {
   players: Map<PlayerId, Player>;
   cumulativeScores: Map<PlayerId, number>;
   /** Whose turn it is, in roster order, or null in a room nobody has played in yet. Carried by
    * every phase rather than by one, since a turn is the room's and not the round's. */
   turnPlayerId: PlayerId | null;
+  /** The pace the host has set, which every phase is timed against. In the state rather than the
+   * UI, so a client is told the answer rather than guessing it from its own click. The lobby
+   * buttons are drawn for clients too, to show what a pace would mean. */
+  pace: Pace;
 }
 
 export type LobbyState = RoomMembers & {
   phase: 'Lobby';
-  /** The pace the host has set, which every player reads from the public state. In the state
-   * rather than the UI, so a client is told the answer rather than guessing it from its own
-   * click. The buttons are drawn for clients too, to show what a pace would mean. */
-  pace: Pace;
+};
+
+export type ChoosingState = RoomMembers & {
+  phase: 'Choosing';
+  durationMs: number;
+  startedAt: number;
 };
 
 export type WritingState = RoomMembers & {
@@ -60,6 +66,7 @@ export type FinalState = RoomMembers & {
 
 export type HostState =
   | LobbyState
+  | ChoosingState
   | WritingState
   | ReviewingState
   | ScoresState

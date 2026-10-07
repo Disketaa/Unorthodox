@@ -37,7 +37,8 @@ function joinLobby(): Fixture {
 /** Join the lobby, then start a writing round. */
 function startRound(): Fixture {
   const fixture = joinLobby();
-  fixture.hostSession.startGame('Test topic', 1000);
+  fixture.hostSession.startGame();
+  fixture.hostSession.startWriting('Test topic');
   return fixture;
 }
 
@@ -157,7 +158,10 @@ describe('InMemoryTransport integration test (host + 3 clients)', function() {
   it('should go to next round and set writing state for next round', function() {
     const round = playRound();
     round.hostSession.endReviewing(1000);
-    round.hostSession.nextRound('Test topic 2', 1000);
+    // A round ends by choosing again, so reaching the next Writing takes both moves: the round
+    // is scored, then the theme choice hands a topic to the round after it.
+    round.hostSession.nextRound();
+    round.hostSession.startWriting('Test topic 2');
     checkNextRound(round);
   });
 });

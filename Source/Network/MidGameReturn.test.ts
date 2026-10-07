@@ -23,7 +23,22 @@ function roomOneRoundIn(): HostSession {
   ann.start(roomCode, 'Ann');
   ann.join('Ann', clientLook);
   vi.advanceTimersByTime(1_000);
-  host.startGame('Два слова', 60_000);
+  host.startGame();
+  host.startWriting('Два слова');
+  return host;
+}
+
+/** The same room with a bot seated as well, since a bot takes a seat like anyone else. */
+function roomOneRoundInWithBot(): HostSession {
+  const host = new HostSession(new InMemoryTransport());
+  host.start(roomCode, 'Host', hostLook);
+  const ann = new ClientSession(new InMemoryTransport());
+  ann.start(roomCode, 'Ann');
+  ann.join('Ann', clientLook);
+  vi.advanceTimersByTime(1_000);
+  host.addBot();
+  host.startGame();
+  host.startWriting('Два слова');
   return host;
 }
 
@@ -137,15 +152,7 @@ describe('a host who refreshes mid-round', () => {
   });
 
   it('counts the bots it came back with, so the next seat is a free one', () => {
-    const host = new HostSession(new InMemoryTransport());
-    host.start(roomCode, 'Host', hostLook);
-    const ann = new ClientSession(new InMemoryTransport());
-    ann.start(roomCode, 'Ann');
-    ann.join('Ann', clientLook);
-    vi.advanceTimersByTime(1_000);
-    host.addBot();
-    host.startGame('Два слова', 60_000);
-
+    roomOneRoundInWithBot();
     const back = new HostSession(new InMemoryTransport());
     back.start(roomCode, 'Host', hostLook);
     // The seat a bot sits in is counted out of the room rather than remembered in a

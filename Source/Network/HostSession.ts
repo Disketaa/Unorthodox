@@ -1,12 +1,25 @@
 import { Transport } from './Transport';
-import { isClientMessage, ClientMessage } from './Protocol';
-import { HostRoster } from './HostRoster';
-import { toAction } from './HostIncoming';
-import { startGame, closeWriting, closeReviewing, nextRound } from './HostPhases';
-import { botJoin, botsIn } from './Bot';
+import { HostInbox } from './HostInbox';
+import {
+  startGameFrom,
+  startWritingFrom,
+  endReviewingFrom,
+  nextRoundFrom,
+  nextPhaseFrom,
+  type FlowHost,
+} from './HostFlow';
+import {
+  addBot,
+  countBots,
+  kick,
+  nextTurn,
+  setOwnLook,
+  setPace,
+  type RosterHost,
+} from './HostRosterActions';
 import { departureOf } from './HostPresence';
-import { publishPublicState } from './HostOutgoing';
-import { forgetRoom, freshLobby, loadRoomState, saveRoomState } from './RoomStateStore';
+import { freshLobby } from './RoomStateStore';
+import { HostRoom } from './HostRoom';
 import * as Game from '@/Game';
 import { PlayerId, PlayerLook, createLogger } from '@/Core';
 
@@ -15,126 +28,73 @@ const log = createLogger('HostSession');
 /** Reserved player id of the room creator. */
 export const HostPlayerId: PlayerId = 'host';
 
-/** A room with nobody in it, which is what a code this tab has never hosted means. */
-
+/** The room, as the app talks to it: the host's own browser, holding the state, the seats and
+ * the wire. Everything it can be asked to do is here; how a message, a phase move or a seating
+ * move is worked out lives in `HostInbox`, `HostFlow` and `HostRosterActions`. */
 export class HostSession {
-  private state: Game.HostState | undefined = undefined;
-  private transport: Transport;
-  private readonly roster = new HostRoster();
-  private updateListener: (() => void) | undefined = undefined;
+  private readonly room: HostRoom;
+  private readonly inbox: HostInbox;
   /** How many bots this room has been given, which is how the next one is numbered. */
   private botsAdded = 0;
-  /** The room this session is hosting, which is also where its state is written. */
-  private roomCode: string | undefined = undefined;
 
   constructor(transport: Transport) {
-    this.transport = transport;
-
-    this.transport.onMessage((message, fromHost, peerId) => {
-      log('debug', 'onMessage', message, 'from peer:', peerId);
-      if (fromHost) return;
-      if (!isClientMessage(message)) {
-        log('warn', 'ignoring unrecognised client message');
-        return;
-      }
-      this.handleClientMessage(message, peerId);
-    });
-  }
-
-  /** Subscribe to state changes so the UI can re-render. */
-  onUpdate(listener: () => void): void {
-    this.updateListener = listener;
+    this.room = new HostRoom(transport);
+    this.inbox = new HostInbox(transport, this.room, (action) => this.apply(action));
+    this.inbox.listen();
   }
 
   /** Open the room, picking up the game this tab was already running. A refreshing host has not
-   * left, so a fresh lobby would be a different room with the same code, and everybody in it
-   * would be waiting on a host that no longer exists. */
+   * left, so a fresh lobby would be a different room with the same code. */
   start(roomCode: string, hostName: string, look: PlayerLook): void {
     log('info', 'starting host session', roomCode, hostName);
-    this.roomCode = roomCode;
-    // The state must exist before the room opens, because a waiting client can
-    // answer the moment the host becomes addressable, and messages arriving
-    // before the state is ready would be dropped.
-    this.state = loadRoomState(roomCode) ?? freshLobby();
+    // The state must exist before the room opens, because a waiting client can answer the
+    // moment the host becomes addressable, and messages arriving before the state is ready
+    // would be dropped.
+    const restored = this.room.open(roomCode) ?? freshLobby();
+    this.room.commit(restored);
     // The host plays too, under the reserved `host` id.
-    this.roster.addHost(HostPlayerId, hostName);
-    // The roster of the resumed room comes back as a set of seats, not as a set of
-    // connections: this tab was hosting that game a moment ago, and every player in it
-    // is somebody it was already waiting on.
-    this.roster.restore([...this.state.players.entries()]);
+    this.room.roster.addHost(HostPlayerId, hostName);
+    // A resumed roster comes back as seats, not as connections: this tab was hosting that
+    // game a moment ago, and every player in it is somebody it was already waiting on.
+    this.room.roster.restore([...restored.players.entries()]);
     this.apply({ type: 'JOIN', playerId: HostPlayerId, name: hostName, look });
-    // The bots in a resumed room keep their seats: counting what is already there is
-    // what stops the next bot being handed a seat that is taken.
-    this.botsAdded = botsIn(this.state);
+    // The bots in a resumed room keep their seats: counting what is already there is what
+    // stops the next bot being handed a seat that is taken.
+    this.botsAdded = countBots(restored);
     this.transport.setPlayerId(HostPlayerId);
     this.transport.start(roomCode, hostName, true);
-    // Only the host is told about every peer, so presence is recorded here and
-    // travels to the clients in the public state rather than being detected twice.
+    // Only the host is told about every peer, so presence is recorded here and travels to the
+    // clients in the public state rather than being detected twice.
     this.transport.onPeerLeave((peerId) => {
-      const departure = departureOf(peerId, this.roster);
+      const departure = departureOf(peerId, this.room.roster);
       if (departure !== undefined) this.apply(departure);
     });
   }
 
   stop(): void {
     log('info', 'stopping host session');
-    // Leaving the room for good, rather than refreshing it, so the game this tab was
-    // running is forgotten: opening the same code again is a new room, not a return.
-    if (this.roomCode !== undefined) forgetRoom(this.roomCode);
+    this.room.close();
     this.transport.stop();
-    this.state = undefined;
-    this.roster.clear();
-    this.updateListener = undefined;
     this.botsAdded = 0;
-    this.roomCode = undefined;
   }
 
-  /** The peerId is the transport address the message arrived from, not a player id. */
-  private handleClientMessage(message: ClientMessage, peerId: string): void {
-    if (!this.state) {
-      return;
-    }
-    if (message.type === 'Sync') {
-      // A client that was away asks for the current state, which carries the
-      // phase start time so it resumes counting from the truth.
-      log('debug', 'resending state to peer', peerId);
-      this.broadcastState();
-      return;
-    }
-    const action = toAction({
-      message,
-      peerId,
-      roster: this.roster,
-      transport: this.transport,
-      state: this.state,
-    });
-    if (action) {
-      this.apply(action);
-    }
+  /** What the roster moves read the host as: this class, handing itself over. */
+  private get seats(): RosterHost {
+    return this;
   }
 
-  private broadcastState(): void {
-    if (this.state) {
-      publishPublicState(this.state, this.transport);
-    }
+  /** What the phase flow reads and writes, so the flow needs no reference back to this class. */
+  private get flow(): FlowHost {
+    return {
+      getState: () => this.room.getState(),
+      expectedAnswers: () => this.room.roster.count,
+      commit: (state) => this.room.commit(state),
+    };
   }
 
-  startGame(topic: string, durationMs: number): void {
-    this.commit(startGame(this.state, topic, durationMs));
-  }
-
-  /** Advance out of the Writing phase once everyone has answered, or out of the Reviewing phase
-   * (once reviewing time is up, going to Scores). */
-  endReviewing(durationMs: number): void {
-    const next =
-      this.state?.phase === 'Writing'
-        ? closeWriting(this.state, durationMs, this.roster.count)
-        : closeReviewing(this.state, durationMs);
-    this.commit(next);
-  }
-
-  nextRound(topic: string, durationMs: number): void {
-    this.commit(nextRound(this.state, topic, durationMs));
+  apply(action: Game.GameAction): void {
+    log('debug', 'reducing action', action.type);
+    this.room.apply(action, Game.reducer);
   }
 
   /** Submit the host's own answer, so the host plays the same way as everyone else. */
@@ -142,75 +102,83 @@ export class HostSession {
     this.apply({ type: 'SUBMIT_ANSWER', playerId: HostPlayerId, text });
   }
 
-  /** The host changing its own character, as the lobby allows until play starts. */
-  setOwnLook(look: PlayerLook): void {
-    this.apply({ type: 'SET_LOOK', playerId: HostPlayerId, look });
-  }
-
-  /** The host setting how fast the room plays, which every client is then told. */
-  setPace(pace: Game.Pace): void {
-    this.apply({ type: 'SET_PACE', pace });
-  }
-
-  /** Put an invented player in the room, for the host trying a full room alone. A join like any
-   * other, so the bot can be voted for and kicked. Given a seat of its own rather than claimed
-   * from the roster: there is no address behind it, so nothing can go offline. */
-  addBot(): void {
-    if (!this.state) return;
-    const action = botJoin(this.state, this.botsAdded + 1, Math.random);
-    if (action) {
-      this.botsAdded += 1;
-      this.apply(action);
-    }
-  }
-
-  /** Remove a player from the room at the host's word. The address is released before the seat,
-   * so that a player who walks out of their own kicked session is not then reported as one more
-   * dropout by a host that has already forgotten they were here. */
-  kick(playerId: PlayerId): void {
-    const address = this.roster.addressForSeat(playerId);
-    if (address !== undefined) {
-      this.transport.sendToPeer(address, { type: 'Kicked' });
-      this.roster.releasePeer(address);
-    }
-    this.roster.releaseSeat(playerId);
-    log('info', 'kicking player', playerId);
-    this.apply({ type: 'KICK', playerId });
-  }
-
-  /** Hand the turn to the next player in lobby join order. Only the host calls this, and a
-   * client pressing it would be two people moving the same turn. */
-  nextTurn(): void {
-    this.apply({ type: 'NEXT_TURN' });
-  }
-
   rejectOwnGroup(groupId: number): void {
     this.apply({ type: 'REJECT_GROUP', playerId: HostPlayerId, groupId });
+  }
+
+  setOwnLook(look: PlayerLook): void {
+    setOwnLook(this.seats, look);
+  }
+
+  setPace(pace: Game.Pace): void {
+    setPace(this.seats, pace);
+  }
+
+  addBot(): void {
+    addBot(this.seats);
+  }
+
+  kick(playerId: PlayerId): void {
+    kick(this.seats, playerId);
+  }
+
+  nextTurn(): void {
+    nextTurn(this.seats);
   }
 
   finish(): void {
     this.apply({ type: 'FINAL' });
   }
 
-  private apply(action: Game.GameAction): void {
-    log('debug', 'reducing action', action.type);
-    this.commit(Game.reducer(this.state, action));
+  startGame(): void {
+    startGameFrom(this.flow);
   }
 
-  private commit(next: Game.HostState): void {
-    this.state = next;
-    // Written on every change rather than on the way out, because a refresh never runs
-    // the way out: the tab is gone, and this is what the room comes back to.
-    if (this.roomCode !== undefined) {
-      saveRoomState(this.roomCode, next);
-    }
-    this.broadcastState();
-    this.updateListener?.();
+  startWriting(topic: string): void {
+    startWritingFrom(this.flow, topic);
+  }
+
+  /** Advance out of Writing once everyone has answered, or out of Reviewing once its clock is
+   * up. */
+  endReviewing(durationMs: number): void {
+    endReviewingFrom(this.flow, durationMs);
+  }
+
+  /** Into the next round's theme choice. No topic: Choosing has none, and the round that follows
+   * is given its topic when the theme is picked. */
+  nextRound(): void {
+    nextRoundFrom(this.flow);
+  }
+
+  /** Wherever the phase table says goes next. */
+  nextPhase(topic: string): void {
+    nextPhaseFrom(this.flow, topic);
+  }
+
+  get roster() {
+    return this.room.roster;
+  }
+
+  get transport(): Transport {
+    return this.room.wire;
+  }
+
+  botCount(): number {
+    return this.botsAdded;
+  }
+
+  countBot(): void {
+    this.botsAdded += 1;
+  }
+
+
+  onUpdate(listener: () => void): void {
+    this.room.onUpdate(listener);
   }
 
   /** The host's own state, every answer in it. Never sent to a client: what leaves the host goes
    * through `toPublicState`, which drops the answers. */
   getState(): Game.HostState | undefined {
-    return this.state;
+    return this.room.getState();
   }
 }

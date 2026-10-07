@@ -4,11 +4,12 @@ import { HostState } from './GameState';
 
 describe('toPublicState Final state', () => {
   test('converts correctly', () => {
-    const state: HostState = {
+const state: HostState = {
       phase: 'Final',
       players: new Map(),
       cumulativeScores: new Map([['p1', 10], ['p2', 5]]),
       turnPlayerId: null,
+      pace: 'Standard',
     };
     const publicState = toPublicState(state);
     expect(publicState.phase).toBe('Final');

@@ -23,8 +23,8 @@ function lobby(): HostState {
 
 /** That room, a round in, with both answers written. */
 function writing(): HostState {
-  const started = reducer(lobby(), {
-    type: 'START_GAME',
+  const started = reducer(reducer(lobby(), { type: 'START_GAME', durationMs: 20_000, startedAt: 0 }), {
+    type: 'START_WRITING',
     topic: 'Два слова',
     durationMs: 60_000,
     startedAt: 0,
@@ -47,8 +47,8 @@ describe('the roster a client is shown', () => {
   it('is there while the room is writing', () => {
     // The bar of players runs across the whole game, and a client that refreshed
     // mid-round is handed the room back by this rather than by anything it remembered.
-    const writing = reducer(lobby(), {
-      type: 'START_GAME',
+    const writing = reducer(reducer(lobby(), { type: 'START_GAME', durationMs: 20_000, startedAt: 0 }), {
+      type: 'START_WRITING',
       topic: 'Два слова',
       durationMs: 60_000,
       startedAt: 0,

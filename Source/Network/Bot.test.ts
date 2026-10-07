@@ -54,6 +54,7 @@ describe('botJoin', () => {
       players: new Map(),
       cumulativeScores: new Map(),
       turnPlayerId: null,
+      pace: 'Standard',
     };
     expect(botJoin(writing, 1, seeded())).toBeUndefined();
   });

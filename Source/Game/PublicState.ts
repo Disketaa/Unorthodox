@@ -5,6 +5,7 @@ import {
   toPublicReviewingState,
   toPublicScoresState,
   toPublicWritingState,
+  toPublicChoosingState,
 } from './PublicPhases';
 import { PlayerId, PlayerLook, assertNever } from '@/Core';
 import type { Pace } from './GameConfig';
@@ -18,36 +19,40 @@ export interface PublicPlayer {
   isOnline: boolean;
 }
 
-/** What every phase tells a client about the room itself. The turn rides on all of them rather
- * than on one, because it outlives phases and the bar of players reads it in every one. */
-export interface PublicTurn {
+/** What every phase tells a client about the room itself. The turn and the pace ride on all of
+ * them rather than on one, because they outlive phases and the bar of players reads them in
+ * every one. */
+export interface PublicRoom {
   /** Whose turn it is, or null in a room nobody has played in yet. */
   turnPlayerId: PlayerId | null;
+  /** The pace the host has set, which every phase is timed against. Sent to every client because
+   * the settings card is drawn for clients too, and a card showing one pace while the room
+   * plays another is worse than no card. */
+  pace: Pace;
 }
 
-export type PublicLobbyState = PublicTurn & {
+export type PublicLobbyState = PublicRoom & {
   phase: 'Lobby';
   players: PublicPlayer[];
-  /** The pace the host has set. Sent to every client because the settings card is drawn for
-   * clients too, and a card showing one pace while the room plays another is worse than no
-   * card. */
-  pace: Pace;
 };
 
-export type PublicWritingState = PublicTurn & {
+export type PublicChoosingState = PublicRoom & {
+  phase: 'Choosing';
+  durationMs: number;
+  startedAt: number;
+  players: PublicPlayer[];
+};
+
+export type PublicWritingState = PublicRoom & {
   phase: 'Writing';
   topic: string;
   durationMs: number;
-  /** When the host started this phase, on the host's clock. Clients must count down from this
-   * rather than from when they received the message, otherwise a client that was away when the
-   * phase began shows the full time again. */
   startedAt: number;
-  /** Counts toward the phase, never the answer text: Writing hides answers from clients. */
   submittedCount: number;
   players: PublicPlayer[];
 };
 
-export type PublicReviewingState = PublicTurn & {
+export type PublicReviewingState = PublicRoom & {
   phase: 'Reviewing';
   topic: string;
   durationMs: number;
@@ -56,7 +61,7 @@ export type PublicReviewingState = PublicTurn & {
   groups: { groupId: number; text: string; playerCount: number }[];
 };
 
-export type PublicScoresState = PublicTurn & {
+export type PublicScoresState = PublicRoom & {
   phase: 'Scores';
   durationMs: number;
   startedAt: number;
@@ -66,7 +71,7 @@ export type PublicScoresState = PublicTurn & {
   cumulative: { id: PlayerId; score: number }[];
 };
 
-export type PublicFinalState = PublicTurn & {
+export type PublicFinalState = PublicRoom & {
   phase: 'Final';
   durationMs: number;
   players: PublicPlayer[];
@@ -75,6 +80,7 @@ export type PublicFinalState = PublicTurn & {
 
 export type PublicState =
   | PublicLobbyState
+  | PublicChoosingState
   | PublicWritingState
   | PublicReviewingState
   | PublicScoresState
@@ -84,6 +90,8 @@ export function toPublicState(hostState: HostState): PublicState {
   switch (hostState.phase) {
     case 'Lobby':
       return toPublicLobbyState(hostState);
+    case 'Choosing':
+      return toPublicChoosingState(hostState);
     case 'Writing':
       return toPublicWritingState(hostState);
     case 'Reviewing':

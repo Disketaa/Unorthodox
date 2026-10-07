@@ -14,7 +14,8 @@ const hostLook: PlayerLook = { character: 'Butterfly', color: 'Coral' };
 function hostInRound(): HostSession {
   const host = new HostSession(new InMemoryTransport());
   host.start(roomCode, 'Danya', hostLook);
-  host.startGame('Два слова', 60_000);
+  host.startGame();
+  host.startWriting('Два слова');
   host.submitOwnAnswer('два слова');
   return host;
 }

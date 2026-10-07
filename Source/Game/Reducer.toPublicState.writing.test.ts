@@ -4,15 +4,16 @@ import { HostState } from './GameState';
 
 describe('toPublicState Writing state', () => {
   test('converts correctly', () => {
-    const state: HostState = {
+const state: HostState = {
       phase: 'Writing',
       topic: 'Test',
       durationMs: 60000,
-      startedAt: 1000,
+      startedAt: 1001,
       answers: new Map([['p1', 'Ans1'], ['p2', 'Ans2']]),
       players: new Map(),
       cumulativeScores: new Map(),
       turnPlayerId: null,
+      pace: 'Standard',
     };
     const publicState = toPublicState(state);
     expect(publicState.phase).toBe('Writing');

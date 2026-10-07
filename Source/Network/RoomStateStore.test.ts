@@ -25,6 +25,7 @@ const writingPhase: HostState = {
   players: new Map(),
   cumulativeScores: new Map([['host', 7]]),
   turnPlayerId: null,
+  pace: 'Standard',
 };
 
 /** The same round once the room has moved on to reading the answers. */
@@ -38,6 +39,7 @@ const reviewingPhase: HostState = {
   players: new Map(),
   cumulativeScores: new Map([['host', 7]]),
   turnPlayerId: null,
+  pace: 'Standard',
 };
 
 const scoresPhase: HostState = {
@@ -48,6 +50,7 @@ const scoresPhase: HostState = {
   players: new Map(),
   cumulativeScores: new Map([['host', 10]]),
   turnPlayerId: null,
+  pace: 'Standard',
 };
 
 const finalPhase: HostState = {
@@ -55,6 +58,7 @@ const finalPhase: HostState = {
   players: new Map(),
   cumulativeScores: new Map([['host', 10]]),
   turnPlayerId: null,
+  pace: 'Standard',
 };
 
 describe('a room that outlives its tab', () => {

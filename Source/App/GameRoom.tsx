@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
-import { InfoScreen, LobbyDebugTools, TurnDebugTools } from '@/Screens';
+import type { ComponentChildren } from 'preact';
+import { InfoScreen, LobbyDebugTools, PhaseDebugTools, TurnDebugTools } from '@/Screens';
 import { Strings } from '@/Content';
 import { PlayerLook, assertNever } from '@/Core';
 import { Stack } from '@/Design/Primitives';
@@ -8,6 +9,7 @@ import { useGameSession } from './Hooks/UseGameSession';
 import { useDebugToggle } from './Hooks/UseDebugToggle';
 import { useStartCountdown } from './Hooks/UseStartCountdown';
 import type { GameSessionView } from './Hooks/UseGameSession';
+import type { SessionPhaseName } from './Hooks/UseSessionPhase';
 import { SessionRole, BlockedReason } from './Session';
 import { LobbyView } from './Views/LobbyView';
 import { PhaseInfoView } from './Views/PhaseInfoView';
@@ -57,6 +59,34 @@ function GameScene({ view }: { view: GameSessionView }) {
   );
 }
 
+/** Still reaching the host. The same screen as the failures, a moment earlier: the mark says it
+ * is still waiting rather than that something is wrong, and the button gives up the wait. */
+function ConnectingScreen({ view }: { view: GameSessionView }) {
+  return (
+    <InfoScreen
+      message={Strings.status.connecting}
+      mark="Loading"
+      action={Strings.common.cancel}
+      onAcknowledge={view.exitRoom}
+    />
+  );
+}
+
+/** The screen each phase plays on, as a row per phase. The lobby is the only one that is not the
+ * game stage: the stage is a room already playing, with nothing left to set up. */
+const PhaseScreens: Record<
+  SessionPhaseName,
+  (props: { view: GameSessionView }) => ComponentChildren
+> = {
+  Connecting: ConnectingScreen,
+  Lobby: LobbyView,
+  Choosing: GameScene,
+  Writing: GameScene,
+  Reviewing: GameScene,
+  Scores: GameScene,
+  Final: GameScene,
+};
+
 /** Pick the screen that matches the current phase. */
 function PhaseScreen({ view }: { view: GameSessionView }) {
   // Both of these end the session as far as this player is concerned, so both send
@@ -72,27 +102,8 @@ function PhaseScreen({ view }: { view: GameSessionView }) {
       />
     );
   }
-  switch (view.phase) {
-    case 'Lobby':
-      return <LobbyView view={view} />;
-    case 'Writing':
-    case 'Reviewing':
-    case 'Scores':
-    case 'Final':
-      return <GameScene view={view} />;
-    default:
-      // The same screen as the failures, because it is the same situation seen a moment earlier.
-      // The mark and the button both change: the mark says it is still waiting rather than that
-      // something is wrong, and the button gives up on the wait rather than acknowledging a fact.
-      return (
-        <InfoScreen
-          message={Strings.status.connecting}
-          mark="Loading"
-          action={Strings.common.cancel}
-          onAcknowledge={view.exitRoom}
-        />
-      );
-  }
+  const Screen = PhaseScreens[view.phase];
+  return <Screen view={view} />;
 }
 
 /** The room, and the host's dock under it. The dock is mounted here rather than by any screen,
@@ -136,6 +147,7 @@ function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
             <>
               <LobbyDebugTools publicState={view.publicState} onAddBot={view.addBot} />
               <TurnDebugTools publicState={view.publicState} onNextTurn={view.nextTurn} />
+              <PhaseDebugTools publicState={view.publicState} onNextPhase={view.nextPhase} />
             </>
           )}
         </DebugDock>

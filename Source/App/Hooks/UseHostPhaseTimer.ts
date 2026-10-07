@@ -1,5 +1,11 @@
 import { useEffect } from 'preact/hooks';
-import { GameConfig } from '@/Game';
+import {
+  isPhaseName,
+  isTimedPhase,
+  phaseAfterCycling,
+  phaseDurationMs,
+  phaseGraceMs,
+} from '@/Game/PhaseFlow';
 import { Session } from '../Session';
 import { SessionPhase } from './UseSessionPhase';
 
@@ -12,38 +18,36 @@ export function useHostPhaseTimer(
   phase: SessionPhase,
   onScoresDone: () => void,
 ): void {
-  const { phase: name, durationMs, phaseStartedAt, submittedCount, playerCount } = phase;
+  const { durationMs, phaseStartedAt, submittedCount, playerCount } = phase;
+  const name = phase.phase;
+  // Connecting is this browser's own moment before the host has spoken, so it is not a row in the
+  // phase table and there is nothing here to time.
+  const inGame = isPhaseName(name) ? name : null;
 
   useEffect(() => {
-    if (!isHost) {
+    if (!isHost || inGame === null || !isTimedPhase(inGame)) {
       return;
     }
-    if (name !== 'Writing' && name !== 'Reviewing' && name !== 'Scores') {
-      return;
-    }
-    const target = name === 'Writing' ? durationMs + GameConfig.timing.graceMs : durationMs;
-    const alreadyElapsed = Date.now() - phaseStartedAt;
-    const remaining = Math.max(0, target - alreadyElapsed);
+    const target = durationMs + phaseGraceMs(inGame);
+    const remaining = Math.max(0, target - (Date.now() - phaseStartedAt));
     if (remaining === 0) {
       return;
     }
-    const onElapsed = name === 'Scores' ? onScoresDone : () => closeWithNextDuration(name);
+    // Scores ends through the round counter rather than the table, since the last round ends
+    // the game and the table has no row for that.
+    const onElapsed = inGame === 'Scores' ? onScoresDone : () => {
+      session.nextPhase(phaseAfterCycling(inGame));
+    };
     const id = setTimeout(onElapsed, remaining);
     return () => clearTimeout(id);
-
-    function closeWithNextDuration(phaseName: string): void {
-      if (phaseName === 'Writing') {
-        session.closePhase(GameConfig.timing.reviewingDurationMs);
-      } else {
-        session.closePhase(GameConfig.timing.scoresDurationMs);
-      }
-    }
-  }, [isHost, name, durationMs, phaseStartedAt, session, onScoresDone]);
+  }, [isHost, inGame, durationMs, phaseStartedAt, session, onScoresDone]);
 
   useEffect(() => {
-    // Everyone answered: move on immediately instead of waiting out the clock.
+    // Everyone answered: move on instead of waiting out the clock. The phase it moves to and how
+    // long that one runs are both read from the table rather than named here.
     if (isHost && name === 'Writing' && playerCount > 0 && submittedCount >= playerCount) {
-      session.closePhase(GameConfig.timing.reviewingDurationMs);
+      const pace = session.getPublicState()?.pace ?? 'Standard';
+      session.endReviewing(phaseDurationMs(phaseAfterCycling('Writing'), pace));
     }
   }, [isHost, name, submittedCount, playerCount, session]);
 }

@@ -46,7 +46,8 @@ function dropAndRejoinFirstClient(fixture: Fixture): ClientSession {
  * here asks is whether that one missing answer still counts. The first client is the one under
  * test, never the answerer. */
 function startRoundMissingFirstAnswer(fixture: Fixture): void {
-  fixture.hostSession.startGame('Test topic', 1000);
+  fixture.hostSession.startGame();
+  fixture.hostSession.startWriting('Test topic');
   fixture.clientSessions.slice(1).forEach(session => session.submitAnswer('An answer'));
   fixture.hostSession.submitOwnAnswer('Another answer');
   fixture.hostSession.endReviewing(1000);
@@ -84,7 +85,8 @@ describe('who the round waits for', () => {
   it('closes the round once the returned player answers', () => {
     const fixture = joinLobby();
     const returned = dropAndRejoinFirstClient(fixture);
-    fixture.hostSession.startGame('Test topic', 1000);
+    fixture.hostSession.startGame();
+    fixture.hostSession.startWriting('Test topic');
     fixture.clientSessions.slice(1).forEach(session => session.submitAnswer('An answer'));
     fixture.hostSession.submitOwnAnswer('Another answer');
     returned.submitAnswer('The returned answer');

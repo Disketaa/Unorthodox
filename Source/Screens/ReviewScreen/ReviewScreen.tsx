@@ -1,5 +1,5 @@
 import { Stack, Screen, Text } from '@/Design/Primitives';
-import { Card, Timer, VoteButton } from '@/Design/Components';
+import { Card, VoteButton } from '@/Design/Components';
 import { Strings } from '@/Content';
 
 export interface ReviewGroup {
@@ -11,17 +11,14 @@ export interface ReviewGroup {
 
 export interface ReviewScreenProps {
   topic: string;
-  remainingMs: number;
-  totalMs: number;
   groups: readonly ReviewGroup[];
   onReject: (groupId: number) => void;
 }
 
 /** Reviewing phase: all answers at once, duplicates grouped, everyone can reject. */
-export function ReviewScreen({ topic, remainingMs, totalMs, groups, onReject }: ReviewScreenProps) {
+export function ReviewScreen({ topic, groups, onReject }: ReviewScreenProps) {
   return (
     <Screen>
-      <Timer remainingMs={remainingMs} totalMs={totalMs} />
       <Stack gap="Sm" align="Stretch">
         <Text variant="Caption">{Strings.reviewing.topicLabel}</Text>
         <Text variant="Title">{topic}</Text>

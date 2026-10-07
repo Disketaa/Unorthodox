@@ -1,6 +1,17 @@
 import { HostState, freshLobbyState } from './GameState';
 import { assertNever } from '@/Core';
-import { GameAction, handleStartGame, handleSubmitAnswer, handleStartReviewing, handleRejectGroup, handleEndReviewing, handleNextRound, handleFinal } from './GameActions';
+import type { GameAction } from './GameActions';
+import {
+  handleStartGame,
+  handleStartWriting,
+  handleSubmitAnswer,
+  handleStartReviewing,
+  handleRejectGroup,
+  handleEndReviewing,
+  handleNextRound,
+  handleFinal,
+  handleGoToPhase,
+} from './PhaseActions';
 import { handleNextTurn } from './Turns';
 import { handleJoin, handleSetLook, handleSetOnline, handleKick, handleSetPace } from './LobbyActions';
 
@@ -23,6 +34,8 @@ export function reducer(
       return handleSetPace(state, action);
     case 'START_GAME':
       return handleStartGame(state, action);
+    case 'START_WRITING':
+      return handleStartWriting(state, action);
     case 'SUBMIT_ANSWER':
       return handleSubmitAnswer(state, action);
     case 'START_REVIEWING':
@@ -37,6 +50,8 @@ export function reducer(
       return handleNextTurn(state);
     case 'FINAL':
       return handleFinal(state);
+    case 'GO_TO_PHASE':
+      return handleGoToPhase(state, action);
     default:
       return assertNever(action);
   }

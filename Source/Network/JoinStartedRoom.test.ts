@@ -14,7 +14,8 @@ const clientLook: PlayerLook = { character: 'Ghost', color: 'Sky' };
 function startedRoom(): HostSession {
   const host = new HostSession(new InMemoryTransport());
   host.start(roomCode, 'Danya', hostLook);
-  host.startGame('Два слова', 60_000);
+  host.startGame();
+  host.startWriting('Два слова');
   return host;
 }
 

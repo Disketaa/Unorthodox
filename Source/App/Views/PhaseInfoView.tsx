@@ -1,42 +1,59 @@
-import { Banner } from '@/Design/Components';
+import { Banner, Timer } from '@/Design/Components';
 import { Stack } from '@/Design/Primitives';
 import { Strings } from '@/Content';
-import type { GameSessionView } from '../Hooks/UseGameSession';
+import { isTimedPhase } from '@/Game';
+import { useCountdown } from '../Hooks/UseCountdown';
+import type { SessionPhaseName } from '../Hooks/UseSessionPhase';
 import type { PhaseViewProps } from './LobbyView';
 
-/** What the room is doing, in one sentence, at the very top of the game. The only thing here
- * that says what phase this is: the bank is the thing being done and the hexes are who is
- * playing it. In this browser's own voice, since choosing a theme is the point. */
-function phaseMessage(view: GameSessionView, name: string): string {
-  switch (view.phase) {
-    case 'Writing':
-      return view.hasSubmitted ? Strings.writing.waitForOthers : Strings.phase.choosingTheme(name);
-    case 'Reviewing':
-      return Strings.phase.reviewing;
-    case 'Scores':
-      return Strings.phase.scores;
-    case 'Final':
-      return Strings.phase.final;
-    case 'Connecting':
-      return Strings.phase.connecting;
-    case 'Lobby':
-      return Strings.lobby.waitingForHost;
-  }
+/** What naming a phase takes: whose turn it is, and whether this player has answered. Every
+ * phase the room can be in is a row, so a phase added elsewhere fails to compile here rather
+ * than falling through to a sentence about a different moment. */
+interface PhaseStory {
+  turnName: string;
+  hasSubmitted: boolean;
 }
 
+/** What the room is doing, in one sentence, at the very top of the game. In this browser's own
+ * voice: a block reading about somebody else has to be translated by whoever is living it. */
+const PhaseSentences: Record<SessionPhaseName, (story: PhaseStory) => string> = {
+  Connecting: () => Strings.phase.connecting,
+  Lobby: () => Strings.lobby.waitingForHost,
+  Choosing: (story) => Strings.phase.choosingTheme(story.turnName),
+  Writing: (story) =>
+    story.hasSubmitted ? Strings.writing.waitForOthers : Strings.phase.writing,
+  Reviewing: () => Strings.phase.reviewing,
+  Scores: () => Strings.phase.scores,
+  Final: () => Strings.phase.final,
+};
+
 /** The note at the top of a game screen: what is happening, with the mark saying it still is.
- * The same block as the connecting screen, being the same situation seen during the game. No
- * line under it, so it does not read as progress: nothing here is measured. */
+ * The countdown sits inside the block rather than above it, so a phase nobody waits out shows
+ * the sentence alone and no bar that will never move. */
 export function PhaseInfoView({ view }: PhaseViewProps) {
-  // The name is the turn holder's rather than this browser's own, so the sentence reads the same
-  // on every screen in the room: a player reading about somebody else is looking at the same
-  // sentence as everybody else.
-  const name = view.turnPlayerId === null ? '' : (view.playerNames.get(view.turnPlayerId) ?? '');
+  // Unconditional: the hook is what ticks the countdown, so it runs whatever phase this is and
+  // the clock is simply unused where nothing is measured.
+  const remainingMs = useCountdown(
+    view.durationMs,
+    view.phaseStartedAt,
+    view.clockOffsetMs,
+  );
+  const turnName =
+    view.turnPlayerId === null ? '' : (view.playerNames.get(view.turnPlayerId) ?? '');
+  const sentence = PhaseSentences[view.phase]({
+    turnName,
+    hasSubmitted: view.hasSubmitted,
+  });
+
   return (
-    <Stack align="Center">
+    <Stack align="Center" gap="Sm">
       <Banner align="Center" mark="Loading">
-        {phaseMessage(view, name)}
+        {sentence}
       </Banner>
+      {/* Connecting is not a game phase, so the table has no row for it and nothing is timed. */}
+      {view.phase !== 'Connecting' && isTimedPhase(view.phase) && (
+        <Timer remainingMs={remainingMs} totalMs={view.durationMs} />
+      )}
     </Stack>
   );
 }

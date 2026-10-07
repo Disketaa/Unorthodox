@@ -38,9 +38,19 @@ export interface Session {
   rejectGroup(groupId: number): void;
   /** Give the room's turn to the next player in join order. Only the host calls this. */
   nextTurn(): void;
-  startGame(topic: string, durationMs: number): void;
-  closePhase(durationMs: number): void;
-  startNextRound(topic: string, durationMs: number): void;
+  /** Start the game - transitions from Lobby to Choosing. */
+  startGame(): void;
+  /** The topic comes from whoever picked the theme, not from the session: the session does not
+   * know what a theme asks about. */
+  startWriting(topic: string): void;
+  /** Advance out of the Writing phase once everyone has answered, or out of the Reviewing phase
+   * (once reviewing time is up, going to Scores). */
+  endReviewing(durationMs: number): void;
+  /** Advance from Scores or Reviewing to the next round's Choosing phase. */
+  nextRound(): void;
+  /** Advance to the next phase according to the phase flow table. The topic only matters to the
+   * phases that show one, so a jump out of a phase that has none passes an empty string. */
+  nextPhase(topic: string): void;
   finish(): void;
   stop(): void;
 }

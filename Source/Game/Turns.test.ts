@@ -72,11 +72,10 @@ describe('the turn in a room', () => {
   it('survives a change of phase, since a turn is the room\'s and not the round\'s', () => {
     const started = reducer(reducer(lobby('Dan', 'Anya'), { type: 'NEXT_TURN' }), {
       type: 'START_GAME',
-      topic: 'topic',
       durationMs: 1000,
       startedAt: 0,
     });
-    expect(started.phase).toBe('Writing');
+    expect(started.phase).toBe('Choosing');
     expect(started.turnPlayerId).toBe('p1');
   });
 });

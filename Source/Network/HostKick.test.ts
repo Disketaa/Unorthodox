@@ -40,7 +40,8 @@ function joinLobby(): Lobby {
 /** Kick Ann, then start a round and answer for everyone still in the room. */
 function kickAnnThenPlayRound(room: Lobby): void {
   room.hostSession.kick(Ann);
-  room.hostSession.startGame('Test topic', 1000);
+  room.hostSession.startGame();
+  room.hostSession.startWriting('Test topic');
   room.bob.submitAnswer('An answer');
   room.hostSession.submitOwnAnswer('Another answer');
   room.hostSession.endReviewing(1000);
