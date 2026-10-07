@@ -47,6 +47,7 @@ interface Voice {
 
 let voice: Voice | undefined;
 let armed = false;
+let watching = false;
 const buffers = new Map<SoundName, AudioBuffer>();
 const loading = new Map<SoundName, Promise<void>>();
 
@@ -72,9 +73,23 @@ function voiceFor(): Voice | undefined {
   if (typeof AudioContext === 'undefined') return undefined;
   const context = new AudioContext();
   const bus = context.createGain();
+  bus.gain.value = 1;
   bus.connect(context.destination);
   voice = { context, bus };
+  muteWhileHidden(bus);
   return voice;
+}
+
+/** Keeps the bank quiet while the tab is in the background. A press made in another tab, or a
+ * countdown that kept its beat after the window was left, is noise nobody is there to hear, and
+ * it keeps playing over whatever the player moved on to. Muted on the bus rather than by
+ * refusing to play: notes already sounding have to be cut too, and they only pass the bus. */
+function muteWhileHidden(bus: GainNode): void {
+  if (watching || typeof document === 'undefined') return;
+  watching = true;
+  document.addEventListener('visibilitychange', () => {
+    bus.gain.value = document.hidden ? 0 : 1;
+  });
 }
 
 /** Decodes one clip, at most once, however many callers ask at the same time. Two presses

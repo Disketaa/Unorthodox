@@ -668,6 +668,20 @@ body.PageFade {
    * drawn. */
   --Scale-PlayerBarTurning: 0.85;
 
+  /* How far the seat of the player whose turn it is dims at the peak of its breath. Under one,
+   * so the peak is a step down rather than a lift: the room's tints are mid-tones, and a
+   * brighter step on a mid-tone washes toward white and eats the character drawn over it, while
+   * a dim step deepens the tint and keeps the linework on top of it. The whole seat dims —
+   * hexagon and mark together — since a fill that changed alone would leave the mark unlit. */
+  --Scale-PlayerBarWaiting: 0.95;
+
+  /* How long one turn of the seat's breath runs, from nothing to full and back. Shorter than
+   * `--Duration-Pulse`, which is sized for a button that is the only thing on its screen moving
+   * and can afford to be slow about it. A seat is one of a dozen in a row, and at the button's
+   * tempo a turn passing round the room reads as a change of light rather than as a pulse
+   * anybody can count. */
+  --Duration-PlayerBarWaiting: 750ms;
+
   /* How wide the line round a player's name is, in the seat's own fill so the text reads
    * against the hexagon rather than on top of it. A share of the text rather than a length: the
    * name is cut short rather than wrapped, so its size never changes with what the player is

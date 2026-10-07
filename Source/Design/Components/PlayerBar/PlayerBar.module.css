@@ -152,22 +152,24 @@
   animation: PlayerBarSpin var(--Duration-Spin) var(--Easing-Smooth) infinite;
 }
 
-/* A seat waiting on its player breathes the way a room waits on a host, over a wash of that
- * player's own tint. Animated as the wash itself rather than as a `filter`: a filtered element
- * is promoted to its own layer, and a layer raster snaps to whole pixels, which drew the seat
- * one or two pixels off its neighbours. */
+/* A seat waiting on its player breathes the way a room waits on a host, dipping rather than
+ * lifting: the tints here are mid-tones, and a step up on a mid-tone washes toward white and
+ * eats the character drawn over it, while a step down deepens the tint and keeps the linework
+ * on top of it. One brightness over the whole seat rather than a wash behind it, so the hexagon
+ * and the mark inside it move together — a fill that changed on its own left the mark unlit. A
+ * wash stood here once, to avoid a `filter` promoting the seat to its own layer. */
 .Waiting .Slot {
-  animation: PlayerBarBreathe var(--Duration-Pulse) var(--Easing-Smooth) infinite;
+  animation: PlayerBarBreathe var(--Duration-PlayerBarWaiting) var(--Easing-Smooth) infinite;
 }
 
 @keyframes PlayerBarBreathe {
   from,
   to {
-    background: var(--Color-PlayerBarSeatFill);
+    filter: none;
   }
 
   50% {
-    background: var(--Color-PlayerBarSeatWash);
+    filter: brightness(var(--Scale-PlayerBarWaiting));
   }
 }
 
@@ -186,9 +188,11 @@
     animation: none;
   }
 
+  /* The breath off, the dip held at rest. A seat with no marker at all would say the turn was
+   * nobody's, since this is the only thing marking it at this size. */
   .Waiting .Slot {
     animation: none;
-    background: var(--Color-PlayerBarSeatWash);
+    filter: brightness(var(--Scale-PlayerBarWaiting));
   }
 }
 
