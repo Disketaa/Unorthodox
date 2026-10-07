@@ -56,7 +56,7 @@ export function LobbyRoom({
       action={<IconButton icon="Exit" label={Strings.lobby.exit} onClick={onExit} />}
     >
       {/* Start sits above the roster, not under it: the roster grows as players join, and a
-        * control that slides down with them is a control the host has to hunt for. */}
+       * control that slides down with them is a control the host has to hunt for. */}
       <LobbyStart
         enoughPlayers={enoughPlayers}
         roomFull={roomFull}

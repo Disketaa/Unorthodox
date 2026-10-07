@@ -1,8 +1,7 @@
 export type PlayerId = string;
 export type GroupId = string;
 
-export type Result<T> =
-  { success: true; value: T } | { success: false; error: string };
+export type Result<T> = { success: true; value: T } | { success: false; error: string };
 
 export function assertNever(x: never): never {
   throw new Error(`Unexpected value: ${x}`);

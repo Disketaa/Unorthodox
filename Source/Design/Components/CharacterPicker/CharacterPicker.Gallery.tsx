@@ -35,12 +35,7 @@ export function CharacterPickerGallery() {
       <Text variant="Body">
         CharacterPicker. The character above, the cast and the palette below.
       </Text>
-      <CharacterPicker
-        character="Daisy"
-        color="Sky"
-        labels={labels}
-        onPick={() => {}}
-      />
+      <CharacterPicker character="Daisy" color="Sky" labels={labels} onPick={() => {}} />
     </Stack>
   );
 }

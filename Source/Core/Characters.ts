@@ -50,10 +50,7 @@ export function isCharacterId(value: unknown): value is CharacterId {
 }
 
 export function isCharacterColor(value: unknown): value is CharacterColor {
-  return (
-    typeof value === 'string' &&
-    CharacterColors.some((color) => color === value)
-  );
+  return typeof value === 'string' && CharacterColors.some((color) => color === value);
 }
 
 /** Type guard for a look arriving from the network. */

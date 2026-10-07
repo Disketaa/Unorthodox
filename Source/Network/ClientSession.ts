@@ -130,7 +130,7 @@ export class ClientSession {
     }
   }
 
-join(playerName: string, look: PlayerLook): void {
+  join(playerName: string, look: PlayerLook): void {
     log('info', 'joining as', playerName);
     // Held and re-sent until the host seats us or refuses the join.
     this.joinRetry.send({

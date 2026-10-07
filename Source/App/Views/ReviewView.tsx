@@ -13,10 +13,6 @@ export function ReviewView({ view }: PhaseViewProps) {
     })) ?? [];
 
   return (
-    <ReviewScreen
-      topic={state?.topic ?? ''}
-      groups={groups}
-      onReject={view.rejectGroup}
-    />
+    <ReviewScreen topic={state?.topic ?? ''} groups={groups} onReject={view.rejectGroup} />
   );
 }

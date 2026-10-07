@@ -5,7 +5,7 @@ import { ScoreEntry, lookFor } from '@/Screens';
 export function toScoreEntries(
   scores: readonly { id: PlayerId; score: number }[],
   names: ReadonlyMap<PlayerId, string>,
-  looks: ReadonlyMap<PlayerId, PlayerLook>,
+  looks: ReadonlyMap<PlayerId, PlayerLook>
 ): ScoreEntry[] {
   return scores
     .map((entry) => {

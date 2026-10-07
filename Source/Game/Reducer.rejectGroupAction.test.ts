@@ -4,13 +4,16 @@ import { HostState } from './GameState';
 
 describe('reducer REJECT_GROUP action', () => {
   test('adds rejection in Reviewing phase', () => {
-let state: HostState = {
+    let state: HostState = {
       phase: 'Reviewing',
       topic: 'Test',
       durationMs: 30000,
       startedAt: 1000,
       // Both players gave the same answer, so they are one group.
-      answers: new Map([['p1', 'Ans1'], ['p2', 'Ans1']]),
+      answers: new Map([
+        ['p1', 'Ans1'],
+        ['p2', 'Ans1'],
+      ]),
       groupRejections: new Map(),
       players: new Map(),
       cumulativeScores: new Map(),

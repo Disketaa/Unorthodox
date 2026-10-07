@@ -4,7 +4,7 @@ import { HostState } from './GameState';
 
 describe('reducer SUBMIT_ANSWER action', () => {
   test('adds answer in Writing phase', () => {
-let state: HostState = {
+    let state: HostState = {
       phase: 'Writing',
       topic: 'Test',
       durationMs: 60000,

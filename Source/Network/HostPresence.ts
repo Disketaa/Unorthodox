@@ -9,7 +9,7 @@ const log = createLogger('HostSession');
  * reconnect cannot mark the same seat gone twice. */
 export function departureOf(
   peerId: string,
-  roster: HostRoster,
+  roster: HostRoster
 ): { type: 'SET_ONLINE'; playerId: PlayerId; isOnline: false } | undefined {
   const playerId = roster.seatForPeer(peerId);
   roster.releasePeer(peerId);

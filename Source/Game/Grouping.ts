@@ -5,8 +5,20 @@ import { PlayerId } from '@/Core';
  * two-letter plural ending is never shadowed by the single letter that starts it. Words of four
  * characters or fewer are left alone, which keeps a short stem intact. */
 const russianEndings = [
-  'ам', 'ям', 'ом', 'ем', 'им', 'ым',
-  'а', 'я', 'ы', 'ь', 'й', 'у', 'ю', 'е',
+  'ам',
+  'ям',
+  'ом',
+  'ем',
+  'им',
+  'ым',
+  'а',
+  'я',
+  'ы',
+  'ь',
+  'й',
+  'у',
+  'ю',
+  'е',
   'и',
 ];
 
@@ -60,7 +72,7 @@ function levenshteinDistance(a: string, b: string): number {
 export function normalizeForGrouping(answer: string): string {
   const normalized = normalizeAnswer(answer);
   const words = normalized.split(' ');
-  const processedWords = words.map(word => stripRussianEndings(word));
+  const processedWords = words.map((word) => stripRussianEndings(word));
   return processedWords.join(' ');
 }
 

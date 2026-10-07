@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { HostState } from '@/Game';
-import { decodeRoomState, encodeRoomState } from './RoomStateCodec';
+import { decodeRoomState } from './RoomStateCodec';
+import { encodeRoomState } from './RoomStateEncoder';
 import { clearRoomState, freshLobby, loadRoomState, saveRoomState } from './RoomStateStore';
 
 /** Round-trip the way the room does: write plain data, read it back. */
@@ -82,7 +83,7 @@ describe('a room that outlives its tab', () => {
     expect(loadRoomState('1234')).toEqual(reviewingPhase);
   });
 
-it('comes back on the scores and on the last table', () => {
+  it('comes back on the scores and on the last table', () => {
     saveRoomState('1', scoresPhase);
     saveRoomState('2', finalPhase);
     expect(loadRoomState('1')).toEqual(scoresPhase);
@@ -125,7 +126,13 @@ describe('what comes back', () => {
   it('drops entries that are not what they claim rather than trusting them', () => {
     localStorage.setItem(
       'unorthodox.host.1234',
-      JSON.stringify({ phase: 'Writing', durationMs: 1, startedAt: 2, topic: 'т', answers: [['host', 7], ['p1', 'раз'], 'rubbish'] }),
+      JSON.stringify({
+        phase: 'Writing',
+        durationMs: 1,
+        startedAt: 2,
+        topic: 'т',
+        answers: [['host', 7], ['p1', 'раз'], 'rubbish'],
+      })
     );
     const resumed = loadRoomState('1234');
     expect(resumed?.phase === 'Writing' ? [...resumed.answers] : []).toEqual([['p1', 'раз']]);

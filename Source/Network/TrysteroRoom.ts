@@ -63,16 +63,17 @@ function createHostPeerState(onFirstKnown: () => void): HostPeerState {
 /** Announce our own role to everyone in the room. Broadcast rather than sent to one peer:
  * `onPeerJoin` fires on both sides, so a broadcast from each reaches whoever arrived second.
  * Targeting only the joiner would deadlock when the host first. */
-function announceRole(
-  hello: MessageAction<JsonValue>,
-  role: string,
-): void {
+function announceRole(hello: MessageAction<JsonValue>, role: string): void {
   log('info', `announcing role ${role} to the room`);
   hello.send({ type: HelloAction, role });
 }
 
 /** Wire the hello action, learning the host's peerId from whoever claims the role. */
-function wireHello(hello: MessageAction<JsonValue>, hostPeer: HostPeerState, isHost: boolean): void {
+function wireHello(
+  hello: MessageAction<JsonValue>,
+  hostPeer: HostPeerState,
+  isHost: boolean
+): void {
   hello.onMessage = (message: JsonValue, context) => {
     const role = readRole(message);
     if (readTag(message) !== HelloAction || role === undefined) {
@@ -111,7 +112,7 @@ function wirePeers(
   hello: MessageAction<JsonValue>,
   isHost: boolean,
   hostPeer: HostPeerState,
-  handlers: RoomHandlers,
+  handlers: RoomHandlers
 ): void {
   room.onPeerJoin = (peerId) => {
     log('info', 'peer joined the room:', peerId, 'as', isHost ? HostRole : PlayerRole);
@@ -168,7 +169,7 @@ export function openRoom(options: {
     room,
     { hostToClient, clientToHost, hello: room.makeAction(HelloAction) },
     options.isHost,
-    options.handlers,
+    options.handlers
   );
   return { room, hostToClient, clientToHost, hostPeer };
 }
@@ -186,7 +187,7 @@ export function wireRoom(
   room: RoomPeers,
   actions: RoomActions,
   isHost: boolean,
-  handlers: RoomHandlers,
+  handlers: RoomHandlers
 ): HostPeerState {
   const hostPeer = createHostPeerState(() => {
     log('info', 'host is now addressable, flushing anything held back');

@@ -31,7 +31,11 @@ export function markSubmitted(marks: RoundMarks, topic: string | null): RoundMar
 /** Record that the player rejected a group in the given round. A rejection starts a new list,
  * because group ids are only meaningful inside one round's list of groups. Carrying them over
  * would make the next round show votes that were never cast. */
-export function markRejected(marks: RoundMarks, topic: string | null, groupId: number): RoundMarks {
+export function markRejected(
+  marks: RoundMarks,
+  topic: string | null,
+  groupId: number
+): RoundMarks {
   const carriedOver = marks.rejectedTopic === topic ? marks.rejectedGroupIds : noIds();
   return {
     ...marks,

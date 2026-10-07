@@ -1,2 +1,2 @@
-export { VoteButton } from "./VoteButton";
-export type { VoteButtonProps } from "./VoteButton";
+export { VoteButton } from './VoteButton';
+export type { VoteButtonProps } from './VoteButton';

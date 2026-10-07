@@ -23,7 +23,7 @@ function card(theme: ThemeId = 'Internet', index?: number) {
   // row are hidden too. The figure is the hidden node whose text is a digit, which is the mark
   // and nothing else.
   const mark = [...container.querySelectorAll('[aria-hidden="true"]')].find((node) =>
-    /^\d$/.test(node.textContent ?? ''),
+    /^\d$/.test(node.textContent ?? '')
   );
   return { container, button, mark };
 }

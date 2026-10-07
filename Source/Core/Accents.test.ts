@@ -52,8 +52,12 @@ describe('the ink step', () => {
     // Titles, scores, borders and focus rings. Both surfaces are checked because the
     // paper texture is not white, and tuning against white alone left Coral short.
     for (const { color, accent } of allAccents()) {
-      expect(ratio(accent.ink, White), `${color} ink on white`).toBeGreaterThanOrEqual(BodyText);
-      expect(ratio(accent.ink, Paper), `${color} ink on paper`).toBeGreaterThanOrEqual(BodyText);
+      expect(ratio(accent.ink, White), `${color} ink on white`).toBeGreaterThanOrEqual(
+        BodyText
+      );
+      expect(ratio(accent.ink, Paper), `${color} ink on paper`).toBeGreaterThanOrEqual(
+        BodyText
+      );
     }
   });
 

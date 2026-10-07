@@ -53,11 +53,7 @@ export function setLogLevel(level: LogLevel): void {
   threshold = level;
 }
 
-export type Logger = (
-  level: LogLevel,
-  message: string,
-  ...args: unknown[]
-) => void;
+export type Logger = (level: LogLevel, message: string, ...args: unknown[]) => void;
 
 export function createLogger(scope: string): Logger {
   return (level, message, ...args) => {

@@ -15,7 +15,9 @@ function fieldIn(root: HTMLElement): HTMLElement {
 
 /** The two band elements, left then right. */
 function bandsIn(field: HTMLElement): HTMLElement[] {
-  return Array.from(field.children).filter((child): child is HTMLElement => child instanceof HTMLElement);
+  return Array.from(field.children).filter(
+    (child): child is HTMLElement => child instanceof HTMLElement
+  );
 }
 
 describe('GlyphField', () => {

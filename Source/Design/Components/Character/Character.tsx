@@ -46,9 +46,9 @@ export function Character({
   return (
     <span class={classes} ref={motionRef}>
       {/*
-        * One pop, keyed on everything that should make it play: a new character,
-        * a new tint, or a new pulse. Turning up, changing and being chosen are
-        * the same movement, so there is one of them rather than one per reason.
+       * One pop, keyed on everything that should make it play: a new character,
+       * a new tint, or a new pulse. Turning up, changing and being chosen are
+       * the same movement, so there is one of them rather than one per reason.
        */}
       <Pop trigger={`${character}-${color}-${pulse}`} index={index}>
         <Art />

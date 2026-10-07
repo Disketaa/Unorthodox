@@ -1,1 +1,1 @@
-export * from "./DebugDock";
+export * from './DebugDock';

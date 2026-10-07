@@ -1,9 +1,9 @@
-import { ComponentChildren } from "preact";
-import { playSound, type SoundName } from "../../Sounds";
-import styles from "./Button.module.css";
+import { ComponentChildren } from 'preact';
+import { playSound, type SoundName } from '../../Sounds';
+import styles from './Button.module.css';
 
-export type ButtonVariant = "Primary" | "Secondary" | "Ghost" | "Muted";
-export type ButtonSize = "Small" | "Medium" | "Large";
+export type ButtonVariant = 'Primary' | 'Secondary' | 'Ghost' | 'Muted';
+export type ButtonSize = 'Small' | 'Medium' | 'Large';
 
 export interface ButtonProps {
   variant?: ButtonVariant;
@@ -18,12 +18,12 @@ export interface ButtonProps {
 }
 
 export function Button({
-  variant = "Primary",
-  size = "Medium",
+  variant = 'Primary',
+  size = 'Medium',
   disabled = false,
   loading = false,
   pulse = false,
-  sound = "Pop",
+  sound = 'Pop',
   onClick,
   children,
 }: ButtonProps) {
@@ -31,8 +31,8 @@ export function Button({
     styles.Root,
     styles[`Variant${variant}`],
     styles[`Size${size}`],
-    pulse ? styles.Pulse : "",
-  ].join(" ");
+    pulse ? styles.Pulse : '',
+  ].join(' ');
   return (
     <button
       class={classes}
@@ -42,7 +42,7 @@ export function Button({
         onClick?.();
       }}
     >
-      {loading ? "..." : children}
+      {loading ? '...' : children}
     </button>
   );
 }

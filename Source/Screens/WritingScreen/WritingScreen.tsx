@@ -44,7 +44,9 @@ export function WritingScreen({
       </Card>
       <Stack gap="Md" align="Stretch">
         {timeUp && <Banner variant="Warning">{Strings.writing.timeUp}</Banner>}
-        <Text variant="Caption">{Strings.writing.submittedCount(submittedCount, playerCount)}</Text>
+        <Text variant="Caption">
+          {Strings.writing.submittedCount(submittedCount, playerCount)}
+        </Text>
         {submitted && <Text variant="Caption">{Strings.writing.waitForOthers}</Text>}
       </Stack>
     </Screen>

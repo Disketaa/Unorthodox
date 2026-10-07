@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "preact/hooks";
-import styles from "./PaperBackground.module.css";
+import { useEffect, useRef } from 'preact/hooks';
+import styles from './PaperBackground.module.css';
 
 /** How often the texture jumps to a new offset. */
 const ShiftIntervalMs = 300;
@@ -28,8 +28,8 @@ export function PaperBackground() {
       const { x, y } = randomShift();
       // Custom properties rather than a style prop, so the value lives in the
       // stylesheet and the component keeps a closed API.
-      node.style.setProperty("--Overlay-TextureX", `${x}px`);
-      node.style.setProperty("--Overlay-TextureY", `${y}px`);
+      node.style.setProperty('--Overlay-TextureX', `${x}px`);
+      node.style.setProperty('--Overlay-TextureY', `${y}px`);
     };
     shift();
     const id = setInterval(shift, ShiftIntervalMs);

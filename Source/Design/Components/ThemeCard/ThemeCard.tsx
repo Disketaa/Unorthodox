@@ -57,12 +57,36 @@ function writeTheme(node: HTMLElement, theme: ThemeId, index: number) {
 
 /** What the card is drawn as. The blink goes with the chosen state, since a card the room has
  * answered is no longer one of a row being offered. */
-
 function cardClasses(moving: boolean, blink: boolean, chosen: boolean): string {
   const classes = [styles.Root, moving ? styles.Moving : styles.Still];
   if (blink && !chosen) classes.push(styles.Blink);
   if (chosen) classes.push(styles.Chosen);
   return classes.join(' ');
+}
+
+/** The card's face, as spans rather than layout elements: the card paints its own surface, so
+ * the face is decoration on it and a Stack here would fight the button's own box. */
+function CardFace({
+  name,
+  index,
+  rounds,
+  spent,
+}: Pick<ThemeCardProps, 'name' | 'index' | 'rounds' | 'spent'>) {
+  return (
+    <>
+      <span class={styles.Initial} aria-hidden="true">
+        {initialOf(name ?? '')}
+      </span>
+      <span class={styles.Panel}>
+        <span class={styles.Mark} aria-hidden="true">
+          {index}
+        </span>
+      </span>
+      <span class={styles.Noise} aria-hidden="true" />
+      <span class={styles.Name}>{name}</span>
+      <RoundMeter rounds={rounds ?? 10} spent={spent ?? 0} />
+    </>
+  );
 }
 
 /** One theme, as a card with its name on it. A button rather than a `Card` inside one, since
@@ -99,11 +123,7 @@ export function ThemeCard({
         onPick?.(theme);
       }}
     >
-      <span class={styles.Initial} aria-hidden="true">{initialOf(name)}</span>
-      <span class={styles.Panel}><span class={styles.Mark} aria-hidden="true">{index}</span></span>
-      <span class={styles.Noise} aria-hidden="true" />
-      <span class={styles.Name}>{name}</span>
-      <RoundMeter rounds={rounds} spent={spent} />
+      <CardFace name={name} index={index} rounds={rounds} spent={spent} />
     </button>
   );
 }

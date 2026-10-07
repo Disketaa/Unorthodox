@@ -15,7 +15,7 @@ export function turnOrder(players: ReadonlyMap<PlayerId, unknown>): PlayerId[] {
  * the room falls to the first player, since the holder is not coming back to it. */
 export function nextPlayerInTurn(
   current: PlayerId | null,
-  order: readonly PlayerId[],
+  order: readonly PlayerId[]
 ): PlayerId | null {
   if (order.length === 0) {
     return null;
@@ -27,5 +27,8 @@ export function nextPlayerInTurn(
 /** Hand the turn on, in whichever phase the room is in. Every phase carries the turn, so this
  * needs none of them and every one of them gets it. */
 export function handleNextTurn(state: HostState): HostState {
-  return { ...state, turnPlayerId: nextPlayerInTurn(state.turnPlayerId, turnOrder(state.players)) };
+  return {
+    ...state,
+    turnPlayerId: nextPlayerInTurn(state.turnPlayerId, turnOrder(state.players)),
+  };
 }

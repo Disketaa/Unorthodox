@@ -22,17 +22,19 @@ export function PlayerBarGallery() {
       <PlayerBar players={room.slice(0, 2)} />
       <Text variant="Body">A room of eight, with this browser in it</Text>
       <PlayerBar players={room} ownPlayerId="p3" />
-      <Text variant="Body">The local player who has dropped, held back rather than removed</Text>
+      <Text variant="Body">
+        The local player who has dropped, held back rather than removed
+      </Text>
       <PlayerBar
         players={room.map((player) =>
-          player.id === 'p3' ? { ...player, isOnline: false } : player,
+          player.id === 'p3' ? { ...player, isOnline: false } : player
         )}
         ownPlayerId="p3"
       />
       <Text variant="Body">The player whose turn it is, where their character would be</Text>
       <PlayerBar
         players={room.map((player) =>
-          player.id === 'p2' ? { ...player, isTurning: true } : player,
+          player.id === 'p2' ? { ...player, isTurning: true } : player
         )}
         ownPlayerId="p3"
       />

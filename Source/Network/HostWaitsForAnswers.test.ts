@@ -48,7 +48,7 @@ function dropAndRejoinFirstClient(fixture: Fixture): ClientSession {
 function startRoundMissingFirstAnswer(fixture: Fixture): void {
   fixture.hostSession.startGame();
   fixture.hostSession.startWriting('Test topic');
-  fixture.clientSessions.slice(1).forEach(session => session.submitAnswer('An answer'));
+  fixture.clientSessions.slice(1).forEach((session) => session.submitAnswer('An answer'));
   fixture.hostSession.submitOwnAnswer('Another answer');
   fixture.hostSession.endReviewing(1000);
 }
@@ -87,7 +87,7 @@ describe('who the round waits for', () => {
     const returned = dropAndRejoinFirstClient(fixture);
     fixture.hostSession.startGame();
     fixture.hostSession.startWriting('Test topic');
-    fixture.clientSessions.slice(1).forEach(session => session.submitAnswer('An answer'));
+    fixture.clientSessions.slice(1).forEach((session) => session.submitAnswer('An answer'));
     fixture.hostSession.submitOwnAnswer('Another answer');
     returned.submitAnswer('The returned answer');
     fixture.hostSession.endReviewing(1000);

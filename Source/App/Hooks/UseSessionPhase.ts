@@ -55,7 +55,7 @@ function readStartedAt(publicState: PublicState | undefined): number {
 /** Read the current phase, the host's clock, and the room as it stands. */
 export function useSessionPhase(
   publicState: PublicState | undefined,
-  clockOffsetMs: number,
+  clockOffsetMs: number
 ): SessionPhase {
   const roster = readRoster(publicState?.players ?? []);
 

@@ -39,9 +39,7 @@ export function PlayerChip({
 }: PlayerChipProps) {
   return (
     <div
-      class={`${styles.Root} ${isOnline ? '' : styles.Offline} ${
-        isSelf ? styles.Self : ''
-      }`}
+      class={`${styles.Root} ${isOnline ? '' : styles.Offline} ${isSelf ? styles.Self : ''}`}
     >
       <Character character={character} color={color} size="Small" index={index} />
       <span class={styles.Name}>{name}</span>
@@ -51,12 +49,7 @@ export function PlayerChip({
         </span>
       )}
       {onKick !== undefined && (
-        <IconButton
-          icon="Kick"
-          label={kickLabel}
-          size="Small"
-          onClick={onKick}
-        />
+        <IconButton icon="Kick" label={kickLabel} size="Small" onClick={onKick} />
       )}
     </div>
   );

@@ -1,7 +1,7 @@
-import { Character } from "./Character";
-import { CharacterColors, CharacterIds } from "@/Core";
-import { Stack } from "@/Design/Primitives";
-import { Text } from "@/Design/Primitives";
+import { Character } from './Character';
+import { CharacterColors, CharacterIds } from '@/Core';
+import { Stack } from '@/Design/Primitives';
+import { Text } from '@/Design/Primitives';
 
 export function CharacterGallery() {
   return (
@@ -35,9 +35,9 @@ export function CharacterGallery() {
       </Stack>
 
       <Text variant="Body">
-        Every character pops the same way: on mount, on a tint change, and on a
-        change of character. A reacting character pops each time `pulse` changes,
-        and a row ripples in turn rather than all at once.
+        Every character pops the same way: on mount, on a tint change, and on a change of
+        character. A reacting character pops each time `pulse` changes, and a row ripples in
+        turn rather than all at once.
       </Text>
     </Stack>
   );

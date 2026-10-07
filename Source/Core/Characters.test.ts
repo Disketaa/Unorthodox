@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  CharacterColors,
-  CharacterIds,
-  isCharacterColor,
-  isCharacterId,
-} from './Characters';
+import { CharacterColors, CharacterIds, isCharacterColor, isCharacterId } from './Characters';
 
 describe('the cast and the palette', () => {
   // The picker lays the cast and the palette out as two rows of the same shape, all eight on
@@ -28,9 +23,7 @@ describe('the cast and the palette', () => {
   });
 
   it('recognises every tint it lists, and nothing else', () => {
-    CharacterColors.forEach((color) =>
-      expect(isCharacterColor(color)).toBe(true)
-    );
+    CharacterColors.forEach((color) => expect(isCharacterColor(color)).toBe(true));
     expect(isCharacterColor('Crimson')).toBe(false);
   });
 

@@ -13,15 +13,8 @@ export interface ColorChoiceProps {
 /** One tint, as a button. The drawing it holds is a plain block of colour: the row above already
  * shows every character at full size, and repeating that artwork would make the palette heavier
  * than the choice needs. */
-export function ColorChoice({
-  name,
-  label,
-  selected,
-  onPick,
-}: ColorChoiceProps) {
-  const classes = selected
-    ? `${styles.Choice} ${styles.Chosen}`
-    : styles.Choice;
+export function ColorChoice({ name, label, selected, onPick }: ColorChoiceProps) {
+  const classes = selected ? `${styles.Choice} ${styles.Chosen}` : styles.Choice;
 
   return (
     <button

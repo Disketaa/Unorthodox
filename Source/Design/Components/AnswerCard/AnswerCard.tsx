@@ -1,4 +1,4 @@
-import styles from "./AnswerCard.module.css";
+import styles from './AnswerCard.module.css';
 
 export interface AnswerCardProps {
   text: string;
@@ -16,7 +16,7 @@ export function AnswerCard({
   showReject = false,
 }: AnswerCardProps) {
   return (
-    <div class={`${styles.Root} ${isRejected ? styles.Rejected : ""}`}>
+    <div class={`${styles.Root} ${isRejected ? styles.Rejected : ''}`}>
       <span class={styles.Player}>{playerName}</span>
       <span class={styles.Text}>{text}</span>
       {showReject && onReject && (

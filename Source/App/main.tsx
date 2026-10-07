@@ -4,8 +4,8 @@ import { setLogLevel } from '@/Core';
 import { isDebugEnabled } from '@/Network/Diagnostics';
 import { preloadSounds } from '@/Design/Sounds';
 import { pruneStrayPath } from './Routes';
-import "@/Design/Tokens.css";
-import "@/Design/Reset.css";
+import '@/Design/Tokens.css';
+import '@/Design/Reset.css';
 
 /** Run before the first render, so the router reads a URL that has already been cleaned of a
  * path pasted in by hand, which no route could ever have produced. */

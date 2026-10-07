@@ -23,13 +23,20 @@ function lobby(): HostState {
 
 /** That room, a round in, with both answers written. */
 function writing(): HostState {
-  const started = reducer(reducer(lobby(), { type: 'START_GAME', durationMs: 20_000, startedAt: 0 }), {
-    type: 'START_WRITING',
-    topic: 'Два слова',
-    durationMs: 60_000,
-    startedAt: 0,
+  const started = reducer(
+    reducer(lobby(), { type: 'START_GAME', durationMs: 20_000, startedAt: 0 }),
+    {
+      type: 'START_WRITING',
+      topic: 'Два слова',
+      durationMs: 60_000,
+      startedAt: 0,
+    }
+  );
+  const answered = reducer(started, {
+    type: 'SUBMIT_ANSWER',
+    playerId: 'p1',
+    text: 'два слова',
   });
-  const answered = reducer(started, { type: 'SUBMIT_ANSWER', playerId: 'p1', text: 'два слова' });
   const end = reducer(answered, { type: 'START_REVIEWING', startedAt: 1, durationMs: 90_000 });
   return reducer(end, { type: 'END_REVIEWING', startedAt: 2, durationMs: 15_000 });
 }
@@ -47,12 +54,15 @@ describe('the roster a client is shown', () => {
   it('is there while the room is writing', () => {
     // The bar of players runs across the whole game, and a client that refreshed
     // mid-round is handed the room back by this rather than by anything it remembered.
-    const writing = reducer(reducer(lobby(), { type: 'START_GAME', durationMs: 20_000, startedAt: 0 }), {
-      type: 'START_WRITING',
-      topic: 'Два слова',
-      durationMs: 60_000,
-      startedAt: 0,
-    });
+    const writing = reducer(
+      reducer(lobby(), { type: 'START_GAME', durationMs: 20_000, startedAt: 0 }),
+      {
+        type: 'START_WRITING',
+        topic: 'Два слова',
+        durationMs: 60_000,
+        startedAt: 0,
+      }
+    );
     expect(playersIn(toPublicState(writing))).toEqual(['Аня', 'Боря']);
   });
 

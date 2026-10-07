@@ -26,12 +26,7 @@ export interface CharacterPickerProps {
 /** Three rows: the character as it will be seen, the whole cast, the whole palette. The big
  * drawing answers "what will the room see" at a glance, and the two rows under it are the two
  * decisions, same shape so neither reads as part of the other. A rule divides them. */
-export function CharacterPicker({
-  character,
-  color,
-  labels,
-  onPick,
-}: CharacterPickerProps) {
+export function CharacterPicker({ character, color, labels, onPick }: CharacterPickerProps) {
   // Bumped on every change so the character pops, so that changing a tint pops it exactly once
   // and stepping through the cast pops each one as it arrives.
   const [pulse, setPulse] = useState(0);
@@ -53,12 +48,7 @@ export function CharacterPicker({
         pulse={pulse}
         onPick={pick}
       />
-      <ColorRow
-        character={character}
-        color={color}
-        labels={labels}
-        onPick={onPick}
-      />
+      <ColorRow character={character} color={color} labels={labels} onPick={onPick} />
     </div>
   );
 }
@@ -73,12 +63,7 @@ interface PreviewProps {
 function Preview({ character, color, pulse }: PreviewProps) {
   return (
     <div class={styles.Preview}>
-      <Character
-        character={character}
-        color={color}
-        size="Fill"
-        pulse={pulse}
-      />
+      <Character character={character} color={color} size="Fill" pulse={pulse} />
     </div>
   );
 }

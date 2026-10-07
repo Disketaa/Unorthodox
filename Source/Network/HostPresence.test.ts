@@ -52,13 +52,13 @@ function aClientKnows(session: ClientSession, playerId: string): boolean {
   if (state?.phase !== 'Lobby') {
     return false;
   }
-  return state.players.some(player => player.id === playerId && !player.isOnline);
+  return state.players.some((player) => player.id === playerId && !player.isOnline);
 }
 
 /** Every client's public state, ignoring any that have none yet. */
 function clientStates(fixture: Fixture): PublicState[] {
   return fixture.clientSessions
-    .map(session => session.getState())
+    .map((session) => session.getState())
     .filter((state): state is PublicState => state !== undefined);
 }
 
@@ -121,15 +121,21 @@ describe('what the clients are told when somebody drops', () => {
   it('tells the clients, since only the host sees peers come and go', () => {
     const fixture = joinLobby();
     fixture.clientTransports[0].simulateLeave();
-    expect(fixture.clientSessions.slice(1).some(session => aClientKnows(session, 'p1'))).toBe(true);
+    expect(fixture.clientSessions.slice(1).some((session) => aClientKnows(session, 'p1'))).toBe(
+      true
+    );
   });
 
   it('carries presence into the public state the clients read', () => {
     const fixture = joinLobby();
     fixture.clientTransports[1].simulateLeave();
-    expect(clientStates(fixture).some(state =>
-      state.phase === 'Lobby' && state.players.some(player => player.id === 'p2' && !player.isOnline)
-    )).toBe(true);
+    expect(
+      clientStates(fixture).some(
+        (state) =>
+          state.phase === 'Lobby' &&
+          state.players.some((player) => player.id === 'p2' && !player.isOnline)
+      )
+    ).toBe(true);
   });
 });
 

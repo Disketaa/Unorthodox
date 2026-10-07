@@ -13,14 +13,21 @@ function lobby(...names: string[]): HostState {
   names.forEach((name, index) => {
     players.set(`p${index + 1}`, { name, look, isOnline: true });
   });
-  return { phase: 'Lobby', players, cumulativeScores: new Map(), turnPlayerId: null, pace: 'Standard' };
+  return {
+    phase: 'Lobby',
+    players,
+    cumulativeScores: new Map(),
+    turnPlayerId: null,
+    pace: 'Standard',
+  };
 }
 
 /** A fixed seed, so a roll is the same on every run and the test means something. */
 const seeded = () => createRandom(20261001);
 
 /** How many players it takes to fill the room. */
-const full = () => lobby(...Array.from({ length: GameConfig.limits.maxPlayers }, (_, i) => `P${i}`));
+const full = () =>
+  lobby(...Array.from({ length: GameConfig.limits.maxPlayers }, (_, i) => `P${i}`));
 
 describe('botJoin', () => {
   it('joins the lobby under a seat of its own', () => {

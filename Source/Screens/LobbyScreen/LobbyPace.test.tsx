@@ -18,7 +18,7 @@ function mount(isHost: boolean, picked: Pace[] = []): HTMLElement {
   document.body.appendChild(container);
   render(
     <LobbyPace pace="Standard" isHost={isHost} onPick={(pace) => picked.push(pace)} />,
-    container,
+    container
   );
   return container;
 }

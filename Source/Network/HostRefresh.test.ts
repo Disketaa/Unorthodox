@@ -43,7 +43,9 @@ describe('a host who refreshes', () => {
     // The room has to be the same round, not a round of the same name: the topic and
     // the answer already written are what the players are waiting on.
     expect(state?.phase === 'Writing' ? state.topic : '').toBe('Два слова');
-    expect(state?.phase === 'Writing' ? [...state.answers] : []).toEqual([['host', 'два слова']]);
+    expect(state?.phase === 'Writing' ? [...state.answers] : []).toEqual([
+      ['host', 'два слова'],
+    ]);
   });
 
   it('comes back still counting the phase from when the room started it', () => {

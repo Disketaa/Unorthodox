@@ -1,10 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import {
-  createLogger,
-  setLogLevel,
-  setLogWriter,
-  type LogLevel,
-} from './Logger';
+import { createLogger, setLogLevel, setLogWriter, type LogLevel } from './Logger';
 
 type LogRecord = { level: LogLevel; scope: string; message: string };
 
@@ -14,9 +9,7 @@ describe('Logger', () => {
   beforeEach(() => {
     records.length = 0;
     setLogLevel('info');
-    setLogWriter((level, scope, message) =>
-      records.push({ level, scope, message })
-    );
+    setLogWriter((level, scope, message) => records.push({ level, scope, message }));
   });
 
   it('drops debug records at the default level', () => {

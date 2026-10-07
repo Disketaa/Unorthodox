@@ -1,2 +1,2 @@
-export { AnswerCard } from "./AnswerCard";
-export type { AnswerCardProps } from "./AnswerCard";
+export { AnswerCard } from './AnswerCard';
+export type { AnswerCardProps } from './AnswerCard';

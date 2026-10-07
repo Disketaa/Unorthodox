@@ -10,14 +10,20 @@ describe('reducer FINAL action', () => {
       startedAt: 1000,
       scores: new Map([['p1', 3]]),
       players: new Map(),
-      cumulativeScores: new Map([['p1', 6], ['p2', 2]]),
+      cumulativeScores: new Map([
+        ['p1', 6],
+        ['p2', 2],
+      ]),
       turnPlayerId: null,
       pace: 'Standard',
     };
     const next = reducer(state, { type: 'FINAL' });
     expect(next.phase).toBe('Final');
     if (next.phase === 'Final') {
-      expect(Array.from(next.cumulativeScores.entries())).toEqual([['p1', 6], ['p2', 2]]);
+      expect(Array.from(next.cumulativeScores.entries())).toEqual([
+        ['p1', 6],
+        ['p2', 2],
+      ]);
     }
   });
 });

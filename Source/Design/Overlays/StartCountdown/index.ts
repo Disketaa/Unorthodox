@@ -1,1 +1,1 @@
-export * from "./StartCountdown";
+export * from './StartCountdown';

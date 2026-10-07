@@ -44,12 +44,7 @@ export function useStartCountdown(phase: SessionPhase, roomCode: string): StartC
     startedRef.current = now;
   }
   const { startVeilMs, startCountdownMs } = GameConfig.timing;
-  const remainingMs = useCountdown(
-    countInMs(),
-    startedRef.current ?? now,
-    0,
-    counting,
-  );
+  const remainingMs = useCountdown(countInMs(), startedRef.current ?? now, 0, counting);
   // How far into the count-in this device is. The shade takes the first stretch of it and the
   // numbers the second, so both are read from this one measurement.
   const elapsedMs = countInMs() - remainingMs;

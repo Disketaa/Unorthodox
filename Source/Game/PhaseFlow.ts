@@ -30,9 +30,19 @@ export interface PhaseSpec {
 export const PhaseFlow: Record<PhaseName, PhaseSpec> = {
   Lobby: { timed: false, waitMs: () => null, graceMs: 0, next: 'Choosing' },
   Choosing: { timed: true, waitMs: (pace) => pace.categoryMs, graceMs: 0, next: 'Writing' },
-  Writing: { timed: true, waitMs: (pace) => pace.writingMs, graceMs: GameConfig.timing.graceMs, next: 'Reviewing' },
+  Writing: {
+    timed: true,
+    waitMs: (pace) => pace.writingMs,
+    graceMs: GameConfig.timing.graceMs,
+    next: 'Reviewing',
+  },
   Reviewing: { timed: true, waitMs: (pace) => pace.decidingMs, graceMs: 0, next: 'Scores' },
-  Scores: { timed: true, waitMs: () => GameConfig.timing.scoresDurationMs, graceMs: 0, next: 'Choosing' },
+  Scores: {
+    timed: true,
+    waitMs: () => GameConfig.timing.scoresDurationMs,
+    graceMs: 0,
+    next: 'Choosing',
+  },
   Final: { timed: false, waitMs: () => null, graceMs: 0, next: null },
 };
 

@@ -60,7 +60,7 @@ export interface GameSessionView extends SessionPhase {
  * that the rest of the room is seeing yet. */
 function ownLookFor(
   playerId: PlayerId | null,
-  looks: ReadonlyMap<PlayerId, PlayerLook>,
+  looks: ReadonlyMap<PlayerId, PlayerLook>
 ): PlayerLook | undefined {
   return playerId === null ? undefined : looks.get(playerId);
 }
@@ -71,7 +71,7 @@ function ownLookFor(
 function useSessionUpdates(
   session: Session,
   setVersion: (update: (version: number) => number) => void,
-  setHostLeft: (value: boolean) => void,
+  setHostLeft: (value: boolean) => void
 ): void {
   useEffect(() => {
     session.onUpdate(() => setVersion((version) => version + 1));
@@ -97,13 +97,13 @@ function readTopic(publicState: PublicState | undefined): string | null {
  * the next round must stop counting as having answered. */
 function useRoundMarks(
   session: Session,
-  topic: string | null,
+  topic: string | null
 ): { marks: RoundMarks; actions: GameActions } {
   const [marks, setMarks] = useState<RoundMarks>(emptyMarks);
   const actions = useGameActions(
     session,
     () => setMarks((current) => markSubmitted(current, topic)),
-    (groupId) => setMarks((current) => markRejected(current, topic, groupId)),
+    (groupId) => setMarks((current) => markRejected(current, topic, groupId))
   );
   return { marks, actions };
 }
@@ -114,7 +114,7 @@ export function useGameSession(
   role: SessionRole,
   playerName: string,
   look: PlayerLook,
-  onLook: (look: PlayerLook) => void,
+  onLook: (look: PlayerLook) => void
 ): GameSessionView {
   const [session] = useState<Session>(() => createSession(role, roomCode, playerName, look));
   const [, setVersion] = useState(0);

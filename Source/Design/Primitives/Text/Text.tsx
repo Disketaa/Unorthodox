@@ -1,8 +1,8 @@
-import { ComponentChildren } from "preact";
-import styles from "./Text.module.css";
+import { ComponentChildren } from 'preact';
+import styles from './Text.module.css';
 
-export type TextVariant = "Title" | "Display" | "Body" | "Caption" | "Mono";
-export type TextFontWeight = "Normal" | "Medium" | "Bold";
+export type TextVariant = 'Title' | 'Display' | 'Body' | 'Caption' | 'Mono';
+export type TextFontWeight = 'Normal' | 'Medium' | 'Bold';
 
 export interface TextProps {
   variant?: TextVariant;
@@ -10,11 +10,11 @@ export interface TextProps {
   children?: ComponentChildren;
 }
 
-export function Text({ variant = "Body", fontWeight, children }: TextProps) {
+export function Text({ variant = 'Body', fontWeight, children }: TextProps) {
   return (
     <span
       class={`${styles.Root} ${styles[`Variant${variant}`]} ${
-        fontWeight ? styles[`Weight${fontWeight}`] : ""
+        fontWeight ? styles[`Weight${fontWeight}`] : ''
       }`}
     >
       {children}

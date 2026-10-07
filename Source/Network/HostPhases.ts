@@ -8,7 +8,7 @@ const log = createLogger('HostPhases');
  * its transition. */
 export function startGame(
   state: Game.HostState | undefined,
-  durationMs: number,
+  durationMs: number
 ): Game.HostState {
   if (state?.phase !== 'Lobby') {
     return state ?? Game.freshLobbyState();
@@ -20,20 +20,25 @@ export function startGame(
 export function startWriting(
   state: Game.HostState | undefined,
   topic: string,
-  durationMs: number,
+  durationMs: number
 ): Game.HostState {
   if (state?.phase !== 'Choosing') {
     return state ?? Game.freshLobbyState();
   }
   log('info', 'starting writing', topic);
-  return Game.reducer(state, { type: 'START_WRITING', topic, durationMs, startedAt: Date.now() });
+  return Game.reducer(state, {
+    type: 'START_WRITING',
+    topic,
+    durationMs,
+    startedAt: Date.now(),
+  });
 }
 
 /** Writing to Reviewing, once every seated player has answered. */
 export function closeWriting(
   state: Game.HostState | undefined,
   durationMs: number,
-  expectedAnswers: number,
+  expectedAnswers: number
 ): Game.HostState {
   if (state?.phase !== 'Writing') {
     return state ?? Game.freshLobbyState();
@@ -48,7 +53,7 @@ export function closeWriting(
 /** Reviewing to Scores, once reviewing time is up. */
 export function closeReviewing(
   state: Game.HostState | undefined,
-  durationMs: number,
+  durationMs: number
 ): Game.HostState {
   if (state?.phase !== 'Reviewing') {
     return state ?? Game.freshLobbyState();
@@ -59,7 +64,7 @@ export function closeReviewing(
 /** Scores, or an abandoned Reviewing, to the next round's theme choice. */
 export function nextRound(
   state: Game.HostState | undefined,
-  durationMs: number,
+  durationMs: number
 ): Game.HostState {
   if (state?.phase !== 'Scores' && state?.phase !== 'Reviewing') {
     return state ?? Game.freshLobbyState();
@@ -74,10 +79,16 @@ export function nextPhase(
   state: Game.HostState | undefined,
   phase: Game.PhaseName,
   topic: string,
-  durationMs: number,
+  durationMs: number
 ): Game.HostState {
   if (state === undefined) {
     return Game.freshLobbyState();
   }
-  return Game.reducer(state, { type: 'GO_TO_PHASE', phase, topic, durationMs, startedAt: Date.now() });
+  return Game.reducer(state, {
+    type: 'GO_TO_PHASE',
+    phase,
+    topic,
+    durationMs,
+    startedAt: Date.now(),
+  });
 }

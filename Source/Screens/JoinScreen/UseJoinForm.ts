@@ -1,5 +1,5 @@
-import { useState } from "preact/hooks";
-import { GameConfig } from "@/Game";
+import { useState } from 'preact/hooks';
+import { GameConfig } from '@/Game';
 
 export interface JoinFormErrors {
   /** True once the player has pressed join and the name was still missing. */
@@ -38,10 +38,14 @@ export function useJoinForm(name: string, roomCode: string): JoinFormHandlers {
   return {
     errors: { showNameError, showCodeError, nameMissing, codeValid },
     submitJoin: (continueTo) =>
-      attempt(!nameMissing && codeValid, () => {
-        setShowNameError(true);
-        setShowCodeError(true);
-      }, continueTo),
+      attempt(
+        !nameMissing && codeValid,
+        () => {
+          setShowNameError(true);
+          setShowCodeError(true);
+        },
+        continueTo
+      ),
     submitCreate: (continueTo) =>
       attempt(!nameMissing, () => setShowNameError(true), continueTo),
   };

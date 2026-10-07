@@ -1,9 +1,9 @@
-import { ComponentChildren } from "preact";
-import styles from "./Screen.module.css";
-import { usePageEnter } from "./UsePageEnter";
+import { ComponentChildren } from 'preact';
+import styles from './Screen.module.css';
+import { usePageEnter } from './UsePageEnter';
 
-export type ScreenVertical = "Center" | "Top";
-export type ScreenAlign = "Center" | "Start";
+export type ScreenVertical = 'Center' | 'Top';
+export type ScreenAlign = 'Center' | 'Start';
 
 export interface ScreenProps {
   /** Where the screen sits in the viewport when it is shorter than it. `Center` for one short
@@ -20,15 +20,13 @@ export interface ScreenProps {
 /** The frame one screen is laid out on: its containers side by side when there is room. Not a
  * `Stack`: a `Stack` is a direction the caller chose, this one takes it from the width, so a
  * screen written once lays out on a phone and a desktop without knowing which it is on. */
-export function Screen({ vertical = "Top", align = "Start", children }: ScreenProps) {
+export function Screen({ vertical = 'Top', align = 'Start', children }: ScreenProps) {
   // Every screen arrives through here, so the fade is declared once rather than
   // per screen, and a screen nobody remembered still fades.
   usePageEnter();
 
   return (
-    <div
-      class={`${styles.Root} ${styles[`Vertical${vertical}`]} ${styles[`Align${align}`]}`}
-    >
+    <div class={`${styles.Root} ${styles[`Vertical${vertical}`]} ${styles[`Align${align}`]}`}>
       {children}
     </div>
   );

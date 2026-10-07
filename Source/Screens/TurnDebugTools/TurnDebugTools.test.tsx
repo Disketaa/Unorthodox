@@ -12,7 +12,7 @@ function room(count: number) {
   const seated = Array.from({ length: count }).reduce<HostState>(
     (state, _, index) =>
       reducer(state, { type: 'JOIN', playerId: `p${index}`, name: `P${index}`, look }),
-    freshLobbyState(),
+    freshLobbyState()
   );
   return toPublicState(seated);
 }

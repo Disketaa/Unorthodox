@@ -20,7 +20,7 @@ describe('folding repeated report lines', () => {
     put('info no peers discovered yet');
     put('info no peers discovered yet');
     const lines = getDiagnosticsReport().split('\n');
-    expect(lines.filter(line => line.includes('no peers discovered yet'))).toHaveLength(1);
+    expect(lines.filter((line) => line.includes('no peers discovered yet'))).toHaveLength(1);
   });
 
   it('says how many times the line has been seen', () => {
@@ -51,9 +51,13 @@ describe('what one line stands for', () => {
     // `x3` reads as three occurrences. A folded line has one entry with a count, which is what
     // makes the report readable at a glance: the number is the evidence, not the line count.
     put('info repeated');
-    const before = getDiagnosticsReport().split('\n').filter(line => line.includes('repeated'));
+    const before = getDiagnosticsReport()
+      .split('\n')
+      .filter((line) => line.includes('repeated'));
     put('info repeated');
-    const after = getDiagnosticsReport().split('\n').filter(line => line.includes('repeated'));
+    const after = getDiagnosticsReport()
+      .split('\n')
+      .filter((line) => line.includes('repeated'));
     expect(before).toHaveLength(1);
     expect(after).toHaveLength(1);
     expect(after[0]).toContain('x2');
@@ -84,7 +88,7 @@ describe('the report a phone hands over', () => {
 
   it('writes a value that is not a string as JSON, so a table stays readable', () => {
     expect(reportLine('info', 'peers', [{ 'peer-1': 'conn=new' }]).body).toBe(
-      'info peers {"peer-1":"conn=new"}',
+      'info peers {"peer-1":"conn=new"}'
     );
   });
 });

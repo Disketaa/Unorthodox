@@ -1,13 +1,13 @@
-import { ComponentChildren } from "preact";
-import styles from "./Banner.module.css";
+import { ComponentChildren } from 'preact';
+import styles from './Banner.module.css';
 
-export type BannerVariant = "Info" | "Success" | "Warning" | "Error" | "Muted" | "Accent";
+export type BannerVariant = 'Info' | 'Success' | 'Warning' | 'Error' | 'Muted' | 'Accent';
 /** Which way the words line up inside the block. */
-export type BannerAlign = "Start" | "Center";
+export type BannerAlign = 'Start' | 'Center';
 /** The mark at the head of the banner. Info is the one that says something; Loading is the one
  * that says the same thing is still happening; Clock says the line is about a length of time
  * rather than about a state. */
-export type BannerMark = "Info" | "Loading" | "Clock";
+export type BannerMark = 'Info' | 'Loading' | 'Clock';
 
 export interface BannerProps {
   variant?: BannerVariant;
@@ -26,9 +26,9 @@ export interface BannerProps {
 /** A short note in a coloured block, or a named setting with its value. The mark leads the text
  * on the left, in every variant. */
 export function Banner({
-  variant = "Info",
-  align = "Start",
-  mark = "Info",
+  variant = 'Info',
+  align = 'Start',
+  mark = 'Info',
   value,
   children,
 }: BannerProps) {

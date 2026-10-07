@@ -22,7 +22,7 @@ export async function reportClockSkew(): Promise<void> {
       skewSeconds > SkewWorthWarningAbout ? 'warn' : 'info',
       'clock skew in seconds',
       skewSeconds,
-      skewSeconds > SkewWorthWarningAbout ? 'announces land outside this window' : 'in step',
+      skewSeconds > SkewWorthWarningAbout ? 'announces land outside this window' : 'in step'
     );
   } catch (reason) {
     note('warn', 'clock skew could not be read', String(reason));

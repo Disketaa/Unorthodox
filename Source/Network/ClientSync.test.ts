@@ -89,7 +89,7 @@ describe('Client clock sync', () => {
     const hostState = hostSession.getState();
     expect(state?.phase).toBe('Writing');
     expect(state && 'startedAt' in state ? state.startedAt : 0).toBe(
-      hostState && 'startedAt' in hostState ? hostState.startedAt : -1,
+      hostState && 'startedAt' in hostState ? hostState.startedAt : -1
     );
   });
 

@@ -35,7 +35,7 @@ function nameField(root: HTMLElement): HTMLInputElement {
 async function clickButton(root: HTMLElement, label: string): Promise<void> {
   await act(async () => {
     const button = Array.from(root.querySelectorAll('button')).find(
-      (candidate) => candidate.textContent === label,
+      (candidate) => candidate.textContent === label
     );
     button?.click();
   });

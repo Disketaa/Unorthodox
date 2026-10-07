@@ -1,4 +1,4 @@
-import styles from "./VoteButton.module.css";
+import styles from './VoteButton.module.css';
 
 export interface VoteButtonProps {
   voted: boolean;
@@ -7,11 +7,8 @@ export interface VoteButtonProps {
 
 export function VoteButton({ voted, onVote }: VoteButtonProps) {
   return (
-    <button
-      class={`${styles.Root} ${voted ? styles.Voted : ""}`}
-      onClick={onVote}
-    >
-      {voted ? "✓" : "+"}
+    <button class={`${styles.Root} ${voted ? styles.Voted : ''}`} onClick={onVote}>
+      {voted ? '✓' : '+'}
     </button>
   );
 }

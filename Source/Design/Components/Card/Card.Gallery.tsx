@@ -1,6 +1,6 @@
-import { Card } from "./Card";
-import { Stack } from "@/Design/Primitives";
-import { Text } from "@/Design/Primitives";
+import { Card } from './Card';
+import { Stack } from '@/Design/Primitives';
+import { Text } from '@/Design/Primitives';
 
 export function CardGallery() {
   return (

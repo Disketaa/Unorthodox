@@ -23,7 +23,7 @@ export function Pop({ trigger, index, children }: PopProps) {
     (node: HTMLSpanElement | null) => {
       node?.style.setProperty('--Pop-Index', String(index ?? 0));
     },
-    [index],
+    [index]
   );
 
   return (

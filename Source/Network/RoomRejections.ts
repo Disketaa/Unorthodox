@@ -25,6 +25,8 @@ export function toRejections(fields: Fields): Map<number, Set<PlayerId>> {
 
 /** How a room's rejections are written out: one list of names per group, which is the only shape
  * that survives JSON and the only one a rejection is ever compared in. */
-export function rejectionsOut(rejections: ReadonlyMap<number, ReadonlySet<PlayerId>>): unknown[] {
+export function rejectionsOut(
+  rejections: ReadonlyMap<number, ReadonlySet<PlayerId>>
+): unknown[] {
   return [...rejections].map(([groupId, rejected]) => [groupId, [...rejected]]);
 }

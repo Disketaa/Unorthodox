@@ -39,7 +39,7 @@ function renderJoinScreen(handlers: Handlers = { name: 'Ann', roomCode: 'ABCD' }
           handlers.onCreate?.();
         }}
       />,
-      root,
+      root
     );
   });
   return { root, joins: () => joins, creates: () => creates };
@@ -55,15 +55,13 @@ function pressEnterOn(node: Element | null | undefined): void {
 /** Press Enter on whichever field holds a given value, or the first one. */
 function pressEnterInField(root: HTMLElement, value: string): void {
   const fields = [...root.querySelectorAll('input')];
-  const field = fields.find(input => input.value === value) ?? fields[0];
+  const field = fields.find((input) => input.value === value) ?? fields[0];
   pressEnterOn(field);
 }
 
 /** The join button, which Enter must leave to its own click. */
 function joinButton(root: HTMLElement): HTMLButtonElement | undefined {
-  return [...root.querySelectorAll('button')].find(
-    button => button.textContent === 'Войти',
-  );
+  return [...root.querySelectorAll('button')].find((button) => button.textContent === 'Войти');
 }
 
 describe('Enter on the join screen', () => {

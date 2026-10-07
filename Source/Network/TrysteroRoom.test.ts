@@ -57,7 +57,7 @@ describe('Room role handshake delivery', () => {
     const { hello } = setup(true);
     // A targeted send would miss a client that joined before the host, because
     // the host never sees a join event for a peer that is already present.
-    expect(hello.sent.every(entry => entry.target === undefined)).toBe(true);
+    expect(hello.sent.every((entry) => entry.target === undefined)).toBe(true);
   });
 
   it('clears the known host when that peer leaves', () => {

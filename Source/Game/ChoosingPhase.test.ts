@@ -9,7 +9,10 @@ function lobby(): HostState {
   return {
     ...freshLobbyState(),
     players: new Map([
-      ['p1', { name: 'Alice', look: { character: 'Butterfly', color: 'Coral' }, isOnline: true }],
+      [
+        'p1',
+        { name: 'Alice', look: { character: 'Butterfly', color: 'Coral' }, isOnline: true },
+      ],
     ]),
   };
 }
@@ -73,16 +76,21 @@ describe('the Choosing phase', () => {
   });
 
   it('comes round again, so a second round is another Choosing', () => {
-    const answered = reducer(
-      reducer(reducer(lobby(), choosing), writing),
-      { type: 'SUBMIT_ANSWER', playerId: 'p1', text: 'An answer' },
-    );
+    const answered = reducer(reducer(reducer(lobby(), choosing), writing), {
+      type: 'SUBMIT_ANSWER',
+      playerId: 'p1',
+      text: 'An answer',
+    });
     const scored = reducer(answered, {
       type: 'START_REVIEWING',
       startedAt: 3000,
       durationMs: 90_000,
     });
-    const next = reducer(scored, { type: 'END_REVIEWING', startedAt: 4000, durationMs: 15_000 });
+    const next = reducer(scored, {
+      type: 'END_REVIEWING',
+      startedAt: 4000,
+      durationMs: 15_000,
+    });
     const again = reducer(next, { type: 'NEXT_ROUND', durationMs: 20_000, startedAt: 5000 });
     expect(again.phase).toBe('Choosing');
     // The totals of the round that just scored carry into the choice for the next one.

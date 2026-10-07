@@ -77,11 +77,7 @@ export function LobbyScreen({
       />
       <LobbyPace pace={pace} isHost={isHost} onPick={onPickPace} />
       {ownLook !== undefined && (
-        <LookPicker
-          ownName={ownPlayerName}
-          ownLook={ownLook}
-          onPick={onPickLook}
-        />
+        <LookPicker ownName={ownPlayerName} ownLook={ownLook} onPick={onPickLook} />
       )}
     </Screen>
   );

@@ -103,8 +103,14 @@ function reportRelayChanges(states: Record<string, string>): void {
 function snapshot(label: string, getPeers: () => Record<string, RTCPeerConnection>): void {
   const relays = relayStates();
   const peers = peerStates(getPeers);
-  const open = Object.values(relays).filter(state => state === 'open').length;
-  note('info', `[${label}] relays open ${open}/${Object.keys(relays).length}`, relays, 'peers', peers);
+  const open = Object.values(relays).filter((state) => state === 'open').length;
+  note(
+    'info',
+    `[${label}] relays open ${open}/${Object.keys(relays).length}`,
+    relays,
+    'peers',
+    peers
+  );
   reportRelayChanges(relays);
   const peerIds = Object.keys(peers);
   if (peerIds.length === 0) {
@@ -112,12 +118,13 @@ function snapshot(label: string, getPeers: () => Record<string, RTCPeerConnectio
   }
 }
 
-
-
 /** Start periodic connection logging. All of it is written at `info` so it is visible without
  * any extra flag, since a silent connection is the failure mode that matters most here. */
-export function startDiagnostics(getPeers: () => Record<string, RTCPeerConnection>): () => void {
-  const build = document.querySelector('script[src*="assets/index-"]')?.getAttribute('src') ?? 'unknown';
+export function startDiagnostics(
+  getPeers: () => Record<string, RTCPeerConnection>
+): () => void {
+  const build =
+    document.querySelector('script[src*="assets/index-"]')?.getAttribute('src') ?? 'unknown';
   log('info', 'build', build, 'debug', String(isDebugEnabled()));
   log('info', 'href', window.location.href);
   const relays = relayPool();

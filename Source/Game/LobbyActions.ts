@@ -15,7 +15,10 @@ function withRoster(state: HostState, players: HostState['players']): HostState 
 export function handleJoin(state: HostState, action: ActionOf<'JOIN'>): HostState {
   const known = state.players.get(action.playerId);
   const player = known ?? { name: action.name, look: action.look, isOnline: true };
-  return withRoster(state, new Map(state.players).set(action.playerId, { ...player, isOnline: true }));
+  return withRoster(
+    state,
+    new Map(state.players).set(action.playerId, { ...player, isOnline: true })
+  );
 }
 
 /** Change how a player looks, which the lobby lets them do until the game starts. Once writing
@@ -29,7 +32,10 @@ export function handleSetLook(state: HostState, action: ActionOf<'SET_LOOK'>): H
   if (player === undefined) {
     return state;
   }
-  return withRoster(state, new Map(state.players).set(action.playerId, { ...player, look: action.look }));
+  return withRoster(
+    state,
+    new Map(state.players).set(action.playerId, { ...player, look: action.look })
+  );
 }
 
 /** Record whether a player is still on the line. The player stays in the roster either way: a
@@ -40,7 +46,10 @@ export function handleSetOnline(state: HostState, action: ActionOf<'SET_ONLINE'>
   if (player === undefined || player.isOnline === action.isOnline) {
     return state;
   }
-  return withRoster(state, new Map(state.players).set(action.playerId, { ...player, isOnline: action.isOnline }));
+  return withRoster(
+    state,
+    new Map(state.players).set(action.playerId, { ...player, isOnline: action.isOnline })
+  );
 }
 
 /** Take a player out of the room at the host's word. Unlike a dropped connection, a kick gives

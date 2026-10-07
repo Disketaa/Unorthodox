@@ -40,7 +40,7 @@ export function relayPool(): string[] {
 /** ICE servers to offer, TURN included, since without it a strict NAT has no path at all. */
 export function iceServers(): RTCIceServer[] {
   return [
-    ...StunUrls.map(url => ({ urls: url })),
+    ...StunUrls.map((url) => ({ urls: url })),
     { urls: TurnUrls, username: 'game', credential: TurnCredential },
   ];
 }

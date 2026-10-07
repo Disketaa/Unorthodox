@@ -1,2 +1,2 @@
-export { PlayerChip } from "./PlayerChip";
-export type { PlayerChipProps } from "./PlayerChip";
+export { PlayerChip } from './PlayerChip';
+export type { PlayerChipProps } from './PlayerChip';

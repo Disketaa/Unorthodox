@@ -27,7 +27,7 @@ function lobby(isHost: boolean, pace: Pace = 'Standard') {
       onExit={() => {}}
       onKick={() => {}}
     />,
-    container,
+    container
   );
   return { container, pickedPaces };
 }
@@ -46,8 +46,8 @@ function paceButtons(container: HTMLElement): HTMLButtonElement[] {
   return found.concat(
     [...container.querySelectorAll('button')].filter(
       (button): button is HTMLButtonElement =>
-        button instanceof HTMLButtonElement && button.textContent === 'Быстро',
-    ),
+        button instanceof HTMLButtonElement && button.textContent === 'Быстро'
+    )
   );
 }
 

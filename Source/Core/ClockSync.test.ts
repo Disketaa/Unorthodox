@@ -29,10 +29,7 @@ describe('Countdown after a late catch-up', () => {
     offsetMs: number,
     now: number
   ): number {
-    return Math.max(
-      0,
-      durationMs - (now - hostTimeToLocal(startedAtHost, offsetMs))
-    );
+    return Math.max(0, durationMs - (now - hostTimeToLocal(startedAtHost, offsetMs)));
   }
 
   it('shows the same remaining time on both clocks once the offset is applied', () => {
@@ -44,9 +41,7 @@ describe('Countdown after a late catch-up', () => {
     const nowLocal = 1_020_000;
 
     // The host sees 25s elapsed, so 35s remain.
-    expect(remaining(duration, hostStartedAt, 0, nowLocal + 5_000)).toBe(
-      35_000
-    );
+    expect(remaining(duration, hostStartedAt, 0, nowLocal + 5_000)).toBe(35_000);
     // The client, correcting for the skew, must agree.
     expect(remaining(duration, hostStartedAt, offset, nowLocal)).toBe(35_000);
   });

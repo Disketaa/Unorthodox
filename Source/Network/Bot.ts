@@ -101,7 +101,7 @@ function createBot(id: number, random: Random, taken: readonly string[]): Bot {
 export function botJoin(
   state: HostState,
   id: number,
-  random: Random,
+  random: Random
 ): ActionOf<'JOIN'> | undefined {
   if (state.phase !== 'Lobby' || state.players.size >= GameConfig.limits.maxPlayers) {
     log('warn', 'no room for a bot right now');

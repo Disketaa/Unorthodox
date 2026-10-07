@@ -43,7 +43,11 @@ export function ThemeCards({ themes, names, onPick, roundsPerTheme, spent }: The
   }, [picked]);
 
   return (
-    <div class={settled ? `${styles.Root} ${styles.Settled}` : styles.Root} ref={bank} role="group">
+    <div
+      class={settled ? `${styles.Root} ${styles.Settled}` : styles.Root}
+      ref={bank}
+      role="group"
+    >
       {themes.map((theme, index) => (
         <div class={slotClass(theme, picked)} key={theme}>
           <ThemeCard

@@ -9,14 +9,20 @@ const look = { character: 'Butterfly', color: 'Coral' } as const;
 /** A lobby holding these names, one seat each, in the order they were given. */
 function lobby(...names: string[]): HostState {
   return names.reduce<HostState>(
-    (state, name, index) => handleJoin(state, { type: 'JOIN', playerId: `p${index + 1}`, name, look }),
-    freshLobbyState(),
+    (state, name, index) =>
+      handleJoin(state, { type: 'JOIN', playerId: `p${index + 1}`, name, look }),
+    freshLobbyState()
   );
 }
 
 describe('the order turns go in', () => {
   it('is the order the room seated people', () => {
-    const state = handleJoin(lobby('Dan', 'Anya'), { type: 'JOIN', playerId: 'p1', name: 'Dan', look });
+    const state = handleJoin(lobby('Dan', 'Anya'), {
+      type: 'JOIN',
+      playerId: 'p1',
+      name: 'Dan',
+      look,
+    });
     expect(turnOrder(state.players)).toEqual(['p1', 'p2']);
   });
 });
@@ -69,7 +75,7 @@ describe('the turn in a room', () => {
     expect(held).toEqual([null, 'p1', 'p2', 'p3', 'p1']);
   });
 
-  it('survives a change of phase, since a turn is the room\'s and not the round\'s', () => {
+  it("survives a change of phase, since a turn is the room's and not the round's", () => {
     const started = reducer(reducer(lobby('Dan', 'Anya'), { type: 'NEXT_TURN' }), {
       type: 'START_GAME',
       durationMs: 1000,

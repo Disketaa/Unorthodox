@@ -5,7 +5,8 @@ import type { HostState } from '@/Game';
 import * as Game from '@/Game';
 import { clearCountIn } from './CountIn';
 import { forgetHosting } from './RoomOwnership';
-import { decodeRoomState, encodeRoomState } from './RoomStateCodec';
+import { decodeRoomState } from './RoomStateCodec';
+import { encodeRoomState } from './RoomStateEncoder';
 
 /** Where a room's state is written, named after the room so two rooms cannot share it. */
 const KeyPrefix = 'unorthodox.host.';

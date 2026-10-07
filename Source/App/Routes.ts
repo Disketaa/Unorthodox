@@ -1,10 +1,7 @@
 import { normalizeRoomCode, isValidRoomCode } from './RoomCode';
 import { GameConfig } from '@/Game';
 
-export type Route =
-  | { kind: 'Join' }
-  | { kind: 'Gallery' }
-  | { kind: 'Room'; roomCode: string };
+export type Route = { kind: 'Join' } | { kind: 'Gallery' } | { kind: 'Room'; roomCode: string };
 
 /** Hash routing, because GitHub Pages does not rewrite SPA paths. A room link carries the code
  * and nothing else: it used to carry the role too, which was a hole, since a link saying who is
@@ -57,7 +54,11 @@ export function pruneStrayPath(): void {
   if (path === window.location.pathname) {
     return;
   }
-  window.history.replaceState(null, '', `${path}${window.location.search}${window.location.hash}`);
+  window.history.replaceState(
+    null,
+    '',
+    `${path}${window.location.search}${window.location.hash}`
+  );
 }
 
 /** The path with everything from the first route-named segment removed. */

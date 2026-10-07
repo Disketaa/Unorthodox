@@ -40,7 +40,7 @@ export function installFakeAudio(): FakeAudio {
         record.decoded.push(data.data);
         return Promise.resolve(data);
       }
-    },
+    }
   );
   vi.stubGlobal('fetch', (url: string) => {
     record.fetched.push(url);

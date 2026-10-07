@@ -25,7 +25,7 @@ function joinLobby(): Fixture {
   const hostSession = new HostSession(new InMemoryTransport());
   // The host must register before any client tries to reach it.
   hostSession.start(roomCode, hostName, hostLook);
-  const clientSessions = clientNames.map(name => {
+  const clientSessions = clientNames.map((name) => {
     const session = new ClientSession(new InMemoryTransport());
     session.start(roomCode, name);
     session.join(name, clientLook);
@@ -55,7 +55,7 @@ function playRound(): Fixture {
 /** Every client's current public state, ignoring any that have none yet. */
 function clientStates(fixture: Fixture): PublicState[] {
   return fixture.clientSessions
-    .map(session => session.getState())
+    .map((session) => session.getState())
     .filter((state): state is PublicState => state !== undefined);
 }
 
@@ -76,15 +76,22 @@ function checkPlayerIdsAssigned(fixture: Fixture): void {
   expect(hostState?.phase).toBe('Lobby');
   // The host plays as well, so the roster is the host plus the three clients.
   expect(hostState?.phase === 'Lobby' && hostState.players.size).toBe(clientNames.length + 1);
-  expect(fixture.clientSessions.map(session => session.getPlayerId())).toEqual(['p1', 'p2', 'p3']);
+  expect(fixture.clientSessions.map((session) => session.getPlayerId())).toEqual([
+    'p1',
+    'p2',
+    'p3',
+  ]);
 }
 
 function checkWritingState(round: Fixture): void {
   expect(round.hostSession.getState()?.phase).toBe('Writing');
   expect(hostWriting(round)?.topic).toBe('Test topic');
-  expect(clientStates(round).every(
-    state => state.phase === 'Writing' && state.topic === 'Test topic' && state.submittedCount === 0
-  )).toBe(true);
+  expect(
+    clientStates(round).every(
+      (state) =>
+        state.phase === 'Writing' && state.topic === 'Test topic' && state.submittedCount === 0
+    )
+  ).toBe(true);
 }
 
 function checkAnswersCollected(round: Fixture): void {
@@ -97,31 +104,42 @@ function checkAnswersCollected(round: Fixture): void {
 
 function checkReviewingGroups(round: Fixture): void {
   expect(round.hostSession.getState()?.phase).toBe('Reviewing');
-  expect(clientStates(round).every(state =>
-    state.phase === 'Reviewing' &&
-    state.topic === 'Test topic' &&
-    state.groups.length === 4 &&
-    state.groups.every(group => group.playerCount === 1)
-  )).toBe(true);
+  expect(
+    clientStates(round).every(
+      (state) =>
+        state.phase === 'Reviewing' &&
+        state.topic === 'Test topic' &&
+        state.groups.length === 4 &&
+        state.groups.every((group) => group.playerCount === 1)
+    )
+  ).toBe(true);
 }
 
 function checkScores(round: Fixture): void {
   expect(round.hostSession.getState()?.phase).toBe('Scores');
-  expect(clientStates(round).every(state =>
-    state.phase === 'Scores' &&
-    state.scores.length === 4 &&
-    state.scores.every(score => score.score === soloGroupPoints)
-  )).toBe(true);
+  expect(
+    clientStates(round).every(
+      (state) =>
+        state.phase === 'Scores' &&
+        state.scores.length === 4 &&
+        state.scores.every((score) => score.score === soloGroupPoints)
+    )
+  ).toBe(true);
 }
 
 function checkNextRound(round: Fixture): void {
   expect(hostWriting(round)?.topic).toBe('Test topic 2');
-  expect(clientStates(round).every(state =>
-    state.phase === 'Writing' && state.topic === 'Test topic 2' && state.submittedCount === 0
-  )).toBe(true);
+  expect(
+    clientStates(round).every(
+      (state) =>
+        state.phase === 'Writing' &&
+        state.topic === 'Test topic 2' &&
+        state.submittedCount === 0
+    )
+  ).toBe(true);
 }
 
-describe('InMemoryTransport integration test (host + 3 clients)', function() {
+describe('InMemoryTransport integration test (host + 3 clients)', function () {
   beforeEach(() => {
     InMemoryTransport.resetPeers();
   });
@@ -130,32 +148,32 @@ describe('InMemoryTransport integration test (host + 3 clients)', function() {
     InMemoryTransport.resetPeers();
   });
 
-  it('assigns each joining client a unique player id', function() {
+  it('assigns each joining client a unique player id', function () {
     checkPlayerIdsAssigned(joinLobby());
   });
 
-  it('should start game and set writing state', function() {
+  it('should start game and set writing state', function () {
     checkWritingState(startRound());
   });
 
-  it('should submit answers and collect them', function() {
+  it('should submit answers and collect them', function () {
     checkAnswersCollected(startRound());
   });
 
-  it('should move to reviewing with one group per distinct answer', function() {
+  it('should move to reviewing with one group per distinct answer', function () {
     const round = playRound();
     round.hostSession.endReviewing(1000);
     checkReviewingGroups(round);
   });
 
-  it('should move to scores once reviewing ends', function() {
+  it('should move to scores once reviewing ends', function () {
     const round = playRound();
     round.hostSession.endReviewing(1000);
     round.hostSession.endReviewing(1000);
     checkScores(round);
   });
 
-  it('should go to next round and set writing state for next round', function() {
+  it('should go to next round and set writing state for next round', function () {
     const round = playRound();
     round.hostSession.endReviewing(1000);
     // A round ends by choosing again, so reaching the next Writing takes both moves: the round

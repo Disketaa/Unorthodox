@@ -1,6 +1,6 @@
-import styles from "./TextField.module.css";
+import styles from './TextField.module.css';
 
-export type TextFieldVariant = "Filled" | "Underline";
+export type TextFieldVariant = 'Filled' | 'Underline';
 
 export interface TextFieldProps {
   variant?: TextFieldVariant;
@@ -13,27 +13,25 @@ export interface TextFieldProps {
   /** Message shown under the field while it is invalid. */
   errorText?: string;
   /** Opens a numeric keypad on a phone for fields that only take digits. */
-  inputMode?: "text" | "numeric";
+  inputMode?: 'text' | 'numeric';
   onChange?: (value: string) => void;
 }
 
 export function TextField({
-  variant = "Filled",
-  value = "",
-  placeholder = "",
+  variant = 'Filled',
+  value = '',
+  placeholder = '',
   disabled = false,
   maxLength = 80,
   error = false,
-  errorText = "",
-  inputMode = "text",
+  errorText = '',
+  inputMode = 'text',
   onChange,
 }: TextFieldProps) {
   return (
     <div class={styles.Field}>
       <input
-        class={`${styles.Root} ${styles[`Variant${variant}`]} ${
-          error ? styles.Error : ""
-        }`}
+        class={`${styles.Root} ${styles[`Variant${variant}`]} ${error ? styles.Error : ''}`}
         type="text"
         value={value}
         placeholder={placeholder}
@@ -43,9 +41,7 @@ export function TextField({
         aria-invalid={error}
         onInput={(event) => onChange?.(event.currentTarget.value)}
       />
-      {error && errorText.length > 0 && (
-        <span class={styles.ErrorText}>{errorText}</span>
-      )}
+      {error && errorText.length > 0 && <span class={styles.ErrorText}>{errorText}</span>}
     </div>
   );
 }

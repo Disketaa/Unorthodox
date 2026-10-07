@@ -13,12 +13,15 @@ import {
   handleGoToPhase,
 } from './PhaseActions';
 import { handleNextTurn } from './Turns';
-import { handleJoin, handleSetLook, handleSetOnline, handleKick, handleSetPace } from './LobbyActions';
+import {
+  handleJoin,
+  handleSetLook,
+  handleSetOnline,
+  handleKick,
+  handleSetPace,
+} from './LobbyActions';
 
-export function reducer(
-  currentState: HostState | undefined,
-  action: GameAction
-): HostState {
+export function reducer(currentState: HostState | undefined, action: GameAction): HostState {
   const state: HostState = currentState ?? freshLobbyState();
 
   switch (action.type) {

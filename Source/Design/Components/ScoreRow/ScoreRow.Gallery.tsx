@@ -1,6 +1,6 @@
-import { ScoreRow } from "./ScoreRow";
-import { Stack } from "@/Design/Primitives";
-import { Text } from "@/Design/Primitives";
+import { ScoreRow } from './ScoreRow';
+import { Stack } from '@/Design/Primitives';
+import { Text } from '@/Design/Primitives';
 
 export function ScoreRowGallery() {
   return (

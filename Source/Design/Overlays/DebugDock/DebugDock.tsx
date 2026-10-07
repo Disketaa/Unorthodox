@@ -1,7 +1,7 @@
-import { ComponentChildren } from "preact";
-import { Stack } from "@/Design/Primitives";
-import { Banner, Card } from "@/Design/Components";
-import styles from "./DebugDock.module.css";
+import { ComponentChildren } from 'preact';
+import { Stack } from '@/Design/Primitives';
+import { Banner, Card } from '@/Design/Components';
+import styles from './DebugDock.module.css';
 
 export interface DebugDockProps {
   /** False until the host presses "*", which is the only thing that brings the dock. */

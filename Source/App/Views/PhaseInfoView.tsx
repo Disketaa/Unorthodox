@@ -33,11 +33,7 @@ const PhaseSentences: Record<SessionPhaseName, (story: PhaseStory) => string> = 
 export function PhaseInfoView({ view }: PhaseViewProps) {
   // Unconditional: the hook is what ticks the countdown, so it runs whatever phase this is and
   // the clock is simply unused where nothing is measured.
-  const remainingMs = useCountdown(
-    view.durationMs,
-    view.phaseStartedAt,
-    view.clockOffsetMs,
-  );
+  const remainingMs = useCountdown(view.durationMs, view.phaseStartedAt, view.clockOffsetMs);
   const turnName =
     view.turnPlayerId === null ? '' : (view.playerNames.get(view.turnPlayerId) ?? '');
   const sentence = PhaseSentences[view.phase]({

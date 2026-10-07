@@ -16,7 +16,7 @@ export function useHostPhaseTimer(
   session: Session,
   isHost: boolean,
   phase: SessionPhase,
-  onScoresDone: () => void,
+  onScoresDone: () => void
 ): void {
   const { durationMs, phaseStartedAt, submittedCount, playerCount } = phase;
   const name = phase.phase;
@@ -35,9 +35,12 @@ export function useHostPhaseTimer(
     }
     // Scores ends through the round counter rather than the table, since the last round ends
     // the game and the table has no row for that.
-    const onElapsed = inGame === 'Scores' ? onScoresDone : () => {
-      session.nextPhase(phaseAfterCycling(inGame));
-    };
+    const onElapsed =
+      inGame === 'Scores'
+        ? onScoresDone
+        : () => {
+            session.nextPhase(phaseAfterCycling(inGame));
+          };
     const id = setTimeout(onElapsed, remaining);
     return () => clearTimeout(id);
   }, [isHost, inGame, durationMs, phaseStartedAt, session, onScoresDone]);

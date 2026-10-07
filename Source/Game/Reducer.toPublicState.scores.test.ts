@@ -4,11 +4,14 @@ import { HostState } from './GameState';
 
 describe('toPublicState Scores state', () => {
   test('converts correctly', () => {
-const state: HostState = {
+    const state: HostState = {
       phase: 'Scores',
       durationMs: 30000,
       startedAt: 1000,
-      scores: new Map([['p1', 3], ['p2', 1]]),
+      scores: new Map([
+        ['p1', 3],
+        ['p2', 1],
+      ]),
       players: new Map(),
       cumulativeScores: new Map(),
       turnPlayerId: null,

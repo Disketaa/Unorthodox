@@ -1,9 +1,4 @@
-import {
-  ClientSession,
-  HostPlayerId,
-  HostSession,
-  TrysteroTransport,
-} from '@/Network';
+import { ClientSession, HostPlayerId, HostSession, TrysteroTransport } from '@/Network';
 import { GameConfig, toPublicState } from '@/Game';
 import { PlayerLook } from '@/Core';
 import { Session, SessionRole } from './Session';
@@ -89,7 +84,7 @@ export function createSession(
   role: SessionRole,
   roomCode: string,
   playerName: string,
-  look: PlayerLook,
+  look: PlayerLook
 ): Session {
   return role === 'Host'
     ? createHostSession(roomCode, playerName, look)

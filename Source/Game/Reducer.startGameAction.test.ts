@@ -7,7 +7,10 @@ describe('reducer START_GAME action', () => {
     let state: HostState = {
       phase: 'Lobby',
       players: new Map([
-        ['p1', { name: 'Alice', look: { character: 'Butterfly', color: 'Coral' }, isOnline: true }],
+        [
+          'p1',
+          { name: 'Alice', look: { character: 'Butterfly', color: 'Coral' }, isOnline: true },
+        ],
       ]),
       cumulativeScores: new Map(),
       turnPlayerId: null,
@@ -31,6 +34,8 @@ describe('reducer START_GAME action', () => {
       turnPlayerId: null,
       pace: 'Standard',
     };
-    expect(reducer(state, { type: 'START_GAME', durationMs: 20000, startedAt: 1000 })).toBe(state);
+    expect(reducer(state, { type: 'START_GAME', durationMs: 20000, startedAt: 1000 })).toBe(
+      state
+    );
   });
 });

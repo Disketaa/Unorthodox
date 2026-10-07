@@ -1,4 +1,4 @@
-import { Stack, Text } from "@/Design/Primitives";
+import { Stack, Text } from '@/Design/Primitives';
 
 export function TextGallery() {
   return (

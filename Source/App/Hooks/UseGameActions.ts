@@ -60,7 +60,7 @@ function useRoundFlow(session: Session) {
 export function useGameActions(
   session: Session,
   onSubmitted: () => void,
-  onVoted: (groupId: number) => void,
+  onVoted: (groupId: number) => void
 ): GameActions {
   return {
     ...useRoundFlow(session),

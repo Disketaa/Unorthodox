@@ -160,7 +160,7 @@ export class HostRoster {
  * rolled on their side and would overwrite the record that survived. */
 export function resolveLook(
   knownLook: PlayerLook | undefined,
-  incomingLook: PlayerLook,
+  incomingLook: PlayerLook
 ): PlayerLook {
   return knownLook ?? incomingLook;
 }

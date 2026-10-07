@@ -19,7 +19,10 @@ export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>
   };
 }
 
-export function handleStartWriting(state: HostState, action: ActionOf<'START_WRITING'>): HostState {
+export function handleStartWriting(
+  state: HostState,
+  action: ActionOf<'START_WRITING'>
+): HostState {
   if (state.phase !== 'Choosing') {
     return state;
   }
@@ -75,7 +78,10 @@ export function handleRejectGroup(
   return { ...state, groupRejections: rejections };
 }
 
-export function handleEndReviewing(state: HostState, action: ActionOf<'END_REVIEWING'>): HostState {
+export function handleEndReviewing(
+  state: HostState,
+  action: ActionOf<'END_REVIEWING'>
+): HostState {
   if (state.phase !== 'Reviewing') {
     return state;
   }
@@ -128,7 +134,11 @@ function membersOf(state: HostState) {
  * rather than carried, so a jump into Reviewing shows an empty bank rather than answers nobody
  * wrote. */
 export function handleGoToPhase(state: HostState, action: ActionOf<'GO_TO_PHASE'>): HostState {
-  const base = { ...membersOf(state), durationMs: action.durationMs, startedAt: action.startedAt };
+  const base = {
+    ...membersOf(state),
+    durationMs: action.durationMs,
+    startedAt: action.startedAt,
+  };
   return { ...phaseBody(base, state, action.phase, action.topic), ...base };
 }
 
@@ -138,7 +148,7 @@ function phaseBody(
   base: { durationMs: number; startedAt: number },
   state: HostState,
   phase: PhaseName,
-  topic: string,
+  topic: string
 ) {
   switch (phase) {
     case 'Lobby':
@@ -148,7 +158,13 @@ function phaseBody(
     case 'Writing':
       return { phase, ...base, topic, answers: new Map<PlayerId, string>() };
     case 'Reviewing':
-      return { phase, ...base, topic, answers: new Map<PlayerId, string>(), groupRejections: new Map() };
+      return {
+        phase,
+        ...base,
+        topic,
+        answers: new Map<PlayerId, string>(),
+        groupRejections: new Map(),
+      };
     case 'Scores':
       return { phase, ...base, scores: new Map<PlayerId, number>() };
     case 'Final':

@@ -13,7 +13,11 @@ export function describeMessage(message: unknown): string {
 /** Trystero can only carry structured-clone/JSON payloads. Protocol messages are plain JSON
  * objects, so anything else is rejected rather than sent blindly. */
 export function toPayload(message: unknown): JsonValue | undefined {
-  if (typeof message === 'string' || typeof message === 'number' || typeof message === 'boolean') {
+  if (
+    typeof message === 'string' ||
+    typeof message === 'number' ||
+    typeof message === 'boolean'
+  ) {
     return message;
   }
   if (message === null || Array.isArray(message) || typeof message === 'object') {
@@ -28,7 +32,7 @@ export function toPayload(message: unknown): JsonValue | undefined {
 export function preparePayload(
   message: unknown,
   context: string,
-  onDrop: (reason: string, message: unknown) => void,
+  onDrop: (reason: string, message: unknown) => void
 ): JsonValue | undefined {
   const payload = toPayload(message);
   if (payload === undefined) {

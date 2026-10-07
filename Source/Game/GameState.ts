@@ -65,12 +65,7 @@ export type FinalState = RoomMembers & {
 };
 
 export type HostState =
-  | LobbyState
-  | ChoosingState
-  | WritingState
-  | ReviewingState
-  | ScoresState
-  | FinalState;
+  LobbyState | ChoosingState | WritingState | ReviewingState | ScoresState | FinalState;
 
 /** A room with nobody in it and nobody holding the turn. One function rather than three
  * literals, so a new room cannot be shaped differently from a resumed one. */

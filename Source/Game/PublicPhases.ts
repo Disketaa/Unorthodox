@@ -46,7 +46,13 @@ export function toPublicChoosingState(state: HostState): PublicChoosingState {
   if (state.phase !== 'Choosing') {
     throw new Error('Invalid state for Choosing');
   }
-  return { ...room(state), phase: 'Choosing', durationMs: state.durationMs, startedAt: state.startedAt, players: publicPlayers(state) };
+  return {
+    ...room(state),
+    phase: 'Choosing',
+    durationMs: state.durationMs,
+    startedAt: state.startedAt,
+    players: publicPlayers(state),
+  };
 }
 
 export function toPublicWritingState(state: HostState): PublicWritingState {

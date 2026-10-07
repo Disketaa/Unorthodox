@@ -35,7 +35,12 @@ export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
           {turning ? (
             <span class={styles.Turning} aria-hidden="true" />
           ) : (
-            <Character character={entry.character} color={entry.color} size="Fill" index={index} />
+            <Character
+              character={entry.character}
+              color={entry.color}
+              size="Fill"
+              index={index}
+            />
           )}
         </span>
       </span>

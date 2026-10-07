@@ -5,16 +5,10 @@ export interface ClockSync {
   offsetMs: number;
 }
 
-export function measureClockOffset(
-  hostNow: number,
-  receivedAt: number
-): number {
+export function measureClockOffset(hostNow: number, receivedAt: number): number {
   return receivedAt - hostNow;
 }
 
-export function hostTimeToLocal(
-  hostTimestamp: number,
-  offsetMs: number
-): number {
+export function hostTimeToLocal(hostTimestamp: number, offsetMs: number): number {
   return hostTimestamp + offsetMs;
 }

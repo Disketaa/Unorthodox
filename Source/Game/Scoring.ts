@@ -1,4 +1,3 @@
-
 import { GameConfig } from './GameConfig';
 
 /** Points awarded to each player in a group of the given size. */
@@ -22,7 +21,7 @@ export function calculateRoundScores(
 
   for (const group of groups) {
     let points = 0;
-if (!group.isRejected) {
+    if (!group.isRejected) {
       points = pointsForGroupSize(group.playerIds.length, config);
     }
 

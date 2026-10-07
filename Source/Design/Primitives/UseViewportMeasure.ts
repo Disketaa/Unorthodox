@@ -6,7 +6,7 @@ import { useEffect } from 'preact/hooks';
  * so measuring with no window never measures again rather than throwing. */
 export function useViewportMeasure(
   node: RefObject<HTMLElement | null>,
-  measure: () => void,
+  measure: () => void
 ): void {
   useEffect(() => {
     const element = node.current;

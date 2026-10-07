@@ -1,4 +1,4 @@
-export { Stack } from "./Stack";
+export { Stack } from './Stack';
 export type {
   StackProps,
   StackDirection,
@@ -6,4 +6,4 @@ export type {
   StackJustify,
   StackGap,
   StackFill,
-} from "./Stack";
+} from './Stack';

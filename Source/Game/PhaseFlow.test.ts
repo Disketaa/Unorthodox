@@ -11,7 +11,6 @@ import {
 } from './PhaseFlow';
 import type { PhaseName } from './PhaseFlow';
 
-
 /** Every phase, in the order the table declares them. */
 const phases: PhaseName[] = ['Lobby', 'Choosing', 'Writing', 'Reviewing', 'Scores', 'Final'];
 
@@ -43,10 +42,10 @@ describe('the phase table', () => {
 
   it('reads each wait off the pace, so Fast is faster everywhere it applies', () => {
     expect(phaseDurationMs('Writing', 'Fast')).toBeLessThan(
-      phaseDurationMs('Writing', 'Standard'),
+      phaseDurationMs('Writing', 'Standard')
     );
     expect(phaseDurationMs('Reviewing', 'Fast')).toBeLessThan(
-      phaseDurationMs('Reviewing', 'Standard'),
+      phaseDurationMs('Reviewing', 'Standard')
     );
   });
 

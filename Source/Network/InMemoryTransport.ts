@@ -6,11 +6,14 @@ let nextPeerAddress = 0;
 /** In-memory transport for testing without network. All peers share the same transport instance
  * via a static broker. */
 export class InMemoryTransport implements Transport {
-  private static peersByPeer = new Map<string, {
-    transport: InMemoryTransport;
-    isHost: boolean;
-    receive: (message: unknown, fromHost: boolean, peerId: string) => void;
-  }>();
+  private static peersByPeer = new Map<
+    string,
+    {
+      transport: InMemoryTransport;
+      isHost: boolean;
+      receive: (message: unknown, fromHost: boolean, peerId: string) => void;
+    }
+  >();
 
   /** Drop every registered peer, so tests do not leak into one another. */
   static resetPeers(): void {
@@ -24,8 +27,8 @@ export class InMemoryTransport implements Transport {
   /** Whether this peer is the host, set in start() */
   private isHost: boolean = false;
 
-  private onMessageCallback: ((message: unknown, fromHost: boolean, peerId: string) => void) | null =
-    null;
+  private onMessageCallback:
+    ((message: unknown, fromHost: boolean, peerId: string) => void) | null = null;
   private onPeerLeaveCallback: ((playerId: string) => void) | null = null;
   private onHostReadyCallback: (() => void) | null = null;
 
@@ -85,7 +88,7 @@ export class InMemoryTransport implements Transport {
       return;
     }
     const hostEntry = Array.from(InMemoryTransport.peersByPeer.values()).find(
-      entry => entry.isHost
+      (entry) => entry.isHost
     );
     if (hostEntry) {
       hostEntry.receive(message, false, this.address());
@@ -137,7 +140,7 @@ export class InMemoryTransport implements Transport {
     if (this.isHost) {
       return false;
     }
-    return Array.from(InMemoryTransport.peersByPeer.values()).some(entry => entry.isHost);
+    return Array.from(InMemoryTransport.peersByPeer.values()).some((entry) => entry.isHost);
   }
 
   /** Call this to simulate this peer dropping off the network. The others are told in the peer's

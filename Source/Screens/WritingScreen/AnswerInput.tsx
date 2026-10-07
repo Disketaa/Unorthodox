@@ -12,7 +12,13 @@ export interface AnswerInputProps {
 }
 
 /** The single answer field of the writing phase, or the confirmation after it. */
-export function AnswerInput({ value, submitted, timeUp, onValueChange, onSubmit }: AnswerInputProps) {
+export function AnswerInput({
+  value,
+  submitted,
+  timeUp,
+  onValueChange,
+  onSubmit,
+}: AnswerInputProps) {
   const canSubmit = !submitted && !timeUp && value.trim().length > 0;
 
   return (

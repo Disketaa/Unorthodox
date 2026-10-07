@@ -14,7 +14,7 @@ export class HostInbox {
   constructor(
     private readonly wire: Transport,
     private readonly room: HostRoom,
-    private readonly apply: (action: GameAction) => void,
+    private readonly apply: (action: GameAction) => void
   ) {}
 
   /** Take everything the wire has to say. A message the host sent itself comes back on the same

@@ -17,10 +17,7 @@ export function RoundMeter({ rounds, spent = 0 }: RoundMeterProps) {
   return (
     <div class={styles.Root} aria-hidden="true">
       {Array.from({ length: rounds }, (_, tick) => tick + 1).map((tick) => (
-        <span
-          class={`${styles.Mark} ${tick > firstSpent ? styles.Spent : ''}`}
-          key={tick}
-        />
+        <span class={`${styles.Mark} ${tick > firstSpent ? styles.Spent : ''}`} key={tick} />
       ))}
     </div>
   );

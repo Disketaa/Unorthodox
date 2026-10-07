@@ -77,13 +77,7 @@ function CharacterChoice({
       aria-pressed={chosen}
       aria-label={label}
     >
-      <Character
-        character={id}
-        color={color}
-        size="Fill"
-        index={index}
-        pulse={pulse}
-      />
+      <Character character={id} color={color} size="Fill" index={index} pulse={pulse} />
     </button>
   );
 }

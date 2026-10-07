@@ -9,7 +9,12 @@ describe('reducer NEXT_ROUND action', () => {
       durationMs: 30000,
       startedAt: 1000,
       scores: new Map([['p1', 3]]),
-      players: new Map([['p1', { name: 'Alice', look: { character: 'Butterfly', color: 'Coral' }, isOnline: true }]]),
+      players: new Map([
+        [
+          'p1',
+          { name: 'Alice', look: { character: 'Butterfly', color: 'Coral' }, isOnline: true },
+        ],
+      ]),
       cumulativeScores: new Map([['p1', 7]]),
       turnPlayerId: 'p1',
       pace: 'Standard',
@@ -36,6 +41,8 @@ describe('reducer NEXT_ROUND action', () => {
       turnPlayerId: null,
       pace: 'Standard',
     };
-    expect(reducer(state, { type: 'NEXT_ROUND', durationMs: 20000, startedAt: 2000 })).toBe(state);
+    expect(reducer(state, { type: 'NEXT_ROUND', durationMs: 20000, startedAt: 2000 })).toBe(
+      state
+    );
   });
 });

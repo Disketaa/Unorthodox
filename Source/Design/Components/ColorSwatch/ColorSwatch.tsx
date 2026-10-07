@@ -16,16 +16,9 @@ export interface ColorSwatchProps {
 /** One tint, as a block of colour. `Fill` takes its size from the space given, so a cell keeps
  * its share of the row; the named sizes are fixed tokens. Decorative: the button around it
  * carries the announced name. */
-export function ColorSwatch({
-  color,
-  size = 'Small',
-  shape = 'Circle',
-}: ColorSwatchProps) {
-  const classes = [
-    styles.Swatch,
-    styles[`Size${size}`],
-    styles[shape],
-    styles[color],
-  ].join(' ');
+export function ColorSwatch({ color, size = 'Small', shape = 'Circle' }: ColorSwatchProps) {
+  const classes = [styles.Swatch, styles[`Size${size}`], styles[shape], styles[color]].join(
+    ' '
+  );
   return <span class={classes} aria-hidden="true" />;
 }

@@ -8,7 +8,7 @@ export function useCountdown(
   durationMs: number,
   startedAt: number,
   clockOffsetMs = 0,
-  active = true,
+  active = true
 ): number {
   const [now, setNow] = useState(() => Date.now());
 

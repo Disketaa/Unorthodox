@@ -3,7 +3,14 @@
  * passed in, so a phase cannot be entered at a length the table does not give it. */
 import * as Game from '@/Game';
 import type { HostState } from '@/Game';
-import { startGame, startWriting, closeWriting, closeReviewing, nextRound, nextPhase } from './HostPhases';
+import {
+  startGame,
+  startWriting,
+  closeWriting,
+  closeReviewing,
+  nextRound,
+  nextPhase,
+} from './HostPhases';
 
 /** What the flow needs from the session that owns it: the room's state, its pace, how many
  * answers the roster is waiting for, and the one way to write a new state. */

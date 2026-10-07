@@ -12,7 +12,7 @@ function sameLook(one: PlayerLook, other: PlayerLook): boolean {
  * leaving a room without closing the tab. Only a real change is reported. */
 export function useRememberLook(
   look: PlayerLook | undefined,
-  report: (look: PlayerLook) => void,
+  report: (look: PlayerLook) => void
 ): void {
   const reported = useRef<PlayerLook | undefined>(undefined);
 

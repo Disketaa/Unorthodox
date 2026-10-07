@@ -37,17 +37,17 @@ function join(name: string): ClientSession {
   return client;
 }
 
-  beforeEach(() => {
-    vi.useFakeTimers();
-    InMemoryTransport.resetPeers();
-    forgetClientId();
-    localStorage.clear();
-  });
+beforeEach(() => {
+  vi.useFakeTimers();
+  InMemoryTransport.resetPeers();
+  forgetClientId();
+  localStorage.clear();
+});
 
-  afterEach(() => {
-    vi.useRealTimers();
-    InMemoryTransport.resetPeers();
-  });
+afterEach(() => {
+  vi.useRealTimers();
+  InMemoryTransport.resetPeers();
+});
 
 function seatsIn(host: HostSession): HostState['players'] {
   return host.getState()?.players ?? new Map();

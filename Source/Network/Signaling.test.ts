@@ -1,10 +1,20 @@
 import { describe, it, expect } from 'vitest';
-import { OwnRelayUrl, RelayUrls, StunUrls, TurnUrls, iceServers, relayPool, roomConfig } from './Signaling';
+import {
+  OwnRelayUrl,
+  RelayUrls,
+  StunUrls,
+  TurnUrls,
+  iceServers,
+  relayPool,
+  roomConfig,
+} from './Signaling';
 
 const appId = 'unorthodox-game';
 
 function urlsOf(servers: RTCIceServer[]): string[] {
-  return servers.map(server => (Array.isArray(server.urls) ? server.urls[0] : server.urls) ?? '');
+  return servers.map(
+    (server) => (Array.isArray(server.urls) ? server.urls[0] : server.urls) ?? ''
+  );
 }
 
 describe('Signaling relays', () => {
@@ -23,7 +33,7 @@ describe('Signaling relays', () => {
   });
 
   it('offers only wss relays, since a page served over https cannot use ws', () => {
-    expect(relayPool().every(url => url.startsWith('wss://'))).toBe(true);
+    expect(relayPool().every((url) => url.startsWith('wss://'))).toBe(true);
   });
 
   it('never lists the same relay twice', () => {
@@ -33,7 +43,9 @@ describe('Signaling relays', () => {
 
   it('keeps no known paywalled or auth-gated relay, which is retired on first announce', () => {
     // Probed live: these refuse an unauthenticated EVENT, so they shrink the pool.
-    expect(RelayUrls.some(url => /nostr\.wine|nostr\.info|nostr\.land/.test(url))).toBe(false);
+    expect(RelayUrls.some((url) => /nostr\.wine|nostr\.info|nostr\.land/.test(url))).toBe(
+      false
+    );
   });
 
   it('carries the pool into the room configuration', () => {
@@ -45,7 +57,7 @@ describe('ICE servers', () => {
   it('never relies on Google STUN, which an RU network cannot reach', () => {
     // Trystero's defaults are all Google apart from Cloudflare, and they are
     // replaced rather than extended.
-    expect(StunUrls.some(url => url.includes('google'))).toBe(false);
+    expect(StunUrls.some((url) => url.includes('google'))).toBe(false);
   });
 
   it('adds a TURN server after STUN, since a strict NAT has no other path', () => {
@@ -57,19 +69,19 @@ describe('ICE servers', () => {
   it('reaches only our own TURN, since it is the one that answers', () => {
     // A public fallback was carried while our server was down. It rate-limited rather than
     // serving, and a third party in the path is worth dropping now that ours allocates.
-    expect(urlsOf(iceServers()).some(url => url.includes('openrelay'))).toBe(false);
+    expect(urlsOf(iceServers()).some((url) => url.includes('openrelay'))).toBe(false);
   });
 
   it('offers TURN over UDP and TCP together, since one alone is often blocked', () => {
-    expect(TurnUrls.some(url => url.includes('transport=tcp'))).toBe(true);
-    expect(TurnUrls.some(url => !url.includes('transport=tcp'))).toBe(true);
+    expect(TurnUrls.some((url) => url.includes('transport=tcp'))).toBe(true);
+    expect(TurnUrls.some((url) => !url.includes('transport=tcp'))).toBe(true);
   });
 
   it('takes the TURN credential from the environment, not from the source', () => {
     // Anyone reading the repository could otherwise relay through this server for free. The
     // fallback only exists so a clone runs locally without an env file.
     expect(TurnUrls).toBeDefined();
-    expect(iceServers().some(server => server.username === 'game')).toBe(true);
+    expect(iceServers().some((server) => server.username === 'game')).toBe(true);
   });
 });
 

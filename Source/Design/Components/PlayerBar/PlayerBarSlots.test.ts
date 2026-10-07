@@ -23,10 +23,15 @@ describe('the seats the bar draws', () => {
     expect(slotsFor(players, 'p0', 12)).toEqual(players);
   });
 
-  it('keeps the room\'s own order rather than sorting by anything', () => {
+  it("keeps the room's own order rather than sorting by anything", () => {
     // A face that moves about as the round is scored is a face nobody can find themselves in,
     // so the bar takes the order the room has held since the lobby.
-    expect(slotsFor(room(4), 'p2', 12).map((player) => player.id)).toEqual(['p0', 'p1', 'p2', 'p3']);
+    expect(slotsFor(room(4), 'p2', 12).map((player) => player.id)).toEqual([
+      'p0',
+      'p1',
+      'p2',
+      'p3',
+    ]);
   });
 
   it('drops the player at the far end when the room is past what the bar holds', () => {

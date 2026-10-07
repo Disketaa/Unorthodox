@@ -1,7 +1,7 @@
-import { ComponentChildren } from "preact";
-import styles from "./Box.module.css";
+import { ComponentChildren } from 'preact';
+import styles from './Box.module.css';
 
-export type BoxSize = "Xs" | "Sm" | "Md" | "Lg" | "Xl";
+export type BoxSize = 'Xs' | 'Sm' | 'Md' | 'Lg' | 'Xl';
 
 export interface BoxProps {
   children?: ComponentChildren;
@@ -16,6 +16,6 @@ export function Box({ children, padding, margin }: BoxProps) {
     margin && styles[`Margin${margin}`],
   ]
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
   return <div class={classes}>{children}</div>;
 }

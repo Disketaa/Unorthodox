@@ -27,6 +27,12 @@ export type GameAction =
   | { type: 'FINAL' }
   /** The host's console putting the room straight into a phase, without playing there. Carries
    * the round's own data because a phase is a state and not only a screen. */
-  | { type: 'GO_TO_PHASE'; phase: PhaseName; topic: string; durationMs: number; startedAt: number };
+  | {
+      type: 'GO_TO_PHASE';
+      phase: PhaseName;
+      topic: string;
+      durationMs: number;
+      startedAt: number;
+    };
 
 export type ActionOf<T extends GameAction['type']> = Extract<GameAction, { type: T }>;

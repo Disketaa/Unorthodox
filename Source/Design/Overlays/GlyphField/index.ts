@@ -1,1 +1,1 @@
-export * from "./GlyphField";
+export * from './GlyphField';

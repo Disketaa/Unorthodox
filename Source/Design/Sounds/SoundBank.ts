@@ -83,7 +83,12 @@ function loadSound(name: SoundName): Promise<void> {
 /** Starts one voice from the decoded clip and throws it away when it ends. The buffer is shared
  * and cannot be replayed, so every press needs its own source node, and a node that is not
  * stopped keeps the graph alive for as long as the clip is. */
-function speak(context: AudioContext, gain: GainNode, name: SoundName, semitones?: number): void {
+function speak(
+  context: AudioContext,
+  gain: GainNode,
+  name: SoundName,
+  semitones?: number
+): void {
   const buffer = buffers.get(name);
   if (!buffer) return;
   const source = context.createBufferSource();
@@ -109,7 +114,7 @@ export function preloadSounds(names: readonly SoundName[] = SoundNames): Promise
       // against a context not yet allowed to make a sound. That is the point: the fetch is the
       // slow part, and it happens before anyone can press anything.
       return loadSound(name);
-    }),
+    })
   );
 }
 

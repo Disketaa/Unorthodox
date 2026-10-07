@@ -3,7 +3,24 @@ import type { Random } from '@/Core';
 /** The pool of marks used to fill the margins. Symbols only: letters at this size stop reading
  * as texture and start reading as words, and the centre column has to be free of words. Every
  * one is in BlobSpongey. */
-const Symbols = ['@', '#', '$', '%', '&', '*', '+', '=', '?', '!', '~', ';', ':', '/', '\\', '^'];
+const Symbols = [
+  '@',
+  '#',
+  '$',
+  '%',
+  '&',
+  '*',
+  '+',
+  '=',
+  '?',
+  '!',
+  '~',
+  ';',
+  ':',
+  '/',
+  '\\',
+  '^',
+];
 
 /** How many marks along one band, and so how finely the height is divided. Doubled from
  * twenty-two, since a mark is much wider than tall and the band read as a few large shapes.

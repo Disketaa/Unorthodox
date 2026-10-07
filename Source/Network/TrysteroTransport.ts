@@ -21,8 +21,8 @@ export class TrysteroTransport implements Transport {
   private hostToClientAction: MessageAction<JsonValue> | null = null;
   private clientToHostAction: MessageAction<JsonValue> | null = null;
 
-  private onMessageCallback: ((message: unknown, fromHost: boolean, peerId: string) => void) | null =
-    null;
+  private onMessageCallback:
+    ((message: unknown, fromHost: boolean, peerId: string) => void) | null = null;
   private onPeerLeaveCallback: ((playerId: string) => void) | null = null;
   private onHostReadyCallback: (() => void) | null = null;
 
@@ -53,7 +53,7 @@ export class TrysteroTransport implements Transport {
     this.hostPeer = opened.hostPeer;
     log(
       'info',
-      `joined room "${this.roomId}" as ${isHost ? HostRole : PlayerRole}, selfId ${this.peerId}`,
+      `joined room "${this.roomId}" as ${isHost ? HostRole : PlayerRole}, selfId ${this.peerId}`
     );
     this.stopDiagnostics = startDiagnostics(() => opened.room.getPeers());
   }
@@ -61,7 +61,8 @@ export class TrysteroTransport implements Transport {
   /** Adapters from the mutable callback fields to the room's handler shape. */
   private roomHandlers(): RoomHandlers {
     return {
-      onMessage: (message, fromHost, peerId) => this.onMessageCallback?.(message, fromHost, peerId),
+      onMessage: (message, fromHost, peerId) =>
+        this.onMessageCallback?.(message, fromHost, peerId),
       onPeerLeave: (peerId) => this.onPeerLeaveCallback?.(peerId),
       onHostReady: () => this.onHostReadyCallback?.(),
     };
@@ -136,7 +137,8 @@ export class TrysteroTransport implements Transport {
   broadcast(message: unknown): void {
     // A broadcast before the room exists has nowhere to go, which happens when
     // the host seeds its own lobby entry. Expected, not a fault.
-    if (this.room === null) return log('debug', 'broadcast before the room was opened, skipping');
+    if (this.room === null)
+      return log('debug', 'broadcast before the room was opened, skipping');
     if (!this.isHost || !this.hostToClientAction) {
       log('warn', 'broadcast called on a client, ignoring');
       return;

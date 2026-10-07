@@ -171,7 +171,6 @@ export class HostSession {
     this.botsAdded += 1;
   }
 
-
   onUpdate(listener: () => void): void {
     this.room.onUpdate(listener);
   }

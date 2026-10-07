@@ -18,7 +18,7 @@ export interface ThemeCardsViewProps {
 export function ThemeCardsView({ roomCode, spent }: ThemeCardsViewProps) {
   const themes: readonly ThemeId[] = dealThemes(
     randomFor(roomCode),
-    GameConfig.themes.cardsPerLobby,
+    GameConfig.themes.cardsPerLobby
   );
   return (
     <ThemeCards

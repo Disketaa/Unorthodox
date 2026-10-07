@@ -20,7 +20,7 @@ function renderScreen(props: Partial<InfoScreenProps> = {}): {
         onAcknowledge={() => (acknowledged += 1)}
         {...props}
       />,
-      root,
+      root
     );
   });
   const button = root.querySelector('button');

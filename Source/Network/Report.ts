@@ -31,7 +31,7 @@ function show(value: unknown): string {
 export function reportLine(
   level: LogLevel,
   message: string,
-  rest: unknown[],
+  rest: unknown[]
 ): { stamp: string; body: string } {
   return {
     stamp: new Date().toISOString().slice(11, 23),

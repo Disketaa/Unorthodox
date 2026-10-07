@@ -7,7 +7,7 @@ import type { PlayerBarEntry } from './PlayerBar';
 export function slotsFor(
   players: readonly PlayerBarEntry[],
   ownPlayerId: PlayerId | null,
-  limit: number,
+  limit: number
 ): PlayerBarEntry[] {
   const size = Math.max(1, limit);
   if (players.length <= size) return [...players];
