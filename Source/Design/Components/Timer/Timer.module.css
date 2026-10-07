@@ -1,33 +1,119 @@
+/* The phase draining away, in the shape a banner already has: a rounded block in the same block
+ * as the note. Measured by its own sentence rather than given a width of its own, since the
+ * sentence is what it says and four sentences of differing length should not sit in four blocks
+ * of one size. Capped at the container's width, so a long sentence on a narrow screen wraps
+ * rather than pushing the block past the edge. */
 .Root {
-  display: flex;
-  align-items: center;
-  gap: var(--Space-Sm);
-}
-
-.Track {
   position: relative;
-  flex: 1;
-  height: var(--Space-Sm);
-  background: var(--Color-Surface-Active);
-  border-radius: var(--Radius-Badge);
+  width: fit-content;
+  max-width: 100%;
+  padding: var(--Space-Sm) var(--Space-Md);
+  border-radius: var(--Radius-Card);
+  /* The empty part of the block: the paper's own hover tone rather than a grey of its own, so a
+   * phase that has not started yet reads as part of the page. */
+  background: var(--Color-Surface-Hover);
   overflow: hidden;
+  /* The banner's own type and padding and radius, so a timed phase is a note of the same height
+   * as an untimed one and the row of a screen does not step when the phase changes. */
+  font-size: var(--FontSize-Body);
+  font-weight: 500;
 }
 
+/* The time that is left, filling from the left. Laid over the track rather than in the flow,
+ * since the words and the mark sit on top of it and are the same size either way. */
 .Bar {
   position: absolute;
   top: 0;
+  bottom: 0;
   left: 0;
-  height: 100%;
-  background: var(--Color-Feedback-Info);
-  transition: width var(--Duration-Normal) var(--Easing-Standard);
+  background: var(--Timer-Fill, var(--Color-Feedback-Info));
+  /* Both the width and the colour, so a phase that turns late changes to the alarm tone over
+   * its own edge rather than snapping: the fill is still sliding as it reddens, and one motion
+   * carrying both reads as the bar getting worse rather than as two things happening. */
+  transition:
+    width var(--Duration-Normal) var(--Easing-Standard),
+    background-color var(--Duration-Normal) var(--Easing-Standard);
 }
 
-/* Tabular figures, or the seconds change width ten times a second and the bar beside them
- * twitches under it. A copy of the `Caption` primitive's type rather than the primitive itself,
- * which takes no `className` and so cannot be given the figures. */
-.Text {
-  font-family: var(--FontFamily-Body);
-  font-size: var(--FontSize-Caption);
-  color: var(--Color-Text-Muted);
+/* The last seconds of a phase, in the room's error colour rather than its waiting one, and
+ * rather than the player's own tint where the phase belongs to one: a phase that is nearly out
+ * is the room's alarm regardless of whose turn it was, and a colour that changed back at the
+ * last second would say the opposite. Only the fill — the block's empty part stays paper, so
+ * the alarm is drawn by what is left and not by the whole block turning into a warning with
+ * nothing to measure. */
+.Urgent .Bar {
+  background: var(--Color-Feedback-Error);
+}
+
+/* The words, dark on the paper. Left in the flow, because this layer is what measures the
+ * block: an absolved pair would leave it sized by its own padding and every sentence the same
+ * width. */
+.Content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--Space-Sm);
+}
+
+/* The same words again, light, absolved over the whole block so it lands on its twin and
+ * clipped to the fill so that is the only part showing. Both layers turn together: a count the
+ * eye saw in two places at once would not be a count. */
+.Filled {
+  position: absolute;
+  inset: 0;
+  color: var(--Color-Surface-Default);
+  /* Eased with the width, so the swap is not a step while the fill is a glide. */
+  transition: clip-path var(--Duration-Normal) var(--Easing-Standard);
+}
+
+/* The seconds at the head of the line, in place of a mark: this block is a length of time, so
+ * it says its own. Turned once per second over half the beat, the spring curve carrying it a
+ * little past where it stops and settling back, so it lands rather than sticks on the number
+ * being read. */
+.Seconds {
+  flex-shrink: 0;
+  /* Boxed, so the block is the same width at 99 as at 9 and the sentence does not step
+   * sideways. As wide as the widest count and no more. */
+  min-width: var(--Size-TimerSeconds);
+  text-align: center;
+  font-weight: 700;
+  /* A size of its own rather than a step of the scale, so it holds its share of the line. */
+  font-size: calc(1em * var(--Scale-TimerSeconds));
+  /* Digits of one width, or the figure still shifts inside its own box. */
   font-variant-numeric: tabular-nums;
+  animation: TimerTurn var(--Duration-TimerTurn) var(--Easing-Spring) both;
+}
+
+@keyframes TimerTurn {
+  from {
+    rotate: 0deg;
+  }
+
+  to {
+    rotate: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The turn off, but the figure stays: it is the length of time left, not a decoration, and a
+   * player who has asked for less motion still has to be able to read it. */
+  .Seconds {
+    animation: none;
+  }
+
+  .Bar,
+  .Filled {
+    transition: none;
+  }
+}
+
+/* The sentence, truncated rather than wrapped: a phase's line is one sentence, and a second
+ * line would move the mark and the fill's own middle away from the middle of the block.
+ * `min-width: 0` is what lets the span shrink below its content inside the flex row, without
+ * which the ellipsis never appears. */
+.Text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

@@ -18,20 +18,20 @@ describe('SoundBank preloading', () => {
   it('decodes the clips up front, so a press is not waiting on the network', async () => {
     const { preloadSounds } = await freshBank();
     await preloadSounds();
-    expect(fake.decoded.length).toBe(2);
+    expect(fake.decoded.length).toBe(4);
   });
 
   it('fetches each clip once, however many callers ask at once', async () => {
     const { preloadSounds } = await freshBank();
     await Promise.all([preloadSounds(), preloadSounds()]);
-    expect(fake.fetched.length).toBe(2);
+    expect(fake.fetched.length).toBe(4);
   });
 
   it('leaves the clips already decoded alone', async () => {
     const { preloadSounds } = await freshBank();
     await preloadSounds();
     await preloadSounds();
-    expect(fake.decoded.length).toBe(2);
+    expect(fake.decoded.length).toBe(4);
   });
 
   it('warms the context on any press in the page, not on the button', async () => {
@@ -90,6 +90,37 @@ describe('SoundBank playback', () => {
     const semitones = fake.sounded.map((node) => Math.abs(node.detune.value) / 100);
     expect(Math.max(...semitones)).toBeGreaterThan(1.5);
     expect(Math.max(...semitones)).toBeLessThanOrEqual(2.5);
+  });
+
+  it('varies a tick less than a press, so a run of them stays a clock', async () => {
+    // A clock that wanders a quarter tone a second is a wobble rather than a beat, and the run has
+    // to be one sound heard sixty times rather than sixty notes. Wide enough that two beats are
+    // not quite the same.
+    const { preloadSounds, playSound } = await freshBank();
+    await preloadSounds();
+    for (let beat = 0; beat < 200; beat += 1) playSound('Tick');
+    const semitones = fake.sounded.map((node) => Math.abs(node.detune.value) / 100);
+    expect(Math.max(...semitones)).toBeGreaterThan(0.5);
+    expect(Math.max(...semitones)).toBeLessThanOrEqual(1);
+  });
+
+  it('plays the alarm at one exact pitch, since it happens once', async () => {
+    const { preloadSounds, playSound } = await freshBank();
+    await preloadSounds();
+    for (let call = 0; call < 20; call += 1) playSound('Alarm');
+    expect(fake.sounded.every((node) => node.detune.value === 0)).toBe(true);
+  });
+
+  it('plays the tick under the presses, since it is not one of them', async () => {
+    // A sound every second at press loudness would be a sound nobody chose to make.
+    const { preloadSounds, playSound } = await freshBank();
+    await preloadSounds();
+    playSound('Pop');
+    playSound('Tick');
+    // The first gain is the bus every note plays out through, which the bank leaves at one and
+    // never writes; the two after it are the notes themselves.
+    const [, pop, tick] = fake.levels;
+    expect(tick.value).toBeLessThan(pop.value);
   });
 
   it('plays nothing rather than throwing when a clip will not load', async () => {

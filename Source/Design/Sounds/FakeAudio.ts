@@ -12,13 +12,22 @@ export interface FakeAudio {
   decoded: string[];
   fetched: string[];
   resumed: number;
+  /** Every gain the bank has made: the first is the bus the whole bank plays out through, the
+   * rest are one per note. Read after the play, since a gain is written after it is asked for. */
+  levels: { value: number }[];
 }
 
 /** A Web Audio context that records itself. happy-dom has no Web Audio, so the bank is exercised
  * against a stand-in that reports what it was asked to do: which clip was decoded, how many
  * times a node was started, and the detune it was played at. */
 export function installFakeAudio(): FakeAudio {
-  const record: FakeAudio = { sounded: [], decoded: [], fetched: [], resumed: 0 };
+  const record: FakeAudio = {
+    sounded: [],
+    decoded: [],
+    fetched: [],
+    resumed: 0,
+    levels: [],
+  };
 
   vi.stubGlobal(
     'AudioContext',
@@ -31,7 +40,9 @@ export function installFakeAudio(): FakeAudio {
         return Promise.resolve();
       }
       createGain() {
-        return { gain: { value: 0 }, connect: () => undefined };
+        const gain = { value: 0 };
+        record.levels.push(gain);
+        return { gain, connect: () => undefined };
       }
       createBufferSource() {
         return recordingSource(record.sounded);

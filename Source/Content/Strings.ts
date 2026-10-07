@@ -11,6 +11,8 @@ export const Strings = {
      * different word from `ok` on purpose: on a settled screen the button confirms, and on one
      * that is still waiting `ok` would promise an outcome it cannot deliver. */
     cancel: 'Отмена',
+    /** The bare figure: the phase it belongs to is named beside it, so it carries no unit. */
+    secondsLeft: (seconds: number) => `${seconds}`,
   },
   join: {
     namePlaceholder: 'Имя',

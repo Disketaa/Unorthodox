@@ -1,7 +1,8 @@
 import { Banner, Timer } from '@/Design/Components';
 import { Stack } from '@/Design/Primitives';
 import { Strings } from '@/Content';
-import { isTimedPhase } from '@/Game';
+import { GameConfig, isTimedPhase } from '@/Game';
+import { accentFor } from '@/Core';
 import { useCountdown } from '../Hooks/UseCountdown';
 import type { SessionPhaseName } from '../Hooks/UseSessionPhase';
 import type { PhaseViewProps } from './LobbyView';
@@ -28,8 +29,8 @@ const PhaseSentences: Record<SessionPhaseName, (story: PhaseStory) => string> = 
 };
 
 /** The note at the top of a game screen: what is happening, with the mark saying it still is.
- * The countdown sits inside the block rather than above it, so a phase nobody waits out shows
- * the sentence alone and no bar that will never move. */
+ * The countdown is drawn behind the sentence rather than under it, so a timed phase is one
+ * block and a phase nobody waits out is the same block with no bar in it. */
 export function PhaseInfoView({ view }: PhaseViewProps) {
   // Unconditional: the hook is what ticks the countdown, so it runs whatever phase this is and
   // the clock is simply unused where nothing is measured.
@@ -40,15 +41,35 @@ export function PhaseInfoView({ view }: PhaseViewProps) {
     turnName,
     hasSubmitted: view.hasSubmitted,
   });
+  // Connecting is not a game phase, so the table has no row for it and nothing is timed.
+  const timed = view.phase !== 'Connecting' && isTimedPhase(view.phase);
+  const secondsLeft = Math.ceil(remainingMs / 1000);
+  // A step up per closing second, so the phase is heard running out in the beat already playing.
+  const urgentSeconds = Math.ceil(GameConfig.timing.countdownUrgentMs / 1000);
+  const beatSemitones =
+    Math.max(0, urgentSeconds - secondsLeft) * GameConfig.timing.countdownPitchStepSemitones;
+  // Off the shared roster rather than this browser's own look: a watcher sees the chooser's colour.
+  const turnLook =
+    view.phase === 'Choosing' ? view.playerLooks.get(view.turnPlayerId ?? '') : undefined;
+  const tint = turnLook === undefined ? undefined : accentFor(turnLook.color).tint;
 
   return (
     <Stack align="Center" gap="Sm">
-      <Banner align="Center" mark="Loading">
-        {sentence}
-      </Banner>
-      {/* Connecting is not a game phase, so the table has no row for it and nothing is timed. */}
-      {view.phase !== 'Connecting' && isTimedPhase(view.phase) && (
-        <Timer remainingMs={remainingMs} totalMs={view.durationMs} />
+      {timed ? (
+        <Timer
+          remainingMs={remainingMs}
+          totalMs={view.durationMs}
+          seconds={Strings.common.secondsLeft(secondsLeft)}
+          urgent={remainingMs <= GameConfig.timing.countdownUrgentMs}
+          beatSemitones={beatSemitones}
+          tint={tint}
+        >
+          {sentence}
+        </Timer>
+      ) : (
+        <Banner align="Center" mark="Loading">
+          {sentence}
+        </Banner>
       )}
     </Stack>
   );

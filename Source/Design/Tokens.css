@@ -555,6 +555,24 @@ body.PageFade {
   --Opacity-RoundMark: 1;
   --Opacity-RoundMarkSpent: 0.16;
 
+  /* How long one number of the countdown is on screen and turning. The same beat as a count-in,
+   * and held as one token rather than written out twice: the number is the same length either
+   * way, and a second written twice is a second that can drift. */
+  --Duration-TimerTick: var(--Duration-CountTick);
+  /* How long the figure takes to come all the way round: half the beat, so the turn is over in
+   * half a second and the figure stands still for the rest of the second it is reading for. A
+   * turn that takes the whole beat spends the entire time it is supposed to be read moving. */
+  --Duration-TimerTurn: calc(var(--Duration-TimerTick) / 2);
+  /* How wide the block's number is set against its sentence, in `em` of the block's own text so
+   * it holds its share of the line however the sentence is sized. */
+  --Scale-TimerSeconds: 1.1;
+  /* How much room the countdown's figure is given, so the block does not change width as the
+   * number loses a digit. In `ch` of the figure's own size, which is the width of a digit under
+   * tabular figures, so the box is measured in the unit it is meant to hold. Two digits and a
+   * little: no phase in the game reaches three, and a box wider than the widest count would
+   * hold the same empty space at every beat. */
+  --Size-TimerSeconds: 2.4ch;
+
   /* The gap between theme cards: a bezel rather than a field. `clamp` against the window rather
    * than a share of the card, and that is forced: the card's width is measured from this gap,
    * so a gap written as a share of the card would be a number that depends on the number it is

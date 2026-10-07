@@ -17,6 +17,14 @@ const timing = {
   reviewingDurationMs: 90000,
   scoresDurationMs: 15000,
   graceMs: 3000,
+  /** When the countdown under a timed phase turns to the room's alarm colour. Late rather than
+   * early, because it is the last few seconds that decide an answer nobody has finished, and a
+   * colour that changed half a minute out would have been something the eye learned to ignore. */
+  countdownUrgentMs: 5000,
+  /** How much higher the countdown's beat is pitched for each second of the way out. The beat
+   * climbs over the last few seconds rather than jumping to a new note at the end, so the room
+   * hears the phase closing in without the sound ever being the thing that announces it. */
+  countdownPitchStepSemitones: 1,
   uiTickMs: 100,
   /** The count-in: the shade goes up over the lobby the moment the host presses Start and comes
    * down on the theme being picked. Two parts, the shade first, so the first number is not

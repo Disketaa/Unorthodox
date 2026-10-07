@@ -1,25 +1,48 @@
 import plingUrl from './Pling.ogg';
 import popUrl from './Pop.ogg';
+import tickUrl from './Tick.ogg';
+import alarmUrl from './Alarm.ogg';
 
-export type SoundName = 'Pop' | 'Pling';
+export type SoundName = 'Pop' | 'Pling' | 'Tick' | 'Alarm';
 
-export const SoundNames: readonly SoundName[] = ['Pop', 'Pling'];
+export const SoundNames: readonly SoundName[] = ['Pop', 'Pling', 'Tick', 'Alarm'];
 
 const Sources: Record<SoundName, string> = {
   Pop: popUrl,
   Pling: plingUrl,
+  Tick: tickUrl,
+  Alarm: alarmUrl,
 };
 
-const Volume = 0.3;
+/** Per clip, since the countdown's beat sits under the words rather than beside them: a tick at
+ * press loudness would be a sound every second that nobody chose to make. */
+const Volumes: Record<SoundName, number> = {
+  Pop: 0.3,
+  Pling: 0.3,
+  Tick: 0.06,
+  Alarm: 0.22,
+};
 
 /** How far either side of the recorded pitch a press may land, in semitones. Wide enough that
  * two presses in a row are two notes rather than one wobbling note, and narrow enough that a
  * fifth still read as the same clip. Detuning costs no time, since it keeps length. */
-const PitchSpread = 2.5;
+const PressPitchSpread = 2.5;
+
+/** Narrower than a press: these are not separate events the player chose, and a clock that
+ * wanders by a quarter tone every second is a wobble rather than a beat. */
+const TickPitchSpread = 1;
+
+/** The alarm has none — it happens once, and there is nothing to vary against. */
+const PitchSpreads: Record<SoundName, number> = {
+  Pop: PressPitchSpread,
+  Pling: PressPitchSpread,
+  Tick: TickPitchSpread,
+  Alarm: 0,
+};
 
 interface Voice {
   context: AudioContext;
-  gain: GainNode;
+  bus: GainNode;
 }
 
 let voice: Voice | undefined;
@@ -42,17 +65,15 @@ function wakeOnFirstGesture(context: AudioContext): void {
   window.addEventListener('keydown', wake);
 }
 
-/** The context and its one gain, created on the first ask. The context is allowed to exist
- * suspended: that is a legal state before any gesture, and it is what lets the clips be decoded
- * at load time, which is why this is not an `Audio` per clip. */
+/** The context and the bus every note goes out through, created on the first ask. A suspended
+ * context is legal before any gesture, and it is what lets the clips decode at load time. */
 function voiceFor(): Voice | undefined {
   if (voice) return voice;
   if (typeof AudioContext === 'undefined') return undefined;
   const context = new AudioContext();
-  const gain = context.createGain();
-  gain.gain.value = Volume;
-  gain.connect(context.destination);
-  voice = { context, gain };
+  const bus = context.createGain();
+  bus.connect(context.destination);
+  voice = { context, bus };
   return voice;
 }
 
@@ -85,7 +106,7 @@ function loadSound(name: SoundName): Promise<void> {
  * stopped keeps the graph alive for as long as the clip is. */
 function speak(
   context: AudioContext,
-  gain: GainNode,
+  destination: AudioNode,
   name: SoundName,
   semitones?: number
 ): void {
@@ -93,10 +114,19 @@ function speak(
   if (!buffer) return;
   const source = context.createBufferSource();
   source.buffer = buffer;
-  const detune = semitones ?? (Math.random() * 2 - 1) * PitchSpread;
+  const spread = PitchSpreads[name];
+  const detune = semitones ?? (Math.random() * 2 - 1) * spread;
   source.detune.value = detune * 100;
-  source.connect(gain);
-  source.onended = () => source.disconnect();
+  // A gain per note, not one for the bank, since the clips differ in loudness and that is a
+  // property of the clip. Made even where it is 1, so every note has the same shape of path.
+  const level = context.createGain();
+  level.gain.value = Volumes[name];
+  source.connect(level);
+  level.connect(destination);
+  source.onended = () => {
+    source.disconnect();
+    level.disconnect();
+  };
   source.start();
 }
 
@@ -124,15 +154,15 @@ export function preloadSounds(names: readonly SoundName[] = SoundNames): Promise
 export function playSound(name: SoundName, semitones?: number): void {
   const played = voiceFor();
   if (!played) return;
-  const { context, gain } = played;
+  const { context, bus } = played;
   // A press is a gesture too, so this is the fallback for a page that was
   // pressed without the preload having armed anything.
   if (context.state === 'suspended') void context.resume();
   if (buffers.has(name)) {
-    speak(context, gain, name, semitones);
+    speak(context, bus, name, semitones);
     return;
   }
   // The first press of a clip is early enough to catch its own load; the decode
   // runs to the end either way, so the next press is never waiting.
-  void loadSound(name).then(() => speak(context, gain, name, semitones));
+  void loadSound(name).then(() => speak(context, bus, name, semitones));
 }
