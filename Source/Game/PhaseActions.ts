@@ -1,10 +1,10 @@
 /** The handlers that move the room between phases. Each names its own guard: a phase it does not
  * act on is returned untouched, which is what makes a late message a no-op rather than a
  * change. */
-import { PlayerId, assertNever } from '@/Core';
+import { PlayerId } from '@/Core';
 import { HostState } from './GameState';
 import { scoreRound } from './RoundScoring';
-import type { PhaseName } from './PhaseFlow';
+import { nextPlayerInTurn, turnOrder } from './Turns';
 import type { ActionOf } from './GameActions';
 
 export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>): HostState {
@@ -14,6 +14,10 @@ export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>
   return {
     ...membersOf(state),
     phase: 'Choosing',
+    // Somebody holds the turn as the room starts: the bar across the top marks whose turn it is,
+    // and a game begun with every seat unmarked is a game begun asking a question it cannot
+    // answer. Only fills an empty turn, so a host who handed it on in the lobby keeps that seat.
+    turnPlayerId: state.turnPlayerId ?? nextPlayerInTurn(null, turnOrder(state.players)),
     durationMs: action.durationMs,
     startedAt: action.startedAt,
   };
@@ -128,48 +132,4 @@ function membersOf(state: HostState) {
     turnPlayerId: state.turnPlayerId,
     pace: state.pace,
   };
-}
-
-/** The room put straight into a phase, for the host's console. Round data is started empty
- * rather than carried, so a jump into Reviewing shows an empty bank rather than answers nobody
- * wrote. */
-export function handleGoToPhase(state: HostState, action: ActionOf<'GO_TO_PHASE'>): HostState {
-  const base = {
-    ...membersOf(state),
-    durationMs: action.durationMs,
-    startedAt: action.startedAt,
-  };
-  return { ...phaseBody(base, state, action.phase, action.topic), ...base };
-}
-
-/** The part of a phase that is not the room around it. One switch rather than one handler per
- * phase, since a jump is a debug affordance and its rules are exactly the shape of the state. */
-function phaseBody(
-  base: { durationMs: number; startedAt: number },
-  state: HostState,
-  phase: PhaseName,
-  topic: string
-) {
-  switch (phase) {
-    case 'Lobby':
-      return { phase, ...membersOf(state) };
-    case 'Choosing':
-      return { phase, ...base };
-    case 'Writing':
-      return { phase, ...base, topic, answers: new Map<PlayerId, string>() };
-    case 'Reviewing':
-      return {
-        phase,
-        ...base,
-        topic,
-        answers: new Map<PlayerId, string>(),
-        groupRejections: new Map(),
-      };
-    case 'Scores':
-      return { phase, ...base, scores: new Map<PlayerId, number>() };
-    case 'Final':
-      return { phase, ...membersOf(state) };
-    default:
-      return assertNever(phase);
-  }
 }

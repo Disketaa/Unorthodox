@@ -10,8 +10,8 @@ import {
   handleEndReviewing,
   handleNextRound,
   handleFinal,
-  handleGoToPhase,
 } from './PhaseActions';
+import { handleGoToPhase } from './PhaseJumps';
 import { handleNextTurn } from './Turns';
 import {
   handleJoin,

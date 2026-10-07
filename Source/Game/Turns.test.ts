@@ -75,6 +75,32 @@ describe('the turn in a room', () => {
     expect(held).toEqual([null, 'p1', 'p2', 'p3', 'p1']);
   });
 
+  it('starts on the first seat when the game starts, rather than on nobody', () => {
+    // Nobody holds the turn in a lobby, and the game beginning is the moment that stops being
+    // true: the bar across the top is showing whose turn it is from the first frame of play.
+    const started = reducer(lobby('Dan', 'Anya'), {
+      type: 'START_GAME',
+      durationMs: 1000,
+      startedAt: 0,
+    });
+    expect(started.phase).toBe('Choosing');
+    expect(started.turnPlayerId).toBe('p1');
+  });
+
+  it('keeps the turn it was given when a later round starts', () => {
+    // The turn is the room's and not the round's, so choosing again does not reset it to the
+    // top: a round that begins with the same seat marked as the last one did is a game that
+    // has quietly thrown away whose turn it was.
+    const onSecondSeat = reducer(lobby('Dan', 'Anya'), { type: 'NEXT_TURN' });
+    const onSecondSeatTwice = reducer(onSecondSeat, { type: 'NEXT_TURN' });
+    const started = reducer(onSecondSeatTwice, {
+      type: 'START_GAME',
+      durationMs: 1000,
+      startedAt: 0,
+    });
+    expect(started.turnPlayerId).toBe('p2');
+  });
+
   it("survives a change of phase, since a turn is the room's and not the round's", () => {
     const started = reducer(reducer(lobby('Dan', 'Anya'), { type: 'NEXT_TURN' }), {
       type: 'START_GAME',

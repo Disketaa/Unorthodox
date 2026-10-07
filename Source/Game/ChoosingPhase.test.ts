@@ -34,7 +34,19 @@ describe('the Choosing phase', () => {
   it('carries the roster out of the lobby, since a theme is picked by those seated', () => {
     const state = reducer(lobby(), choosing);
     expect(state.phase === 'Choosing' && state.players.size).toBe(1);
-    expect(state.turnPlayerId).toBeNull();
+  });
+
+  it('puts the first seat on the turn, so the game starts with somebody holding it', () => {
+    const two = reducer(
+      reducer(lobby(), {
+        type: 'JOIN',
+        playerId: 'p2',
+        name: 'Bob',
+        look: { character: 'Ghost', color: 'Sky' },
+      }),
+      choosing
+    );
+    expect(two.turnPlayerId).toBe('p1');
   });
 
   it('holds no topic, because the round has not been given one yet', () => {
