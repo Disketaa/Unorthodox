@@ -1,13 +1,23 @@
 /* The phase draining away, in the shape a banner already has: a rounded block in the same block
  * as the note. Measured by its own sentence rather than given a width of its own, since the
  * sentence is what it says and four sentences of differing length should not sit in four blocks
- * of one size. Capped at the container's width, so a long sentence on a narrow screen wraps
- * rather than pushing the block past the edge. */
+ * of one size. Capped at the screen's width and truncated rather than wrapped, so a name long
+ * enough to run past the edge is cut short instead of pushing the block off it. */
 .Root {
+  /* The block's own padding, named so the light copy can be given exactly the same one. A
+   * module cannot read its own root's `padding`, and a copy of the values here would be a
+   * second thing to keep in step when the block's padding changes. */
+  --Timer-PadY: var(--Space-Sm);
+  --Timer-PadX: var(--Space-Md);
+
   position: relative;
   width: fit-content;
-  max-width: 100%;
-  padding: var(--Space-Sm) var(--Space-Md);
+  /* Capped at the screen's width, so a sentence too long to fit is cut rather than pushing the
+   * block off the edge. A percentage would be measured against whatever the block's ancestors
+   * shrink-wrapped to, and the copy of this block in the scene is inside a row that sizes
+   * itself to this block — a percentage there is the block measuring itself. */
+  max-width: calc(100vw - 2 * var(--Layout-ScreenPaddingHorizontal));
+  padding: var(--Timer-PadY) var(--Timer-PadX);
   border-radius: var(--Radius-Card);
   /* The empty part of the block: the paper's own hover tone rather than a grey of its own, so a
    * phase that has not started yet reads as part of the page. */
@@ -53,6 +63,12 @@
   align-items: center;
   justify-content: center;
   gap: var(--Space-Sm);
+  /* Shrinkable, and this is what lets the sentence be cut. It is also what makes the block's
+   * own minimum width almost nothing: a row of shrinkable items has a min-content of the gaps
+   * between them, so a block sized by `fit-content` inside a row that shrink-wraps to it comes
+   * out as its own padding wide with the sentence crushed inside. The cap above is what gives
+   * the sentence its width back. */
+  min-width: 0;
 }
 
 /* The same words again, light, absolved over the whole block so it lands on its twin and
@@ -60,8 +76,20 @@
  * eye saw in two places at once would not be a count. */
 .Filled {
   position: absolute;
+  /* Over the whole block, so the clip is measured against the padding box and the fill starts
+   * at the block's edge rather than inside it. */
   inset: 0;
+  /* The block's own padding, so the row inside this layer has exactly the content box the dark
+   * layer's row has: without it this row was the padding box wide, its centred text started a
+   * padding's width to the left of its twin, and the two copies of the sentence were two
+   * different sentences laid out on top of one another. */
+  padding: var(--Timer-PadY) var(--Timer-PadX);
   color: var(--Color-Surface-Default);
+  /* Clipped away to begin with, rather than waiting for the effect that writes the real value.
+   * An unclipped first paint draws the light copy whole on top of the dark one — two numbers,
+   * one black and one white — and the transition below eases out of `none` rather than in from
+   * a clip, which is what leaves it showing for longer than a frame. */
+  clip-path: inset(0 100% 0 0);
   /* Eased with the width, so the swap is not a step while the fill is a glide. */
   transition: clip-path var(--Duration-Normal) var(--Easing-Standard);
 }
@@ -112,6 +140,7 @@
  * `min-width: 0` is what lets the span shrink below its content inside the flex row, without
  * which the ellipsis never appears. */
 .Text {
+  flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
