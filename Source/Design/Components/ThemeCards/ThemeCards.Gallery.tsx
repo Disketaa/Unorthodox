@@ -22,10 +22,20 @@ export function ThemeCardsGallery() {
   const first = themes[0];
   return (
     <Stack gap="Lg">
-      <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={4} />
+      {/* The bank on offer, to the player whose turn it is. */}
+      <ThemeCards
+        themes={themes}
+        names={names}
+        roundsPerTheme={10}
+        spent={4}
+        onPick={() => {}}
+      />
       {first !== undefined && (
         <>
-          {/* The room has answered: one card open across the bank and the rest gone. */}
+          {/* The same bank on somebody else's turn: held back, still under the pointer. */}
+          <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={4} />
+          {/* And the room's answer, at full strength on every screen: whoever pressed it and
+           * whoever did not, the expanded card is drawn the same either way. */}
           <ThemeCards
             themes={themes}
             names={names}
@@ -33,10 +43,6 @@ export function ThemeCardsGallery() {
             spent={4}
             picked={first}
           />
-          {/* A bank with nothing to press, which is every phase but Choosing and every player
-           * whose turn it is not. `onPick` left off rather than a flag passed, since that is what
-           * a non-turning player's props actually hold. */}
-          <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={4} />
         </>
       )}
     </Stack>

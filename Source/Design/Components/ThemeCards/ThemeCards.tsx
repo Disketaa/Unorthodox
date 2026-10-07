@@ -47,7 +47,7 @@ function useWash(picked: ThemeId | undefined, bank: RefObject<HTMLDivElement>): 
 
 /** The themes a lobby is being offered, six cards in a bank, lying flat: the bank was once six
  * screens in a ring facing the middle of the viewport, and the ring was measured on every
- * resize. The pick is local, and the theme it settled on has its wash written onto the page. */
+ * resize. The theme it settled on has its wash written onto the page. */
 export function ThemeCards({
   themes,
   names,
@@ -58,9 +58,11 @@ export function ThemeCards({
 }: ThemeCardsProps) {
   const bank = useRef<HTMLDivElement>(null);
   const settled = picked !== undefined;
-  // A bank with nothing to ask for is a bank being read rather than played, so its cards are held
-  // back rather than dead: the room is watching whose turn it is come round.
-  const waiting = onPick === undefined;
+  // A bank with nothing to ask for is being read rather than played, so its cards are held back
+  // rather than dead: the room is watching whose turn it is come round. Once the room has
+  // answered there is nothing to hold back from, and dimming the room's own decision to whoever
+  // did not press it would be drawing it as somebody's private choice. */
+  const waiting = !settled && onPick === undefined;
 
   useWash(picked, bank);
 
