@@ -4,6 +4,7 @@ import { Strings } from '@/Content';
 import { GameConfig, isTimedPhase } from '@/Game';
 import { accentFor } from '@/Core';
 import { useCountdown } from '../Hooks/UseCountdown';
+import { usePhaseAlarm } from '../Hooks/UsePhaseAlarm';
 import type { SessionPhaseName } from '../Hooks/UseSessionPhase';
 import type { PhaseViewProps } from './LobbyView';
 
@@ -35,6 +36,7 @@ export function PhaseInfoView({ view }: PhaseViewProps) {
   // Unconditional: the hook is what ticks the countdown, so it runs whatever phase this is and
   // the clock is simply unused where nothing is measured.
   const remainingMs = useCountdown(view.durationMs, view.phaseStartedAt, view.clockOffsetMs);
+  usePhaseAlarm(view);
   const turnName =
     view.turnPlayerId === null ? '' : (view.playerNames.get(view.turnPlayerId) ?? '');
   const sentence = PhaseSentences[view.phase]({

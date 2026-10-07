@@ -103,11 +103,10 @@ describe('the countdown block', () => {
     ]);
   });
 
-  it('sounds the alarm on the last second it shows, which is one it does show', () => {
-    // Zero is never drawn: the host ends a phase by committing the next one, so the frame that
-    // would have shown zero is routinely the frame that shows the next phase. The last second is a
-    // whole second of it, at the ordinary size, so the alarm cannot be missed the same way — and it
-    // goes with the number, rather than after the room has already moved on.
+  it('ticks on the last second it shows, and says nothing at zero', () => {
+    // The block plays only the beat. The alarm at the end of a phase is not its to sound — the
+    // frame that would draw zero is routinely the frame that draws the next phase — so a block
+    // given a phase without a clock under it, as the gallery draws one, stays silent.
     const container = document.createElement('div');
     document.body.appendChild(container);
     const draw = (remainingMs: number) =>
@@ -126,10 +125,14 @@ describe('the countdown block', () => {
     draw(30_000);
     draw(2_000);
     draw(1_000);
-    // Zero is not a beat of its own: the phase has already changed by the time a client that was
-    // ahead of the host's clock gets there, and the alarm belongs to the second before it.
+    // Zero is not a beat: by the time a client running ahead of the host's clock gets there, the
+    // phase has already changed.
     draw(0);
-    expect(playSound.mock.calls).toEqual([['Tick', undefined], ['Tick', undefined], ['Alarm']]);
+    expect(playSound.mock.calls).toEqual([
+      ['Tick', undefined],
+      ['Tick', undefined],
+      ['Tick', undefined],
+    ]);
   });
 
   it('pitches the beat up as the phase closes in, and leaves it alone before that', () => {

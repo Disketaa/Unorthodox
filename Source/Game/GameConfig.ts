@@ -26,6 +26,13 @@ const timing = {
    * hears the phase closing in without the sound ever being the thing that announces it. */
   countdownPitchStepSemitones: 1,
   uiTickMs: 100,
+  /** How far before the end of a phase the next phase's state is allowed to arrive and still
+   * count as that phase ending on time. Clock skew and broadcast lag both land in here. */
+  alarmEarlyMs: 250,
+  /** How late the alarm may arrive and still be worth playing. Past it, the tab was suspended or
+   * asleep: the room moved on without it, and an alarm for a phase nobody watched end is worse
+   * than none. */
+  alarmStaleMs: 1500,
   /** The count-in: the shade goes up over the lobby the moment the host presses Start and comes
    * down on the theme being picked. Two parts, the shade first, so the first number is not
    * already half faded. No phase is made longer for it — it plays out over the theme choice. */
