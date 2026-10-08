@@ -2,21 +2,6 @@ import { ThemeId, createRandom, dealThemes } from '@/Core';
 import { Stack } from '@/Design/Primitives';
 import { ThemeCards, type ThemeCardsProps } from './ThemeCards';
 
-/** The bank as the gallery runs it, with the ids standing in for the names. Written out rather
- * than derived from `ThemeIds`, since deriving it would need a cast whose keys the compiler
- * cannot check. Written out, the compiler asks for the new key. */
-const names: Readonly<Record<ThemeId, string>> = {
-  VideoGames: 'VideoGames',
-  Nature: 'Nature',
-  Internet: 'Internet',
-  Food: 'Food',
-  Music: 'Music',
-  Movies: 'Movies',
-  Work: 'Work',
-  Travel: 'Travel',
-  Random: 'Random',
-};
-
 /** Four rounds played in the theme the room just came out of, and a full bar everywhere else:
  * the bank is the same six themes every round, so this is what the second Choosing looks like. */
 function partlySpent(first: ThemeId | undefined): Map<ThemeId, number> {
@@ -36,7 +21,7 @@ function withOneFinished(themes: readonly ThemeId[], first: ThemeId | undefined)
  * banks is four blocks of the same props, and one of them being edited without the other is how
  * a gallery stops showing the component it is a gallery of. */
 function Bank(rest: Partial<ThemeCardsProps> & Pick<ThemeCardsProps, 'themes' | 'spent'>) {
-  return <ThemeCards names={names} roundsPerTheme={10} {...rest} />;
+  return <ThemeCards roundsPerTheme={10} {...rest} />;
 }
 
 export function ThemeCardsGallery() {

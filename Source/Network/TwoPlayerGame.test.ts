@@ -120,12 +120,12 @@ describe('a theme the whole room is told about', () => {
   it('reaches the client that did not press it', () => {
     const { hostSession, clientSession } = startTwoPlayerRoom();
     hostSession.startGame();
-    hostSession.chooseTheme('Nature');
+    hostSession.chooseTheme('Природа');
 
     // The expanding card is drawn from this, so a pick only counts if the other browser in the
     // room was told about it. A pick held on the presser's own screen is a private decision.
     const state = clientSession.getState();
-    expect(state !== undefined && 'theme' in state ? state.theme : undefined).toBe('Nature');
+    expect(state !== undefined && 'theme' in state ? state.theme : undefined).toBe('Природа');
   });
 
   it('refuses a press from the player who is not on turn', () => {
@@ -133,7 +133,7 @@ describe('a theme the whole room is told about', () => {
     // The turn is on the host as the game starts, so Ann pressing every card in the bank
     // changes nothing: the muted cards are a promise the host keeps, not one the client does.
     hostSession.startGame();
-    clientSession.chooseTheme('Nature');
+    clientSession.chooseTheme('Природа');
     const state = clientSession.getState();
     expect(state !== undefined && 'theme' in state ? state.theme : undefined).toBeUndefined();
   });
@@ -142,8 +142,8 @@ describe('a theme the whole room is told about', () => {
     const { hostSession, clientSession } = startTwoPlayerRoom();
     hostSession.startGame();
     hostSession.nextTurn();
-    clientSession.chooseTheme('Nature');
+    clientSession.chooseTheme('Природа');
     const state = clientSession.getState();
-    expect(state !== undefined && 'theme' in state ? state.theme : undefined).toBe('Nature');
+    expect(state !== undefined && 'theme' in state ? state.theme : undefined).toBe('Природа');
   });
 });

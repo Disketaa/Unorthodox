@@ -2,7 +2,6 @@ import { ThemeId, themesForRoom } from '@/Core';
 import { useMemo } from 'preact/hooks';
 import { useThemeSweep } from '../Hooks/UseThemeSweep';
 import { ThemeCards } from '@/Design/Components';
-import { Strings } from '@/Content';
 import { GameConfig } from '@/Game';
 
 export interface ThemeCardsViewProps {
@@ -55,7 +54,6 @@ export function ThemeCardsView({
   return (
     <ThemeCards
       themes={themes}
-      names={Strings.themes.names}
       roundsPerTheme={GameConfig.themes.roundsPerTheme}
       spent={spent}
       picked={theme}

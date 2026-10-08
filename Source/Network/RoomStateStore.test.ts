@@ -32,7 +32,7 @@ const writingPhase: HostState = {
   paused: false,
 
   pausedAt: undefined,
-  theme: 'Nature' as const,
+  theme: 'Природа' as const,
 };
 
 /** The same round once the room has moved on to reading the answers. */
@@ -52,7 +52,7 @@ const reviewingPhase: HostState = {
   paused: false,
 
   pausedAt: undefined,
-  theme: 'Nature' as const,
+  theme: 'Природа' as const,
 };
 
 const scoresPhase: HostState = {
@@ -69,7 +69,7 @@ const scoresPhase: HostState = {
   paused: false,
 
   pausedAt: undefined,
-  theme: 'Nature' as const,
+  theme: 'Природа' as const,
 };
 
 const finalPhase: HostState = {
@@ -83,7 +83,7 @@ const finalPhase: HostState = {
   paused: false,
 
   pausedAt: undefined,
-  theme: 'Nature' as const,
+  theme: 'Природа' as const,
 };
 
 describe('a room that outlives its tab', () => {
@@ -124,7 +124,7 @@ describe('a room that outlives its tab', () => {
     // not: a refreshed host that lost it would offer a bank with nothing chosen on it.
     saveRoomState('1234', writingPhase);
     const state = loadRoomState('1234');
-    expect(state !== undefined && state.phase !== 'Lobby' ? state.theme : null).toBe('Nature');
+    expect(state !== undefined && state.phase !== 'Lobby' ? state.theme : null).toBe('Природа');
   });
 
   it('comes back with no theme where none had been chosen', () => {

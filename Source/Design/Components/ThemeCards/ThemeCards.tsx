@@ -8,8 +8,6 @@ import styles from './ThemeCards.module.css';
 export interface ThemeCardsProps {
   /** The themes this lobby was dealt, in the order they are shown. */
   themes: readonly ThemeId[];
-  /** Names for the themes, by the same key as `ThemeId`. */
-  names: Readonly<Record<ThemeId, string>>;
   /** Asking for a theme. Left out where nothing is being chosen, which is every phase but
    * Choosing, and on the cards of a player who is not the one whose turn it is. */
   onPick?: (theme: ThemeId) => void;
@@ -58,10 +56,7 @@ function useWash(picked: ThemeId | undefined, bank: RefObject<HTMLDivElement>): 
 
 /** What one slot is told: the bank's own props, with the two that are the bank's decision rather
  * than a card's added. */
-type SlotProps = Pick<
-  ThemeCardsProps,
-  'names' | 'roundsPerTheme' | 'spent' | 'picked' | 'onPick'
-> & {
+type SlotProps = Pick<ThemeCardsProps, 'roundsPerTheme' | 'spent' | 'picked' | 'onPick'> & {
   theme: ThemeId;
   index: number;
   swept: ThemeId | undefined;
@@ -74,7 +69,6 @@ type SlotProps = Pick<
 function ThemeSlot({
   theme,
   index,
-  names,
   roundsPerTheme,
   spent,
   picked,
@@ -95,7 +89,7 @@ function ThemeSlot({
       <Pop trigger={theme} index={index} stagger={SlotStagger}>
         <ThemeCard
           theme={theme}
-          name={names[theme]}
+          name={theme}
           index={index + 1}
           rounds={roundsPerTheme}
           spent={played}
@@ -115,7 +109,6 @@ function ThemeSlot({
  * resize. The theme it settled on has its wash written onto the page. */
 export function ThemeCards({
   themes,
-  names,
   onPick,
   roundsPerTheme,
   spent,
@@ -141,7 +134,6 @@ export function ThemeCards({
         <ThemeSlot
           theme={theme}
           index={index}
-          names={names}
           roundsPerTheme={roundsPerTheme}
           spent={spent}
           picked={picked}

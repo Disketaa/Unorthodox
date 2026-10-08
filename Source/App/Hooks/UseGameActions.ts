@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'preact/hooks';
-import { GameConfig, Pace, PublicState } from '@/Game';
+import { GameConfig, Pace, PublicState, questionFor } from '@/Game';
 import { CharacterColor, CharacterId, ThemeId } from '@/Core';
-import { questionFor, topicAt } from '@/Content';
+import { topicAt } from '@/Content';
 import { Session } from '../Session';
 import { navigate } from '../Routes';
 
@@ -34,10 +34,10 @@ export interface GameActions {
 /** The question the answered theme is being asked, or undefined while the bank is still open.
  * Read off the room rather than remembered, so the question a round asks cannot drift from the
  * theme the room actually pressed. */
-function questionForRoom(state: PublicState | undefined): string | undefined {
+function questionForRoom(state: PublicState | undefined, roomCode: string): string | undefined {
   if (state?.phase !== 'Choosing' || state.theme === undefined) return undefined;
   const spent = state.spent.find((entry) => entry.theme === state.theme);
-  return questionFor(state.theme, spent?.rounds ?? 0);
+  return questionFor(roomCode, state.theme, spent?.rounds ?? 0);
 }
 
 /** The dock's step, which walks the round the way the room's own clocks do rather than jumping
@@ -65,10 +65,14 @@ function stepPhase(
 /** The round the room is on, and the moves that change it. Refs rather than state: nothing is
  * drawn from them, only the next question and topic read. They are written while rendering, so
  * the frame the room answers the bank on already has this round's question in hand. */
-function useRoundFlow(session: Session, publicState: PublicState | undefined) {
+function useRoundFlow(
+  session: Session,
+  publicState: PublicState | undefined,
+  roomCode: string
+) {
   const roundsRef = useRef(0);
   const questionRef = useRef<string | undefined>(undefined);
-  questionRef.current = questionForRoom(publicState);
+  questionRef.current = questionForRoom(publicState, roomCode);
 
   const startGame = useCallback(() => {
     roundsRef.current = 1;
@@ -117,11 +121,12 @@ function useRoundFlow(session: Session, publicState: PublicState | undefined) {
 export function useGameActions(
   session: Session,
   publicState: PublicState | undefined,
+  roomCode: string,
   onSubmitted: () => void,
   onVoted: (groupId: number) => void
 ): GameActions {
   return {
-    ...useRoundFlow(session, publicState),
+    ...useRoundFlow(session, publicState, roomCode),
     setLook: (character, color) => session.setLook({ character, color }),
     setPace: (pace) => session.setPace(pace),
     setPaused: (paused) => session.setPaused(paused),

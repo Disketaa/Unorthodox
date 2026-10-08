@@ -6,18 +6,6 @@ import { createRandom, dealThemes, ThemeId } from '@/Core';
 import { ThemeCards } from './ThemeCards';
 
 const themes: readonly ThemeId[] = dealThemes(createRandom(7), 6);
-const names: Readonly<Record<ThemeId, string>> = {
-  VideoGames: 'VideoGames',
-  Nature: 'Nature',
-  Internet: 'Internet',
-  Food: 'Food',
-  Music: 'Music',
-  Movies: 'Movies',
-  Work: 'Work',
-  Travel: 'Travel',
-  Random: 'Random',
-};
-
 /** Four rounds already played in the first theme dealt, and a full bar on the rest. */
 const spent = new Map<ThemeId, number>();
 const first = themes[0];
@@ -32,7 +20,7 @@ function mount(props: {
   document.body.appendChild(container);
   act(() => {
     render(
-      <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={spent} {...props} />,
+      <ThemeCards themes={themes} roundsPerTheme={10} spent={spent} {...props} />,
       container
     );
   });
@@ -77,7 +65,7 @@ describe('a bank nobody may press', () => {
       render(
         <ThemeCards
           themes={themes}
-          names={names}
+
           roundsPerTheme={10}
           onPick={() => {}}
           picking

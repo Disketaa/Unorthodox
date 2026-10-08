@@ -1,7 +1,6 @@
 import { QuestionStage } from '@/Design/Overlays';
 import { questionWords } from '@/Game';
 import { themeAccent } from '@/Core';
-import { Strings } from '@/Content';
 import { useQuestionReveal } from '../Hooks/UseQuestionReveal';
 import type { PhaseViewProps } from './LobbyView';
 
@@ -23,7 +22,7 @@ export function QuestionOverlay({ view }: PhaseViewProps) {
     <QuestionStage
       words={words}
       revealed={revealed}
-      label={Strings.themes.names[theme]}
+      label={theme}
       accent={themeAccent(theme)}
     />
   );

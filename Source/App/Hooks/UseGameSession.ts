@@ -105,12 +105,14 @@ function readTopic(publicState: PublicState | undefined): string | null {
 function useRoundMarks(
   session: Session,
   publicState: PublicState | undefined,
+  roomCode: string,
   topic: string | null
 ): { marks: RoundMarks; actions: GameActions } {
   const [marks, setMarks] = useState<RoundMarks>(emptyMarks);
   const actions = useGameActions(
     session,
     publicState,
+    roomCode,
     () => setMarks((current) => markSubmitted(current, topic)),
     (groupId) => setMarks((current) => markRejected(current, topic, groupId))
   );
@@ -133,7 +135,7 @@ export function useGameSession(
   const publicState = session.getPublicState();
   const phase = useSessionPhase(publicState, session.getClockOffsetMs());
   const topic = readTopic(publicState);
-  const { marks, actions } = useRoundMarks(session, publicState, topic);
+  const { marks, actions } = useRoundMarks(session, publicState, roomCode, topic);
   useRoundClocks(session, role === 'Host', phase, actions);
 
   const playerId = session.getPlayerId();
