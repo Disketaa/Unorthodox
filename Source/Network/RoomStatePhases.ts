@@ -8,6 +8,7 @@ import {
   clockOf,
   fieldsOf,
   isNumber,
+  number,
   rawPairs,
   text,
   themeFrom,
@@ -74,6 +75,7 @@ function choosingFrom(
     theme: themeFrom(fields),
     picking: pickingFrom(fields),
     answeredAt: answeredFrom(fields),
+    leadInMs: number(fields, 'leadInMs'),
   };
 }
 

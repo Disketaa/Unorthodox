@@ -24,6 +24,7 @@ export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>
     theme: undefined,
     picking: undefined,
     answeredAt: undefined,
+    leadInMs: action.leadInMs ?? 0,
     // A game that has not been played has no rounds in any theme, however long the lobby before it
     // ran. Started empty rather than carried from a lobby that could have been jumped into from a
     // finished game.
@@ -156,6 +157,8 @@ export function handleNextRound(state: HostState, action: ActionOf<'NEXT_ROUND'>
     theme: undefined,
     picking: undefined,
     answeredAt: undefined,
+    // No count-in on a round that is not the first: the room is already looking at the bank.
+    leadInMs: 0,
   };
 }
 

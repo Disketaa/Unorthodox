@@ -56,17 +56,29 @@ function readStartedAt(publicState: PublicState | undefined): number {
   return publicState !== undefined && 'startedAt' in publicState ? publicState.startedAt : 0;
 }
 
+/** How much of the phase's clock runs before the room can see it, which is the count-in and only
+ * * ever on the first phase of a game. Absent from an older host, which had no count-in to
+ * hide. */
+function readLeadInMs(publicState: PublicState | undefined): number {
+  return publicState?.phase === 'Choosing' ? (publicState.leadInMs ?? 0) : 0;
+}
+
 /** Read the current phase, the host's clock, and the room as it stands. */
 export function useSessionPhase(
   publicState: PublicState | undefined,
   clockOffsetMs: number
 ): SessionPhase {
   const roster = readRoster(publicState?.players ?? []);
+  // The clock runs from the end of the lead-in, not from the moment the host pressed Start, so
+  // both the start and the length it is measured against move by it. A phase shown counting down
+  // from behind a count-in it was not visible for would read short of full the instant it appears.
+  const leadInMs = readLeadInMs(publicState);
+  const startedAt = hostTimeToLocal(readStartedAt(publicState), clockOffsetMs) + leadInMs;
 
   return {
     phase: publicState?.phase ?? 'Connecting',
-    durationMs: readDurationMs(publicState),
-    phaseStartedAt: hostTimeToLocal(readStartedAt(publicState), clockOffsetMs),
+    durationMs: Math.max(0, readDurationMs(publicState) - leadInMs),
+    phaseStartedAt: startedAt,
     answeredAt:
       publicState?.phase === 'Choosing' && publicState.answeredAt !== undefined
         ? hostTimeToLocal(publicState.answeredAt, clockOffsetMs)

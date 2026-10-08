@@ -12,7 +12,7 @@ export type GameAction =
   | { type: 'SET_LOOK'; playerId: PlayerId; look: PlayerLook }
   | { type: 'SET_PACE'; pace: Pace }
   /** The lobby into the first phase of play, which chooses a theme rather than answering one. */
-  | { type: 'START_GAME'; durationMs: number; startedAt: number }
+  | { type: 'START_GAME'; durationMs: number; startedAt: number; leadInMs?: number }
   /** The room's answer to the bank: this theme, for this round. Carries who pressed it so the
    * host can refuse a press from anybody but the player whose turn it is. */
   | { type: 'CHOOSE_THEME'; playerId: PlayerId; theme: ThemeId; at: number }

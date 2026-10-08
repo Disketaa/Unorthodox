@@ -8,13 +8,19 @@ const log = createLogger('HostPhases');
  * its transition. */
 export function startGame(
   state: Game.HostState | undefined,
-  durationMs: number
+  durationMs: number,
+  leadInMs = 0
 ): Game.HostState {
   if (state?.phase !== 'Lobby') {
     return state ?? Game.freshLobbyState();
   }
   log('info', 'starting game');
-  return Game.reducer(state, { type: 'START_GAME', durationMs, startedAt: Date.now() });
+  return Game.reducer(state, {
+    type: 'START_GAME',
+    durationMs,
+    startedAt: Date.now(),
+    leadInMs,
+  });
 }
 
 export function startWriting(

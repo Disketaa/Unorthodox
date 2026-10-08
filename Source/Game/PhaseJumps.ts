@@ -39,6 +39,7 @@ export function handleGoToPhase(state: HostState, action: ActionOf<'GO_TO_PHASE'
     // is not something a jump into a phase is entitled to inherit.
     picking: undefined,
     answeredAt: undefined,
+    leadInMs: 0,
   };
   return { ...phaseBody(base, state, action.phase, action.topic), ...base };
 }

@@ -4,7 +4,7 @@ import { refusalFor } from './ClientRefusals';
 import { JoinRetry } from './JoinRetry';
 import { clientId } from './ClientIdentity';
 import * as Game from '@/Game';
-import { PlayerLook, ThemeId, createLogger, measureClockOffset } from '@/Core';
+import { ClockFollow, PlayerLook, ThemeId, createLogger } from '@/Core';
 
 export type { BlockedReason } from './Protocol';
 
@@ -25,8 +25,8 @@ export class ClientSession {
   private readonly joinRetry: JoinRetry;
   /** Asks the host for the current state, so a gap does not desync the client. */
   private syncTimer: ReturnType<typeof setInterval> | null = null;
-  /** Skew between the host's clock and this device's, in milliseconds. */
-  private clockOffsetMs = 0;
+  /** Skew between the host's clock and this device's, narrowed over every message received. */
+  private readonly clock = new ClockFollow();
   /** Why this player is not in the room, if they are not. */
   private blocked: BlockedReason | undefined = undefined;
   /** How many players the room holds, as the host reported it in a full-room refusal. */
@@ -114,10 +114,11 @@ export class ClientSession {
     switch (message.type) {
       case 'State':
         this.state = message.state;
-        // Remember how far the host's clock is from ours, so the phase start
-        // time in the state can be read locally.
-        this.clockOffsetMs = measureClockOffset(message.hostNow, Date.now());
-        log('debug', 'state updated to', message.state.phase, 'offset', this.clockOffsetMs);
+        // Remember how far the host's clock is from ours, so the phase start time in the state can
+        // be read locally. Narrowed rather than replaced, since one sample carries a whole one-way
+        // trip in it and the room is only in step at its shortest.
+        this.clock.read(message.hostNow, Date.now());
+        log('debug', 'state updated to', message.state.phase, 'offset', this.clock.offset);
         this.updateListener?.();
         break;
       case 'SetPlayerId':
@@ -190,7 +191,7 @@ export class ClientSession {
   }
 
   getClockOffsetMs(): number {
-    return this.clockOffsetMs;
+    return this.clock.offset;
   }
 
   getPlayerId(): string | null {

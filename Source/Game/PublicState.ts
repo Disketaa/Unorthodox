@@ -56,6 +56,9 @@ export type PublicChoosingState = PublicRoom & {
   /** When the room answered its bank, or absent while it is still open. On the wire because the
    * countdown has to stop on every screen at the moment it stopped on the host's. */
   answeredAt?: number;
+  /** How much of this clock runs before the room can see the phase. Absent rather than zero
+   * where there is none, since an earlier build did not send it and a zero is a real length. */
+  leadInMs?: number;
 };
 
 export type PublicWritingState = PublicRoom & {

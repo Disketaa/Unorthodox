@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { measureClockOffset, hostTimeToLocal } from './ClockSync';
+import { measureClockOffset, tightenClockOffset, hostTimeToLocal } from './ClockSync';
 
 describe('Clock sync', () => {
   it('measures a zero offset when the clocks agree', () => {
@@ -18,6 +18,36 @@ describe('Clock sync', () => {
   it('converts a host timestamp into a local one', () => {
     expect(hostTimeToLocal(1_000_000, -5_000)).toBe(995_000);
     expect(hostTimeToLocal(1_000_000, 0)).toBe(1_000_000);
+  });
+});
+
+describe('Keeping the room on one clock', () => {
+  it('keeps a shorter sample over a longer one, since the trip can only add time', () => {
+    expect(tightenClockOffset(120, 80)).toBe(80);
+  });
+
+  it('keeps what it has when a later sample is worse, which is a client on a slow link', () => {
+    expect(tightenClockOffset(40, 90)).toBe(40);
+  });
+
+  it('puts two clients on the same offset out of different latencies, which is the point', () => {
+    // One way of the trip is 80ms for the first client and 300ms for the second, so a sample each
+    // would leave them counting the same phase from two different starts. The first sample is taken
+    // as it stands, since there is nothing yet to narrow it against.
+    let near = measureClockOffset(1_000_000, 1_000_080);
+    let far = measureClockOffset(1_000_000, 1_000_300);
+    expect(near).not.toBe(far);
+
+    // Their later messages come through at a truer 20ms, and both narrow onto it.
+    const truth = measureClockOffset(1_010_000, 1_010_020);
+    near = tightenClockOffset(near, truth);
+    far = tightenClockOffset(far, truth);
+    expect(near).toBe(far);
+  });
+
+  it('does not follow a longer sample back out, which would undo the narrowing', () => {
+    const held = tightenClockOffset(40, 80);
+    expect(tightenClockOffset(held, 400)).toBe(40);
   });
 });
 

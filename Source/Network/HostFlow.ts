@@ -35,8 +35,9 @@ function countInMs(): number {
 export function startGameFrom(host: FlowHost): void {
   const state = host.getState();
   if (state === undefined) return;
-  const choosingMs = Game.phaseDurationMs('Choosing', state.pace) + countInMs();
-  host.commit(startGame(state, choosingMs));
+  const leadInMs = countInMs();
+  const choosingMs = Game.phaseDurationMs('Choosing', state.pace) + leadInMs;
+  host.commit(startGame(state, choosingMs, leadInMs));
 }
 
 /** Start a round: out of the theme choice and into answering it. */

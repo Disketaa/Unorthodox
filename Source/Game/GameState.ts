@@ -47,6 +47,10 @@ export type ChoosingState = RoomMembers & {
    * on screen and the room is looking at it, so a countdown still running would be counting
    * down something nobody can change any more. */
   answeredAt: number | undefined;
+  /** How much of this phase's clock runs before the room can see it: the count-in, played over
+   * the lobby this phase started from. A bar drawn against the whole of it would sit short of
+   * full the moment the bank appears, so the lead-in is not part of the bar. */
+  leadInMs: number;
 };
 
 /** The room's roll, landing on a theme. Carries when it started so every screen in the room runs
