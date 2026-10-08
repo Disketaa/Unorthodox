@@ -23,6 +23,7 @@ function phaseOf(
     durationMs,
     phaseStartedAt: Date.now() - (durationMs - secondsLeft * 1000),
     clockOffsetMs: 0,
+    answeredAt: undefined,
     playerNames: new Map(),
     playerLooks: new Map(),
     playerPresence: new Map(),

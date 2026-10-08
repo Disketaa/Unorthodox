@@ -14,6 +14,10 @@ export interface SessionPhase {
    * through the measured clock offset: counting from when the message arrived would restart the
    * countdown for a client that joined late or caught up. */
   phaseStartedAt: number;
+  /** When the phase's own answer was given, where it has one and the room is holding it on
+   * screen. The countdown stops here rather than at the end of the duration, so a phase the
+   * room has already answered is not shown counting down over an answer nobody can change. */
+  answeredAt: number | undefined;
   /** Skew between the host's clock and this device's. */
   clockOffsetMs: number;
   playerNames: ReadonlyMap<PlayerId, string>;
@@ -63,6 +67,10 @@ export function useSessionPhase(
     phase: publicState?.phase ?? 'Connecting',
     durationMs: readDurationMs(publicState),
     phaseStartedAt: hostTimeToLocal(readStartedAt(publicState), clockOffsetMs),
+    answeredAt:
+      publicState?.phase === 'Choosing' && publicState.answeredAt !== undefined
+        ? hostTimeToLocal(publicState.answeredAt, clockOffsetMs)
+        : undefined,
     clockOffsetMs,
     playerNames: roster.names,
     playerLooks: roster.looks,

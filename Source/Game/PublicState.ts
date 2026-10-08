@@ -53,6 +53,9 @@ export type PublicChoosingState = PublicRoom & {
    * moment it started rather than only the answer, so every screen sweeps for the same length
    * and lands on the same card. */
   picking?: RandomPick;
+  /** When the room answered its bank, or absent while it is still open. On the wire because the
+   * countdown has to stop on every screen at the moment it stopped on the host's. */
+  answeredAt?: number;
 };
 
 export type PublicWritingState = PublicRoom & {

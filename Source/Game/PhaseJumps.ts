@@ -38,6 +38,7 @@ export function handleGoToPhase(state: HostState, action: ActionOf<'GO_TO_PHASE'
     // Never carried: a jump is the host's console stepping the room by hand, and a roll mid-sweep
     // is not something a jump into a phase is entitled to inherit.
     picking: undefined,
+    answeredAt: undefined,
   };
   return { ...phaseBody(base, state, action.phase, action.topic), ...base };
 }

@@ -25,6 +25,26 @@ export function useRandomPick(
   }, [isHost, picking, session]);
 }
 
+/** The theme answered, held on screen before the round starts. Its own hook because this is the
+ * one moment where a phase waits without a clock running: the bank is open, the room is looking
+ * at what it chose, and a second later the round is asking about it. */
+export function useAnswerReveal(
+  isHost: boolean,
+  answeredAt: number | undefined,
+  onRevealed: () => void
+): void {
+  useEffect(() => {
+    if (!isHost || answeredAt === undefined) {
+      return;
+    }
+    // From when it was answered rather than from when this ran, so the theme is held for the same
+    // length on every screen rather than longer on whichever host happened to be slower.
+    const remaining = Math.max(0, GameConfig.timing.answerRevealMs - (Date.now() - answeredAt));
+    const id = setTimeout(onRevealed, remaining);
+    return () => clearTimeout(id);
+  }, [isHost, answeredAt, onRevealed]);
+}
+
 /** Everyone answered the round: move on rather than waiting out the rest of the clock. */
 export function useAnswersIn(
   session: Session,

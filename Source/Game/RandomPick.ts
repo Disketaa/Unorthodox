@@ -16,7 +16,7 @@ export function handleBankPick(
     case 'START_RANDOM_PICK':
       return handleStartRandomPick(state, action);
     case 'RESOLVE_RANDOM_PICK':
-      return handleResolveRandomPick(state);
+      return handleResolveRandomPick(state, action);
     default:
       return assertNever(action);
   }
@@ -35,7 +35,10 @@ export function handleStartRandomPick(
 }
 
 /** The roll commits, which is the same answer a press gives and spends the same round. */
-export function handleResolveRandomPick(state: HostState): HostState {
+export function handleResolveRandomPick(
+  state: HostState,
+  action: ActionOf<'RESOLVE_RANDOM_PICK'>
+): HostState {
   if (state.phase !== 'Choosing' || state.picking === undefined) {
     return state;
   }
@@ -43,6 +46,7 @@ export function handleResolveRandomPick(state: HostState): HostState {
     ...state,
     theme: state.picking.theme,
     picking: undefined,
+    answeredAt: action.at,
     themeRounds: roundsAfter(state.themeRounds, state.picking.theme),
   };
 }

@@ -6,6 +6,7 @@ import { accentFor } from '@/Core';
 import { useCountdown } from '../Hooks/UseCountdown';
 import { usePhaseAlarm } from '../Hooks/UsePhaseAlarm';
 import type { SessionPhaseName } from '../Hooks/UseSessionPhase';
+import type { GameSessionView } from '../Hooks/UseGameSession';
 import type { PhaseViewProps } from './LobbyView';
 
 /** What naming a phase takes: whose turn it is, and whether this player has answered. Every
@@ -29,13 +30,24 @@ const PhaseSentences: Record<SessionPhaseName, (story: PhaseStory) => string> = 
   Final: () => Strings.phase.final,
 };
 
+/** The phase's own clock, stopped where the room answered rather than run out. Unconditional:
+ * the * hook is what ticks it, so it runs whatever phase this is and is unused where nothing is
+ * timed. */
+function remainingMsOf(view: GameSessionView): number {
+  return useCountdown(
+    view.durationMs,
+    view.phaseStartedAt,
+    view.clockOffsetMs,
+    true,
+    view.answeredAt
+  );
+}
+
 /** The note at the top of a game screen: what is happening, with the mark saying it still is.
- * The countdown is drawn behind the sentence rather than under it, so a timed phase is one
+ * The * countdown is drawn behind the sentence rather than under it, so a timed phase is one
  * block and a phase nobody waits out is the same block with no bar in it. */
 export function PhaseInfoView({ view }: PhaseViewProps) {
-  // Unconditional: the hook is what ticks the countdown, so it runs whatever phase this is and
-  // the clock is simply unused where nothing is measured.
-  const remainingMs = useCountdown(view.durationMs, view.phaseStartedAt, view.clockOffsetMs);
+  const remainingMs = remainingMsOf(view);
   usePhaseAlarm(view);
   const turnName =
     view.turnPlayerId === null ? '' : (view.playerNames.get(view.turnPlayerId) ?? '');

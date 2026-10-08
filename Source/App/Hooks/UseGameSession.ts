@@ -127,7 +127,7 @@ export function useGameSession(
   const topic = readTopic(publicState);
   const { marks, actions } = useRoundMarks(session, topic);
 
-  useHostPhaseTimer(session, role === 'Host', phase, actions.nextRound);
+  useHostPhaseTimer(session, role === 'Host', phase, actions.nextRound, actions.startRound);
 
   const playerId = session.getPlayerId();
   const ownLook = ownLookFor(playerId, phase.playerLooks);

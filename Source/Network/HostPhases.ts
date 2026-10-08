@@ -66,7 +66,7 @@ export function resolveRandomPick(state: Game.HostState | undefined): Game.HostS
     return state ?? Game.freshLobbyState();
   }
   log('info', 'room is settling on its own pick');
-  return Game.reducer(state, { type: 'RESOLVE_RANDOM_PICK' });
+  return Game.reducer(state, { type: 'RESOLVE_RANDOM_PICK', at: Date.now() });
 }
 
 /** Writing to Reviewing, once every seated player has answered. */

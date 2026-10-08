@@ -68,6 +68,7 @@ export function toPublicChoosingState(state: HostState): PublicChoosingState {
     // plain data: a field that is absent and a field that is null are not the same on the wire.
     ...(state.theme === undefined ? {} : { theme: state.theme }),
     ...(state.picking === undefined ? {} : { picking: state.picking }),
+    ...(state.answeredAt === undefined ? {} : { answeredAt: state.answeredAt }),
   };
 }
 

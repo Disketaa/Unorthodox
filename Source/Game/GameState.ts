@@ -43,6 +43,10 @@ export type ChoosingState = RoomMembers & {
    * rather than in `theme` until the sweep has run, since the bank is still open on screen
    * while it plays and a card that expanded under the sweep would hide it. */
   picking: RandomPick | undefined;
+  /** When the room answered its own bank, and from then on the clock is over: the answer is up
+   * on screen and the room is looking at it, so a countdown still running would be counting
+   * down something nobody can change any more. */
+  answeredAt: number | undefined;
 };
 
 /** The room's roll, landing on a theme. Carries when it started so every screen in the room runs

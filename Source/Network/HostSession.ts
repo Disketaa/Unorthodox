@@ -112,7 +112,7 @@ export class HostSession {
    * move the host makes about itself, so it is refused when it is not their turn like anybody
    * else's. */
   chooseTheme(theme: ThemeId): void {
-    this.apply({ type: 'CHOOSE_THEME', playerId: HostPlayerId, theme });
+    this.apply({ type: 'CHOOSE_THEME', playerId: HostPlayerId, theme, at: Date.now() });
   }
 
   rejectOwnGroup(groupId: number): void {

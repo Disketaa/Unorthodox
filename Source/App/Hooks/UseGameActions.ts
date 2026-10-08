@@ -13,6 +13,9 @@ export interface GameActions {
   nextRound: () => void;
   /** Wherever the phase table says goes next, for the host's dock. */
   nextPhase: () => void;
+  /** The round starting from the theme the room chose. Goes through the writing move rather than
+   * the dock's jump, since starting a round is what hands the turn on. */
+  startRound: () => void;
   setLook: (character: CharacterId, color: CharacterColor) => void;
   setPace: (pace: Pace) => void;
   addBot: () => void;
@@ -54,7 +57,11 @@ function useRoundFlow(session: Session) {
     session.nextPhase(topicAt(roundsRef.current - 1));
   }, [session]);
 
-  return { startGame, chooseTheme, nextRound, nextPhase };
+  const startRound = useCallback(() => {
+    session.startWriting(topicAt(roundsRef.current - 1));
+  }, [session]);
+
+  return { startGame, chooseTheme, nextRound, nextPhase, startRound };
 }
 
 /** Everything the UI can ask the session to do. Only the host acts on round flow. */

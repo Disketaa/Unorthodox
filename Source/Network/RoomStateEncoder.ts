@@ -65,6 +65,7 @@ function choosingOf(state: Extract<HostState, { phase: 'Choosing' }>, members: M
     phase: state.phase,
     ...themeOf(state),
     ...pickingOf(state),
+    ...(state.answeredAt === undefined ? {} : { answeredAt: state.answeredAt }),
   };
 }
 

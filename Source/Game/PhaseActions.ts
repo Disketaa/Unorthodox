@@ -23,6 +23,7 @@ export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>
     startedAt: action.startedAt,
     theme: undefined,
     picking: undefined,
+    answeredAt: undefined,
     // A game that has not been played has no rounds in any theme, however long the lobby before it
     // ran. Started empty rather than carried from a lobby that could have been jumped into from a
     // finished game.
@@ -45,6 +46,9 @@ export function handleChooseTheme(
     // A press ends the room's own roll: the seat that ignored the clock does not get to have it
     // land on top of their answer a moment later.
     picking: undefined,
+    // Moved forward with the press rather than set once, so a turn holder changing their mind
+    // while the answer is on screen holds the new one for the whole of its own reveal.
+    answeredAt: action.at,
     // Spent as the card is pressed, since that is the moment the room has committed the round to
     // this theme: the expanded card's own row of ticks has to be one shorter than it was a moment
     // earlier, on every screen at once, or the row reads as a bar that never drains.
@@ -147,11 +151,11 @@ export function handleNextRound(state: HostState, action: ActionOf<'NEXT_ROUND'>
     phase: 'Choosing',
     durationMs: action.durationMs,
     startedAt: action.startedAt,
-    // A new bank with nothing chosen on it, which is the whole difference between this Choosing
-    // and the last: the pressed card belonged to the round that has just been scored. Its counts
-    // carry across untouched, already spent when the card was pressed.
+    // A new bank with nothing chosen on it: the pressed card belonged to the round that
+    // has just been scored. So does the moment it was answered, which stopped that round's clock.
     theme: undefined,
     picking: undefined,
+    answeredAt: undefined,
   };
 }
 

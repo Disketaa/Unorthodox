@@ -8,7 +8,8 @@ export function useCountdown(
   durationMs: number,
   startedAt: number,
   clockOffsetMs = 0,
-  active = true
+  active = true,
+  answeredAt?: number
 ): number {
   const [now, setNow] = useState(() => Date.now());
 
@@ -21,5 +22,8 @@ export function useCountdown(
     return () => clearInterval(id);
   }, [active]);
 
-  return Math.max(0, durationMs - (now - (startedAt + clockOffsetMs)));
+  // The end of the clock is the answer where there is one, and stops there for good: a bank
+  // that has been pressed is being looked at, not still being decided.
+  const endsAt = answeredAt ?? startedAt + clockOffsetMs + durationMs;
+  return Math.max(0, endsAt - now);
 }

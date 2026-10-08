@@ -21,6 +21,7 @@ function phaseOf(name: SessionPhaseName, startedAt = Date.now()): SessionPhase {
     durationMs: 63_000,
     phaseStartedAt: startedAt,
     clockOffsetMs: 0,
+    answeredAt: undefined,
     playerNames: new Map(),
     playerLooks: new Map(),
     playerPresence: new Map(),

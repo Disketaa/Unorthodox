@@ -44,23 +44,24 @@ const timing = {
   pickingMs: 2600,
   /** How long the sweep rests on the card it landed on before the room commits to it. */
   pickingSettleMs: 900,
+  /** How long the chosen theme is left open on its own before the round starts. The clock stops
+   * with it: the bank is answered, and a timer still running over an answered bank reads as
+   * though the room had not decided yet. */
+  answerRevealMs: 2000,
 };
 
 export const GameConfig = {
   timing,
-  /** Both paces sit on one short theme clock, which is not a pace: it is short while the roll at
-   * the end of it is being looked at, so a bank nobody answered can be reached without waiting
-   * out the real clock first. The other two waits still differ. */
   paces: {
     Standard: {
       writingMs: timing.writingDurationMs,
       decidingMs: timing.reviewingDurationMs,
-      categoryMs: 3000,
+      categoryMs: 20000,
     },
     Fast: {
       writingMs: 40000,
       decidingMs: 60000,
-      categoryMs: 3000,
+      categoryMs: 15000,
     },
   } satisfies Record<Pace, PaceTimings>,
   scoring: {

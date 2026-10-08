@@ -23,11 +23,20 @@ export interface FlowHost {
   commit(state: HostState): void;
 }
 
+/** How long the count-in runs, shade and numbers together. It plays out over the lobby the room
+ * * just left, and the theme clock starts the instant Start is pressed, so the first Choosing
+ * is given this much extra. Later rounds have no count-in to pay for. */
+function countInMs(): number {
+  const { startVeilMs, startCountdownMs } = Game.GameConfig.timing;
+  return startVeilMs + startCountdownMs;
+}
+
 /** Start the game: out of the lobby and into the theme choice. */
 export function startGameFrom(host: FlowHost): void {
   const state = host.getState();
   if (state === undefined) return;
-  host.commit(startGame(state, Game.phaseDurationMs('Choosing', state.pace)));
+  const choosingMs = Game.phaseDurationMs('Choosing', state.pace) + countInMs();
+  host.commit(startGame(state, choosingMs));
 }
 
 /** Start a round: out of the theme choice and into answering it. */
