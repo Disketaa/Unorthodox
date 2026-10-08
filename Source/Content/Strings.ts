@@ -131,8 +131,8 @@ export const Strings = {
    * reading about somebody else while the player is doing it has to be translated. */
   phase: {
     choosingTheme: (name: string) => `${name} выбирает тему…`,
-    /** Said over the bank once the theme has been answered and the question is being written out
-     * on top of it, so the sentence stops naming a choice the room has already made. */
+    /** Said over the bank once the theme has been answered, which is when the choice stops being
+     * open and the question is what the room is reading. */
     readingQuestion: 'Читаем вопрос…',
     writing: 'Все пишут ответы…',
     reviewing: 'Голосуем за ответы…',

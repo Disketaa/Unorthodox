@@ -11,7 +11,9 @@ export interface GameActions {
    * opens in every browser at once. Refused by the host from anybody but the player on turn. */
   chooseTheme: (theme: ThemeId) => void;
   nextRound: () => void;
-  /** Wherever the phase table says goes next, for the host's dock. */
+  /** Wherever the phase table says goes next, for the host's dock. An unanswered bank is the one
+   * phase the table's move would break, since Writing with nothing pressed on it has no topic,
+   * so the dock answers the bank itself and both halves land in the same press. */
   nextPhase: () => void;
   /** The round's question arriving word by word, drawn from the theme the room just answered. */
   revealQuestion: () => void;
@@ -36,6 +38,28 @@ function questionForRoom(state: PublicState | undefined): string | undefined {
   if (state?.phase !== 'Choosing' || state.theme === undefined) return undefined;
   const spent = state.spent.find((entry) => entry.theme === state.theme);
   return questionFor(state.theme, spent?.rounds ?? 0);
+}
+
+/** The dock's step, which walks the round the way the room's own clocks do rather than jumping
+ * over them: an unanswered bank is answered by the room in the same press, an answered one
+ * reveals its question, and only a room already showing the question steps to the table's move. */
+function stepPhase(
+  session: Session,
+  publicState: PublicState | undefined,
+  question: string | undefined,
+  topic: string
+): void {
+  const choosing = publicState?.phase === 'Choosing' ? publicState : undefined;
+  if (choosing !== undefined && choosing.theme === undefined) {
+    session.startRandomPick();
+    session.resolveRandomPick();
+    return;
+  }
+  if (choosing !== undefined && choosing.question === undefined) {
+    session.revealQuestion(question ?? topic);
+    return;
+  }
+  session.nextPhase(question ?? topic);
 }
 
 /** The round the room is on, and the moves that change it. Refs rather than state: nothing is
@@ -68,9 +92,12 @@ function useRoundFlow(session: Session, publicState: PublicState | undefined) {
     session.nextRound();
   }, [session]);
 
-  const nextPhase = useCallback(() => {
-    session.nextPhase(topicAt(roundsRef.current - 1));
-  }, [session]);
+  const topic = () => topicAt(roundsRef.current - 1);
+
+  const nextPhase = useCallback(
+    () => stepPhase(session, publicState, questionRef.current, topic()),
+    [session, publicState]
+  );
 
   const revealQuestion = useCallback(() => {
     session.revealQuestion(questionRef.current ?? topicAt(roundsRef.current - 1));

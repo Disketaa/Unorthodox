@@ -73,10 +73,10 @@ export function PhaseInfoView({ view }: PhaseViewProps) {
   const turnName =
     view.turnPlayerId === null ? '' : (view.playerNames.get(view.turnPlayerId) ?? '');
   const choosing = view.publicState?.phase === 'Choosing' ? view.publicState : undefined;
-  // The question sits on the screen in its own right, so the sentence stops naming a choice the
-  // room has already made and says what it is doing instead.
+  // The question is what the room reads once the bank is answered, whether or not it has arrived
+  // on screen yet, so the sentence stops naming a choice the room has already made.
   const sentence =
-    choosing?.question !== undefined
+    choosing?.theme !== undefined
       ? Strings.phase.readingQuestion
       : PhaseSentences[view.phase]({ turnName, hasSubmitted: view.hasSubmitted });
   // Connecting is not a game phase, so the table has no row for it and nothing is timed.
