@@ -184,13 +184,13 @@
 /* The inner panel: the box the number is printed in, set in from the card's edge. The mark was
  * cropped by the card and nothing else, so a figure a third again as wide as the panel met the
  * edge and stopped, reading as a number painted to fit rather than printed and cut by its
- * frame. It is cut by this box instead, which has margins of its own, so the space between the
- * two edges is the margin the figure is cropped at. A panel and not a ring: a ring is a second
- * edge on a surface already one flat colour, and two edges is what the card gave up to avoid. */
+ * frame. A panel and not a ring: a ring is a second edge on a surface already one flat colour.
+ * Level 0 because it only has to crop the mark, leaving the row of rounds a level between this
+ * and the grain: at one level the later element in the markup wins, and both precede it. */
 .Panel {
   position: absolute;
   inset: var(--Space-ThemeCardInset);
-  z-index: 1;
+  z-index: 0;
   overflow: hidden;
   background: var(--ThemeCard-Surface);
   border-radius: calc(var(--Radius-Card) - var(--Space-ThemeCardInset));

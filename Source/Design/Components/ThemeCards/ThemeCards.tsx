@@ -82,6 +82,11 @@ function ThemeSlot({
   onPick,
   waiting,
 }: SlotProps) {
+  const chosen = theme === picked;
+  // The round being played is counted against the theme already but has not been played, and
+  // showing it spent drains the chosen card on the very press that expands it — a theme on its
+  // last round comes up greyed while still being answered. It catches up on the next bank.
+  const played = Math.max(0, (spent?.get(theme) ?? 0) - (chosen ? 1 : 0));
   return (
     <div class={slotClass(theme, picked)} key={theme}>
       {/* The same arrival the characters have, keyed on the theme so a bank that is dealt a new
@@ -93,8 +98,8 @@ function ThemeSlot({
           name={names[theme]}
           index={index + 1}
           rounds={roundsPerTheme}
-          spent={spent?.get(theme) ?? 0}
-          chosen={theme === picked}
+          spent={played}
+          chosen={chosen}
           swept={theme === swept}
           locked={picked !== undefined}
           waiting={waiting}

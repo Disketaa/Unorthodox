@@ -8,10 +8,11 @@
   /* Above the card's inner panel, which is what crops the number. Positioned on purpose rather
    * than left in the flow: the panel is absolutely positioned, and a positioned box paints over
    * everything that is not, so the row of rounds was under the panel and the card came out with
-   * a word on it and no bar. It shares a level with the grain, which is drawn later in the
-   * markup and so still lies over the ticks, as grain in front of ink is the point of it. */
+   * a word on it and no bar. Level 1 rather than the grain's 2, so the grain still lies over
+   * the ticks: at one level the later element in the markup wins, and the grain is drawn before
+   * this row, so sharing its level put the ticks on top of the grain instead. */
   position: relative;
-  z-index: 2;
+  z-index: 1;
   display: flex;
   justify-content: center;
   gap: var(--Space-RoundMeterGap);
