@@ -33,6 +33,10 @@ export interface ThemeCardProps {
    * which is what leaves one thing on screen wearing a colour while the rest of the bank fades
    * out. */
   chosen?: boolean;
+  /** Whether the room's own roll is on this card, which is drawn exactly as a pointer on it
+   * would draw it — same wash, same opened name, same mark. Anything less reads as the room
+   * glancing at the bank rather than the room looking at it. */
+  swept?: boolean;
   /** Whether the card has stopped taking presses, because the room has already answered. Every
    * card including the chosen one: the answer is in. */
   locked?: boolean;
@@ -64,12 +68,14 @@ function cardClasses(
   moving: boolean,
   blink: boolean,
   chosen: boolean,
+  swept: boolean,
   waiting: boolean,
   spentOut: boolean
 ): string {
   const classes = [styles.Root, moving ? styles.Moving : styles.Still];
   if (blink && !chosen) classes.push(styles.Blink);
   if (chosen) classes.push(styles.Chosen);
+  if (swept) classes.push(styles.Swept);
   if (waiting || spentOut) classes.push(styles.Waiting);
   if (spentOut) classes.push(styles.SpentOut);
   return classes.join(' ');
@@ -131,6 +137,7 @@ export function ThemeCard({
   moving = true,
   blink = true,
   chosen = false,
+  swept = false,
   locked = false,
   waiting = false,
 }: ThemeCardProps) {
@@ -145,13 +152,13 @@ export function ThemeCard({
     <button
       type="button"
       ref={ref}
-      class={cardClasses(moving, blink, chosen, waiting, spentOut)}
+      class={cardClasses(moving, blink, chosen, swept, waiting, spentOut)}
       disabled={locked}
       // Announced rather than disabled: the card is on screen and readable, so a screen reader is
       // told it cannot be pressed instead of being left to find a button that does nothing.
-      aria-disabled={waiting || spentOut || undefined}
+      aria-disabled={waiting || spentOut || swept || undefined}
       onClick={() => {
-        if (waiting || spentOut) {
+        if (waiting || spentOut || swept) {
           return;
         }
         playSound('Pop');

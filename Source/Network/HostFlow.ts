@@ -6,6 +6,8 @@ import type { HostState } from '@/Game';
 import {
   startGame,
   startWriting,
+  startRandomPick,
+  resolveRandomPick,
   closeWriting,
   closeReviewing,
   nextRound,
@@ -33,6 +35,20 @@ export function startWritingFrom(host: FlowHost, topic: string): void {
   const state = host.getState();
   if (state === undefined) return;
   host.commit(startWriting(state, topic, Game.phaseDurationMs('Writing', state.pace)));
+}
+
+/** The bank closed with nothing pressed on it, so the room is answering its own. */
+export function startRandomPickFrom(host: FlowHost, roomCode: string): void {
+  const state = host.getState();
+  if (state === undefined) return;
+  host.commit(startRandomPick(state, roomCode));
+}
+
+/** The sweep is over and the roll commits. */
+export function resolveRandomPickFrom(host: FlowHost): void {
+  const state = host.getState();
+  if (state === undefined) return;
+  host.commit(resolveRandomPick(state));
 }
 
 /** Advance out of Writing once everyone has answered, or out of Reviewing once its clock is up.

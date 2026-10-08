@@ -39,7 +39,18 @@ export type ChoosingState = RoomMembers & {
   /** The theme the room settled on. The room's answer rather than one player's, so a press is
    * seen by everybody rather than by its author. Undefined while the bank is still open. */
   theme: ThemeId | undefined;
+  /** A room that answered its own bank, and where that answer came from. The theme is held here
+   * rather than in `theme` until the sweep has run, since the bank is still open on screen
+   * while it plays and a card that expanded under the sweep would hide it. */
+  picking: RandomPick | undefined;
 };
+
+/** The room's roll, landing on a theme. Carries when it started so every screen in the room runs
+ * its sweep from the same moment rather than from whenever the message reached it. */
+export interface RandomPick {
+  theme: ThemeId;
+  startedAt: number;
+}
 
 export type WritingState = RoomMembers & {
   phase: 'Writing';

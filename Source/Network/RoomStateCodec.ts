@@ -1,6 +1,6 @@
 /** The host's game state read back out of plain data, guarded field by field: a cast promises a
  * shape nothing checked. The writing half is RoomStateEncoder. */
-import type { HostState, Player, Pace } from '@/Game';
+import type { HostState, Player, Pace, RandomPick } from '@/Game';
 import { isThemeId, type PlayerId, type ThemeId } from '@/Core';
 import { toRejections } from './RoomRejections';
 
@@ -79,6 +79,15 @@ function themeFrom(fields: Fields): ThemeId | undefined {
   return isThemeId(value) ? value : undefined;
 }
 
+/** The room's own roll mid-sweep, or undefined where there is none. Guarded whole, since half a
+ * pick is not a sweep any client can run. */
+function pickingFrom(fields: Fields): RandomPick | undefined {
+  const record = fieldsOf(fields.get('picking'));
+  const theme = record.get('theme');
+  const startedAt = record.get('startedAt');
+  return isThemeId(theme) && isNumber(startedAt) ? { theme, startedAt } : undefined;
+}
+
 /** The clock every timed phase carries, counted from the host that started it. */
 function clockOf(fields: Fields): { durationMs: number; startedAt: number } {
   return { durationMs: number(fields, 'durationMs'), startedAt: number(fields, 'startedAt') };
@@ -155,7 +164,7 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
   const theme = themeFrom(fields);
   switch (fields.get('phase')) {
     case 'Choosing':
-      return { phase: 'Choosing', ...common, theme };
+      return { phase: 'Choosing', ...common, theme, picking: pickingFrom(fields) };
     case 'Writing':
       return { phase: 'Writing', ...common, theme };
     case 'Reviewing':

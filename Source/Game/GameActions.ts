@@ -16,6 +16,13 @@ export type GameAction =
   /** The room's answer to the bank: this theme, for this round. Carries who pressed it so the
    * host can refuse a press from anybody but the player whose turn it is. */
   | { type: 'CHOOSE_THEME'; playerId: PlayerId; theme: ThemeId }
+  /** Nobody answered the bank before its clock ran out, so the room is answering it. Carries the
+   * theme rather than rolling one here, since the reducer is the rule and not the dice. The
+   * answer is held back until `RESOLVE_RANDOM_PICK`, which is what gives the sweep its length. */
+  | { type: 'START_RANDOM_PICK'; theme: ThemeId; startedAt: number }
+  /** The room's roll commits, once the sweep has run. No player to name: the room chose it, not
+   * one of the seats. */
+  | { type: 'RESOLVE_RANDOM_PICK' }
   /** The room into a round, once the theme is chosen. Carries the topic rather than reading one
    * from a catalogue, since what a theme asks about is the content's business and not the
    * state's. */

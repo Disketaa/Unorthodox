@@ -201,6 +201,34 @@ describe('a card whose theme has nothing left', () => {
   });
 });
 
+describe("the card the room's own roll is on", () => {
+  it('is drawn the way a pointer on it would draw it, since that is what the roll is', () => {
+    const swept = document.createElement('div');
+    document.body.appendChild(swept);
+    act(() => {
+      render(<ThemeCard theme="Nature" name="Природа" swept />, swept);
+    });
+    expect(swept.querySelector('button')?.className).toContain('Swept');
+  });
+
+  it('takes no press, since the room is the seat choosing here rather than this one', () => {
+    const picked: string[] = [];
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    act(() => {
+      render(<ThemeCard theme="Nature" name="Природа" swept onPick={(t) => picked.push(t)} />, container);
+    });
+    const button = container.querySelector('button');
+    if (button === null) {
+      throw new Error('no card rendered');
+    }
+    act(() => {
+      button.click();
+    });
+    expect(picked).toEqual([]);
+  });
+});
+
 describe("the card's number", () => {
   it('shows where the card sits in the bank, counted from one', () => {
     // The six in front of a player are numbered one to six whatever they are; a number out

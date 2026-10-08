@@ -1,8 +1,9 @@
 /** The handlers that move the room between phases. Each names its own guard: a phase it does not
  * act on is returned untouched, which is what makes a late message a no-op rather than a
  * change. */
-import { PlayerId, ThemeId } from '@/Core';
+import { PlayerId } from '@/Core';
 import { HostState } from './GameState';
+import { roundsAfter } from './ThemeRounds';
 import { scoreRound } from './RoundScoring';
 import { nextPlayerInTurn, turnOrder } from './Turns';
 import type { ActionOf } from './GameActions';
@@ -21,6 +22,7 @@ export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>
     durationMs: action.durationMs,
     startedAt: action.startedAt,
     theme: undefined,
+    picking: undefined,
     // A game that has not been played has no rounds in any theme, however long the lobby before it
     // ran. Started empty rather than carried from a lobby that could have been jumped into from a
     // finished game.
@@ -40,24 +42,14 @@ export function handleChooseTheme(
   return {
     ...state,
     theme: action.theme,
+    // A press ends the room's own roll: the seat that ignored the clock does not get to have it
+    // land on top of their answer a moment later.
+    picking: undefined,
     // Spent as the card is pressed, since that is the moment the room has committed the round to
     // this theme: the expanded card's own row of ticks has to be one shorter than it was a moment
     // earlier, on every screen at once, or the row reads as a bar that never drains.
     themeRounds: roundsAfter(state.themeRounds, action.theme),
   };
-}
-
-/** The room's counts with one more round against `theme`. */
-function roundsAfter(
-  themeRounds: ReadonlyMap<ThemeId, number>,
-  theme: ThemeId | undefined
-): Map<ThemeId, number> {
-  if (theme === undefined) {
-    return new Map(themeRounds);
-  }
-  const counted = new Map(themeRounds);
-  counted.set(theme, (counted.get(theme) ?? 0) + 1);
-  return counted;
 }
 
 export function handleStartWriting(
@@ -159,6 +151,7 @@ export function handleNextRound(state: HostState, action: ActionOf<'NEXT_ROUND'>
     // and the last: the pressed card belonged to the round that has just been scored. Its counts
     // carry across untouched, already spent when the card was pressed.
     theme: undefined,
+    picking: undefined,
   };
 }
 

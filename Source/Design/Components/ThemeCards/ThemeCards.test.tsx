@@ -67,4 +67,25 @@ describe('a bank nobody may press', () => {
   it('is never waiting on the player whose turn it is', () => {
     expect(mount({ onPick: () => {} })[0]?.className).not.toContain('Waiting');
   });
+
+  it('is held back while the room is answering it itself', () => {
+    // Nobody's turn once the bank has closed on its own: the room's roll is the only thing
+    // choosing, so a bank still inviting a press is a bank waiting for an answer nobody is
+    // going to give it.
+    const container = document.body.appendChild(document.createElement('div'));
+    act(() => {
+      render(
+        <ThemeCards
+          themes={themes}
+          names={names}
+          roundsPerTheme={10}
+          onPick={() => {}}
+          picking
+          swept={themes[1]}
+        />,
+        container
+      );
+    });
+    expect(container.querySelector('button')?.className).toContain('Waiting');
+  });
 });

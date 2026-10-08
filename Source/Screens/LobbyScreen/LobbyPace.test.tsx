@@ -3,11 +3,21 @@ import { describe, it, expect } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { LobbyPace } from './LobbyPace';
-import { Pace } from '@/Game';
+import { GameConfig, type Pace } from '@/Game';
 import { Strings } from '@/Content';
 
-const standardWaits = ['60с', '90с', '20с'];
+/** The three waits of the standard pace, as the card writes them. Taken from the config rather
+ * than written out, so this cannot pass against a config the card is not actually using: the
+ * theme clock in particular is being moved around while the roll at the end of it is looked at. */
+const standardWaits = waitsOf("Standard");
 
+/** One pace's three waits as the card shows them: whole seconds, each with the unit on it. */
+function waitsOf(pace: Pace): string[] {
+  const { writingMs, decidingMs, categoryMs } = GameConfig.paces[pace];
+  return [writingMs, decidingMs, categoryMs].map((ms) =>
+    Strings.lobby.settings.seconds(ms / 1000)
+  );
+}
 /** The waits on the card, each asserted on its own since labels sit between them. */
 function expectWaits(container: HTMLElement, waits: readonly string[]): void {
   waits.forEach((wait) => expect(container.textContent).toContain(wait));

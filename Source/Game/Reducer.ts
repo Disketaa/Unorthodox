@@ -12,34 +12,28 @@ import {
   handleNextRound,
   handleFinal,
 } from './PhaseActions';
+import { handleBankPick } from './RandomPick';
 import { handleGoToPhase } from './PhaseJumps';
 import { handleNextTurn } from './Turns';
-import {
-  handleJoin,
-  handleSetLook,
-  handleSetOnline,
-  handleKick,
-  handleSetPace,
-} from './LobbyActions';
+import { handleRoster } from './LobbyActions';
 
 export function reducer(currentState: HostState | undefined, action: GameAction): HostState {
   const state: HostState = currentState ?? freshLobbyState();
 
   switch (action.type) {
     case 'JOIN':
-      return handleJoin(state, action);
     case 'SET_ONLINE':
-      return handleSetOnline(state, action);
     case 'KICK':
-      return handleKick(state, action);
     case 'SET_LOOK':
-      return handleSetLook(state, action);
     case 'SET_PACE':
-      return handleSetPace(state, action);
+      return handleRoster(state, action);
     case 'START_GAME':
       return handleStartGame(state, action);
     case 'CHOOSE_THEME':
       return handleChooseTheme(state, action);
+    case 'START_RANDOM_PICK':
+    case 'RESOLVE_RANDOM_PICK':
+      return handleBankPick(state, action);
     case 'START_WRITING':
       return handleStartWriting(state, action);
     case 'SUBMIT_ANSWER':

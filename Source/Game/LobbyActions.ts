@@ -2,7 +2,32 @@
  * from the phases because each is a change to one player rather than a move of the room, and
  * because they exist in every phase: a refresh mid-round is joining again. */
 import { HostState } from './GameState';
-import type { ActionOf } from './GameActions';
+import { assertNever } from '@/Core';
+import type { ActionOf, GameAction } from './GameActions';
+
+/** Everything that changes one player rather than moving the room, in one entry. */
+export function handleRoster(
+  state: HostState,
+  action: Extract<
+    GameAction,
+    { type: 'JOIN' | 'SET_ONLINE' | 'KICK' | 'SET_LOOK' | 'SET_PACE' }
+  >
+): HostState {
+  switch (action.type) {
+    case 'JOIN':
+      return handleJoin(state, action);
+    case 'SET_ONLINE':
+      return handleSetOnline(state, action);
+    case 'KICK':
+      return handleKick(state, action);
+    case 'SET_LOOK':
+      return handleSetLook(state, action);
+    case 'SET_PACE':
+      return handleSetPace(state, action);
+    default:
+      return assertNever(action);
+  }
+}
 
 /** The same room with a different roster, whatever phase it is in. */
 function withRoster(state: HostState, players: HostState['players']): HostState {

@@ -48,6 +48,10 @@ export interface Session {
   /** Answer the theme bank on this player's behalf. Refused by the host from anybody but the
    * player whose turn it is. */
   chooseTheme(theme: ThemeId): void;
+  /** Only the host calls this: the bank closed with nothing pressed, so the room answers it. */
+  startRandomPick(): void;
+  /** Only the host calls this: the sweep is over and the room's roll commits. */
+  resolveRandomPick(): void;
   /** Advance out of the Writing phase once everyone has answered, or out of the Reviewing phase
    * (once reviewing time is up, going to Scores). */
   endReviewing(durationMs: number): void;

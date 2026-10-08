@@ -40,22 +40,22 @@ function cardToken(name: string): string {
   return match[1].replace(/\s+/g, '');
 }
 /** The row of round ticks, and one of them. */
-const Meter = /\.Root\s*\{([^}]*)\}/;
-const Mark = /\.Mark\s*\{([^}]*)\}/;
-const Spent = /\.Spent\s*\{([^}]*)\}/;
+const Meter = /\.Root[^{]*\{([^}]*)\}/;
+const Mark = /\.Mark[^{]*\{([^}]*)\}/;
+const Spent = /\.Spent[^{]*\{([^}]*)\}/;
 /** The row, which is where the cap on how wide the bank gets lives. */
-const Root = /\.Root\s*\{([^}]*)\}/;
+const Root = /\.Root[^{]*\{([^}]*)\}/;
 /** One card's slot, which is where the card's shape is declared. */
-const Slot = /\.Slot\s*\{([^}]*)\}/;
+const Slot = /\.Slot[^{]*\{([^}]*)\}/;
 /** The card itself as the slot holds it, which is where the width is read. */
-const SlotCard = /\.Slot > \*\s*\{([^}]*)\}/;
+const SlotCard = /\.Slot > \*[^{]*\{([^}]*)\}/;
 /** The card itself, and what is layered on it. */
-const Card = /\.Root\s*\{([^}]*)\}/;
-const CardMark = /\.Mark\s*\{([^}]*)\}/;
-const Initial = /\.Initial\s*\{([^}]*)\}/;
-const InitialHover = /\.Root:hover \.Initial\s*\{([^}]*)\}/;
-const Noise = /\.Noise\s*\{([^}]*)\}/;
-const Name = /\.Name\s*\{([^}]*)\}/;
+const Card = /\.Root[^{]*\{([^}]*)\}/;
+const CardMark = /\.Mark[^{]*\{([^}]*)\}/;
+const Initial = /\.Initial[^{]*\{([^}]*)\}/;
+const InitialHover = /\.Root:hover \.Initial[^{]*\{([^}]*)\}/;
+const Noise = /\.Noise[^{]*\{([^}]*)\}/;
+const Name = /\.Name[^{]*\{([^}]*)\}/;
 describe('the row of theme cards', () => {
   it('fills the width it is given rather than sizing itself to its cards', () => {
     // A row of `1fr` tracks cannot measure itself: the tracks are fractions of the row, and the
@@ -208,7 +208,7 @@ it('washes in the theme accent on hover, in the same time as every other control
     // game draws it everywhere else. The ink is the same hue turned down until text can sit
     // on that wash, and using it here made a hovered card a different colour from the rest of
     // the theme it belongs to.
-    const hover = /\.Root:hover\s*\{([^}]*)\}/;
+    const hover = /\.Root:hover[^{]*\{([^}]*)\}/;
     // The wash and the step the card rests on are read from one property, so the hover writes the
     // property rather than the background: the panel behind the number is filled from the same
     // one, and a second declaration of the fill would be a second answer to what colour this card
@@ -235,14 +235,14 @@ it('washes in the theme accent on hover, in the same time as every other control
     // follows instead of staying behind as a pale field on a wash.
     expect(card.declaration(Card, 'background')).toBe('var(--ThemeCard-Surface)');
     expect(card.declaration(Card, '--ThemeCard-Surface')).toBe('var(--Color-Surface-Hover)');
-    expect(card.ruleBody(/\.Root:hover\s*\{([^}]*)\}/)).not.toContain('border');
+    expect(card.ruleBody(/\.Root:hover[^{]*\{([^}]*)\}/)).not.toContain('border');
   });
   it('draws the focus ring outside the fill, since there is no border to recolour', () => {
     // It used to recolour the card's own border, which kept a focused card from showing two
     // frames at once. With no frame the ring has to be drawn outside, and an outline does that
     // without taking any of the card's width в— a focused card that grew a pixel would be a card
     // out of line with the five beside it.
-    const focus = /\.Root:focus-visible\s*\{([^}]*)\}/;
+    const focus = /\.Root:focus-visible[^{]*\{([^}]*)\}/;
     expect(card.declaration(focus, 'outline')).toContain('var(--Color-Border-Focus)');
     expect(card.declaration(focus, 'outline-offset')).toBe('var(--Border-Width-Default)');
   });
@@ -257,8 +257,8 @@ it('washes in the theme accent on hover, in the same time as every other control
     // The sway animates `transform` on this node and an animation outranks a transition on
     // the same property, so a press on `transform` would shrink the card for one frame and
     // then stop. `scale` is its own property and composes with the movement.
-    expect(card.declaration(/\.Root:active\s*\{([^}]*)\}/, 'scale')).toBe('0.97');
-    expect(card.ruleBody(/\.Root:active\s*\{([^}]*)\}/)).not.toContain('transform');
+    expect(card.declaration(/\.Root:active[^{]*\{([^}]*)\}/, 'scale')).toBe('0.97');
+    expect(card.ruleBody(/\.Root:active[^{]*\{([^}]*)\}/)).not.toContain('transform');
   });
 it('draws the theme initial as one letter in a pale grey, at full strength', () => {
     // The one thing on the card that says which theme this is without being the name. Grey
@@ -299,7 +299,7 @@ it('crops the number at a panel of its own rather than at the edge of the card',
     // two borders on it, which is the one thing this card gave up its border to avoid. In the
     // card's own colour the panel is invisible as a surface, and it follows the hover rather
     // than staying behind as a pale field on a wash.
-    const panel = /\.Panel\s*\{([^}]*)\}/;
+    const panel = /\.Panel[^{]*\{([^}]*)\}/;
     expect(card.declaration(panel, 'inset')).toBe('var(--Space-ThemeCardInset)');
     expect(card.declaration(panel, 'background')).toBe('var(--ThemeCard-Surface)');
     expect(card.declaration(panel, 'overflow')).toBe('hidden');
@@ -308,7 +308,7 @@ it('crops the number at a panel of its own rather than at the edge of the card',
     // card is and the hover changes it in one place.
     expect(card.declaration(Card, 'background')).toBe('var(--ThemeCard-Surface)');
     expect(
-      card.declaration(/\.Root:hover\s*\{([^}]*)\}/, '--ThemeCard-Surface').replace(/\s+/g, ''),
+      card.declaration(/\.Root:hover[^{]*\{([^}]*)\}/, '--ThemeCard-Surface').replace(/\s+/g, ''),
     ).toBe('var(--ThemeCard-Wash,var(--Accent-Wash))');
     expect(widthShare('--Space-ThemeCardInset')).toBeLessThan(
       widthShare('--Space-ThemeCardPadding'),
@@ -365,7 +365,7 @@ it('is held back with opacity rather than with a colour of its own', () => {
     // cards with six coloured strips в— the number is the biggest thing on a card and was the
     // one thing on it not wearing the theme.
     expect(card.declaration(CardMark, 'color')).toBe('var(--Color-Text-Quiet)');
-    expect(card.declaration(/\.Root:hover\s+\.Mark\s*\{([^}]*)\}/, 'color')).toBe(
+    expect(card.declaration(/\.Root:hover\s+\.Mark[^{]*\{([^}]*)\}/, 'color')).toBe(
       'var(--ThemeCard-Tint,var(--Accent-Tint))',
     );
   });
@@ -386,7 +386,7 @@ it('snaps the mark open rather than easing it, and leaves the name to take its t
     // as the crop being wrong rather than as the number opening up. The card is either being
     // pointed at or it is not, and the two states differ in one step.
     expect(card.declares(CardMark, 'transition')).toBe(false);
-    expect(card.ruleBody(/\.Root:hover\s+\.Mark\s*\{([^}]*)\}/)).not.toContain('transition');
+    expect(card.ruleBody(/\.Root:hover\s+\.Mark[^{]*\{([^}]*)\}/)).not.toContain('transition');
     // The name still eases: the word is what is being read, and a word that appears all at once
     // is a word that was somewhere else a moment ago.
     expect(card.declares(Name, 'transition')).toBe(true);
@@ -446,16 +446,16 @@ it('holds the grain short of the name, which is the thing on the card being read
     // The panel is the thing being looked at and a finish that does not respond reads as a
     // surface that did not notice.
     expect(card.ruleBody(Noise)).toContain('--Transition-Standard');
-    expect(card.ruleBody(/\.Root:hover\s+\.Noise\s*\{([^}]*)\}/)).not.toContain('transition');
+    expect(card.ruleBody(/\.Root:hover\s+\.Noise[^{]*\{([^}]*)\}/)).not.toContain('transition');
   });
   it('is scaled on hover rather than resized, so nothing reflows under the pointer', () => {
-expect(card.declaration(/\.Root:hover\s+\.Mark\s*\{([^}]*)\}/, 'transform')).toBe(
+expect(card.declaration(/\.Root:hover\s+\.Mark[^{]*\{([^}]*)\}/, 'transform')).toBe(
       'scale(var(--Scale-ThemeCardMarkHover))',
     );
     expect(card.declaration(CardMark, 'transform')).toBe('scale(1)');
   });
   it('opens with the name by one ratio, or the panel is one image changing size', () => {
-    expect(card.declaration(/\.Root:hover\s+\.Name\s*\{([^}]*)\}/, 'font-size')).toBe(
+    expect(card.declaration(/\.Root:hover\s+\.Name[^{]*\{([^}]*)\}/, 'font-size')).toBe(
       'calc(var(--FontSize-ThemeCard)*var(--Scale-ThemeCardHover))',
     );
   });

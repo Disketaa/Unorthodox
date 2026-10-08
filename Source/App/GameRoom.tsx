@@ -60,6 +60,10 @@ function GameScene({ view }: { view: GameSessionView }) {
           choosing={view.phase === 'Choosing'}
           myTurn={view.playerId !== null && view.playerId === view.turnPlayerId}
           theme={view.publicState?.phase === 'Lobby' ? undefined : view.publicState?.theme}
+          picking={
+            view.publicState?.phase === 'Choosing' ? view.publicState.picking : undefined
+          }
+          clockOffsetMs={view.clockOffsetMs}
           onPickTheme={view.chooseTheme}
           spent={spentByTheme(view.publicState)}
         />

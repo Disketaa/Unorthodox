@@ -1,6 +1,6 @@
 import { ThemeId, createRandom, dealThemes } from '@/Core';
 import { Stack } from '@/Design/Primitives';
-import { ThemeCards } from './ThemeCards';
+import { ThemeCards, type ThemeCardsProps } from './ThemeCards';
 
 /** The bank as the gallery runs it, with the ids standing in for the names. Written out rather
  * than derived from `ThemeIds`, since deriving it would need a cast whose keys the compiler
@@ -32,6 +32,15 @@ function withOneFinished(themes: readonly ThemeId[], first: ThemeId | undefined)
   return spent;
 }
 
+/** The same bank again, with only what this case is showing left to differ. Four near-identical
+ * banks is four blocks of the same props, and one of them being edited without the other is how
+ * a gallery stops showing the component it is a gallery of. */
+function Bank(
+  rest: Partial<ThemeCardsProps> & Pick<ThemeCardsProps, 'themes' | 'spent'>
+) {
+  return <ThemeCards names={names} roundsPerTheme={10} {...rest} />;
+}
+
 export function ThemeCardsGallery() {
   const themes: readonly ThemeId[] = dealThemes(createRandom(7), 6);
   const first = themes[0];
@@ -39,33 +48,18 @@ export function ThemeCardsGallery() {
   return (
     <Stack gap="Lg">
       {/* The bank on offer, to the player whose turn it is. */}
-      <ThemeCards
-        themes={themes}
-        names={names}
-        roundsPerTheme={10}
-        spent={spent}
-        onPick={() => {}}
-      />
+      <Bank themes={themes} spent={spent} onPick={() => {}} />
       {first !== undefined && (
         <>
           {/* The same bank on somebody else's turn: held back, still under the pointer. */}
-          <ThemeCards themes={themes} names={names} roundsPerTheme={10} spent={spent} />
+          <Bank themes={themes} spent={spent} />
           {/* And a bank with a theme in it that the room has finished. */}
-          <ThemeCards
-            themes={themes}
-            names={names}
-            roundsPerTheme={10}
-            spent={withOneFinished(themes, first)}
-          />
+          <Bank themes={themes} spent={withOneFinished(themes, first)} />
+          {/* And a bank the room is answering itself, with its roll on one card. */}
+          <Bank themes={themes} spent={spent} picking swept={themes[2]} />
           {/* And the room's answer, at full strength on every screen: whoever pressed it and
            * whoever did not, the expanded card is drawn the same either way. */}
-          <ThemeCards
-            themes={themes}
-            names={names}
-            roundsPerTheme={10}
-            spent={spent}
-            picked={first}
-          />
+          <Bank themes={themes} spent={spent} picked={first} />
         </>
       )}
     </Stack>

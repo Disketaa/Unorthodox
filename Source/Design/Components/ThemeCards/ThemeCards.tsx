@@ -19,6 +19,12 @@ export interface ThemeCardsProps {
    * the state every client is sent rather than kept per screen, so a press opens the same card
    * in every browser in the room at the same moment. */
   picked?: ThemeId;
+  /** Whether the room is answering its own bank, and which card it is looking at. The roll is on
+   * the room rather than on any screen, so this is drawn from what every client was sent. */
+  picking?: boolean;
+  /** The card the room's roll is on, drawn as though the pointer were on it. Undefined outside a
+   * roll, and held on the card the roll landed on through its last stretch. */
+  swept?: ThemeId;
   /** How many rounds have been played in each theme. A count per theme rather than one number
    * for the bank, because the bank is the same six themes every round and each drains on its
    * own. */
@@ -50,7 +56,53 @@ function useWash(picked: ThemeId | undefined, bank: RefObject<HTMLDivElement>): 
   }, [picked, bank]);
 }
 
-/** The themes a lobby is being offered, six cards in a bank, lying flat: the bank was once six
+/** What one slot is told: the bank's own props, with the two that are the bank's decision rather
+ * than a card's added. */
+type SlotProps = Pick<ThemeCardsProps, 'names' | 'roundsPerTheme' | 'spent' | 'picked' | 'onPick'> & {
+  theme: ThemeId;
+  index: number;
+  swept: ThemeId | undefined;
+  waiting: boolean;
+};
+
+/** One card's slot in the bank: its cell in the grid, the room's roll arriving on it, and the
+ * card. A function rather than more markup in the map, since both the slot's own class and the
+ * card's dozen props belong to a card rather than to the bank. */
+function ThemeSlot({
+  theme,
+  index,
+  names,
+  roundsPerTheme,
+  spent,
+  picked,
+  swept,
+  onPick,
+  waiting,
+}: SlotProps) {
+  return (
+    <div class={slotClass(theme, picked)} key={theme}>
+      {/* The same arrival the characters have, keyed on the theme so a bank that is dealt a new
+       * set pops the way a roster that turns up new players does, and the card's place in the
+       * bank as its place in the row, so six cards ripple rather than fire in unison. */}
+      <Pop trigger={theme} index={index} stagger={SlotStagger}>
+        <ThemeCard
+          theme={theme}
+          name={names[theme]}
+          index={index + 1}
+          rounds={roundsPerTheme}
+          spent={spent?.get(theme) ?? 0}
+          chosen={theme === picked}
+          swept={theme === swept}
+          locked={picked !== undefined}
+          waiting={waiting}
+          onPick={onPick}
+        />
+      </Pop>
+    </div>
+  );
+}
+
+/** The themes a lobby is being offered, six cards in a bank, lying flat: the bank was once six *
  * screens in a ring facing the middle of the viewport, and the ring was measured on every
  * resize. The theme it settled on has its wash written onto the page. */
 export function ThemeCards({
@@ -60,14 +112,14 @@ export function ThemeCards({
   roundsPerTheme,
   spent,
   picked,
+  picking = false,
+  swept,
 }: ThemeCardsProps) {
   const bank = useRef<HTMLDivElement>(null);
   const settled = picked !== undefined;
-  // A bank with nothing to ask for is being read rather than played, so its cards are held back
-  // rather than dead: the room is watching whose turn it is come round. Once the room has
-  // answered there is nothing to hold back from, and dimming the room's own decision to whoever
-  // did not press it would be drawing it as somebody's private choice. */
-  const waiting = !settled && onPick === undefined;
+  // A bank with nothing to ask for is being read rather than played, so its cards are held
+  // back rather than dead, and a bank the room is answering itself is being read too.
+  const waiting = !settled && (picking || onPick === undefined);
 
   useWash(picked, bank);
 
@@ -78,24 +130,17 @@ export function ThemeCards({
       role="group"
     >
       {themes.map((theme, index) => (
-        <div class={slotClass(theme, picked)} key={theme}>
-          {/* The same arrival the characters have, keyed on the theme so a bank that is dealt a
-           * new set pops the way a roster that turns up new players does, and the card's place in
-           * the bank as its place in the row, so six cards ripple rather than fire in unison. */}
-          <Pop trigger={theme} index={index} stagger={SlotStagger}>
-            <ThemeCard
-              theme={theme}
-              name={names[theme]}
-              index={index + 1}
-              rounds={roundsPerTheme}
-              spent={spent?.get(theme) ?? 0}
-              chosen={theme === picked}
-              locked={settled}
-              waiting={waiting}
-              onPick={onPick}
-            />
-          </Pop>
-        </div>
+        <ThemeSlot
+          theme={theme}
+          index={index}
+          names={names}
+          roundsPerTheme={roundsPerTheme}
+          spent={spent}
+          picked={picked}
+          swept={swept}
+          onPick={onPick}
+          waiting={waiting}
+        />
       ))}
     </div>
   );

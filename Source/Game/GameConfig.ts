@@ -38,20 +38,29 @@ const timing = {
    * already half faded. No phase is made longer for it — it plays out over the theme choice. */
   startVeilMs: 300,
   startCountdownMs: 3000,
+  /** How long the room's own roll sweeps the bank before it settles on a card. Long enough for
+   * the sweep to read as the room looking rather than as the room hesitating, and short enough
+   * that a round nobody answered still starts promptly. */
+  pickingMs: 2600,
+  /** How long the sweep rests on the card it landed on before the room commits to it. */
+  pickingSettleMs: 900,
 };
 
 export const GameConfig = {
   timing,
+  /** Both paces sit on one short theme clock, which is not a pace: it is short while the roll at
+   * the end of it is being looked at, so a bank nobody answered can be reached without waiting
+   * out the real clock first. The other two waits still differ. */
   paces: {
     Standard: {
       writingMs: timing.writingDurationMs,
       decidingMs: timing.reviewingDurationMs,
-      categoryMs: 20000,
+      categoryMs: 3000,
     },
     Fast: {
       writingMs: 40000,
       decidingMs: 60000,
-      categoryMs: 15000,
+      categoryMs: 3000,
     },
   } satisfies Record<Pace, PaceTimings>,
   scoring: {

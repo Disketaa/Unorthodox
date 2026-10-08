@@ -67,7 +67,8 @@
  * since using the ink made the hovered card a different colour from the theme it belongs to.
  * All three values are written by the component from `Core`, so the fallbacks here are only
  * what a card looks like before it has been written to. */
-.Root:hover {
+.Root:hover,
+.Root.Swept {
   --ThemeCard-Surface: var(--ThemeCard-Wash, var(--Accent-Wash));
   background: var(--ThemeCard-Surface);
   color: var(--ThemeCard-Tint, var(--Accent-Tint));
@@ -221,7 +222,8 @@
  * The darkened accent and not the wash: the card has already gone to the wash under the
  * pointer, so a letter in the wash would be the one thing on it that did not answer, and grey
  * to the theme's own colour is the change that says which theme the card is. */
-.Root:hover .Initial {
+.Root:hover .Initial,
+.Root.Swept .Initial {
   color: var(--ThemeCard-Ink, var(--Accent-Ink));
 }
 
@@ -246,7 +248,8 @@
 /* The grain comes up a little under the pointer, on the card's own timing. The panel is the
  * thing being looked at, and a finish that does not respond to that reads as a surface that did
  * not notice. Faintly, because it is a finish and not a highlight. */
-.Root:hover .Noise {
+.Root:hover .Noise,
+.Root.Swept .Noise {
   opacity: var(--Opacity-ThemeCardNoiseHover);
 }
 
@@ -318,11 +321,13 @@
  * did not. Two shares rather than one, since a clipped figure and a line of text cannot answer
  * to the same amount: the mark is already larger than the card, so the name's scale is
  * invisible on it and it needs four times as much to shift inside the crop. */
-.Root:hover .Name {
+.Root:hover .Name,
+.Root.Swept .Name {
   font-size: calc(var(--FontSize-ThemeCard) * var(--Scale-ThemeCardHover));
 }
 
-.Root:hover .Mark {
+.Root:hover .Mark,
+.Root.Swept .Mark {
   transform: scale(var(--Scale-ThemeCardMarkHover));
   opacity: var(--Opacity-ThemeCardMarkHover);
   color: var(--ThemeCard-Tint, var(--Accent-Tint));
@@ -381,7 +386,8 @@
 /* Lifted back to full over the hover, so a card nobody may press still opens under the pointer
  * like any other. Without it the held-back card is the one card in the bank that does not
  * answer, which reads as broken rather than as waiting. */
-.Waiting:hover {
+.Waiting:hover,
+.Waiting.Swept {
   opacity: 1;
 }
 

@@ -3,6 +3,8 @@ import { HostInbox } from './HostInbox';
 import {
   startGameFrom,
   startWritingFrom,
+  startRandomPickFrom,
+  resolveRandomPickFrom,
   endReviewingFrom,
   nextRoundFrom,
   nextPhaseFrom,
@@ -36,6 +38,9 @@ export class HostSession {
   private readonly inbox: HostInbox;
   /** How many bots this room has been given, which is how the next one is numbered. */
   private botsAdded = 0;
+  /** The code the room's themes are dealt from, kept because the bank is rolled from it and
+   * nothing else in the host's state carries it. */
+  private roomCode = '';
 
   constructor(transport: Transport) {
     this.room = new HostRoom(transport);
@@ -47,6 +52,7 @@ export class HostSession {
    * left, so a fresh lobby would be a different room with the same code. */
   start(roomCode: string, hostName: string, look: PlayerLook): void {
     log('info', 'starting host session', roomCode, hostName);
+    this.roomCode = roomCode;
     // The state must exist before the room opens, because a waiting client can answer the
     // moment the host becomes addressable, and messages arriving before the state is ready
     // would be dropped.
@@ -143,6 +149,16 @@ export class HostSession {
 
   startWriting(topic: string): void {
     startWritingFrom(this.flow, topic);
+  }
+
+  /** The bank closed with nothing pressed on it, so the room is answering its own. */
+  startRandomPick(): void {
+    startRandomPickFrom(this.flow, this.roomCode);
+  }
+
+  /** The sweep is over and the roll commits. */
+  resolveRandomPick(): void {
+    resolveRandomPickFrom(this.flow);
   }
 
   /** Advance out of Writing once everyone has answered, or out of Reviewing once its clock is

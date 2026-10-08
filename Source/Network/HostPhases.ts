@@ -1,5 +1,5 @@
 import * as Game from '@/Game';
-import { createLogger } from '@/Core';
+import { createLogger, themesForRoom, type Random, type ThemeId } from '@/Core';
 
 const log = createLogger('HostPhases');
 
@@ -32,6 +32,41 @@ export function startWriting(
     durationMs,
     startedAt: Date.now(),
   });
+}
+
+/** The bank nobody answered. The room's own roll, out of the themes still in play in it: a card
+ * whose every round is spent is not an answer. Every one is drawn from anyway, since a bank
+ * with nothing left in it is still a bank somebody has to be answered with. */
+function drawableTheme(state: Game.HostState, roomCode: string, random: Random): ThemeId {
+  const themes = themesForRoom(roomCode, Game.GameConfig.themes.cardsPerLobby);
+  const inPlay = themes.filter(
+    (theme) => (state.themeRounds.get(theme) ?? 0) < Game.GameConfig.themes.roundsPerTheme
+  );
+  const pool = inPlay.length > 0 ? inPlay : themes;
+  return pool[Math.floor(random() * pool.length)] ?? themes[0] ?? 'Random';
+}
+
+/** Nobody pressed a card before the bank closed, so the room is pressing one. */
+export function startRandomPick(
+  state: Game.HostState | undefined,
+  roomCode: string,
+  random: Random = Math.random
+): Game.HostState {
+  if (state?.phase !== 'Choosing' || state.theme !== undefined || state.picking !== undefined) {
+    return state ?? Game.freshLobbyState();
+  }
+  const theme = drawableTheme(state, roomCode, random);
+  log('info', 'bank left open, room is picking', theme);
+  return Game.reducer(state, { type: 'START_RANDOM_PICK', theme, startedAt: Date.now() });
+}
+
+/** The sweep is over and the room's roll commits. */
+export function resolveRandomPick(state: Game.HostState | undefined): Game.HostState {
+  if (state?.phase !== 'Choosing') {
+    return state ?? Game.freshLobbyState();
+  }
+  log('info', 'room is settling on its own pick');
+  return Game.reducer(state, { type: 'RESOLVE_RANDOM_PICK' });
 }
 
 /** Writing to Reviewing, once every seated player has answered. */

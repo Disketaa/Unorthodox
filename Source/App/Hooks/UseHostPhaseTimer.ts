@@ -3,11 +3,11 @@ import {
   isPhaseName,
   isTimedPhase,
   phaseAfterCycling,
-  phaseDurationMs,
   phaseGraceMs,
 } from '@/Game/PhaseFlow';
 import { Session } from '../Session';
 import { SessionPhase } from './UseSessionPhase';
+import { useAnswersIn, useRandomPick } from './UseRandomPick';
 
 /** The host closes every timed phase, and its own clock is the reference. The delay is measured
  * from the real phase start, not from when this effect ran, so a throttled or suspended host
@@ -23,6 +23,8 @@ export function useHostPhaseTimer(
   // Connecting is this browser's own moment before the host has spoken, so it is not a row in the
   // phase table and there is nothing here to time.
   const inGame = isPhaseName(name) ? name : null;
+  const publicState = session.getPublicState();
+  const choosing = publicState?.phase === 'Choosing' ? publicState : undefined;
 
   useEffect(() => {
     if (!isHost || inGame === null || !isTimedPhase(inGame)) {
@@ -39,18 +41,18 @@ export function useHostPhaseTimer(
       inGame === 'Scores'
         ? onScoresDone
         : () => {
+            // A bank that closed with nothing pressed on it is not a round without a theme, it is
+            // a round the room answers itself. The sweep takes its own time and moves on after.
+            if (inGame === 'Choosing' && choosing?.theme === undefined) {
+              session.startRandomPick();
+              return;
+            }
             session.nextPhase(phaseAfterCycling(inGame));
           };
     const id = setTimeout(onElapsed, remaining);
     return () => clearTimeout(id);
-  }, [isHost, inGame, durationMs, phaseStartedAt, session, onScoresDone]);
+  }, [isHost, inGame, durationMs, phaseStartedAt, session, onScoresDone, choosing?.theme]);
 
-  useEffect(() => {
-    // Everyone answered: move on instead of waiting out the clock. The phase it moves to and how
-    // long that one runs are both read from the table rather than named here.
-    if (isHost && name === 'Writing' && playerCount > 0 && submittedCount >= playerCount) {
-      const pace = session.getPublicState()?.pace ?? 'Standard';
-      session.endReviewing(phaseDurationMs(phaseAfterCycling('Writing'), pace));
-    }
-  }, [isHost, name, submittedCount, playerCount, session]);
+  useRandomPick(session, isHost, choosing?.picking);
+  useAnswersIn(session, isHost, name, submittedCount, playerCount, publicState?.pace);
 }

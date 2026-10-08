@@ -8,6 +8,7 @@ import {
   toPublicChoosingState,
 } from './PublicPhases';
 import { PlayerId, PlayerLook, ThemeId, assertNever } from '@/Core';
+import type { RandomPick } from './GameState';
 import type { Pace } from './GameConfig';
 
 /** What a client is told about one player. */
@@ -48,6 +49,10 @@ export type PublicChoosingState = PublicRoom & {
    * still being offered. On the wire rather than decided per client, so every screen in the
    * room expands the same card at the same moment. */
   theme?: ThemeId;
+  /** The room answering its own bank, once the clock ran out with nothing pressed. Sent with the
+   * moment it started rather than only the answer, so every screen sweeps for the same length
+   * and lands on the same card. */
+  picking?: RandomPick;
 };
 
 export type PublicWritingState = PublicRoom & {

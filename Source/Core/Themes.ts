@@ -1,5 +1,6 @@
 import { Accent, Accents } from './Accents';
 import { CharacterColor } from './Characters';
+import { randomFor } from './Random';
 
 /** The themes a room can be given, as shared vocabulary. Core for the same reason the cast is:
  * Design draws a card for one, Content names them, and the room carries a deal of them. Nothing
@@ -42,6 +43,13 @@ const ThemeAccents: Readonly<Record<ThemeId, CharacterColor>> = {
  * together, and a wash without its ink is half an answer. */
 export function themeAccent(theme: ThemeId): Accent {
   return Accents[ThemeAccents[theme]];
+}
+
+/** The themes one room is offered, rolled from its code. One function rather than each caller
+ * dealing for itself: the bank has to be the same six on every screen in the room, and the host
+ * needs the same six to pick at random out of. */
+export function themesForRoom(roomCode: string, count: number): ThemeId[] {
+  return dealThemes(randomFor(roomCode), count);
 }
 
 /** The themes one lobby is offered, drawn from the whole set without repetition. A partial

@@ -1,17 +1,26 @@
 /** The host's game state, written out as plain data, one shape per phase. Split from the reading
  * side because what a phase writes is a small table, while the guards that read it back are the
  * fiddly half. */
-import type { HostState } from '@/Game';
-import type { ThemeId } from '@/Core';
+import type { HostState, Pace, Player, RandomPick } from '@/Game';
+import type { PlayerId, ThemeId } from '@/Core';
 import { rejectionsOut } from './RoomRejections';
 
 /** The phases that carry a clock, which is every phase but Lobby and Final. */
 type TimedHostState = Extract<HostState, { durationMs: number }>;
 
+/** What every phase carries whatever it is doing, in the plain shape it goes out as. */
+interface Members {
+  players: [PlayerId, Player][];
+  scores: [PlayerId, number][];
+  turnPlayerId: PlayerId | null;
+  pace: Pace;
+  themeRounds: [ThemeId, number][];
+}
+
 /** The roster, totals, turn, pace and per-theme round counts every phase carries. The counts
  * among them, since a resumed room that forgot them would refill every row of ticks on the
  * bank. */
-function membersOf(state: HostState) {
+function membersOf(state: HostState): Members {
   return {
     players: [...state.players.entries()],
     scores: [...state.cumulativeScores.entries()],
@@ -40,6 +49,25 @@ function themeOf(state: HostState): { theme?: ThemeId } {
   return state.phase === 'Lobby' || state.theme === undefined ? {} : { theme: state.theme };
 }
 
+/** The room's own roll, if it is mid-sweep. Written because a host that refreshed during one has
+ * * to come back into the same sweep rather than leave the bank open a second time. */
+function pickingOf(state: HostState): { picking?: RandomPick } {
+  return state.phase === 'Choosing' && state.picking !== undefined
+    ? { picking: state.picking }
+    : {};
+}
+
+/** One bank's whole state: the room, its clock, the theme on it and the roll running over it. */
+function choosingOf(state: Extract<HostState, { phase: 'Choosing' }>, members: Members) {
+  return {
+    ...members,
+    ...clockOf(state),
+    phase: state.phase,
+    ...themeOf(state),
+    ...pickingOf(state),
+  };
+}
+
 export function encodeRoomState(state: HostState): Record<string, unknown> {
   const members = membersOf(state);
   if (state.phase === 'Lobby') {
@@ -50,7 +78,7 @@ export function encodeRoomState(state: HostState): Record<string, unknown> {
   }
   const clock = clockOf(state);
   if (state.phase === 'Choosing') {
-    return { ...members, ...clock, phase: state.phase, ...themeOf(state) };
+    return choosingOf(state, members);
   }
   if (state.phase === 'Writing') {
     return { ...members, ...clock, phase: state.phase, ...topicOf(state), ...themeOf(state) };
