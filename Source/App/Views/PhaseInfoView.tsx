@@ -1,7 +1,7 @@
 ﻿import { Banner, Timer } from '@/Design/Components';
 import { Stack } from '@/Design/Primitives';
 import { Strings } from '@/Content';
-import { GameConfig, isTimedPhase, questionRevealMs } from '@/Game';
+import { GameConfig, isPhaseName, isTimedPhase, questionRevealMs } from '@/Game';
 import { accentFor } from '@/Core';
 import { useCountdown } from '../Hooks/UseCountdown';
 import { usePhaseAlarm } from '../Hooks/UsePhaseAlarm';
@@ -31,16 +31,23 @@ const PhaseSentences: Record<SessionPhaseName, (story: PhaseStory) => string> = 
 };
 
 /** The clock the block at the top is counting, and how long it runs. The question is its own
- * clock rather than the bank's, since it is timed against its own length while the bank's
- * stopped the moment the theme was answered. */
-function clockOf(view: GameSessionView): { remainingMs: number; totalMs: number } {
+ * clock rather than the bank's, which stopped when the theme was answered. */
+function clockOf(view: GameSessionView): {
+  remainingMs: number;
+  totalMs: number;
+  deadline: number;
+  ringing: boolean;
+} {
   const choosing = view.publicState?.phase === 'Choosing' ? view.publicState : undefined;
   const question = choosing?.question;
   const totalMs = question === undefined ? view.durationMs : questionRevealMs(question);
   const startedAt = question === undefined ? view.phaseStartedAt : (choosing?.questionAt ?? 0);
   const answeredAt = question === undefined ? view.answeredAt : undefined;
+  const endsAt = answeredAt ?? startedAt + view.clockOffsetMs + totalMs;
   return {
     totalMs,
+    deadline: endsAt,
+    ringing: answeredAt === undefined && isPhaseName(view.phase) && isTimedPhase(view.phase),
     remainingMs: useCountdown(
       totalMs,
       startedAt,
@@ -68,8 +75,8 @@ function tintOf(view: GameSessionView, reading: boolean): string | undefined {
  * The countdown is drawn behind the sentence rather than under it, so a timed phase is one
  * block and a phase nobody waits out is the same block with no bar in it. */
 export function PhaseInfoView({ view }: PhaseViewProps) {
-  const { remainingMs, totalMs } = clockOf(view);
-  usePhaseAlarm(view);
+  const { remainingMs, totalMs, deadline, ringing } = clockOf(view);
+  usePhaseAlarm({ deadline, ringing, paused: view.paused });
   const turnName =
     view.turnPlayerId === null ? '' : (view.playerNames.get(view.turnPlayerId) ?? '');
   const choosing = view.publicState?.phase === 'Choosing' ? view.publicState : undefined;

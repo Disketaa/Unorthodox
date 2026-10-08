@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'preact/hooks';
-import { GameConfig, isPhaseName, isTimedPhase } from '@/Game';
+import { GameConfig } from '@/Game';
 import { playSound } from '@/Design/Sounds';
-import type { SessionPhase } from './UseSessionPhase';
 
 /** What the last armed deadline was, kept across the render in which the phase changed. */
 interface Armed {
@@ -9,24 +8,33 @@ interface Armed {
   rang: boolean;
 }
 
-/** The alarm at the end of a timed phase, heard on every client from its own clock. The host's
- * commit of the next one is the announcement, and it arrives after the bar has reached zero.
- * Armed against the same deadline the bar is drawn from. */
-export function usePhaseAlarm({ phase, durationMs, phaseStartedAt }: SessionPhase): void {
+/** The clock the alarm follows, which is the one the block above is drawn on. `ringing` is false
+ * for a block with no end to announce, and `paused` holds the whole thing off. */
+export interface AlarmClock {
+  deadline: number;
+  ringing: boolean;
+  paused: boolean;
+}
+
+/** The alarm at the end of whatever clock the block at the top is drawn on, heard on every
+ * client from its own clock. Armed against that block's deadline rather than the phase's, since
+ * a sub-phase swaps the block onto a clock of its own while the phase is unchanged. */
+export function usePhaseAlarm({ deadline, ringing, paused }: AlarmClock): void {
   const armed = useRef<Armed | null>(null);
-  const timed = isPhaseName(phase) && isTimedPhase(phase) && durationMs > 0;
-  const deadline = phaseStartedAt + durationMs;
 
   useEffect(() => {
     const { alarmEarlyMs, alarmStaleMs } = GameConfig.timing;
     const now = Date.now();
 
-    // The state beat the deadline by a hair: ring now, since nothing else will.
+    // The state beat the deadline by a hair: ring now, since nothing else will. A held room is
+    // the exception: the host has already answered the deadline by holding it, and the hold itself
+    // is what the players were told, so a second telling here would sound over the pause.
     const previous = armed.current;
     armed.current = null;
     if (
       previous !== null &&
       !previous.rang &&
+      !paused &&
       now >= previous.deadline - alarmEarlyMs &&
       now - previous.deadline <= alarmStaleMs
     ) {
@@ -35,7 +43,7 @@ export function usePhaseAlarm({ phase, durationMs, phaseStartedAt }: SessionPhas
 
     // Already over when this browser hears of it: a late joiner or a woken tab is given the
     // room as it stands, and must not go off for a phase it never watched end.
-    if (!timed || deadline <= now) return;
+    if (!ringing || paused || deadline <= now) return;
 
     const current: Armed = { deadline, rang: false };
     armed.current = current;
@@ -46,5 +54,5 @@ export function usePhaseAlarm({ phase, durationMs, phaseStartedAt }: SessionPhas
       if (Date.now() - deadline <= alarmStaleMs) playSound('Alarm');
     }, deadline - now);
     return () => clearTimeout(id);
-  }, [timed, phase, phaseStartedAt, durationMs]);
+  }, [ringing, paused, deadline]);
 }
