@@ -1,6 +1,7 @@
 import { ThemeId, themeAccent } from '@/Core';
 import { useEffect, useRef } from 'preact/hooks';
 import type { RefObject } from 'preact';
+import { Pop } from '@/Design/Primitives';
 import { ThemeCard } from '../ThemeCard';
 import styles from './ThemeCards.module.css';
 
@@ -23,6 +24,10 @@ export interface ThemeCardsProps {
    * own. */
   spent?: ReadonlyMap<ThemeId, number>;
 }
+
+/** Raised over `--Pop-Stagger`, which is sized for a row of characters standing close: six large
+ * cards at it arrive as one movement rather than a wave. */
+const SlotStagger = '40ms';
 
 function slotClass(theme: ThemeId, picked: ThemeId | undefined): string {
   if (theme === picked) return `${styles.Slot} ${styles.Chosen}`;
@@ -74,17 +79,22 @@ export function ThemeCards({
     >
       {themes.map((theme, index) => (
         <div class={slotClass(theme, picked)} key={theme}>
-          <ThemeCard
-            theme={theme}
-            name={names[theme]}
-            index={index + 1}
-            rounds={roundsPerTheme}
-            spent={spent?.get(theme) ?? 0}
-            chosen={theme === picked}
-            locked={settled}
-            waiting={waiting}
-            onPick={onPick}
-          />
+          {/* The same arrival the characters have, keyed on the theme so a bank that is dealt a
+           * new set pops the way a roster that turns up new players does, and the card's place in
+           * the bank as its place in the row, so six cards ripple rather than fire in unison. */}
+          <Pop trigger={theme} index={index} stagger={SlotStagger}>
+            <ThemeCard
+              theme={theme}
+              name={names[theme]}
+              index={index + 1}
+              rounds={roundsPerTheme}
+              spent={spent?.get(theme) ?? 0}
+              chosen={theme === picked}
+              locked={settled}
+              waiting={waiting}
+              onPick={onPick}
+            />
+          </Pop>
         </div>
       ))}
     </div>

@@ -1,5 +1,5 @@
 import { ThemeId, themeAccent } from '@/Core';
-import { useEffect } from 'preact/hooks';
+import { useCallback } from 'preact/hooks';
 import { useSwayMotion } from '@/Design/Primitives';
 import { playSound } from '../../Sounds';
 import { RoundMeter } from '../RoundMeter';
@@ -75,6 +75,24 @@ function cardClasses(
   return classes.join(' ');
 }
 
+/** The ref the card is written to, with the theme on it before the first paint: an effect runs
+ * after it, which showed the card for a frame in the fallbacks and then recoloured it. */
+function useCardRef(
+  motion: { current: HTMLButtonElement | null },
+  theme: ThemeId,
+  index: number
+) {
+  return useCallback(
+    (node: HTMLButtonElement | null) => {
+      motion.current = node;
+      if (node !== null) {
+        writeTheme(node, theme, index);
+      }
+    },
+    [motion, theme, index]
+  );
+}
+
 /** The card's face, as spans rather than layout elements: the card paints its own surface, so
  * the face is decoration on it and a Stack here would fight the button's own box. */
 function CardFace({
@@ -121,16 +139,12 @@ export function ThemeCard({
   // as a prop, because the card is what knows its own rounds and its own count of them.
   const spentOut = spent >= rounds;
 
-  useEffect(() => {
-    if (motion.current !== null) {
-      writeTheme(motion.current, theme, index);
-    }
-  }, [theme, index, motion]);
+  const ref = useCardRef(motion, theme, index);
 
   return (
     <button
       type="button"
-      ref={motion}
+      ref={ref}
       class={cardClasses(moving, blink, chosen, waiting, spentOut)}
       disabled={locked}
       // Announced rather than disabled: the card is on screen and readable, so a screen reader is
