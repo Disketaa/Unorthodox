@@ -35,10 +35,7 @@ export function QuestionStage({ words, revealed, label, accent }: QuestionStageP
   return (
     <div class={styles.Root}>
       <div class={styles.Column}>
-        <span
-          class={styles.Label}
-          style={{ background: accent.wash, color: accent.ink }}
-        >
+        <span class={styles.Label} style={{ background: accent.wash, color: accent.ink }}>
           {label}
         </span>
         <span class={styles.Stage}>

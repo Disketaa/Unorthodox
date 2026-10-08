@@ -69,7 +69,10 @@ function plainFrom(fields: Fields, members: Members): HostState | undefined {
 
 /** The question being written out, guarded in halves. A stored question with no moment is not a
  * reveal any client can run, since it would have to guess when the words started arriving. */
-function questionFrom(fields: Fields): { question: string | undefined; questionAt: number | undefined } {
+function questionFrom(fields: Fields): {
+  question: string | undefined;
+  questionAt: number | undefined;
+} {
   const question = fields.get('question');
   const questionAt = fields.get('questionAt');
   return {

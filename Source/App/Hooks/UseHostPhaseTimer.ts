@@ -27,7 +27,12 @@ export function useHostPhaseTimer(
   usePhaseClock(session, isHost, phase, onScoresDone);
   useRandomPick(session, isHost, held ? undefined : choosing?.picking);
   useAnswerReveal(isHost, held ? undefined : answeredAt, onThemeRevealed);
-  useQuestionReveal(isHost, held ? undefined : choosing?.question, choosing?.questionAt, onQuestionRead);
+  useQuestionReveal(
+    isHost,
+    held ? undefined : choosing?.question,
+    choosing?.questionAt,
+    onQuestionRead
+  );
   useAnswersIn(
     session,
     isHost,
@@ -48,5 +53,12 @@ export function useRoundClocks(
   phase: SessionPhase,
   actions: { nextRound: () => void; revealQuestion: () => void; startRound: () => void }
 ): void {
-  useHostPhaseTimer(session, isHost, phase, actions.nextRound, actions.revealQuestion, actions.startRound);
+  useHostPhaseTimer(
+    session,
+    isHost,
+    phase,
+    actions.nextRound,
+    actions.revealQuestion,
+    actions.startRound
+  );
 }
