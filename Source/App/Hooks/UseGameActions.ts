@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'preact/hooks';
-import { GameConfig, Pace } from '@/Game';
+import { GameConfig, Pace, PublicState } from '@/Game';
 import { CharacterColor, CharacterId, ThemeId } from '@/Core';
-import { topicAt } from '@/Content';
+import { questionFor, topicAt } from '@/Content';
 import { Session } from '../Session';
 import { navigate } from '../Routes';
 
@@ -13,8 +13,10 @@ export interface GameActions {
   nextRound: () => void;
   /** Wherever the phase table says goes next, for the host's dock. */
   nextPhase: () => void;
-  /** The round starting from the theme the room chose. Goes through the writing move rather than
-   * the dock's jump, since starting a round is what hands the turn on. */
+  /** The round's question arriving word by word, drawn from the theme the room just answered. */
+  revealQuestion: () => void;
+  /** The round starting once the question has been read. Goes through the writing move rather
+   * than the dock's jump, since starting a round is what hands the turn on. */
   startRound: () => void;
   /** Holding the room still, or letting it run again. */
   setPaused: (paused: boolean) => void;
@@ -27,11 +29,22 @@ export interface GameActions {
   playAgain: () => void;
 }
 
-/** The round the room is on, and the moves that change it. A ref rather than state: nothing is
- * drawn from it, only the next topic read, and a re-render on every round would be a render
- * that changes nothing. */
-function useRoundFlow(session: Session) {
+/** The question the answered theme is being asked, or undefined while the bank is still open.
+ * Read off the room rather than remembered, so the question a round asks cannot drift from the
+ * theme the room actually pressed. */
+function questionForRoom(state: PublicState | undefined): string | undefined {
+  if (state?.phase !== 'Choosing' || state.theme === undefined) return undefined;
+  const spent = state.spent.find((entry) => entry.theme === state.theme);
+  return questionFor(state.theme, spent?.rounds ?? 0);
+}
+
+/** The round the room is on, and the moves that change it. Refs rather than state: nothing is
+ * drawn from them, only the next question and topic read. They are written while rendering, so
+ * the frame the room answers the bank on already has this round's question in hand. */
+function useRoundFlow(session: Session, publicState: PublicState | undefined) {
   const roundsRef = useRef(0);
+  const questionRef = useRef<string | undefined>(undefined);
+  questionRef.current = questionForRoom(publicState);
 
   const startGame = useCallback(() => {
     roundsRef.current = 1;
@@ -59,21 +72,29 @@ function useRoundFlow(session: Session) {
     session.nextPhase(topicAt(roundsRef.current - 1));
   }, [session]);
 
-  const startRound = useCallback(() => {
-    session.startWriting(topicAt(roundsRef.current - 1));
+  const revealQuestion = useCallback(() => {
+    session.revealQuestion(questionRef.current ?? topicAt(roundsRef.current - 1));
   }, [session]);
 
-  return { startGame, chooseTheme, nextRound, nextPhase, startRound };
+  const startRound = useCallback(() => {
+    // The question the room was shown, not a fresh draw: the words they read have to be the ones
+    // they are answering. A round the host jumped into rather than played has no question, and
+    // falls back to the generic bank.
+    session.startWriting(questionRef.current ?? topicAt(roundsRef.current - 1));
+  }, [session]);
+
+  return { startGame, chooseTheme, nextRound, nextPhase, revealQuestion, startRound };
 }
 
 /** Everything the UI can ask the session to do. Only the host acts on round flow. */
 export function useGameActions(
   session: Session,
+  publicState: PublicState | undefined,
   onSubmitted: () => void,
   onVoted: (groupId: number) => void
 ): GameActions {
   return {
-    ...useRoundFlow(session),
+    ...useRoundFlow(session, publicState),
     setLook: (character, color) => session.setLook({ character, color }),
     setPace: (pace) => session.setPace(pace),
     setPaused: (paused) => session.setPaused(paused),

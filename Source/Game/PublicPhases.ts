@@ -70,6 +70,8 @@ export function toPublicChoosingState(state: HostState): PublicChoosingState {
     ...(state.theme === undefined ? {} : { theme: state.theme }),
     ...(state.picking === undefined ? {} : { picking: state.picking }),
     ...(state.answeredAt === undefined ? {} : { answeredAt: state.answeredAt }),
+    ...(state.question === undefined ? {} : { question: state.question }),
+    ...(state.questionAt === undefined ? {} : { questionAt: state.questionAt }),
     leadInMs: state.leadInMs,
   };
 }

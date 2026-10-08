@@ -27,6 +27,10 @@ export function handleGoToPhase(state: HostState, action: ActionOf<'GO_TO_PHASE'
     picking: undefined,
     answeredAt: undefined,
     leadInMs: 0,
+    // Never carried either: the question belongs to the theme that was answered, and a jump is
+    // not that answer. One waiting to be drawn is a round whose topic nobody has chosen.
+    question: undefined,
+    questionAt: undefined,
   };
   return { ...phaseBody(base, state, action.phase, action.topic), ...base };
 }

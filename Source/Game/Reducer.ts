@@ -13,6 +13,7 @@ import {
   handleFinal,
 } from './PhaseActions';
 import { handleBankPick } from './RandomPick';
+import { handleRevealQuestion } from './PhaseActions';
 import { handleGoToPhase } from './PhaseJumps';
 import { handleNextTurn } from './Turns';
 import { handleRoster } from './LobbyActions';
@@ -24,16 +25,37 @@ export function reducer(currentState: HostState | undefined, action: GameAction)
   return dispatch(state, action);
 }
 
-/** Which handler owns each action, grouped by the handler rather than by the action: two actions
- * from one hand are one rule, and listing them together is what says so. */
-function dispatch(state: HostState, action: GameAction): HostState {
+/** The moves that are the room's own rather than the flow's: who is in it, and whether it is
+ * running. A guard rather than a second switch, so the flow below stays only about phases. */
+type RoomAction = Extract<
+  GameAction,
+  { type: 'JOIN' | 'SET_ONLINE' | 'KICK' | 'SET_LOOK' | 'SET_PACE' | 'PAUSE' | 'RESUME' }
+>;
+
+function isRoomAction(action: GameAction): action is RoomAction {
   switch (action.type) {
     case 'JOIN':
     case 'SET_ONLINE':
     case 'KICK':
     case 'SET_LOOK':
     case 'SET_PACE':
-      return handleRoster(state, action);
+    case 'PAUSE':
+    case 'RESUME':
+      return true;
+    default:
+      return false;
+  }
+}
+
+/** Which handler owns each action, grouped by the handler rather than by the action: two actions
+ * from one hand are one rule, and listing them together is what says so. */
+function dispatch(state: HostState, action: GameAction): HostState {
+  if (isRoomAction(action)) {
+    return action.type === 'PAUSE' || action.type === 'RESUME'
+      ? handleHold(state, action)
+      : handleRoster(state, action);
+  }
+  switch (action.type) {
     case 'START_GAME':
       return handleStartGame(state, action);
     case 'CHOOSE_THEME':
@@ -41,6 +63,8 @@ function dispatch(state: HostState, action: GameAction): HostState {
     case 'START_RANDOM_PICK':
     case 'RESOLVE_RANDOM_PICK':
       return handleBankPick(state, action);
+    case 'REVEAL_QUESTION':
+      return handleRevealQuestion(state, action);
     case 'START_WRITING':
       return handleStartWriting(state, action);
     case 'SUBMIT_ANSWER':
@@ -55,9 +79,6 @@ function dispatch(state: HostState, action: GameAction): HostState {
       return handleNextRound(state, action);
     case 'NEXT_TURN':
       return handleNextTurn(state);
-    case 'PAUSE':
-    case 'RESUME':
-      return handleHold(state, action);
     case 'FINAL':
       return handleFinal(state);
     case 'GO_TO_PHASE':

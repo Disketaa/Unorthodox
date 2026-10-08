@@ -62,6 +62,12 @@ export type PublicChoosingState = PublicRoom & {
   /** How much of this clock runs before the room can see the phase. Absent rather than zero
    * where there is none, since an earlier build did not send it and a zero is a real length. */
   leadInMs?: number;
+  /** The round's question, once the theme has been answered. Absent before that. On the wire
+   * because the room has to be shown the same words arriving at the same moment, and a client
+   * that picked its own question would be answering a question nobody else can see. */
+  question?: string;
+  /** When the question began arriving, on the host's clock, for the same reason. */
+  questionAt?: number;
 };
 
 export type PublicWritingState = PublicRoom & {

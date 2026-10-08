@@ -1,5 +1,5 @@
 import { useEffect } from 'preact/hooks';
-import { GameConfig, isPhaseName, isTimedPhase, phaseGraceMs } from '@/Game';
+import { GameConfig, isPhaseName, isTimedPhase, phaseGraceMs, questionRevealMs } from '@/Game';
 import type { Pace, RandomPick } from '@/Game';
 import { phaseAfterCycling, phaseDurationMs } from '@/Game/PhaseFlow';
 import { Session } from '../Session';
@@ -105,6 +105,27 @@ export function useAnswerReveal(
     const id = setTimeout(onRevealed, remaining);
     return () => clearTimeout(id);
   }, [isHost, answeredAt, onRevealed]);
+}
+
+/** The round's question, word by word and then standing there before the round starts. Its own
+ * hook because the reveal is timed against the question rather than against the phase: its
+ * length is how many words it has, so no fixed clock fits it. */
+export function useQuestionReveal(
+  isHost: boolean,
+  question: string | undefined,
+  questionAt: number | undefined,
+  onRead: () => void
+): void {
+  useEffect(() => {
+    if (!isHost || question === undefined || questionAt === undefined) {
+      return;
+    }
+    // From when the first word was due rather than from when this ran, so the question is read for
+    // the same length on every screen rather than longer on whichever host was slower to react.
+    const remaining = Math.max(0, questionRevealMs(question) - (Date.now() - questionAt));
+    const id = setTimeout(onRead, remaining);
+    return () => clearTimeout(id);
+  }, [isHost, question, questionAt, onRead]);
 }
 
 /** Everyone answered the round: move on rather than waiting out the rest of the clock. */

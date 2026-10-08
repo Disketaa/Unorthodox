@@ -7,7 +7,7 @@ import { Session, SessionRole, BlockedReason } from '../Session';
 import { useSessionPhase, SessionPhase } from './UseSessionPhase';
 import { useGameActions } from './UseGameActions';
 import type { GameActions } from './UseGameActions';
-import { useHostPhaseTimer } from './UseHostPhaseTimer';
+import { useRoundClocks } from './UseHostPhaseTimer';
 import { useRememberLook } from './UseRememberLook';
 import {
   emptyMarks,
@@ -104,11 +104,13 @@ function readTopic(publicState: PublicState | undefined): string | null {
  * the next round must stop counting as having answered. */
 function useRoundMarks(
   session: Session,
+  publicState: PublicState | undefined,
   topic: string | null
 ): { marks: RoundMarks; actions: GameActions } {
   const [marks, setMarks] = useState<RoundMarks>(emptyMarks);
   const actions = useGameActions(
     session,
+    publicState,
     () => setMarks((current) => markSubmitted(current, topic)),
     (groupId) => setMarks((current) => markRejected(current, topic, groupId))
   );
@@ -131,9 +133,8 @@ export function useGameSession(
   const publicState = session.getPublicState();
   const phase = useSessionPhase(publicState, session.getClockOffsetMs());
   const topic = readTopic(publicState);
-  const { marks, actions } = useRoundMarks(session, topic);
-
-  useHostPhaseTimer(session, role === 'Host', phase, actions.nextRound, actions.startRound);
+  const { marks, actions } = useRoundMarks(session, publicState, topic);
+  useRoundClocks(session, role === 'Host', phase, actions);
 
   const playerId = session.getPlayerId();
   const ownLook = ownLookFor(playerId, phase.playerLooks);

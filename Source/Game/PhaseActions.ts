@@ -25,6 +25,10 @@ export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>
     picking: undefined,
     answeredAt: undefined,
     leadInMs: action.leadInMs ?? 0,
+    // No question before a theme is answered: it is drawn from the theme's bank, and a bank that
+    // is still open has not said which one this round is about.
+    question: undefined,
+    questionAt: undefined,
     // A game that has not been played has no rounds in any theme, however long the lobby before it
     // ran. Started empty rather than carried from a lobby that could have been jumped into from a
     // finished game.
@@ -55,6 +59,18 @@ export function handleChooseTheme(
     // earlier, on every screen at once, or the row reads as a bar that never drains.
     themeRounds: roundsAfter(state.themeRounds, action.theme),
   };
+}
+
+/** The theme answered, so the round's question comes out of its bank and starts arriving word by
+ * word. Refused without a theme to ask about, and refused twice rather than restart the reveal. */
+export function handleRevealQuestion(
+  state: HostState,
+  action: ActionOf<'REVEAL_QUESTION'>
+): HostState {
+  if (state.phase !== 'Choosing' || state.theme === undefined || state.question !== undefined) {
+    return state;
+  }
+  return { ...state, question: action.question, questionAt: action.at };
 }
 
 export function handleStartWriting(
@@ -153,10 +169,13 @@ export function handleNextRound(state: HostState, action: ActionOf<'NEXT_ROUND'>
     durationMs: action.durationMs,
     startedAt: action.startedAt,
     // A new bank with nothing chosen on it: the pressed card belonged to the round that
-    // has just been scored. So does the moment it was answered, which stopped that round's clock.
+    // has just been scored. So does the moment it was answered, which stopped that round's clock,
+    // and the question it answered.
     theme: undefined,
     picking: undefined,
     answeredAt: undefined,
+    question: undefined,
+    questionAt: undefined,
     // No count-in on a round that is not the first: the room is already looking at the bank.
     leadInMs: 0,
   };

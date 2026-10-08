@@ -3,6 +3,7 @@ import { HostInbox } from './HostInbox';
 import {
   startGameFrom,
   startWritingFrom,
+  revealQuestionFrom,
   startRandomPickFrom,
   resolveRandomPickFrom,
   setPausedFrom,
@@ -150,6 +151,10 @@ export class HostSession {
 
   startWriting(topic: string): void {
     startWritingFrom(this.flow, topic);
+  }
+
+  revealQuestion(question: string): void {
+    revealQuestionFrom(this.flow, question);
   }
 
   /** The bank closed with nothing pressed on it, so the room is answering its own. */

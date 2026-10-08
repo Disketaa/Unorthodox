@@ -74,6 +74,13 @@ export type ChoosingState = RoomMembers & {
    * the lobby this phase started from. A bar drawn against the whole of it would sit short of
    * full the moment the bank appears, so the lead-in is not part of the bar. */
   leadInMs: number;
+  /** The question this round will ask, drawn from the theme's bank once the theme is answered.
+   * Held here rather than passed at Writing so the whole room can be shown the same question
+   * arriving word by word before anybody can type at it. Undefined while the bank is open. */
+  question: string | undefined;
+  /** When the question began arriving, on the host's clock, so every screen in the room writes
+   * it out from the same moment rather than from whenever the message reached it. */
+  questionAt: number | undefined;
 };
 
 /** The room's roll, landing on a theme. Carries when it started so every screen in the room runs

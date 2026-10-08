@@ -23,6 +23,20 @@ export function startGame(
   });
 }
 
+/** The theme answered, so the round's question is drawn from that theme's bank and starts
+ * arriving. The draw sits here rather than in the reducer, since what a theme asks about is
+ * content the game rules do not hold. */
+export function revealQuestion(
+  state: Game.HostState | undefined,
+  question: string
+): Game.HostState {
+  if (state?.phase !== 'Choosing' || state.theme === undefined) {
+    return state ?? Game.freshLobbyState();
+  }
+  log('info', 'revealing the round question');
+  return Game.reducer(state, { type: 'REVEAL_QUESTION', question, at: Date.now() });
+}
+
 export function startWriting(
   state: Game.HostState | undefined,
   topic: string,

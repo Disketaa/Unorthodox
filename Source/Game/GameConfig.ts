@@ -48,6 +48,16 @@ const timing = {
    * with it: the bank is answered, and a timer still running over an answered bank reads as
    * though the room had not decided yet. */
   answerRevealMs: 2000,
+  /** How much of the room's question is written when it first appears, before the words start
+   * arriving one at a time. Beat against the first word rather than a bare black screen, so the
+   * reveal has something to be read on. */
+  questionLeadInMs: 500,
+  /** How long a word takes to arrive. Beat against the length of the question rather than a
+   * fixed number of words, so a three-word question and a seven-word one both read at the same
+   * pace. */
+  questionWordMs: 210,
+  /** How long the whole question stands there once every word is in, before the round starts. */
+  questionHoldMs: 5500,
 };
 
 export const GameConfig = {

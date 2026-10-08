@@ -23,9 +23,13 @@ export type GameAction =
   /** The room's roll commits, once the sweep has run. No player to name: the room chose it, not
    * one of the seats. */
   | { type: 'RESOLVE_RANDOM_PICK'; at: number }
-  /** The room into a round, once the theme is chosen. Carries the topic rather than reading one
-   * from a catalogue, since what a theme asks about is the content's business and not the
-   * state's. */
+  /** The theme answered, so the round's question is drawn from its bank and starts arriving. The
+   * question travels on the action rather than being read from a catalogue here: what a theme
+   * asks about is the content's business, and the reducer is the rule and not the dice. */
+  | { type: 'REVEAL_QUESTION'; question: string; at: number }
+  /** The room into a round, once the question has been read. Carries the topic rather than
+   * reading one from a catalogue, since what a theme asks about is the content's business and
+   * not the state's. */
   | { type: 'START_WRITING'; topic: string; durationMs: number; startedAt: number }
   | { type: 'SUBMIT_ANSWER'; playerId: PlayerId; text: string }
   | { type: 'START_REVIEWING'; startedAt: number; durationMs: number }

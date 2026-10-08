@@ -67,8 +67,19 @@ function plainFrom(fields: Fields, members: Members): HostState | undefined {
   }
 }
 
-/** The bank, which is the one timed phase carrying two moments of its own: the room's own roll
- * and when the bank was answered. */
+/** The question being written out, guarded in halves. A stored question with no moment is not a
+ * reveal any client can run, since it would have to guess when the words started arriving. */
+function questionFrom(fields: Fields): { question: string | undefined; questionAt: number | undefined } {
+  const question = fields.get('question');
+  const questionAt = fields.get('questionAt');
+  return {
+    question: isText(question) ? question : undefined,
+    questionAt: isNumber(questionAt) ? questionAt : undefined,
+  };
+}
+
+/** The bank, which is the one timed phase carrying the moments of its own: the room's own roll,
+ * when the bank was answered, and the question being read out. */
 function choosingFrom(
   fields: Fields,
   common: RoomMembers & { durationMs: number; startedAt: number }
@@ -79,6 +90,7 @@ function choosingFrom(
     theme: themeFrom(fields),
     picking: pickingFrom(fields),
     answeredAt: answeredFrom(fields),
+    ...questionFrom(fields),
     leadInMs: number(fields, 'leadInMs'),
   };
 }

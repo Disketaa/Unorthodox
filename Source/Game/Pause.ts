@@ -6,8 +6,8 @@ import { HostState } from './GameState';
 import type { ActionOf, GameAction } from './GameActions';
 
 /** The moments a pause holds still, moved on by however long the room was held: a phase's own
- * start, the answer's reveal and the room's roll, which are the three a client counts against.
- * A phase with no clock has nothing to move, and a moment not reached is never invented. */
+ * start, the answer's reveal, the room's roll and the question being written out, which are the
+ * four a client counts against. */
 function shifted(state: HostState, byMs: number): HostState {
   switch (state.phase) {
     case 'Lobby':
@@ -23,6 +23,7 @@ function shifted(state: HostState, byMs: number): HostState {
           state.picking === undefined
             ? undefined
             : { ...state.picking, startedAt: state.picking.startedAt + byMs },
+        questionAt: state.questionAt === undefined ? undefined : state.questionAt + byMs,
       };
     case 'Writing':
     case 'Reviewing':

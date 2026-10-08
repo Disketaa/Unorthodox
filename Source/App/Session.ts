@@ -42,9 +42,11 @@ export interface Session {
   startGame(): void;
   /** The topic comes from whoever picked the theme, not from the session: the session does not
    * know what a theme asks about. */
-  /** The topic comes from whoever picked the theme, not from the session: the session does not
-   * know what a theme asks about. */
   startWriting(topic: string): void;
+  /** The round's question, drawn by whoever holds the content, shown to the whole room word by
+   * word before the round starts. The session does not choose it either: what a theme asks
+   * about is not the game's business. */
+  revealQuestion(question: string): void;
   /** Answer the theme bank on this player's behalf. Refused by the host from anybody but the
    * player whose turn it is. */
   chooseTheme(theme: ThemeId): void;

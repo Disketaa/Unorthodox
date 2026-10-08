@@ -1,0 +1,98 @@
+/* The round's question, in the room's own flow under the bar of players rather than over the
+ * window: it is the round being read, not something dropped on top of the room, and a bank of
+ * cards takes the same place it is given. Nothing behind it is dimmed, since a question is
+ * written on the room rather than over it. */
+.Root {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  /* Nothing inside is ever taller than the room gives it, so a long question on a short screen
+   * is cut rather than scrolled: a bar for a question nobody is scrolling is worse than a mark
+   * that ends a little early. */
+  overflow: hidden;
+}
+
+/* The label and the question in one column as wide as the question itself, so the label sits on
+ * the same left edge as the words rather than on the edge of the window. */
+.Column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--Space-Sm);
+  align-items: stretch;
+  max-width: 92vw;
+}
+
+/* The theme the question was drawn from, in a small block above it. Its own wash and ink, passed
+ * in rather than taken from the room's accent: the label names the theme, and the accent on the
+ * document belongs to whoever is holding a character. No mark, since the name says what the block
+ * would have said with one. Centred over the question rather than beside it, since it names the
+ * round rather than being part of it. */
+.Label {
+  align-self: center;
+  padding: var(--Space-Sm) var(--Space-Md);
+  border-radius: var(--Radius-Card);
+  font-family: var(--FontFamily-Body);
+  font-size: min(2.6vw, calc(var(--FontSize-4xl) * 0.32));
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Wrapped rather than stacked on several lines by hand, since a question is a phrase and reads
+ * across the window the way it is written. The space between words is a share of the type rather
+ * than a fixed length, so it keeps its hold on a phone and on a desktop. */
+.Stage {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 0.3em;
+  font-family: var(--FontFamily-Display);
+  /* A share of both axes it has room for, so a question fits a short screen and a narrow one
+   * without either scrolling or running off the bottom. */
+  font-size: min(9vw, 6vh, calc(var(--FontSize-4xl) * 1.6));
+  line-height: 1.15;
+  color: var(--Color-Text-Default);
+  text-align: center;
+}
+
+/* One word's own box, since both movements below are transforms and neither reaches a line of text
+ * that has none. */
+.Mark {
+  display: inline-block;
+}
+
+/* A word landing and then standing there: the pop is a one-off, the sway is the idle it settles
+ * into, and the sway is handed over as a variable rather than written here, so this is one entry
+ * on the `animation` list rather than one declaration overwriting the other. */
+.Word {
+  --QuestionWord-Animation: WordLand calc(var(--Duration-CountTick) / 6)
+    var(--Easing-Accelerate) both;
+  animation: var(--Sway-Animation), var(--QuestionWord-Animation);
+}
+
+/* A word not read yet: out of sight rather than scaled to nothing, so the sentence holds its final
+ * shape from the first word and no arrival shoves the rest of it along. */
+.Held {
+  visibility: hidden;
+}
+
+@keyframes WordLand {
+  0% {
+    scale: 1.25;
+  }
+
+  100% {
+    scale: 1;
+  }
+}
+
+/* The same arrival without the travel: someone asking for less movement gets the same words in the
+ * same time, since the sway drops out on its own and only the pop is dropped here. */
+@media (prefers-reduced-motion: reduce) {
+  .Word {
+    --QuestionWord-Animation: none;
+  }
+}

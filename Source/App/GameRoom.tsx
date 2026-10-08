@@ -21,6 +21,7 @@ import { LobbyView } from './Views/LobbyView';
 import { PhaseInfoView } from './Views/PhaseInfoView';
 import { PlayerBarView } from './Views/PlayerBarView';
 import { ThemeCardsView } from './Views/ThemeCardsView';
+import { QuestionOverlay } from './Views/QuestionOverlay';
 
 export interface GameRoomProps {
   roomCode: string;
@@ -54,26 +55,29 @@ function blockedMessage(reason: BlockedReason, roomLimit: number): string {
  * it, and the themes below. The bank sits under the note rather than in the middle of what is
  * left: it was measured against the viewport, so it moved as the note above it changed height. */
 function GameScene({ view }: { view: GameSessionView }) {
+  const choosing = view.publicState?.phase === 'Choosing' ? view.publicState : undefined;
+  // The bank leaves once the question is on screen. It was never going to be answered then, and it
+  // takes the whole window, which is the one place the question has to be read.
+  const bankOpen = view.phase === 'Choosing' && choosing?.question === undefined;
   return (
     <Stack align="Center" gap="Md" grow clip>
       <Stack gap="Md" align="Center">
         <PhaseInfoView view={view} />
         <PlayerBarView view={view} />
       </Stack>
-      {view.phase === 'Choosing' && (
+      {bankOpen && (
         <ThemeCardsView
           roomCode={view.roomCode}
-          choosing={view.phase === 'Choosing'}
+          choosing
           myTurn={view.playerId !== null && view.playerId === view.turnPlayerId}
           theme={view.publicState?.phase === 'Lobby' ? undefined : view.publicState?.theme}
-          picking={
-            view.publicState?.phase === 'Choosing' ? view.publicState.picking : undefined
-          }
+          picking={choosing?.picking}
           clockOffsetMs={view.clockOffsetMs}
           onPickTheme={view.chooseTheme}
           spent={spentByTheme(view.publicState)}
         />
       )}
+      {!bankOpen && <QuestionOverlay view={view} />}
     </Stack>
   );
 }

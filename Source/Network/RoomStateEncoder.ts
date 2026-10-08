@@ -57,7 +57,17 @@ function pickingOf(state: HostState): { picking?: RandomPick } {
     : {};
 }
 
-/** One bank's whole state: the room, its clock, the theme on it and the roll running over it. */
+/** The question being written out, if it is. Written because a host that refreshed mid-question
+ * has to come back into the same question rather than leave the room with nothing on screen. */
+function questionOf(state: Extract<HostState, { phase: 'Choosing' }>) {
+  return {
+    ...(state.question === undefined ? {} : { question: state.question }),
+    ...(state.questionAt === undefined ? {} : { questionAt: state.questionAt }),
+  };
+}
+
+/** One bank's whole state: the room, its clock, the theme on it, the roll running over it and
+ * the question being read. */
 function choosingOf(state: Extract<HostState, { phase: 'Choosing' }>, members: Members) {
   return {
     ...members,
@@ -66,6 +76,7 @@ function choosingOf(state: Extract<HostState, { phase: 'Choosing' }>, members: M
     ...themeOf(state),
     ...pickingOf(state),
     ...(state.answeredAt === undefined ? {} : { answeredAt: state.answeredAt }),
+    ...questionOf(state),
     leadInMs: state.leadInMs,
   };
 }

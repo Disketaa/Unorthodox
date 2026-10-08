@@ -6,6 +6,7 @@ import type { HostState } from '@/Game';
 import {
   startGame,
   startWriting,
+  revealQuestion,
   startRandomPick,
   resolveRandomPick,
   setPaused,
@@ -46,6 +47,13 @@ export function setPausedFrom(host: FlowHost, paused: boolean): void {
   const state = host.getState();
   if (state === undefined) return;
   host.commit(setPaused(state, paused));
+}
+
+/** The theme answered, so the round's question starts arriving on screen. */
+export function revealQuestionFrom(host: FlowHost, question: string): void {
+  const state = host.getState();
+  if (state === undefined) return;
+  host.commit(revealQuestion(state, question));
 }
 
 /** Start a round: out of the theme choice and into answering it. */
