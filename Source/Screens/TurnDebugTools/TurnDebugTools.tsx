@@ -1,4 +1,4 @@
-import { Button } from '@/Design/Components';
+import { IconButton } from '@/Design/Components';
 import { PublicState } from '@/Game';
 import { Strings } from '@/Content';
 
@@ -17,9 +17,5 @@ export function TurnDebugTools({ publicState, onNextTurn }: TurnDebugToolsProps)
   ) {
     return null;
   }
-  return (
-    <Button variant="Primary" size="Small" onClick={onNextTurn}>
-      {Strings.turn.next}
-    </Button>
-  );
+  return <IconButton icon="Turn" label={Strings.turn.next} onClick={onNextTurn} />;
 }

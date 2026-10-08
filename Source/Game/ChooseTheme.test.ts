@@ -40,7 +40,8 @@ describe('choosing a theme', () => {
     const state = reducer(choosingRoom(), {
       type: 'CHOOSE_THEME',
       playerId: 'p1',
-      theme: 'Nature', at: 1500,
+      theme: 'Nature',
+      at: 1500,
     });
     expect(state.phase === 'Choosing' && state.theme).toBe('Nature');
   });
@@ -49,18 +50,24 @@ describe('choosing a theme', () => {
     // The muted cards are a promise the client keeps on its own. This is the host keeping it,
     // so a client that presses every card in turn still only ever changes the room once.
     const state = choosingRoom();
-    expect(reducer(state, { type: 'CHOOSE_THEME', playerId: 'p2', theme: 'Nature', at: 1500 })).toBe(
-      state
-    );
+    expect(
+      reducer(state, { type: 'CHOOSE_THEME', playerId: 'p2', theme: 'Nature', at: 1500 })
+    ).toBe(state);
   });
 
   it('takes a later press from the turn holder, since a choice can be changed while it is open', () => {
     const once = reducer(choosingRoom(), {
       type: 'CHOOSE_THEME',
       playerId: 'p1',
-      theme: 'Nature', at: 1500,
+      theme: 'Nature',
+      at: 1500,
     });
-    const twice = reducer(once, { type: 'CHOOSE_THEME', playerId: 'p1', theme: 'Music', at: 1500 });
+    const twice = reducer(once, {
+      type: 'CHOOSE_THEME',
+      playerId: 'p1',
+      theme: 'Music',
+      at: 1500,
+    });
     expect(twice.phase === 'Choosing' && twice.theme).toBe('Music');
   });
 
@@ -75,7 +82,8 @@ describe('choosing a theme', () => {
     const state = reducer(choosingRoom(), {
       type: 'CHOOSE_THEME',
       playerId: 'p1',
-      theme: 'Nature', at: 1500,
+      theme: 'Nature',
+      at: 1500,
     });
     const publicState = toPublicState(state);
     expect(publicState.phase === 'Choosing' && publicState.theme).toBe('Nature');
@@ -91,7 +99,8 @@ describe('choosing a theme', () => {
     const chosen = reducer(choosingRoom(), {
       type: 'CHOOSE_THEME',
       playerId: 'p1',
-      theme: 'Nature', at: 1500,
+      theme: 'Nature',
+      at: 1500,
     });
     const state = reducer(chosen, writing);
     const publicState = toPublicState(state);
@@ -101,7 +110,12 @@ describe('choosing a theme', () => {
 
   it('is cleared for the next round, so a new bank opens with nothing pressed on it', () => {
     const written = reducer(
-      reducer(choosingRoom(), { type: 'CHOOSE_THEME', playerId: 'p1', theme: 'Nature', at: 1500 }),
+      reducer(choosingRoom(), {
+        type: 'CHOOSE_THEME',
+        playerId: 'p1',
+        theme: 'Nature',
+        at: 1500,
+      }),
       writing
     );
     const reviewing = reducer(written, {
@@ -124,20 +138,31 @@ describe('choosing a theme', () => {
     const state = reducer(choosingRoom(), {
       type: 'CHOOSE_THEME',
       playerId: 'p1',
-      theme: 'Nature', at: 1500,
+      theme: 'Nature',
+      at: 1500,
     });
     expect([...state.themeRounds]).toEqual([['Nature', 1]]);
   });
 
   it('spends against a theme already part spent, and leaves the rest of the bank alone', () => {
     const room = { ...choosingRoom(), themeRounds: new Map<ThemeId, number>([['Nature', 3]]) };
-    const state = reducer(room, { type: 'CHOOSE_THEME', playerId: 'p1', theme: 'Nature', at: 1500 });
+    const state = reducer(room, {
+      type: 'CHOOSE_THEME',
+      playerId: 'p1',
+      theme: 'Nature',
+      at: 1500,
+    });
     expect([...state.themeRounds]).toEqual([['Nature', 4]]);
   });
 
   it('spends nothing on a press that is refused, since no round was committed', () => {
     const state = choosingRoom();
-    const refused = reducer(state, { type: 'CHOOSE_THEME', playerId: 'p2', theme: 'Nature', at: 1500 });
+    const refused = reducer(state, {
+      type: 'CHOOSE_THEME',
+      playerId: 'p2',
+      theme: 'Nature',
+      at: 1500,
+    });
     expect(refused.themeRounds).toBe(state.themeRounds);
   });
 
@@ -145,7 +170,8 @@ describe('choosing a theme', () => {
     const state = reducer(choosingRoom(), {
       type: 'CHOOSE_THEME',
       playerId: 'p1',
-      theme: 'Nature', at: 1500,
+      theme: 'Nature',
+      at: 1500,
     });
     expect(toPublicState(state).spent).toEqual([{ theme: 'Nature', rounds: 1 }]);
   });

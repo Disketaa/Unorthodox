@@ -75,6 +75,15 @@ export function resolveRandomPick(state: Game.HostState | undefined): Game.HostS
   return Game.reducer(state, { type: 'RESOLVE_RANDOM_PICK', at: Date.now() });
 }
 
+/** Holding the room, or letting it go. Not a phase change, but the host pressing one control, so
+ * it sits here with the rest of the moves the room can be put through. */
+export function setPaused(state: Game.HostState | undefined, paused: boolean): Game.HostState {
+  const held = state ?? Game.freshLobbyState();
+  log('info', paused ? 'holding the room' : 'letting the room run');
+  const at = Date.now();
+  return Game.reducer(held, paused ? { type: 'PAUSE', at } : { type: 'RESUME', at });
+}
+
 /** Writing to Reviewing, once every seated player has answered. */
 export function closeWriting(
   state: Game.HostState | undefined,

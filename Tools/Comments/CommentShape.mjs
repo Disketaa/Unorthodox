@@ -28,11 +28,14 @@ export function reflow(text, width) {
 }
 
 /** Flatten a comment's body to one paragraph. Paragraph gaps and gutter punctuation are removed
- * first: neither carries information, and both stop a comment from being rewrappable. */
+ * first: neither carries information, and both stop a comment from being rewrappable. Every
+ * leading star goes, not just the first: a body that has picked up a second gutter star carries
+ * it into the text as a word, and the rewrap then lands it mid-line, where it reads as a typo
+ * rather than as the marker it started life as. */
 export function flatten(value) {
   return value
     .split(/\r?\n/)
-    .map((part) => part.replace(/^\s*\*?[ \t]?/, "").trim())
+    .map((part) => part.replace(/^\s*\*+[ \t]?/, "").trim())
     .join(" ")
     .replace(/\s+/g, " ")
     .trim();

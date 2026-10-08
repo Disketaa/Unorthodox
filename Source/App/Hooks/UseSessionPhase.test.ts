@@ -5,13 +5,18 @@ import type { PublicChoosingState } from '@/Game';
 
 /** The bank as the host sends it, with the clock's own length and however much of it is
  * count-in. */
-function choosing(durationMs: number, leadInMs: number, startedAt: number): PublicChoosingState {
+function choosing(
+  durationMs: number,
+  leadInMs: number,
+  startedAt: number
+): PublicChoosingState {
   return {
     phase: 'Choosing',
     players: [],
     turnPlayerId: null,
     pace: 'Standard',
     spent: [],
+    paused: false,
     durationMs,
     startedAt,
     leadInMs,

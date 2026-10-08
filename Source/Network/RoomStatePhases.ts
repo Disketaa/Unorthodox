@@ -1,4 +1,4 @@
-/** Which phase a stored room was in, and the state of it, read through the guards beside this. *
+/** Which phase a stored room was in, and the state of it, read through the guards beside this.
  * Its own file because reading a phase and guarding its fields are two different jobs, and only
  * one of them changes when a phase gains a field. */
 import type { HostState, RandomPick, RoomMembers } from '@/Game';
@@ -20,7 +20,7 @@ import {
 const isText = (value: unknown): value is string => typeof value === 'string';
 
 /** The room's own roll mid-sweep, or undefined where there is none. Guarded whole, since half a
- * * pick is not a sweep any client can run. */
+ * pick is not a sweep any client can run. */
 function pickingFrom(fields: Fields): RandomPick | undefined {
   const record = fieldsOf(fields.get('picking'));
   const theme = record.get('theme');
@@ -29,7 +29,7 @@ function pickingFrom(fields: Fields): RandomPick | undefined {
 }
 
 /** When the room answered its bank, where it has. A resumed room has to stop its clock where the
- * * original one stopped, or the countdown comes back after the answer. */
+ * original one stopped, or the countdown comes back after the answer. */
 function answeredFrom(fields: Fields): number | undefined {
   const value = fields.get('answeredAt');
   return isNumber(value) ? value : undefined;
@@ -37,7 +37,7 @@ function answeredFrom(fields: Fields): number | undefined {
 
 /** The two untimed phases, which carry no clock at all. */
 function plainFrom(fields: Fields, members: Members): HostState | undefined {
-  const { scores, players, turnPlayerId, pace, themeRounds } = members;
+  const { scores, players, turnPlayerId, pace, themeRounds, paused, pausedAt } = members;
   switch (fields.get('phase')) {
     case 'Lobby':
       return {
@@ -47,6 +47,8 @@ function plainFrom(fields: Fields, members: Members): HostState | undefined {
         turnPlayerId,
         pace,
         themeRounds,
+        paused,
+        pausedAt,
       };
     case 'Final':
       return {
@@ -56,6 +58,8 @@ function plainFrom(fields: Fields, members: Members): HostState | undefined {
         turnPlayerId,
         pace,
         themeRounds,
+        paused,
+        pausedAt,
         theme: themeFrom(fields),
       };
     default:
@@ -63,7 +67,7 @@ function plainFrom(fields: Fields, members: Members): HostState | undefined {
   }
 }
 
-/** The bank, which is the one timed phase carrying two moments of its own: the room's own roll *
+/** The bank, which is the one timed phase carrying two moments of its own: the room's own roll
  * and when the bank was answered. */
 function choosingFrom(
   fields: Fields,
@@ -81,7 +85,7 @@ function choosingFrom(
 
 /** The three timed phases, which all read the same clock, roster and turn. */
 function timedFrom(fields: Fields, members: Members): HostState | undefined {
-  const { scores, players, turnPlayerId, pace, themeRounds } = members;
+  const { scores, players, turnPlayerId, pace, themeRounds, paused, pausedAt } = members;
   const common = {
     ...clockOf(fields),
     topic: text(fields, 'topic'),
@@ -91,6 +95,8 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
     turnPlayerId,
     pace,
     themeRounds,
+    paused,
+    pausedAt,
   };
   const theme = themeFrom(fields);
   switch (fields.get('phase')) {
@@ -110,6 +116,8 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
         turnPlayerId,
         pace,
         themeRounds,
+        paused,
+        pausedAt,
         theme,
       };
     default:

@@ -33,6 +33,9 @@ export interface PublicRoom {
   /** How many rounds have been played in each theme, as pairs rather than a map, since this goes
    * out as plain data. On every phase because the bank is on screen through all of them. */
   spent: { theme: ThemeId; rounds: number }[];
+  /** Whether the host is holding the room. On the wire rather than held per client, since a
+   * player who is not held is one still playing against a timer nobody stopped. */
+  paused: boolean;
 }
 
 export type PublicLobbyState = PublicRoom & {

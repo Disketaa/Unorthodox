@@ -52,6 +52,9 @@ export interface Session {
   startRandomPick(): void;
   /** Only the host calls this: the sweep is over and the room's roll commits. */
   resolveRandomPick(): void;
+  /** Only the host calls this: hold the room still, or let it run again. Every clock in the room
+   * stops and starts on this, not just the one on screen. */
+  setPaused(paused: boolean): void;
   /** Advance out of the Writing phase once everyone has answered, or out of the Reviewing phase
    * (once reviewing time is up, going to Scores). */
   endReviewing(durationMs: number): void;

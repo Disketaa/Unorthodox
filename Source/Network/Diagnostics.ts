@@ -14,18 +14,33 @@ const PollIntervalMs = 3_000;
  * so an untouched session reads its own flags. */
 let override: boolean | null = null;
 
+/** The key the host's choice is kept under. Written either way, so a browser that remembers
+ * "off" is not dragged back on by a `?debug` link somebody pastes in, and one that remembers
+ * "on" does not have to be asked again each reload. */
+const DebugKey = 'debug';
+
+/** What the browser remembers about the flag, or undefined where it remembers nothing. A stored
+ * "off" counts: the key existing at all used to mean "on", so anything else is read as on. */
+function storedDebug(): boolean | undefined {
+  try {
+    const value = localStorage.getItem(DebugKey);
+    if (value === null) return undefined;
+    return value === 'off' || value === '0' ? false : true;
+  } catch {
+    // Storage may be unavailable; fall through to the URL checks.
+    return undefined;
+  }
+}
+
 /** True when debug output was requested. The flag is accepted in the query string, anywhere in
  * the hash, or in localStorage, so that it survives every shape of link the app produces. */
 export function isDebugEnabled(): boolean {
   if (override !== null) {
     return override;
   }
-  try {
-    if (localStorage.getItem('debug') !== null) {
-      return true;
-    }
-  } catch {
-    // Storage may be unavailable; fall through to the URL checks.
+  const stored = storedDebug();
+  if (stored !== undefined) {
+    return stored;
   }
   return (
     new URLSearchParams(window.location.search).has('debug') ||
@@ -33,11 +48,15 @@ export function isDebugEnabled(): boolean {
   );
 }
 
-/** Turn debug logging on or off for the rest of this session. Kept in memory rather than
- * storage, so leaving and rejoining finds the room the way the link left it and a stray
- * `?debug` link shared afterwards does not drag the logging along. */
+/** Turn debug logging on or off, and leave it that way. Kept in this module's memory as well as
+ * written to storage, since the log level has to follow the choice now and not on a later read. */
 export function setDebugEnabled(enabled: boolean): void {
   override = enabled;
+  try {
+    localStorage.setItem(DebugKey, enabled ? 'on' : 'off');
+  } catch {
+    // A browser refusing storage keeps the choice for this session rather than losing the dock.
+  }
   setLogLevel(enabled ? 'debug' : 'info');
   log(enabled ? 'info' : 'warn', enabled ? 'debug logging on' : 'debug logging off');
 }
@@ -123,6 +142,12 @@ function snapshot(label: string, getPeers: () => Record<string, RTCPeerConnectio
 export function startDiagnostics(
   getPeers: () => Record<string, RTCPeerConnection>
 ): () => void {
+  // Applied from the flag rather than from the last toggle, so a browser that remembered the dock
+  // being on also gets its debug lines again. Nothing is written for the off case: info is where
+  // the level starts anyway, and a browser refusing storage never asked.
+  if (isDebugEnabled()) {
+    setLogLevel('debug');
+  }
   const build =
     document.querySelector('script[src*="assets/index-"]')?.getAttribute('src') ?? 'unknown';
   log('info', 'build', build, 'debug', String(isDebugEnabled()));

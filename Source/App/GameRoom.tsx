@@ -1,10 +1,16 @@
 import { useState } from 'preact/hooks';
 import type { ComponentChildren } from 'preact';
-import { InfoScreen, LobbyDebugTools, PhaseDebugTools, TurnDebugTools } from '@/Screens';
+import {
+  InfoScreen,
+  LobbyDebugTools,
+  PauseDebugTools,
+  PhaseDebugTools,
+  TurnDebugTools,
+} from '@/Screens';
 import { Strings } from '@/Content';
 import { PlayerLook, ThemeId, assertNever } from '@/Core';
 import { Stack } from '@/Design/Primitives';
-import { DebugDock, StartCountdown } from '@/Design/Overlays';
+import { DebugDock, PausedRoom, StartCountdown } from '@/Design/Overlays';
 import { useGameSession } from './Hooks/UseGameSession';
 import { useDebugToggle } from './Hooks/UseDebugToggle';
 import { useStartCountdown } from './Hooks/UseStartCountdown';
@@ -130,7 +136,7 @@ function PhaseScreen({ view }: { view: GameSessionView }) {
 }
 
 /** The room, and the host's dock under it. The dock is mounted here rather than by any screen,
- * because it outlives them: the "*" that opens it belongs to the host rather than to a phase. */
+ * because it outlives them: the "" that opens it belongs to the host rather than to a phase. */
 export function GameRoom({ roomCode, role, name, look, onLook }: GameRoomProps) {
   const view = useGameSession(roomCode, role, name, look, onLook);
   const { debugEnabled } = useDebugToggle(view.isHost);
@@ -159,13 +165,15 @@ function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
   return (
     <>
       {counting && <StartCountdown veiling={veiling} count={count} />}
+      {view.paused && <PausedRoom label={Strings.pause.held} />}
       <PhaseScreen view={counting && lobby !== null ? lobby : view} />
       {!counting && (
-        <DebugDock enabled={debugEnabled} label={Strings.lobby.debugOn}>
+        <DebugDock enabled={debugEnabled}>
           {view.isHost && (
             <>
               <LobbyDebugTools publicState={view.publicState} onAddBot={view.addBot} />
               <TurnDebugTools publicState={view.publicState} onNextTurn={view.nextTurn} />
+              <PauseDebugTools paused={view.paused} onSetPaused={view.setPaused} />
               <PhaseDebugTools publicState={view.publicState} onNextPhase={view.nextPhase} />
             </>
           )}

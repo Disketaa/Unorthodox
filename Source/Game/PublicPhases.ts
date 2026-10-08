@@ -36,6 +36,7 @@ function room(state: HostState): PublicRoom {
     turnPlayerId: state.turnPlayerId,
     pace: state.pace,
     spent: spentByTheme(state.themeRounds),
+    paused: state.paused,
   };
 }
 

@@ -26,11 +26,34 @@ export interface RoomMembers {
   /** How many rounds have been played in each theme. Per theme rather than one running total,
    * since the bank is the same six themes every round and each of them drains at its own rate. */
   themeRounds: Map<ThemeId, number>;
+  /** Whether the host has held the room, which stops every clock and every answer at once. The
+   * room's rather than the host screen's: a player watching a timer run on has to be stopped by
+   * the same hand that started it. */
+  paused: boolean;
+  /** When the room was held, on the host's clock, or undefined while it is running. Kept so
+   * letting go can move the phase's clock on by exactly the time it was held, rather than by
+   * however long the host took to notice. */
+  pausedAt: number | undefined;
 }
 
 export type LobbyState = RoomMembers & {
   phase: 'Lobby';
 };
+
+/** The room-level members a phase starts from, always a running room: a pause belongs to the
+ * phase that was held, and the next phase is a fresh start. Every phase is built from this, so
+ * a hold cannot leak into a round nobody paused. */
+export function membersOf(state: HostState): RoomMembers {
+  return {
+    players: state.players,
+    cumulativeScores: state.cumulativeScores,
+    turnPlayerId: state.turnPlayerId,
+    pace: state.pace,
+    themeRounds: state.themeRounds,
+    paused: false,
+    pausedAt: undefined,
+  };
+}
 
 export type ChoosingState = RoomMembers & {
   phase: 'Choosing';
@@ -113,5 +136,7 @@ export function freshLobbyState(): LobbyState {
     turnPlayerId: null,
     pace: 'Standard',
     themeRounds: new Map<ThemeId, number>(),
+    paused: false,
+    pausedAt: undefined,
   };
 }

@@ -1,4 +1,4 @@
-import { Button } from '@/Design/Components';
+import { IconButton } from '@/Design/Components';
 import { PublicState } from '@/Game';
 import { Strings } from '@/Content';
 
@@ -14,9 +14,5 @@ export function PhaseDebugTools({ publicState, onNextPhase }: PhaseDebugToolsPro
   if (publicState === undefined || publicState.phase === 'Lobby') {
     return null;
   }
-  return (
-    <Button variant="Primary" size="Small" onClick={onNextPhase}>
-      {Strings.turn.nextPhase}
-    </Button>
-  );
+  return <IconButton icon="Skip" label={Strings.turn.nextPhase} onClick={onNextPhase} />;
 }

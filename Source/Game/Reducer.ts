@@ -16,10 +16,17 @@ import { handleBankPick } from './RandomPick';
 import { handleGoToPhase } from './PhaseJumps';
 import { handleNextTurn } from './Turns';
 import { handleRoster } from './LobbyActions';
+import { handleHold, isRefusedWhileHeld } from './Pause';
 
 export function reducer(currentState: HostState | undefined, action: GameAction): HostState {
   const state: HostState = currentState ?? freshLobbyState();
+  if (isRefusedWhileHeld(state, action)) return state;
+  return dispatch(state, action);
+}
 
+/** Which handler owns each action, grouped by the handler rather than by the action: two actions
+ * from one hand are one rule, and listing them together is what says so. */
+function dispatch(state: HostState, action: GameAction): HostState {
   switch (action.type) {
     case 'JOIN':
     case 'SET_ONLINE':
@@ -48,6 +55,9 @@ export function reducer(currentState: HostState | undefined, action: GameAction)
       return handleNextRound(state, action);
     case 'NEXT_TURN':
       return handleNextTurn(state);
+    case 'PAUSE':
+    case 'RESUME':
+      return handleHold(state, action);
     case 'FINAL':
       return handleFinal(state);
     case 'GO_TO_PHASE':

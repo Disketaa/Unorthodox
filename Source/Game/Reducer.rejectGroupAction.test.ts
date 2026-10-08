@@ -20,6 +20,10 @@ describe('reducer REJECT_GROUP action', () => {
       turnPlayerId: null,
       pace: 'Standard',
       themeRounds: new Map(),
+
+      paused: false,
+
+      pausedAt: undefined,
       theme: undefined,
     };
     // We need to know the groupId for the answer. For simplicity, we'll assume the groupId is 0.

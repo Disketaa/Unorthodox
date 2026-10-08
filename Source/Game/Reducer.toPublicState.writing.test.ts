@@ -18,6 +18,10 @@ describe('toPublicState Writing state', () => {
       turnPlayerId: null,
       pace: 'Standard',
       themeRounds: new Map(),
+
+      paused: false,
+
+      pausedAt: undefined,
       theme: undefined,
     };
     const publicState = toPublicState(state);

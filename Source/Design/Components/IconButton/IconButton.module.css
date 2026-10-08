@@ -81,3 +81,44 @@
   mask-image: url('../../Icons/Kick.svg');
   mask-size: 116%;
 }
+
+/* The dock's own marks, sized as those files are drawn. Pause and Play are a filled pair rather
+ * than two drawings of one idea, so the button changes its face rather than its meaning: the
+ * room is running, or it is not. */
+.IconBot .Icon {
+  mask-image: url('../../Icons/Bot.svg');
+  mask-size: 110%;
+}
+
+.IconSkip .Icon {
+  mask-image: url('../../Icons/Skip.svg');
+  mask-size: 112%;
+}
+
+.IconTurn .Icon {
+  mask-image: url('../../Icons/Turn.svg');
+  mask-size: 112%;
+}
+
+.IconPause .Icon {
+  mask-image: url('../../Icons/Pause.svg');
+  mask-size: 110%;
+}
+
+.IconPlay .Icon {
+  mask-image: url('../../Icons/Play.svg');
+  mask-size: 110%;
+}
+
+/* Drawn but not pressed, so a dock keeps its row and the reader can see what the room cannot
+ * do. Quieter rather than hidden: a control that vanishes reads as the feature being gone. */
+.Root:disabled {
+  color: var(--Color-Text-Quiet);
+  opacity: 0.4;
+  cursor: var(--Cursor-Default);
+}
+
+.Root:disabled:hover {
+  color: var(--Color-Text-Quiet);
+  background: transparent;
+}

@@ -19,6 +19,10 @@ function lobby(): HostState {
     turnPlayerId: null,
     pace: 'Standard',
     themeRounds: new Map(),
+
+    paused: false,
+
+    pausedAt: undefined,
   };
 }
 

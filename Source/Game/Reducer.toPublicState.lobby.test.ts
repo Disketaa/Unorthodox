@@ -17,6 +17,10 @@ describe('toPublicState Lobby state', () => {
       turnPlayerId: null,
       pace: 'Standard',
       themeRounds: new Map(),
+
+      paused: false,
+
+      pausedAt: undefined,
     };
     const publicState = toPublicState(state);
     expect(publicState.phase).toBe('Lobby');

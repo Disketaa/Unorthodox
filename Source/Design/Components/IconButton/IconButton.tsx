@@ -2,7 +2,7 @@ import { playSound, type SoundName } from '../../Sounds';
 import styles from './IconButton.module.css';
 
 /** The marks that stand in for a button's own label. */
-export type IconName = 'Exit' | 'Kick';
+export type IconName = 'Exit' | 'Kick' | 'Bot' | 'Skip' | 'Turn' | 'Pause' | 'Play';
 export interface IconButtonProps {
   icon: IconName;
   /** What the button does, for anyone who cannot see the mark. */
@@ -10,6 +10,8 @@ export interface IconButtonProps {
   /** Small sits inside another control, where the button is part of it rather than beside it;
    * Medium stands on its own. */
   size?: 'Small' | 'Medium';
+  /** Whether the control is drawn but cannot be pressed. */
+  disabled?: boolean;
   onClick: () => void;
   /** The clip on press, or `false` to stay silent. */
   sound?: SoundName | false;
@@ -22,6 +24,7 @@ export function IconButton({
   icon,
   label,
   size = 'Medium',
+  disabled = false,
   sound = 'Pop',
   onClick,
 }: IconButtonProps) {
@@ -31,6 +34,7 @@ export function IconButton({
       class={`${styles.Root} ${styles[`Size${size}`]} ${styles[`Icon${icon}`]}`}
       aria-label={label}
       title={label}
+      disabled={disabled}
       onClick={() => {
         if (sound) playSound(sound);
         onClick();

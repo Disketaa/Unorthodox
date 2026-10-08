@@ -26,7 +26,7 @@ function openBank(): HostState {
 }
 
 /** One round started from the bank, then scored, which is the whole way from a press to the next
- * * bank being open. Written once because four of these tests walk the same road. */
+ * bank being open. Written once because four of these tests walk the same road. */
 function startRound(answered: HostState): HostState {
   const writing = reducer(answered, {
     type: 'START_WRITING',
@@ -70,16 +70,19 @@ describe('a bank that has been answered', () => {
     expect(told(changed).theme).toBe('Nature');
   });
 
-  it('is stopped at the room\'s roll too, which is an answer nobody pressed for', () => {
-    const swept = reducer(reducer(openBank(), {
-      type: 'START_RANDOM_PICK',
-      theme: 'Nature',
-      startedAt: 1500,
-    }), { type: 'RESOLVE_RANDOM_PICK', at: 2500 });
+  it("is stopped at the room's roll too, which is an answer nobody pressed for", () => {
+    const swept = reducer(
+      reducer(openBank(), {
+        type: 'START_RANDOM_PICK',
+        theme: 'Nature',
+        startedAt: 1500,
+      }),
+      { type: 'RESOLVE_RANDOM_PICK', at: 2500 }
+    );
     expect(told(swept).answeredAt).toBe(2500);
   });
 
-  it('keeps a fresh bank off the old one\'s stop, since the counts carry but the clock does not', () => {
+  it("keeps a fresh bank off the old one's stop, since the counts carry but the clock does not", () => {
     const answered = reducer(openBank(), press('Music'));
     const writing = reducer(answered, {
       type: 'START_WRITING',
@@ -111,10 +114,13 @@ describe('the turn around the bank', () => {
     expect(writing.turnPlayerId).toBe('p2');
   });
 
-  it('is the next seat\'s when the next bank opens, and comes round to the first after that', () => {
-        // The turn moved as the round started, so the bank that opens next is the next seat's.
+  it("is the next seat's when the next bank opens, and comes round to the first after that", () => {
+    // The turn moved as the round started, so the bank that opens next is the next seat's.
     const next = reducer(startRound(reducer(openBank(), press('Music'))), {
-      type: 'NEXT_ROUND', durationMs: 20_000, startedAt: 6000 });
+      type: 'NEXT_ROUND',
+      durationMs: 20_000,
+      startedAt: 6000,
+    });
     expect(next.phase === 'Choosing' && next.turnPlayerId).toBe('p2');
     const again = startRound(next);
     expect(again.turnPlayerId).toBe('p1');

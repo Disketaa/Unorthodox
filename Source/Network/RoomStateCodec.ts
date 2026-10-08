@@ -1,17 +1,19 @@
 /** The host's game state read back out of plain data, guarded field by field: a cast promises a
- * * shape nothing checked. The guards are here; the phase each set of fields describes is in
+ * shape nothing checked. The guards are here; the phase each set of fields describes is in
  * RoomStatePhases, and the writing half is RoomStateEncoder. */
 import type { HostState, Player, Pace } from '@/Game';
 import { isThemeId, type PlayerId, type ThemeId } from '@/Core';
 import { phaseFrom } from './RoomStatePhases';
 
-/** Plain data as name/value pairs, so a value can be read without a cast. `Object.entries` is *
+/** Plain data as name/value pairs, so a value can be read without a cast. `Object.entries` is
  * what makes this possible: it reads an object of unknown shape where reading a property off
  * the unknown would need a cast to say what it was. */
 export type Fields = Map<string, unknown>;
 
 export function fieldsOf(value: unknown): Fields {
-  return value !== null && typeof value === 'object' ? new Map(Object.entries(value)) : new Map();
+  return value !== null && typeof value === 'object'
+    ? new Map(Object.entries(value))
+    : new Map();
 }
 
 export function text(fields: Fields, name: string): string {
@@ -30,8 +32,8 @@ export function rawPairs(fields: Fields, name: string): unknown[] {
 }
 
 /** A stored list of pairs back as a map, dropping anything that is not one. Guarded rather than
- * * cast, because what is in storage was written by an older version of these files or by
- * nothing at all, and an entry that does not look like what it claims is not a seat. */
+ * cast, because what is in storage was written by an older version of these files or by nothing
+ * at all, and an entry that does not look like what it claims is not a seat. */
 export function toMap<V>(
   pairs: readonly unknown[],
   isValue: (value: unknown) => value is V
@@ -50,7 +52,7 @@ export const isNumber = (value: unknown): value is number => typeof value === 'n
 export const isPlayer = (value: unknown): value is Player =>
   typeof value === 'object' && value !== null;
 
-/** The rounds played in each theme, keyed by theme. The key is guarded as well as the count: a *
+/** The rounds played in each theme, keyed by theme. The key is guarded as well as the count: a
  * count filed under a name this build has no card for is a count nothing can ever read. */
 export function themeRoundsFrom(fields: Fields): Map<ThemeId, number> {
   const counts = new Map<ThemeId, number>();
@@ -62,14 +64,14 @@ export function themeRoundsFrom(fields: Fields): Map<ThemeId, number> {
   return counts;
 }
 
-/** The stored pace, or Standard when what is in storage names a pace this build has dropped: *
+/** The stored pace, or Standard when what is in storage names a pace this build has dropped:
  * every phase is timed off the pace, so an unrecognised one is a room that cannot start. */
 export function paceFrom(fields: Fields): Pace {
   const value = fields.get('pace');
   return value === 'Fast' ? 'Fast' : 'Standard';
 }
 
-/** The theme the room settled on, or undefined when nothing is stored or what is stored is not *
+/** The theme the room settled on, or undefined when nothing is stored or what is stored is not
  * one this build has. The bank is drawn from the theme, so a theme that cannot be named is a
  * card that cannot be drawn, which is the same as no theme having been chosen. */
 export function themeFrom(fields: Fields): ThemeId | undefined {
@@ -89,13 +91,23 @@ function turnFrom(fields: Fields): PlayerId | null {
 }
 
 /** What every phase of a stored room carries whatever it is doing. One shape, because the seats,
- * * the totals and the turn all outlive the phase they were written in. */
+ * the totals and the turn all outlive the phase they were written in. */
 export interface Members {
   scores: Map<PlayerId, number>;
   players: Map<PlayerId, Player>;
   turnPlayerId: PlayerId | null;
   pace: Pace;
   themeRounds: Map<ThemeId, number>;
+  /** Whether the room was held, and when. A host that refreshed while the room was held has to
+   * come back into the hold rather than let a stopped clock start running behind its back. */
+  paused: boolean;
+  pausedAt: number | undefined;
+}
+
+/** A stored number, or undefined where there is none to read. Null stands for a moment that has
+ * not happened yet, and is not itself a moment. */
+function optionalNumber(value: unknown): number | undefined {
+  return isNumber(value) ? value : undefined;
 }
 
 /** The seats, totals, turn, pace and theme counts a stored room comes back with. */
@@ -106,6 +118,8 @@ function membersFrom(fields: Fields): Members {
     turnPlayerId: turnFrom(fields),
     pace: paceFrom(fields),
     themeRounds: themeRoundsFrom(fields),
+    paused: fields.get('paused') === true,
+    pausedAt: optionalNumber(fields.get('pausedAt')),
   };
 }
 

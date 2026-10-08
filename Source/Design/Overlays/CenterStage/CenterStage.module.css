@@ -1,0 +1,63 @@
+/* The mark, centred on the window. Absolute and centred in both directions rather than a grid
+ * place-items centring it, because the shade above is a sibling that fills the layer and the
+ * mark has to sit over that shade rather than share a row with it. */
+.Root {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+/* A word rather than a figure, so it is set to be read rather than counted: sized as a share of
+ * the window so it is the same presence on a phone and a desktop, but smaller than a count,
+ * which is a thing being watched tick and a word is only being read. */
+.Stage {
+  font-family: var(--FontFamily-Display);
+  font-size: min(18vw, calc(var(--FontSize-4xl) * 2));
+  line-height: 1;
+  color: var(--Color-Text-Inverse);
+  text-align: center;
+  /* The mark arriving, then simply being there until it is taken away. Over the length of a
+   * whole beat rather than the pop's own 380ms, so it has arrived before it starts holding
+   * rather than arriving into a second that is already half over. It comes up from well under
+   * its size and overshoots on the way, which is what reads as a pop: the spring easing carries
+   * it past one and back, and a straight tween to one reads as a zoom. */
+  animation: CountTick var(--Duration-CountTick) var(--Easing-Spring) both;
+}
+
+@keyframes CountTick {
+  0% {
+    scale: 0.4;
+    opacity: 0;
+  }
+
+  30% {
+    scale: 1;
+    opacity: 1;
+  }
+
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+/* No growing and shrinking, and the mark simply appearing: someone asking for less movement
+ * gets the same information without the travel. */
+@media (prefers-reduced-motion: reduce) {
+  .Stage {
+    animation-name: CountFade;
+  }
+
+  @keyframes CountFade {
+    0% {
+      opacity: 0;
+    }
+
+    30%,
+    100% {
+      opacity: 1;
+    }
+  }
+}

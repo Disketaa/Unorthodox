@@ -19,6 +19,10 @@ describe('reducer NEXT_ROUND action', () => {
       turnPlayerId: 'p1',
       pace: 'Standard',
       themeRounds: new Map(),
+
+      paused: false,
+
+      pausedAt: undefined,
       theme: undefined,
     };
     state = reducer(state, { type: 'NEXT_ROUND', durationMs: 20000, startedAt: 2000 });
@@ -43,6 +47,10 @@ describe('reducer NEXT_ROUND action', () => {
       turnPlayerId: null,
       pace: 'Standard',
       themeRounds: new Map(),
+
+      paused: false,
+
+      pausedAt: undefined,
       theme: undefined,
     };
     expect(reducer(state, { type: 'NEXT_ROUND', durationMs: 20000, startedAt: 2000 })).toBe(
@@ -78,6 +86,8 @@ function scored(): ScoresState {
       ['Nature', 2],
       ['Food', 5],
     ]),
+    paused: false,
+    pausedAt: undefined,
     theme: 'Nature',
   };
 }

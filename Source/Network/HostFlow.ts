@@ -8,6 +8,7 @@ import {
   startWriting,
   startRandomPick,
   resolveRandomPick,
+  setPaused,
   closeWriting,
   closeReviewing,
   nextRound,
@@ -24,8 +25,8 @@ export interface FlowHost {
 }
 
 /** How long the count-in runs, shade and numbers together. It plays out over the lobby the room
- * * just left, and the theme clock starts the instant Start is pressed, so the first Choosing
- * is given this much extra. Later rounds have no count-in to pay for. */
+ * just left, and the theme clock starts the instant Start is pressed, so the first Choosing is
+ * given this much extra. Later rounds have no count-in to pay for. */
 function countInMs(): number {
   const { startVeilMs, startCountdownMs } = Game.GameConfig.timing;
   return startVeilMs + startCountdownMs;
@@ -38,6 +39,13 @@ export function startGameFrom(host: FlowHost): void {
   const leadInMs = countInMs();
   const choosingMs = Game.phaseDurationMs('Choosing', state.pace) + leadInMs;
   host.commit(startGame(state, choosingMs, leadInMs));
+}
+
+/** Holding the room, or letting it run again. */
+export function setPausedFrom(host: FlowHost, paused: boolean): void {
+  const state = host.getState();
+  if (state === undefined) return;
+  host.commit(setPaused(state, paused));
 }
 
 /** Start a round: out of the theme choice and into answering it. */

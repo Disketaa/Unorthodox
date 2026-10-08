@@ -2,22 +2,9 @@
  * move the game makes: nothing in the flow reaches this, and its rules are the shape of the
  * state rather than a rule about what may follow what. */
 import { PlayerId, assertNever } from '@/Core';
-import { HostState } from './GameState';
+import { HostState, membersOf } from './GameState';
 import type { PhaseName } from './PhaseFlow';
 import type { ActionOf } from './GameActions';
-
-/** What every phase carries out of the one it was in: the roster, the totals, the turn and the
- * pace. Shared with the phase handlers, so a jump lands in a room with the same room around it
- * that a real move would have carried in. */
-function membersOf(state: HostState) {
-  return {
-    players: state.players,
-    cumulativeScores: state.cumulativeScores,
-    turnPlayerId: state.turnPlayerId,
-    pace: state.pace,
-    themeRounds: state.themeRounds,
-  };
-}
 
 /** The room put straight into a phase. Round data is started empty rather than carried, so a
  * jump into Reviewing shows an empty bank rather than answers nobody wrote. */

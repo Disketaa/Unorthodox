@@ -24,6 +24,10 @@ export interface GameSessionView extends SessionPhase {
   roomCode: string;
   playerId: PlayerId | null;
   publicState: PublicState | undefined;
+  /** Whether the host is holding the room still, which stops every clock and every answer in it.
+   * Read from the room rather than kept here, since a screen that guessed for itself would be
+   * the one screen in the room still playing. */
+  paused: boolean;
   hasSubmitted: boolean;
   rejectedGroupIds: ReadonlySet<number>;
   hostLeft: boolean;
@@ -40,6 +44,8 @@ export interface GameSessionView extends SessionPhase {
   setLook: (character: CharacterId, color: CharacterColor) => void;
   /** Asking for a pace. Only the host's changes the room; a client's is a local look. */
   setPace: (pace: Pace) => void;
+  /** Holding the room still, or letting it run again. */
+  setPaused: (paused: boolean) => void;
   /** Put an invented player in the room. Only the host's, and only while debugging. */
   addBot: () => void;
   /** Hand the room's turn to the next player. Only the host's, and only while debugging. */
@@ -141,6 +147,7 @@ export function useGameSession(
     roomCode,
     playerId,
     publicState,
+    paused: publicState?.paused === true,
     // Both marks only count while the phase still shows the round they were made in.
     hasSubmitted: hasSubmittedIn(marks, topic),
     rejectedGroupIds: rejectedIn(marks, topic),

@@ -57,8 +57,7 @@ function readStartedAt(publicState: PublicState | undefined): number {
 }
 
 /** How much of the phase's clock runs before the room can see it, which is the count-in and only
- * * ever on the first phase of a game. Absent from an older host, which had no count-in to
- * hide. */
+ * ever on the first phase of a game. Absent from an older host, which had no count-in to hide. */
 function readLeadInMs(publicState: PublicState | undefined): number {
   return publicState?.phase === 'Choosing' ? (publicState.leadInMs ?? 0) : 0;
 }

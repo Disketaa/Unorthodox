@@ -35,9 +35,7 @@ function withOneFinished(themes: readonly ThemeId[], first: ThemeId | undefined)
 /** The same bank again, with only what this case is showing left to differ. Four near-identical
  * banks is four blocks of the same props, and one of them being edited without the other is how
  * a gallery stops showing the component it is a gallery of. */
-function Bank(
-  rest: Partial<ThemeCardsProps> & Pick<ThemeCardsProps, 'themes' | 'spent'>
-) {
+function Bank(rest: Partial<ThemeCardsProps> & Pick<ThemeCardsProps, 'themes' | 'spent'>) {
   return <ThemeCards names={names} roundsPerTheme={10} {...rest} />;
 }
 

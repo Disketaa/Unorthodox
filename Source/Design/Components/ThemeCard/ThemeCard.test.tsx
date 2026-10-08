@@ -216,7 +216,10 @@ describe("the card the room's own roll is on", () => {
     const container = document.createElement('div');
     document.body.appendChild(container);
     act(() => {
-      render(<ThemeCard theme="Nature" name="Природа" swept onPick={(t) => picked.push(t)} />, container);
+      render(
+        <ThemeCard theme="Nature" name="Природа" swept onPick={(t) => picked.push(t)} />,
+        container
+      );
     });
     const button = container.querySelector('button');
     if (button === null) {

@@ -58,7 +58,10 @@ function useWash(picked: ThemeId | undefined, bank: RefObject<HTMLDivElement>): 
 
 /** What one slot is told: the bank's own props, with the two that are the bank's decision rather
  * than a card's added. */
-type SlotProps = Pick<ThemeCardsProps, 'names' | 'roundsPerTheme' | 'spent' | 'picked' | 'onPick'> & {
+type SlotProps = Pick<
+  ThemeCardsProps,
+  'names' | 'roundsPerTheme' | 'spent' | 'picked' | 'onPick'
+> & {
   theme: ThemeId;
   index: number;
   swept: ThemeId | undefined;

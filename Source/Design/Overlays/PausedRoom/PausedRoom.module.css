@@ -1,0 +1,20 @@
+/* The room held still. Over the whole window rather than one panel of it, since what is stopped
+ * is the game and not one screen of it. Above the paper and below the dock, so the host's
+ * controls stay reachable over the room they are holding, and takes no pointer: a held room has
+ * nothing to press, and a click that reached a card under this would be a press into a game
+ * nobody is playing. */
+.Root {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* A quarter of the dark, which is enough to say the room has stopped without hiding what it
+ * stopped on: a player mid-answer still has to be able to read their own draft when the room
+ * lets go. */
+.Veil {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 25%);
+}

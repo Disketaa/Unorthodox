@@ -23,13 +23,15 @@ export interface ThemeCardsViewProps {
   picking: { theme: ThemeId; startedAt: number } | undefined;
   /** Skew between the host's clock and this device's, so the sweep runs the room's length. */
   clockOffsetMs: number;
+  /** Whether the host is holding the room, which stops a card being pressed. */
+  paused?: boolean;
   /** Answering the bank, from whichever player's turn it happens to be. */
   onPickTheme: (theme: ThemeId) => void;
   /** How many rounds have been played in each theme so far, keyed the same way as `theme`. */
   spent?: ReadonlyMap<ThemeId, number>;
 }
 
-/** The themes this lobby is playing, on the game screen. Rolled from the room code rather than *
+/** The themes this lobby is playing, on the game screen. Rolled from the room code rather than
  * `Math.random`, which is the whole of "random per lobby": two players in one room derive the
  * same six from the same four letters. */
 export function ThemeCardsView({
@@ -39,6 +41,7 @@ export function ThemeCardsView({
   theme,
   picking,
   clockOffsetMs,
+  paused = false,
   onPickTheme,
   spent,
 }: ThemeCardsViewProps) {
@@ -61,7 +64,7 @@ export function ThemeCardsView({
       // Asked for only where it is this player's turn, and never while the room is answering
       // itself: the room's roll wins, because the room acts for everybody. Absent anywhere
       // else is what holds the cards back.
-      onPick={choosing && myTurn && picking === undefined ? onPickTheme : undefined}
+      onPick={choosing && myTurn && picking === undefined && !paused ? onPickTheme : undefined}
     />
   );
 }

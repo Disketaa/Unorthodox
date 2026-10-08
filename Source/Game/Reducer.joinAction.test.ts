@@ -15,6 +15,10 @@ describe('reducer JOIN action', () => {
       turnPlayerId: null,
       pace: 'Standard',
       themeRounds: new Map(),
+
+      paused: false,
+
+      pausedAt: undefined,
     };
     state = reducer(state, { type: 'JOIN', playerId: 'p1', name: 'Alice', look });
     state = reducer(state, { type: 'JOIN', playerId: 'p2', name: 'Bob', look: otherLook });
@@ -38,6 +42,10 @@ describe('reducer SET_LOOK action', () => {
     turnPlayerId: null,
     pace: 'Standard',
     themeRounds: new Map(),
+
+    paused: false,
+
+    pausedAt: undefined,
   };
 
   test('changes the character in the lobby', () => {
@@ -67,6 +75,10 @@ describe('reducer SET_LOOK action', () => {
       turnPlayerId: null,
       pace: 'Standard',
       themeRounds: new Map(),
+
+      paused: false,
+
+      pausedAt: undefined,
       theme: undefined,
     };
     const state = reducer(writing, { type: 'SET_LOOK', playerId: 'p1', look: otherLook });

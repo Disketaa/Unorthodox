@@ -7,6 +7,10 @@ export interface AnswerInputProps {
   value: string;
   submitted: boolean;
   timeUp: boolean;
+  /** Whether the host is holding the room. The field stays and the draft stays, since a held
+   * room has not forgotten what was typed; only the sending stops, because an answer sent into
+   * a held room would be counted before the room had finished being asked. */
+  held: boolean;
   onValueChange: (value: string) => void;
   onSubmit: () => void;
 }
@@ -16,10 +20,11 @@ export function AnswerInput({
   value,
   submitted,
   timeUp,
+  held,
   onValueChange,
   onSubmit,
 }: AnswerInputProps) {
-  const canSubmit = !submitted && !timeUp && value.trim().length > 0;
+  const canSubmit = !submitted && !timeUp && !held && value.trim().length > 0;
 
   return (
     <Stack gap="Md">

@@ -16,6 +16,8 @@ export interface GameActions {
   /** The round starting from the theme the room chose. Goes through the writing move rather than
    * the dock's jump, since starting a round is what hands the turn on. */
   startRound: () => void;
+  /** Holding the room still, or letting it run again. */
+  setPaused: (paused: boolean) => void;
   setLook: (character: CharacterId, color: CharacterColor) => void;
   setPace: (pace: Pace) => void;
   addBot: () => void;
@@ -74,6 +76,7 @@ export function useGameActions(
     ...useRoundFlow(session),
     setLook: (character, color) => session.setLook({ character, color }),
     setPace: (pace) => session.setPace(pace),
+    setPaused: (paused) => session.setPaused(paused),
     addBot: () => session.addBot(),
     nextTurn: () => session.nextTurn(),
     submitAnswer: (text: string) => {

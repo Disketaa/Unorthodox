@@ -50,7 +50,7 @@ function themeOf(state: HostState): { theme?: ThemeId } {
 }
 
 /** The room's own roll, if it is mid-sweep. Written because a host that refreshed during one has
- * * to come back into the same sweep rather than leave the bank open a second time. */
+ * to come back into the same sweep rather than leave the bank open a second time. */
 function pickingOf(state: HostState): { picking?: RandomPick } {
   return state.phase === 'Choosing' && state.picking !== undefined
     ? { picking: state.picking }

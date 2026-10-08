@@ -1,4 +1,4 @@
-import { Button } from '@/Design/Components';
+import { IconButton } from '@/Design/Components';
 import { PublicState } from '@/Game';
 import { Strings } from '@/Content';
 import { hasRoomFor } from './LobbyRoom';
@@ -15,9 +15,5 @@ export function LobbyDebugTools({ publicState, onAddBot }: LobbyDebugToolsProps)
   if (publicState?.phase !== 'Lobby' || !hasRoomFor(publicState.players)) {
     return null;
   }
-  return (
-    <Button variant="Primary" size="Small" onClick={onAddBot}>
-      {Strings.lobby.addBot}
-    </Button>
-  );
+  return <IconButton icon="Bot" label={Strings.lobby.addBot} onClick={onAddBot} />;
 }

@@ -17,6 +17,10 @@ describe('toPublicState Scores state', () => {
       turnPlayerId: null,
       pace: 'Standard',
       themeRounds: new Map(),
+
+      paused: false,
+
+      pausedAt: undefined,
       theme: undefined,
     };
     const publicState = toPublicState(state);
@@ -43,6 +47,8 @@ describe('toPublicState Scores state', () => {
       turnPlayerId: null,
       pace: 'Standard',
       themeRounds: new Map([['Nature', 3]]),
+      paused: false,
+      pausedAt: undefined,
       theme: undefined,
     };
     expect(toPublicState(state).spent).toEqual([{ theme: 'Nature', rounds: 3 }]);

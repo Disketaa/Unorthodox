@@ -231,6 +231,26 @@ function countContentLines(text: string): number {
     .filter((line) => line.trim() !== "").length;
 }
 
+/** A gutter marker that has come loose from the edge of the comment and landed in the prose. Two
+ * shapes only, both of which a rewrap produces and neither of which prose has: a second gutter
+ * star opening a line, and a bare one stranded where a line was wrapped. Deliberately not a
+ * star between two words, since `seats * advance` is prose and cannot be told from a stray by
+ * looking at it. */
+function strayGutterStar(sourceLines: readonly string[], comment: RawComment): boolean {
+  if (!comment.block || comment.trailing) return false;
+  const lines = sourceLines.slice(comment.line - 1, comment.endLine);
+  return lines.some((line, index) => {
+    const opening = index === 0 ? line.replace(/^(\s*)\/\*\*?/, "$1") : line.replace(/^(\s*)/, "$1");
+    // A doubled gutter: the marker's own star, then another one.
+    if (/^\s*\*[ \t]+\*/.test(opening)) return true;
+    // A star left at the end of a line that the comment carries on past.
+    const last = index === lines.length - 1;
+    if (last) return false;
+    const body = line.replace(/^(\s*)\*[ \t]?/, "$1");
+    return /[^\s(]\*[ \t]*$/.test(body);
+  });
+}
+
 /** The canonical text for a comment, from the shared definition the formatter and the ESLint
  * rule both use. Three implementations of one shape would drift, and a formatter that disagrees
  * with its own linter is worse than no formatter. A comment is off-shape when it is padded: a
@@ -536,13 +556,15 @@ function main(): void {
       }
       const overBy = isCss && overCssBudget(comment);
       const offShape = isCss && shapeProblem(sourceLines, comment);
-      if (verdict === "kept" && !overBy && !offShape) continue;
+      const stray = strayGutterStar(sourceLines, comment);
+      if (verdict === "kept" && !overBy && !offShape && !stray) continue;
       findings.push({
         file: relative(process.cwd(), file).split(sep).join("/"),
         line: comment.line,
-        verdict: verdict !== "kept" ? verdict : offShape ? "shape" : "over-budget",
-        reasons:
-          verdict !== "kept"
+        verdict: stray ? "shape" : verdict !== "kept" ? verdict : offShape ? "shape" : "over-budget",
+        reasons: stray
+          ? ["stray gutter star; a rewrap left it in the prose, so it is removed by hand"]
+          : verdict !== "kept"
             ? reasons
             : offShape
               ? ["padded; `npm run comments:format` reshapes it"]

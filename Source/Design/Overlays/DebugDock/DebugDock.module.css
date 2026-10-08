@@ -5,6 +5,12 @@
  * half is how it is centred without asking where its parent happens to be. Above the paper,
  * which sits at 1: the dock is a surface the room's own texture would otherwise tint. */
 .Root {
+  /* Half the padding every other card uses, which is `--Space-Sm` on the space scale. A dock is
+   * a row of squares the size of a finger rather than a panel of things to read, and at the
+   * full padding the squares read as buttons in a form rather than as the dock they are. Set as
+   * the card's own variable rather than as a rule on the card, so it does not depend on which
+   * of the two stylesheets wins. */
+  --Layout-ContentPadding: var(--Space-Sm);
   position: fixed;
   bottom: var(--Space-Lg);
   left: 50%;

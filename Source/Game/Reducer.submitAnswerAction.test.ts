@@ -15,6 +15,10 @@ describe('reducer SUBMIT_ANSWER action', () => {
       turnPlayerId: null,
       pace: 'Standard',
       themeRounds: new Map(),
+
+      paused: false,
+
+      pausedAt: undefined,
       theme: undefined,
     };
     state = reducer(state, { type: 'SUBMIT_ANSWER', playerId: 'p1', text: 'Answer1' });
@@ -37,6 +41,10 @@ describe('reducer SUBMIT_ANSWER action', () => {
       turnPlayerId: null,
       pace: 'Standard',
       themeRounds: new Map(),
+
+      paused: false,
+
+      pausedAt: undefined,
       theme: undefined,
     };
     state = reducer(state, { type: 'SUBMIT_ANSWER', playerId: 'p1', text: 'Answer2' });

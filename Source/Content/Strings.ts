@@ -32,9 +32,6 @@ export const Strings = {
     roomFull: 'Комната заполнена',
     /** The accessible name of the icon-only control that leaves the room. */
     exit: 'Выйти из комнаты',
-    /** Says that the host's "*" took effect, since nothing else on screen moves when only the
-     * console does. Only shown while logging is on, so turning it off needs no announcement. */
-    debugOn: 'Отладка включена',
     /** Puts an invented player in the room, so a host can try a full room alone. Named as what
      * it does to the room, and left in the imperative because it is something to do rather than
      * a state to read. */
@@ -119,6 +116,15 @@ export const Strings = {
     /** Steps the room along the phase table by hand, so every phase can be walked without
      * waiting any of them out. */
     nextPhase: 'Следующая фаза',
+  },
+  pause: {
+    /** Holds the room where it is, for as long as the host means it. */
+    hold: 'Поставить на паузу',
+    /** Lets the room run on from where it was held, rather than starting over. */
+    resume: 'Продолжить',
+    /** Said over the whole room while it is held, in the count-in's own hand: a word rather than
+     * a figure, since it is something to be told rather than something being counted down. */
+    held: 'Пауза',
   },
   /** What the game is doing right now, on the block above the theme bank. One sentence per
    * phase, in the first person: the sentence is about this browser's own moment, and a block

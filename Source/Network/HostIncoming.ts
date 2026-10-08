@@ -27,7 +27,10 @@ function joinAction(context: IncomingContext): GameAction | undefined {
     // Every seat is taken, so this player cannot be given one. Checked before the phase, because
     // a returning player keeps the seat they already hold rather than needing one to be free.
     log('info', 'refusing a join into a room with no seat left');
-    transport.sendToPeer(peerId, { type: 'RoomFull', maxPlayers: GameConfig.limits.maxPlayers });
+    transport.sendToPeer(peerId, {
+      type: 'RoomFull',
+      maxPlayers: GameConfig.limits.maxPlayers,
+    });
     return undefined;
   }
   if (context.state.phase !== 'Lobby' && !roster.hasSeatForName(message.name)) {
@@ -57,7 +60,7 @@ function joinAction(context: IncomingContext): GameAction | undefined {
   return { type: 'JOIN', playerId, name: message.name, look };
 }
 
-/** The game action a client message asks for, or undefined if it asks for none. A join is the *
+/** The game action a client message asks for, or undefined if it asks for none. A join is the
  * only message that can be refused, and refusing it is a message of its own rather than a
  * change of state, which is why the transport is in here. */
 export function toAction(context: IncomingContext): GameAction | undefined {

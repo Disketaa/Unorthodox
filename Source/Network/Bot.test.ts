@@ -20,6 +20,10 @@ function lobby(...names: string[]): HostState {
     turnPlayerId: null,
     pace: 'Standard',
     themeRounds: new Map(),
+
+    paused: false,
+
+    pausedAt: undefined,
   };
 }
 
@@ -64,6 +68,10 @@ describe('botJoin', () => {
       turnPlayerId: null,
       pace: 'Standard',
       themeRounds: new Map(),
+
+      paused: false,
+
+      pausedAt: undefined,
       theme: undefined,
     };
     expect(botJoin(writing, 1, seeded())).toBeUndefined();

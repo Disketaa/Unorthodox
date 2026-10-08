@@ -9,18 +9,22 @@ export function useCountdown(
   startedAt: number,
   clockOffsetMs = 0,
   active = true,
-  answeredAt?: number
+  answeredAt?: number,
+  held = false
 ): number {
   const [now, setNow] = useState(() => Date.now());
 
+  // A held room stops being ticked rather than being ticked slowly: the host moves the clock on by
+  // the length of the hold when it lets go, so a countdown still falling here would show less than
+  // the room has left and then land back where it started.
   useEffect(() => {
-    if (!active) return;
+    if (!active || held) return;
     // Read the clock on the way in rather than waiting out the first tick: a phase starting while
     // the tick is stopped would count the whole idle time as phase time.
     setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), GameConfig.timing.uiTickMs);
     return () => clearInterval(id);
-  }, [active]);
+  }, [active, held]);
 
   // The end of the clock is the answer where there is one, and stops there for good: a bank
   // that has been pressed is being looked at, not still being decided.

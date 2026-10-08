@@ -10,6 +10,8 @@ export interface WritingScreenProps {
   submitted: boolean;
   submittedCount: number;
   playerCount: number;
+  /** Whether the host is holding the room, which stops the answer being sent. */
+  held: boolean;
   onValueChange: (value: string) => void;
   onSubmit: () => void;
 }
@@ -22,6 +24,7 @@ export function WritingScreen({
   submitted,
   submittedCount,
   playerCount,
+  held,
   onValueChange,
   onSubmit,
 }: WritingScreenProps) {
@@ -38,6 +41,7 @@ export function WritingScreen({
           value={value}
           submitted={submitted}
           timeUp={timeUp}
+          held={held}
           onValueChange={onValueChange}
           onSubmit={onSubmit}
         />

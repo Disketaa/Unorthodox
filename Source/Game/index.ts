@@ -5,6 +5,7 @@ export * from './Grouping';
 export * from './Scoring';
 export * from './GameActions';
 export * from './LobbyActions';
+export * from './Pause';
 export * from './Turns';
 export * from './Reducer';
 export * from './GameState';

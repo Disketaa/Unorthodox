@@ -2,7 +2,7 @@
  * act on is returned untouched, which is what makes a late message a no-op rather than a
  * change. */
 import { PlayerId } from '@/Core';
-import { HostState } from './GameState';
+import { HostState, membersOf } from './GameState';
 import { roundsAfter } from './ThemeRounds';
 import { scoreRound } from './RoundScoring';
 import { nextPlayerInTurn, turnOrder } from './Turns';
@@ -167,17 +167,4 @@ export function handleFinal(state: HostState): HostState {
     return state;
   }
   return { ...membersOf(state), phase: 'Final', theme: state.theme };
-}
-
-/** What every phase carries out of the one it was in: the roster, the totals, the turn and the
- * pace. Spreading this rather than naming all four in each handler is what keeps a phase from
- * being added without being told about the room around it. */
-function membersOf(state: HostState) {
-  return {
-    players: state.players,
-    cumulativeScores: state.cumulativeScores,
-    turnPlayerId: state.turnPlayerId,
-    pace: state.pace,
-    themeRounds: state.themeRounds,
-  };
 }

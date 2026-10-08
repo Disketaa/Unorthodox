@@ -34,6 +34,11 @@ export type GameAction =
   /** The end of one round into the next one's theme choice. */
   | { type: 'NEXT_ROUND'; durationMs: number; startedAt: number }
   | { type: 'NEXT_TURN' }
+  /** The host holding the room: every clock and every answer stops where it is. Carries the
+   * moment it was held, which is what letting go moves the phase's clock on by. */
+  | { type: 'PAUSE'; at: number }
+  /** The room running again, with the moment it was let go. */
+  | { type: 'RESUME'; at: number }
   | { type: 'FINAL' }
   /** The host's console putting the room straight into a phase, without playing there. Carries
    * the round's own data because a phase is a state and not only a screen. */

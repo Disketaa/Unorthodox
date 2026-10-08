@@ -46,7 +46,12 @@ describe('a bank nobody answered', () => {
   });
 
   it('is refused once the room has already been answered, since a roll cannot un-answer it', () => {
-    const answered = reducer(openBank(), { type: 'CHOOSE_THEME', playerId: 'p1', theme: 'Music', at: 1500 });
+    const answered = reducer(openBank(), {
+      type: 'CHOOSE_THEME',
+      playerId: 'p1',
+      theme: 'Music',
+      at: 1500,
+    });
     expect(reducer(answered, roll)).toBe(answered);
   });
 
@@ -66,14 +71,20 @@ describe('a bank nobody answered', () => {
   });
 
   it('commits its theme and spends a round, which is the same answer a press gives', () => {
-    const settled = reducer(reducer(openBank(), roll), { type: 'RESOLVE_RANDOM_PICK', at: 2500 });
+    const settled = reducer(reducer(openBank(), roll), {
+      type: 'RESOLVE_RANDOM_PICK',
+      at: 2500,
+    });
     expect(settled.phase === 'Choosing' && settled.theme).toBe('Nature');
     expect([...settled.themeRounds]).toEqual([['Nature', 1]]);
     expect(told(settled).picking).toBeUndefined();
   });
 
   it('travels to a client as a room answer, on every screen at once', () => {
-    const settled = reducer(reducer(openBank(), roll), { type: 'RESOLVE_RANDOM_PICK', at: 2500 });
+    const settled = reducer(reducer(openBank(), roll), {
+      type: 'RESOLVE_RANDOM_PICK',
+      at: 2500,
+    });
     expect(told(settled).theme).toBe('Nature');
   });
 
@@ -88,23 +99,28 @@ describe('a bank nobody answered', () => {
     const answered = reducer(reducer(openBank(), roll), {
       type: 'CHOOSE_THEME',
       playerId: 'p1',
-      theme: 'Music', at: 1500,
+      theme: 'Music',
+      at: 1500,
     });
     expect(told(answered).theme).toBe('Music');
     expect(told(answered).picking).toBeUndefined();
   });
 
-  it('spends one round on whichever theme it lands on, not on the room\'s roll for nothing', () => {
+  it("spends one round on whichever theme it lands on, not on the room's roll for nothing", () => {
     const answered = reducer(reducer(openBank(), roll), {
       type: 'CHOOSE_THEME',
       playerId: 'p1',
-      theme: 'Music', at: 1500,
+      theme: 'Music',
+      at: 1500,
     });
     expect([...answered.themeRounds]).toEqual([['Music', 1]]);
   });
 
   it('is cleared for the next round, since the last roll belonged to the round it answered', () => {
-    const committed = reducer(reducer(openBank(), roll), { type: 'RESOLVE_RANDOM_PICK', at: 2500 });
+    const committed = reducer(reducer(openBank(), roll), {
+      type: 'RESOLVE_RANDOM_PICK',
+      at: 2500,
+    });
     const writing = reducer(committed, {
       type: 'START_WRITING',
       topic: 'A topic',

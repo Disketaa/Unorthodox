@@ -2,8 +2,8 @@
 const SlotsToken = '--Layout-PlayerBarSlots';
 
 /** What the bar falls back to when the page has not declared the token. A test runner and a page
- * * that has not loaded `Tokens.css` both land here, and `Tests/PlayerBarLayout.test.ts` holds
- * * this copy to the token. */
+ * that has not loaded `Tokens.css` both land here, and `Tests/PlayerBarLayout.test.ts` holds
+ * this copy to the token. */
 export const FallbackSlots = 12;
 
 /** How many hexes the bar holds. Read off the document because the count is a design decision

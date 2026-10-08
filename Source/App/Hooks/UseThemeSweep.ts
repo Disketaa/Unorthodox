@@ -18,7 +18,9 @@ const SettleMs = GameConfig.timing.pickingSettleMs;
  * the answer and the bank holds still until it lands, rather than the room's looking being
  * taken away as well as its motion. */
 function still(): boolean {
-  return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return (
+    typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
 }
 
 /** The card a hop lands on: the count taken into the bank, so past the last card it comes round
@@ -27,7 +29,7 @@ function hopTo(step: number, count: number): number {
   return step % count;
 }
 
-/** How far into a sweep a hop falls, as a share of the whole. Squared, so the early hops crowd *
+/** How far into a sweep a hop falls, as a share of the whole. Squared, so the early hops crowd
  * together and the late ones spread out. Over the hops there are rather than one past them, so
  * the last lands on the end of the sweep. */
 function hopAt(k: number, steps: number): number {
@@ -82,7 +84,8 @@ export function useThemeSweep(
   themes: readonly ThemeId[],
   clockOffsetMs: number
 ): Sweep {
-  const localStart = picking === undefined ? 0 : hostTimeToLocal(picking.startedAt, clockOffsetMs);
+  const localStart =
+    picking === undefined ? 0 : hostTimeToLocal(picking.startedAt, clockOffsetMs);
   const target = picking?.theme;
   const [looking, setLooking] = useState<ThemeId | undefined>(undefined);
   // In its last stretch the sweep is no longer looking: it is on the card it landed on, and stays
@@ -95,7 +98,13 @@ export function useThemeSweep(
     if (picking === undefined || target === undefined || themes.length === 0 || still()) {
       return;
     }
-    return walkBank(themes, target, localStart, GameConfig.timing.pickingMs - SettleMs, setLooking);
+    return walkBank(
+      themes,
+      target,
+      localStart,
+      GameConfig.timing.pickingMs - SettleMs,
+      setLooking
+    );
   }, [picking, target, localStart, themes]);
 
   if (picking === undefined || target === undefined) {

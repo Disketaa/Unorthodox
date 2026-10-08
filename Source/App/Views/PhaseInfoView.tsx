@@ -30,21 +30,22 @@ const PhaseSentences: Record<SessionPhaseName, (story: PhaseStory) => string> = 
   Final: () => Strings.phase.final,
 };
 
-/** The phase's own clock, stopped where the room answered rather than run out. Unconditional:
- * the * hook is what ticks it, so it runs whatever phase this is and is unused where nothing is
- * timed. */
+/** The phase's own clock, stopped where the room answered rather than run out, and stopped again
+ * while the host is holding the room. Unconditional: the hook is what ticks it, so it runs
+ * whatever phase this is and is unused where nothing is timed. */
 function remainingMsOf(view: GameSessionView): number {
   return useCountdown(
     view.durationMs,
     view.phaseStartedAt,
     view.clockOffsetMs,
     true,
-    view.answeredAt
+    view.answeredAt,
+    view.paused
   );
 }
 
 /** The note at the top of a game screen: what is happening, with the mark saying it still is.
- * The * countdown is drawn behind the sentence rather than under it, so a timed phase is one
+ * The countdown is drawn behind the sentence rather than under it, so a timed phase is one
  * block and a phase nobody waits out is the same block with no bar in it. */
 export function PhaseInfoView({ view }: PhaseViewProps) {
   const remainingMs = remainingMsOf(view);

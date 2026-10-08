@@ -5,6 +5,7 @@ import {
   startWritingFrom,
   startRandomPickFrom,
   resolveRandomPickFrom,
+  setPausedFrom,
   endReviewingFrom,
   nextRoundFrom,
   nextPhaseFrom,
@@ -159,6 +160,11 @@ export class HostSession {
   /** The sweep is over and the roll commits. */
   resolveRandomPick(): void {
     resolveRandomPickFrom(this.flow);
+  }
+
+  /** Holding the room still, or letting it run again. */
+  setPaused(paused: boolean): void {
+    setPausedFrom(this.flow, paused);
   }
 
   /** Advance out of Writing once everyone has answered, or out of Reviewing once its clock is
