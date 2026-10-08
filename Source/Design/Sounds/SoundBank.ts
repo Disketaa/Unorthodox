@@ -80,10 +80,9 @@ function voiceFor(): Voice | undefined {
   return voice;
 }
 
-/** Keeps the bank quiet while the tab is in the background. A press made in another tab, or a
- * countdown that kept its beat after the window was left, is noise nobody is there to hear, and
- * it keeps playing over whatever the player moved on to. Muted on the bus rather than by
- * refusing to play: notes already sounding have to be cut too, and they only pass the bus. */
+/** Keeps the bank quiet in a hidden tab, where a beat that keeps playing is noise nobody is
+ * there to hear. Muted on the bus rather than by refusing to play: notes already sounding have
+ * to be cut too, and they only pass the bus. */
 function muteWhileHidden(bus: GainNode): void {
   if (watching || typeof document === 'undefined') return;
   watching = true;

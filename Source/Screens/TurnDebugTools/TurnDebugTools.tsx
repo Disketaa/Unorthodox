@@ -7,11 +7,14 @@ export interface TurnDebugToolsProps {
   onNextTurn: () => void;
 }
 
-/** What the dock offers the host in any phase: a hand to the next player. In every phase rather
- * than only the one the room is written for, since a turn is the room's own and the host moves
- * it whenever they mean to. Hidden in an empty room, where there is nobody to hand it to. */
+/** A hand to the next player, once a session is under way. Not in the lobby, where the session
+ * starts the ordinary way, and not in an empty room, where there is nobody to hand it to. */
 export function TurnDebugTools({ publicState, onNextTurn }: TurnDebugToolsProps) {
-  if (publicState === undefined || publicState.players.length === 0) {
+  if (
+    publicState === undefined ||
+    publicState.phase === 'Lobby' ||
+    publicState.players.length === 0
+  ) {
     return null;
   }
   return (

@@ -7,14 +7,17 @@ import { freshLobbyState, reducer, toPublicState, type HostState } from '@/Game'
 
 const look = { character: 'Butterfly', color: 'Coral' } as const;
 
-/** A room in its lobby holding this many players. */
+/** A session holding this many players: a lobby with seats taken, and the game started out of
+ * it, since the control belongs to a session rather than to the room waiting for one. */
 function room(count: number) {
   const seated = Array.from({ length: count }).reduce<HostState>(
     (state, _, index) =>
       reducer(state, { type: 'JOIN', playerId: `p${index}`, name: `P${index}`, look }),
     freshLobbyState()
   );
-  return toPublicState(seated);
+  return toPublicState(
+    reducer(seated, { type: 'START_GAME', durationMs: 20000, startedAt: 1000 })
+  );
 }
 
 /** Mount the dock's controls and press the turn button if it is there. */
@@ -47,5 +50,17 @@ describe('the dock control for the turn', () => {
 
   it('is not there in an empty room, where there is nobody to hand it to', () => {
     expect(press(0, () => {})).toBe(false);
+  });
+
+  it('is not there in the lobby, which is waiting on a session rather than holding one', () => {
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+    const lobby = toPublicState(
+      reducer(freshLobbyState(), { type: 'JOIN', playerId: 'p0', name: 'P0', look })
+    );
+    act(() => {
+      render(<TurnDebugTools publicState={lobby} onNextTurn={() => {}} />, root);
+    });
+    expect(root.querySelector('button')).toBeNull();
   });
 });

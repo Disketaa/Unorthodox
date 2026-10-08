@@ -7,11 +7,11 @@ export interface PhaseDebugToolsProps {
   onNextPhase: () => void;
 }
 
-/** The host's way of stepping the room along the phase table by hand, so a walk through every
- * phase can be checked without waiting out any of them. Shown only once the host has said which
- * phase the room is in: before that there is no phase to step out of. */
+/** Steps the room along the phase table by hand, so every phase can be checked without waiting
+ * out any of them. Shown only once the host has said which phase the room is in, and never in
+ * the lobby, which is where the session starts rather than a phase it steps out of. */
 export function PhaseDebugTools({ publicState, onNextPhase }: PhaseDebugToolsProps) {
-  if (publicState === undefined) {
+  if (publicState === undefined || publicState.phase === 'Lobby') {
     return null;
   }
   return (

@@ -150,7 +150,7 @@ describe('SoundBank where it cannot play', () => {
 });
 
 describe('SoundBank in a hidden tab', () => {
-  /** happy-dom holds `document.hidden` as a getter, so the tab is posed by standing in for it. */
+  // happy-dom holds `document.hidden` as a getter, so the tab is posed by standing in for it.
   function poseTab(hidden: boolean) {
     Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden });
     document.dispatchEvent(new Event('visibilitychange'));
