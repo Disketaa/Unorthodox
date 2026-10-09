@@ -57,7 +57,6 @@ function AnswerHeading({
       topic={topic}
       remainingMs={remainingMs}
       totalMs={totalMs}
-      urgent={remainingMs <= GameConfig.timing.countdownUrgentMs}
     />
   );
 }

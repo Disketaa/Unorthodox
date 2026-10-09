@@ -68,9 +68,11 @@ describe('the countdown block', () => {
     expect(block(30_000, 0).fill).toContain('width: 0%');
   });
 
-  it('turns to the alarm tone only when the phase is nearly out', () => {
+  it('reddens the fill only when the phase is nearly out, and never the words', () => {
     // Whether a phase is late is the game's number, not this block's, so the block is told. A
     // block that decided for itself would go off on a phase the room chose to give a long wait.
+    // The words are left out of it on purpose: the fill running out and the beat rising already
+    // say the phase is closing, and red type said it a third time.
     expect(block(30_000).root.className).not.toContain('Urgent');
     expect(block(30_000, 60_000, true).root.className).toContain('Urgent');
   });

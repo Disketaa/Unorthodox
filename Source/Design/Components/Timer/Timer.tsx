@@ -13,7 +13,8 @@ export interface TimerProps {
   /** How many seconds that is, as the room writes it. Passed in because a design component does
    * not know how a count is written in this room. */
   seconds: string;
-  /** Whether the phase is nearly out. The threshold is the game's number, not this component's. */
+  /** Whether the phase is nearly out, which reddens the fill. The threshold is the game's
+   * number, not this component's. */
   urgent?: boolean;
   /** How far to pitch the beat up, where the phase has started closing in. */
   beatSemitones?: number;

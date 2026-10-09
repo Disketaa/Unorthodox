@@ -37,9 +37,8 @@
   bottom: 0;
   left: 0;
   background: var(--Timer-Fill, var(--Color-Feedback-Info));
-  /* Both the width and the colour, so a phase that turns late changes to the alarm tone over
-   * its own edge rather than snapping: the fill is still sliding as it reddens, and one motion
-   * carrying both reads as the bar getting worse rather than as two things happening. */
+  /* Both the width and the colour, so a fill that changes hands — a phase that stops belonging
+   * to one player — moves rather than snaps. */
   transition:
     width var(--Duration-Normal) var(--Easing-Standard),
     background-color var(--Duration-Normal) var(--Easing-Standard);
@@ -47,19 +46,12 @@
 
 /* The last seconds of a phase, in the room's error colour rather than its waiting one, and
  * rather than the player's own tint where the phase belongs to one: a phase that is nearly out
- * is the room's alarm regardless of whose turn it was, and a colour that changed back at the
- * last second would say the opposite. Only the fill — the block's empty part stays paper, so
- * the alarm is drawn by what is left and not by the whole block turning into a warning with
- * nothing to measure. */
+ * is the room's alarm regardless of whose turn it was. Only the fill — the block's empty part
+ * stays paper, so the alarm is drawn by what is left and not by the whole block turning into a
+ * warning with nothing to measure. The words keep their own colour: the fill running out and
+ * the beat rising already say the phase is closing. */
 .Urgent .Bar {
   background: var(--Color-Feedback-Error);
-}
-
-/* The words on the paper go with the bar under them, so the alarm is the whole block rather
- * than a bar under black type. Only the copy that is not already light: that one is drawn over
- * the fill, where white is what reads against the alarm and red is not. */
-.Urgent .Content:not(.Filled) {
-  color: var(--Color-Feedback-Error);
 }
 
 /* The words, dark on the paper. Left in the flow, because this layer is what measures the

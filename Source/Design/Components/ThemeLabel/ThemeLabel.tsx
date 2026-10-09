@@ -15,8 +15,6 @@ export interface ThemeLabelProps {
    * time. Absent where there is no phase running behind it, and the words then do not drain. */
   remainingMs?: number;
   totalMs?: number;
-  /** Whether the phase is nearly out, so the question goes red with the bar beside it. */
-  urgent?: boolean;
 }
 
 /** The round's theme named in its own colours, with the question it introduced beside it. One
@@ -28,10 +26,9 @@ export function ThemeLabel({
   topic,
   remainingMs = 0,
   totalMs = 0,
-  urgent = false,
 }: ThemeLabelProps) {
   const question = (
-    <DrainingText remainingMs={remainingMs} totalMs={totalMs} urgent={urgent}>
+    <DrainingText remainingMs={remainingMs} totalMs={totalMs}>
       {topic}
     </DrainingText>
   );

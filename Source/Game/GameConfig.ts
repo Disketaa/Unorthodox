@@ -56,8 +56,10 @@ const timing = {
    * fixed number of words, so a three-word question and a seven-word one both read at the same
    * pace. */
   questionWordMs: 210,
-  /** How long the whole question stands there once every word is in, before the round starts. */
-  questionHoldMs: 5000,
+  /** How long the whole question stands there once every word is in, before the round starts.
+   * Short enough that the reveal and the hold together read as one beat rather than as a pause
+   * of its own: the words are already in, and a long hold after them is dead air. */
+  questionHoldMs: 3000,
 };
 
 export const GameConfig = {

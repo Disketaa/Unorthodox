@@ -25,15 +25,6 @@
   transition: clip-path var(--Duration-Normal) var(--Easing-Standard);
 }
 
-/* The last seconds, in the room's error colour, and rather than any tint of the player's: a
- * phase that is nearly out is the room's alarm whoever is in it. Both layers at once, since
- * with the sweep between them a colour given to one alone would read as the words draining
- * rather than as the phase turning. */
-.Urgent .Gray,
-.Urgent .Ink {
-  color: var(--Color-Feedback-Error);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .Ink {
     transition: none;
