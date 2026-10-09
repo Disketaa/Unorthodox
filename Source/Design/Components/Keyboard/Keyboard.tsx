@@ -3,6 +3,7 @@ import styles from './Keyboard.module.css';
 import { Key } from './KeyboardKey';
 import { useHeldKeys } from './UseHeldKeys';
 import { Layouts, otherLang, type KeyboardLang } from './KeyboardLayouts';
+import { keyNamer } from './KeyNamer';
 
 export type KeyboardKey = string | 'Backspace' | 'Space' | 'Enter' | 'Lang';
 
@@ -11,15 +12,19 @@ export type KeyboardKey = string | 'Backspace' | 'Space' | 'Enter' | 'Lang';
 const BackspaceRow = 2;
 const BottomRow = 3;
 
-/** What each non-letter key draws and what a screen reader reads for it. The glyph rather than
- * the name on the key, since the letters are the only part a player reads at a glance. */
-export const Backspace = { glyph: '⌫', key: 'Backspace' } as const;
-export const Space = { glyph: '␣', key: 'Space' } as const;
-export const Enter = { glyph: '⏎', key: 'Enter' } as const;
+/** The keys that are not letters. Each carries only its own name, since a screen reader reads
+ * the label beside it and a character on the key would say the same thing twice. */
+export const Backspace = { key: 'Backspace' } as const;
+export const Space = { key: 'Space' } as const;
+export const Enter = { key: 'Enter' } as const;
 export const Lang = { key: 'Lang' } as const;
 
 export interface KeyboardProps {
-  disabled?: boolean;
+disabled?: boolean;
+  /** Whether enter can send what is typed. Drives the one key that sends rather than types,
+   * which is drawn and animated only while it can: a send key that breathes on an empty draft
+   * promises something it cannot do. */
+  canSubmit?: boolean;
   /** Letter or one of the named keys pressed. The layout itself holds no text, so the field
    * being typed into stays the single place a draft exists. */
   onKeyPress?: (key: KeyboardKey) => void;
@@ -30,22 +35,11 @@ export interface KeyboardProps {
   langLabel: string;
 }
 
-/** What the layout calls the key a physical keydown names. Rebuilt whenever the letters change,
- * so a key is only lit for a letter the keys on screen actually have. */
-function keyNamer(letters: ReadonlySet<string>): (event: KeyboardEvent) => string | undefined {
-  return (event) => {
-    if (event.key === 'Backspace') return Backspace.key;
-    if (event.key === ' ') return Space.key;
-    if (event.key === 'Enter') return Enter.key;
-    const letter = event.key.toUpperCase();
-    return letters.has(letter) ? letter : undefined;
-  };
-}
-
 interface RowProps {
   row: readonly string[];
   rowIndex: number;
   disabled: boolean;
+  canSubmit: boolean;
   held: ReadonlySet<string>;
   labels: Record<'Backspace' | 'Space' | 'Enter' | 'Lang', string>;
   onKeyPress?: (key: KeyboardKey) => void;
@@ -70,7 +64,7 @@ function Letters({ row, disabled, held, onKeyPress }: RowProps) {
 
 /** The row a thumb rests on: the language, the space bar and enter. The language key draws the
  * same mark whichever set is up, since it points at the other one rather than naming either. */
-function BottomKeys({ disabled, held, labels, onKeyPress }: RowProps) {
+function BottomKeys({ disabled, canSubmit, held, labels, onKeyPress }: RowProps) {
   return (
     <>
       <Key
@@ -84,7 +78,7 @@ function BottomKeys({ disabled, held, labels, onKeyPress }: RowProps) {
       />
       <Key
         keyName={Space.key}
-        glyph={Space.glyph}
+        icon={styles.MarkSpace}
         label={labels.Space}
         extra={styles.Space}
         disabled={disabled}
@@ -93,9 +87,9 @@ function BottomKeys({ disabled, held, labels, onKeyPress }: RowProps) {
       />
       <Key
         keyName={Enter.key}
-        glyph={Enter.glyph}
+        icon={styles.MarkEnter}
         label={labels.Enter}
-        extra={styles.Action}
+        extra={[styles.Action, canSubmit ? styles.MarkSend : ''].filter(Boolean).join(' ')}
         disabled={disabled}
         pressed={held.has(Enter.key)}
         onKeyPress={onKeyPress}
@@ -104,7 +98,8 @@ function BottomKeys({ disabled, held, labels, onKeyPress }: RowProps) {
   );
 }
 
-/** The keys that are not letters, at the end of the row they belong to. */
+/** The keys that are not letters, at the end of the row they belong to. Each draws its own mark
+ * rather than a character: the blob face has none of these three, so they rendered as tofu. */
 function NamedKeys(props: RowProps) {
   const { rowIndex, disabled, held, labels, onKeyPress } = props;
   return (
@@ -112,7 +107,7 @@ function NamedKeys(props: RowProps) {
       {rowIndex === BackspaceRow && (
         <Key
           keyName={Backspace.key}
-          glyph={Backspace.glyph}
+          icon={styles.MarkBackspace}
           label={labels.Backspace}
           extra={styles.Action}
           disabled={disabled}
@@ -140,6 +135,7 @@ function RowKeys(props: RowProps) {
  * reads it: the draft is a string and a letter is a letter whichever set it came from. */
 export function Keyboard({
   disabled = false,
+  canSubmit = false,
   onKeyPress,
   backspaceLabel,
   spaceLabel,
@@ -170,6 +166,7 @@ export function Keyboard({
           row={row}
           rowIndex={rowIndex}
           disabled={disabled}
+          canSubmit={canSubmit}
           held={held}
           labels={labels}
           onKeyPress={press}

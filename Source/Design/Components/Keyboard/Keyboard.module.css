@@ -61,6 +61,24 @@
   flex: 1.5 1 0;
 }
 
+/* Enter in the room's yellow rather than the shared key fill: it is the one key that sends rather
+ * than types, and it is the only control on this screen the room is waiting on. The yellow every
+ * player agrees on rather than the accent, which would name whoever is looking as the one who
+ * pressed it. */
+.MarkSend {
+  composes: Pulse from '../../Primitives/Sway/Sway.module.css';
+  animation: var(--Pulse-Animation);
+  background: var(--Color-Room-Yellow);
+  color: var(--Color-Text-Default);
+}
+
+/* A key that cannot send is not the key the room is waiting on, so it stops breathing and goes
+ * back to being a key: breathing on something that does nothing is a promise it cannot keep. */
+.MarkSend:disabled {
+  animation: none;
+  background: var(--Color-Surface-Hover);
+}
+
 /* The space bar is the one key meant to be hit without aiming at anything, so it takes the
  * width of the letters around it rather than a single key's share. */
 .Space {
@@ -82,6 +100,29 @@
  * says and what a pair of letters cannot. */
 .MarkLang .Icon {
   mask-image: url('../../Icons/Internet.svg');
+  mask-size: contain;
+}
+
+.MarkBackspace .Icon {
+  mask-image: url('../../Icons/Backspace.svg');
+  mask-size: 92%;
+}
+
+/* Enter's file is drawn as a return arrow over a bar, so it needs the oversize fill the other
+ * marks get: the file keeps a wide margin that would otherwise eat most of a key. */
+.MarkEnter .Icon {
+  mask-image: url('../../Icons/Enter.svg');
+  mask-size: 96%;
+}
+
+/* The space bar's file is a wide, shallow shape, so a square box would draw it small and
+ * leave a letter's height of air around it. A wide box keeps it at the size a key is read at. */
+.MarkSpace {
+  width: 2.6em;
+}
+
+.MarkSpace .Icon {
+  mask-image: url('../../Icons/Spacebar.svg');
   mask-size: contain;
 }
 

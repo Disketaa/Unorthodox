@@ -77,6 +77,7 @@ export function AnswerInput({
       {!submitted && (
         <Keyboard
           disabled={timeUp}
+          canSubmit={canSubmit}
           backspaceLabel={Strings.writing.backspaceKey}
           spaceLabel={Strings.writing.spaceKey}
           enterLabel={Strings.writing.enterKey}
