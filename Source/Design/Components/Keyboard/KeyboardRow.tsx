@@ -1,6 +1,7 @@
 import styles from './Keyboard.module.css';
 import { Key } from './KeyboardKey';
 import { Backspace, Enter, Lang, Space, type KeyboardKey } from './Keyboard';
+import { Slots } from './KeyboardLayouts';
 
 /** The row each of the keys that are not letters sits at the end of: backspace on the third row,
  * and the language, the space bar and enter on the fourth, which is the row a thumb rests on. */
@@ -19,6 +20,11 @@ export interface RowProps {
   onKeyPress?: (key: KeyboardKey) => void;
 }
 
+/** How many times the key in this slot has been pressed. */
+function count(presses: RowProps['presses'], slot: string): number {
+  return presses[slot] ?? 0;
+}
+
 /** A row of letters, closed by whichever named key belongs at the end of that row. Every key is
  * the same width in every row, so a short row can be centred and still line up with the letters
  * above it. The bottom row stretches instead, holding no letters to line up with. */
@@ -32,18 +38,22 @@ export function RowKeys(props: RowProps) {
 }
 
 /** The letters of one row, which is all the row holds when no named key belongs to it. */
-function Letters({ row, disabled, presses, onKeyPress }: RowProps) {
+function Letters({ row, rowIndex, disabled, presses, onKeyPress }: RowProps) {
   return (
     <>
-      {row.map((letter) => (
-        <Key
-          key={letter}
-          keyName={letter}
-          pressCount={presses[letter] ?? 0}
-          disabled={disabled}
-          onKeyPress={onKeyPress}
-        />
-      ))}
+      {row.map((letter, column) => {
+        const slot = `${rowIndex}.${column}`;
+        const pressCount = count(presses, slot);
+        return (
+          <Key
+            key={`${slot}:${pressCount}`}
+            keyName={letter}
+            pressCount={pressCount}
+            disabled={disabled}
+            onKeyPress={onKeyPress}
+          />
+        );
+      })}
     </>
   );
 }
@@ -52,12 +62,14 @@ function Letters({ row, disabled, presses, onKeyPress }: RowProps) {
  * rather than a character: the blob face has none of these, so they rendered as tofu. */
 function NamedKeys(props: RowProps) {
   const { rowIndex, disabled, presses, labels, onKeyPress } = props;
+  const pressCount = count(presses, Slots.Backspace);
   return (
     <>
       {rowIndex === BackspaceRow && (
         <Key
+          key={`${Slots.Backspace}:${pressCount}`}
           keyName={Backspace.key}
-          pressCount={presses[Backspace.key] ?? 0}
+          pressCount={pressCount}
           icon={styles.MarkBackspace}
           label={labels.Backspace}
           extra={styles.Action}
@@ -76,8 +88,9 @@ function BottomKeys({ disabled, canSubmit, presses, labels, onKeyPress }: RowPro
   return (
     <>
       <Key
+        key={`${Slots.Lang}:${count(presses, Slots.Lang)}`}
         keyName={Lang.key}
-        pressCount={presses[Lang.key] ?? 0}
+        pressCount={count(presses, Slots.Lang)}
         icon={styles.MarkLang}
         label={labels.Lang}
         extra={styles.Action}
@@ -85,8 +98,9 @@ function BottomKeys({ disabled, canSubmit, presses, labels, onKeyPress }: RowPro
         onKeyPress={onKeyPress}
       />
       <Key
+        key={`${Slots.Space}:${count(presses, Slots.Space)}`}
         keyName={Space.key}
-        pressCount={presses[Space.key] ?? 0}
+        pressCount={count(presses, Slots.Space)}
         icon={styles.MarkSpace}
         label={labels.Space}
         extra={styles.Space}
@@ -94,8 +108,9 @@ function BottomKeys({ disabled, canSubmit, presses, labels, onKeyPress }: RowPro
         onKeyPress={onKeyPress}
       />
       <Key
+        key={`${Slots.Enter}:${count(presses, Slots.Enter)}`}
         keyName={Enter.key}
-        pressCount={presses[Enter.key] ?? 0}
+        pressCount={count(presses, Slots.Enter)}
         icon={styles.MarkEnter}
         label={labels.Enter}
         extra={[styles.Action, canSubmit ? styles.MarkSend : ''].filter(Boolean).join(' ')}

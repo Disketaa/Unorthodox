@@ -26,9 +26,35 @@ export function otherLang(lang: KeyboardLang): KeyboardLang {
   return lang === 'ru' ? 'en' : 'ru';
 }
 
-/** How many keys the longest row of a layout holds, which is how many the keyboard's width is
- * divided by. Taken from the layout: the two letter sets are not the same size, and one count
- * for both would leave the narrower one with unused width at the row's edge. */
+/** Where a key sits, as a name that is the same in both layouts: its row and its place in it. A
+ * press is counted against this rather than the letter, which changes when the layout does, so
+ * a count that followed it would replay every key's last pop on the way back. */
+export type KeySlot = string;
+
+/** The slot a letter sits in, or undefined for a key that is not on the board. */
+export function slotOf(
+  rows: readonly (readonly string[])[],
+  letter: string,
+): KeySlot | undefined {
+  for (const [rowIndex, row] of rows.entries()) {
+    const column = row.indexOf(letter);
+    if (column >= 0) return `${rowIndex}.${column}`;
+  }
+  return undefined;
+}
+
+/** The slots the four keys that are not letters hold, so a caller counts a press against the
+ * same name the row renders it under. */
+export const Slots = {
+  Backspace: 'b.2',
+  Lang: 'l.3',
+  Space: 's.3',
+  Enter: 'e.3',
+} as const;
+
+/** How many keys the longest row holds, which is how many the keyboard's width is divided by.
+ * Taken from the layout: the two letter sets are not the same size, and one count for both
+ * would leave the narrower one with unused width at the row's edge. */
 export function columnsOf(rows: readonly (readonly string[])[]): number {
   return rows.reduce((widest, row) => Math.max(widest, row.length), 0);
 }

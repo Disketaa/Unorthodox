@@ -3,9 +3,9 @@ import type { KeyboardKey } from './Keyboard';
 
 export interface KeyProps {
   keyName: KeyboardKey;
-  /** How many times this key has been pressed. The element is keyed on it, so a press is a new
-   * element and the pop runs from the start: a press and a release inside one frame would
-   * otherwise paint nothing, and a held-lit key would go out late, after the next press. */
+  /** How many times this key has been pressed. The element is keyed on it by the caller, so a
+   * press is a new element and the pop runs from the start: a press and a release inside one
+   * frame would otherwise paint nothing, and a key held lit would go out late. */
   pressCount: number;
   disabled: boolean;
   /** The mark class for the one key that carries a drawn icon rather than a letter, so it can be
@@ -38,7 +38,6 @@ export function Key({
     .join(' ');
   return (
     <button
-      key={`${keyName}:${pressCount}`}
       class={classes}
       type="button"
       disabled={disabled}

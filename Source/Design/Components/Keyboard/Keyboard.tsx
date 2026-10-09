@@ -1,11 +1,22 @@
-import { useCallback, useMemo, useState } from 'preact/hooks';
+import { useCallback, useEffect, useMemo, useState } from 'preact/hooks';
 import styles from './Keyboard.module.css';
 import { useHardwareTyping } from './HardwareKeys';
-import { columnsOf, Layouts, otherLang, type KeyboardLang } from './KeyboardLayouts';
+import { createLogger } from '@/Core';
+import { detectLayout, knownLayout } from './KeyboardSchema';
+import {
+  columnsOf,
+  Layouts,
+  otherLang,
+  slotOf,
+  Slots,
+  type KeyboardLang,
+} from './KeyboardLayouts';
 import { keyNamer } from './KeyNamer';
 import { RowKeys } from './KeyboardRow';
 
 export type KeyboardKey = string | 'Backspace' | 'Space' | 'Enter' | 'Lang';
+
+const log = createLogger('KeyboardLayout');
 
 /** The keys that are not letters. Each carries only its own name, since a screen reader reads
  * the label beside it and a character on the key would say the same thing twice. */
@@ -13,6 +24,9 @@ export const Backspace = { key: 'Backspace' } as const;
 export const Space = { key: 'Space' } as const;
 export const Enter = { key: 'Enter' } as const;
 export const Lang = { key: 'Lang' } as const;
+
+/** The letters the keys come up on before anything is known: the game's own language. */
+const DefaultLang: KeyboardLang = 'ru';
 
 export interface KeyboardProps {
   disabled?: boolean;
@@ -47,9 +61,30 @@ function useLabels(
 
 type Presses = Readonly<Record<string, number>>;
 
-/** What one press does: count it against the key that was pressed, and hand it on. The count is
+/** Open on the letters the player's keyboard is set to, where the browser will say. Settles on
+ * it without moving the language key: the game noticing a board is not the player switching,
+ * and the keyboard is rebuilt every round, so a pop here would report a change on every one. */
+function useDetectedLayout(
+  setLang: (lang: KeyboardLang) => void,
+): void {
+  useEffect(() => {
+    let mounted = true;
+    void detectLayout().then((found) => {
+      if (mounted && found !== undefined) {
+        log('info', `lang detected as ${found}`);
+        setLang(found);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [setLang]);
+}
+
+/** What one press does: count it against the slot the key sits in, and hand it on. The count is
  * what plays the pop, so a tap and a held key move the key the same way and exactly once. */
 function usePress(
+  rows: readonly (readonly string[])[],
   lang: KeyboardLang,
   setLang: (lang: KeyboardLang) => void,
   setPresses: (next: (current: Presses) => Presses) => void,
@@ -57,14 +92,32 @@ function usePress(
 ): (key: KeyboardKey) => void {
   return useCallback(
     (key: KeyboardKey) => {
-      if (key === Lang.key) {
-        setLang(otherLang(lang));
+      // Counted against the slot rather than the letter, so a count does not follow the letter
+      // when the layout changes and replay every key's last pop on the way back to where it was.
+      const slot =
+        key === Backspace.key
+          ? Slots.Backspace
+          : key === Space.key
+            ? Slots.Space
+            : key === Enter.key
+              ? Slots.Enter
+              : key === Lang.key
+                ? Slots.Lang
+                : slotOf(rows, key);
+      // The language key is counted even though the press only moves the letters, so it pops for
+      // the change it just made rather than appearing already turned over.
+      if (slot !== undefined) {
+        setPresses((current) => ({ ...current, [slot]: (current[slot] ?? 0) + 1 }));
+      }
+if (key === Lang.key) {
+        const to = otherLang(lang);
+        log('info', `lang anim: ${lang} -> ${to} (pressed)`);
+        setLang(to);
         return;
       }
-      setPresses((current) => ({ ...current, [key]: (current[key] ?? 0) + 1 }));
       onKeyPress?.(key);
     },
-    [lang, setLang, onKeyPress, setPresses],
+    [rows, lang, setLang, onKeyPress, setPresses],
   );
 }
 
@@ -80,14 +133,16 @@ export function Keyboard({
   enterLabel,
   langLabel,
 }: KeyboardProps) {
-  const [lang, setLang] = useState<KeyboardLang>('ru');
+  const [lang, setLang] = useState<KeyboardLang>(() => knownLayout() ?? DefaultLang);
   const [presses, setPresses] = useState<Readonly<Record<string, number>>>({});
   const rows = Layouts[lang];
   const columns = columnsOf(rows);
   const classes = [styles.Root, styles[`Columns${columns}`]].join(' ');
   const name = useMemo(() => keyNamer(rows), [lang]);
-  const press = usePress(lang, setLang, setPresses, onKeyPress);
-  useHardwareTyping(!disabled, name, press);
+  const press = usePress(rows, lang, setLang, setPresses, onKeyPress);
+  const switchLang = useCallback(() => press(Lang.key), [press]);
+  useHardwareTyping(!disabled, name, press, switchLang);
+  useDetectedLayout(setLang);
   const labels = useLabels(backspaceLabel, spaceLabel, enterLabel, langLabel);
 
   return (
