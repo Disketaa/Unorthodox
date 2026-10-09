@@ -1,12 +1,15 @@
 import { useEffect, useRef } from 'preact/hooks';
 
-/** Whether the key event went to a field the browser is already typing into. The answer box is a
- * real input above these keys, so a keydown reaching it would be counted twice: once by the
- * browser and once by these keys. */
+/** Whether the browser is already typing this keypress into a field of its own. A field the game
+ * fills in from its own keys is read-only, and a read-only field is left alone by the browser,
+ * so those keys are ours to answer rather than a letter the field would have taken for itself. */
 function isTypingElsewhere(event: KeyboardEvent): boolean {
   const target = event.target;
   if (!(target instanceof HTMLElement)) return false;
-  return target.isContentEditable || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+  if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+    return !target.readOnly;
+  }
+  return target.isContentEditable;
 }
 
 /** Whether a combination is the one that swaps the letters. Alt and Shift together, or Ctrl and

@@ -77,7 +77,14 @@ describe('the clock correction', () => {
     clock.correctClockFromServer();
     clock.correctClockFromServer();
 
-    expect(Date.now()).toBe(RealDateNow());
+    // Bracketed rather than compared exactly: the two are separate reads of a running clock, and a
+    // millisecond between them is not a stacked offset. What is being said is that the shim hands
+    // back the real time, once over and no further.
+    const before = RealDateNow();
+    const shown = Date.now();
+    const after = RealDateNow();
+    expect(shown).toBeGreaterThanOrEqual(before);
+    expect(shown).toBeLessThanOrEqual(after);
   });
 
   it('reports a failure rather than silently keeping a wrong clock', async () => {

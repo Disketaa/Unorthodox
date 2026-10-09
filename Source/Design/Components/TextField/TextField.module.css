@@ -48,6 +48,32 @@
   padding: var(--Space-Sm) 0;
 }
 
+/* Nothing around it at all: the field is the words in it and nothing else, for a field that is
+ * the answer itself rather than a box the answer is written in. The focus ring is a colour on
+ * the text rather than a ring around the field, which is the only thing left to draw it on. */
+.VariantBare {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  font-family: var(--FontFamily-Display);
+  font-size: clamp(var(--FontSize-Lg), 5.5vw, var(--FontSize-H1));
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.VariantBare:focus-visible {
+  outline: none;
+  color: var(--Color-Room-Yellow);
+}
+
+/* The beam an empty bare field stands in on: the font's own bar, so it is the height of the
+ * letters that will follow it, in the room's yellow rather than a hint's grey. */
+.VariantBare::placeholder {
+  color: var(--Color-Room-Yellow);
+  opacity: 1;
+}
+
 /* The input plus its error message, so the message can appear without the surrounding layout
  * having to reserve room for it. */
 .Field {

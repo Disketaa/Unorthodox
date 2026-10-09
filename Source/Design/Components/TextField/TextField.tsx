@@ -1,6 +1,6 @@
 import styles from './TextField.module.css';
 
-export type TextFieldVariant = 'Filled' | 'Underline';
+export type TextFieldVariant = 'Bare' | 'Filled' | 'Underline';
 
 export interface TextFieldProps {
   variant?: TextFieldVariant;
@@ -16,6 +16,10 @@ export interface TextFieldProps {
   errorText?: string;
   /** Opens a numeric keypad on a phone for fields that only take digits. */
   inputMode?: 'text' | 'numeric';
+  /** Shows the field and does not let it be typed into: it is there to be read and to be filled
+   * in by keys of the game's own, which send their letters to it rather than the browser. A
+   * read-only field takes the focus and holds the value without the browser editing it. */
+  readOnly?: boolean;
   onChange?: (value: string) => void;
 }
 
@@ -28,6 +32,7 @@ export function TextField({
   error = false,
   errorText = '',
   inputMode = 'text',
+  readOnly = false,
   onChange,
 }: TextFieldProps) {
   return (
@@ -40,7 +45,9 @@ export function TextField({
         disabled={disabled}
         maxlength={maxLength}
         inputmode={inputMode}
+        readonly={readOnly}
         aria-invalid={error}
+        aria-readonly={readOnly}
         onInput={(event) => onChange?.(event.currentTarget.value)}
       />
       {error && errorText.length > 0 && <span class={styles.ErrorText}>{errorText}</span>}

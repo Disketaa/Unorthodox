@@ -89,7 +89,6 @@ export const Strings = {
     customize: 'Кастомизация',
   },
   writing: {
-    answerPlaceholder: 'Ваш ответ',
     submitButton: 'Ответить',
     submitted: 'Ответ принят',
     waitForOthers: 'Ждём остальных',

@@ -95,6 +95,31 @@ function AnswerKeys({
   );
 }
 
+/** The bar an empty answer stands in on. The font's own, so it is the height of the letters that
+ * will follow it rather than a box sized to guess at it. */
+const Beam = '|';
+
+/** The answer as it is shown to the player: the words in the field, or the confirmation once it
+ * has gone. Read-only, because the keys below are how an answer is written and a field that
+ * could also be typed into would answer to two things at once. */
+function AnswerField({
+  value,
+  closed,
+  onValueChange,
+}: Pick<AnswerInputProps, 'value' | 'onValueChange'> & { closed: boolean }) {
+  return (
+    <TextField
+      variant="Bare"
+      value={value}
+      placeholder={Beam}
+      maxLength={GameConfig.limits.answerMaxLength}
+      disabled={closed}
+      readOnly
+      onChange={onValueChange}
+    />
+  );
+}
+
 /** The single answer field of the writing phase, or the confirmation after it. */
 export function AnswerInput({
   topic,
@@ -108,25 +133,18 @@ export function AnswerInput({
   onSubmit,
 }: AnswerInputProps) {
   const canSubmit = !submitted && !timeUp && !held && value.trim().length > 0;
-  const maxLength = GameConfig.limits.answerMaxLength;
-  // A held room is not writing: the clock is stopped for everyone, so an answer written now
-  // would be timed against a round that is not running. It has to close the field as well as the
-  // keys, since the browser types into a real input whatever these keys are told.
+  // A held room is not writing: the clock is stopped for everyone, so an answer written now would
+  // be timed against a round that is not running. The keys close as well as the field, since they
+  // are what writes it now.
   const closed = timeUp || held;
 
   return (
-    <Stack gap="Md">
+    <Stack gap="Sm">
       <AnswerHeading topic={topic} theme={theme} themeAccent={themeAccent} />
       {submitted ? (
         <Text variant="Body">{Strings.writing.submitted}</Text>
       ) : (
-        <TextField
-          value={value}
-          placeholder={Strings.writing.answerPlaceholder}
-          maxLength={maxLength}
-          disabled={closed}
-          onChange={onValueChange}
-        />
+        <AnswerField value={value} closed={closed} onValueChange={onValueChange} />
       )}
       {!submitted && (
         <AnswerKeys

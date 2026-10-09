@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'preact/hooks';
 import styles from './Keyboard.module.css';
 import { useHardwareTyping } from './HardwareKeys';
-import { createLogger } from '@/Core';
 import { detectLayout, knownLayout } from './KeyboardSchema';
 import {
   columnsOf,
@@ -15,8 +14,6 @@ import { keyNamer } from './KeyNamer';
 import { RowKeys } from './KeyboardRow';
 
 export type KeyboardKey = string | 'Backspace' | 'Space' | 'Enter' | 'Lang';
-
-const log = createLogger('KeyboardLayout');
 
 /** The keys that are not letters. Each carries only its own name, since a screen reader reads
  * the label beside it and a character on the key would say the same thing twice. */
@@ -70,10 +67,7 @@ function useDetectedLayout(
   useEffect(() => {
     let mounted = true;
     void detectLayout().then((found) => {
-      if (mounted && found !== undefined) {
-        log('info', `lang detected as ${found}`);
-        setLang(found);
-      }
+      if (mounted && found !== undefined) setLang(found);
     });
     return () => {
       mounted = false;
@@ -110,9 +104,7 @@ function usePress(
         setPresses((current) => ({ ...current, [slot]: (current[slot] ?? 0) + 1 }));
       }
 if (key === Lang.key) {
-        const to = otherLang(lang);
-        log('info', `lang anim: ${lang} -> ${to} (pressed)`);
-        setLang(to);
+        setLang(otherLang(lang));
         return;
       }
       onKeyPress?.(key);
