@@ -1,27 +1,58 @@
-/* The rows are flex rather than a grid of fixed cells, so the same layout fills a narrow phone
- * and a wide desktop without a second set of numbers. Keys take an equal share of their row and
- * only ask for a floor, which is what keeps a row of eleven from crushing its own labels.
- * Height is not shared between the rows: every key is sized from the window instead, so the
- * keyboard is the same whether or not the parent has a height to hand out. */
+/* The width one letter key holds: the whole keyboard split into columns. Every key is this wide
+ * in every row, which is what lines a letter up with the letters above it. Rows sized their own
+ * keys once, so a row of eleven was wider each and drifted half a key sideways from the row of
+ * twelve above it. The gap is a variable rather than written in twice, since the narrow-screen
+ * rule closes it up and a key sized against a shrunk gap leaves width unused. */
 .Root {
   display: flex;
   flex-direction: column;
-  gap: var(--Space-Sm);
-  width: 100%;
+  gap: var(--Key-Gap, var(--Space-Sm));
+}
+
+/* Centred rather than left-aligned: a short row sits under the middle of the long one, the way
+ * a phone's own keyboard sits. Centring is free here precisely because the keys are a fixed
+ * width, so a centred row is the same width everywhere and still lines up with the rows above. */
+.Row {
+  display: flex;
+  justify-content: center;
+  gap: var(--Key-Gap, var(--Space-Sm));
   min-width: 0;
 }
 
-.Row {
-  display: flex;
-  gap: var(--Space-Sm);
-  justify-content: center;
+/* How many keys the longest row holds, which is how many the width above is divided by. The two
+ * letter sets are not the same size and a single count would leave the narrower one with a
+ * strip of unused width at the row's edge. A count is a layout fact rather than a style, so it
+ * is set by the class the layout picks rather than written in the stylesheet twice. */
+.Columns10 {
+  --Key-Width: calc(
+    (100% - (10 - 1) * var(--Key-Gap, var(--Space-Sm))) / 10
+  );
+}
+
+.Columns12 {
+  --Key-Width: calc(
+    (100% - (12 - 1) * var(--Key-Gap, var(--Space-Sm))) / 12
+  );
+}
+
+/* The width the keys that are not letters hold, measured against the widest layout rather than
+ * the current one. Sized from the letter width these keys resized with the letter set, so
+ * backspace and the language key grew every time the answer changed language — a key that is
+ * not a letter should not move because the letters around it did. Measured off the
+ * twelve-column letter width, which is the narrower of the two, so no layout makes a named key
+ * larger than the largest letter. */
+.Root {
+  --Named-Key-Width: calc(
+    (100% - (12 - 1) * var(--Key-Gap, var(--Space-Sm))) / 12 * 1.5 + var(--Key-Gap, var(--Space-Sm)) *
+      0.5
+  );
 }
 
 /* Height follows the window on both axes, between the touch target the design system asks for
  * and a comfortable desktop key. A device on its side has the width for a full row and almost
  * no height, and a key sized from the width alone is a row of three that runs off the bottom. */
 .Key {
-  flex: 1 1 0;
+  flex: 0 0 var(--Key-Width);
   min-width: 0;
   height: clamp(var(--Size-TouchTarget), min(9vw, 12vh), var(--Size-KeyboardKeyHeightMax));
   display: inline-flex;
@@ -55,16 +86,16 @@
   cursor: var(--Cursor-NotAllowed);
 }
 
-/* Backspace and enter are not letters, so they hold the width of roughly one and a half of one
- * rather than stretching to fill whatever the row has left over. */
+/* Backspace, enter and the language key all hold the same width, off the widest letter layout
+ * rather than the one on screen, so none of them moves when the letter set changes. */
 .Action {
-  flex: 1.5 1 0;
+  flex-basis: var(--Named-Key-Width);
 }
 
-/* Enter in the room's yellow rather than the shared key fill: it is the one key that sends rather
- * than types, and it is the only control on this screen the room is waiting on. The yellow every
- * player agrees on rather than the accent, which would name whoever is looking as the one who
- * pressed it. */
+/* Enter in the room's yellow rather than the shared key fill: it is the one key that sends
+ * rather than types, and it is the only control on this screen the room is waiting on. The
+ * yellow every player agrees on rather than the accent, which would name whoever is looking as
+ * the one who pressed it. */
 .MarkSend {
   composes: Pulse from '../../Primitives/Sway/Sway.module.css';
   animation: var(--Pulse-Animation);
@@ -79,10 +110,25 @@
   background: var(--Color-Surface-Hover);
 }
 
-/* The space bar is the one key meant to be hit without aiming at anything, so it takes the
- * width of the letters around it rather than a single key's share. */
+/* The row a thumb rests on is three keys and no letters, so it is sized off its own contents
+ * rather than off the letter columns: the space takes whatever the two beside it leave, and the
+ * row as a whole is exactly as wide as the rows above whatever the letter count is. Tying the
+ * space to six letter-widths made it change size with the letter set, which is not a property
+ * of a space bar. */
+.Bottom {
+  display: flex;
+  justify-content: stretch;
+  gap: var(--Key-Gap, var(--Space-Sm));
+  min-width: 0;
+}
+
+.Bottom .Action {
+  flex: 0 0 var(--Named-Key-Width);
+}
+
 .Space {
-  flex: 6 1 0;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* A key that draws a mark instead of a letter. Masked rather than an image so it takes the
@@ -115,8 +161,8 @@
   mask-size: 96%;
 }
 
-/* The space bar's file is a wide, shallow shape, so a square box would draw it small and
- * leave a letter's height of air around it. A wide box keeps it at the size a key is read at. */
+/* The space bar's file is a wide, shallow shape, so a square box would draw it small and leave
+ * a letter's height of air around it. A wide box keeps it at the size a key is read at. */
 .MarkSpace {
   width: 2.6em;
 }
@@ -135,10 +181,16 @@
 }
 
 /* The gap between keys closes up on a narrow layout: at the width a phone leaves, the full gap
- * between twelve keys takes more of the row than the keys themselves do. */
+ * between twelve keys takes more of the row than the keys themselves do. Set as the variable
+ * both the rows and the key width read, so the keys widen by exactly the gap that was given
+ * back rather than filling only part of what is freed. */
 @media (max-width: 480px) {
-  .Root,
+  .Root {
+    --Key-Gap: var(--Space-Xs);
+    gap: var(--Key-Gap);
+  }
+
   .Row {
-    gap: var(--Space-Xs);
+    gap: var(--Key-Gap);
   }
 }

@@ -1,0 +1,48 @@
+/* A theme's name in its own colours, with the question it introduced beside it. The question
+ * takes the room and the name is held off the far side, so the two ends of the line are the
+ * thing being asked and the thing it was asked within, and the space between them is what is
+ * left rather than a fixed gap the two would have to be pulled away from. Centred against each
+ * other rather than hung from the first line: the question wraps, and a name pinned to the top
+ * of a three-line question sits beside a bare column for the lines under it. */
+.Row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--Space-Md);
+  min-width: 0;
+}
+
+/* The theme's name in a block of its own: the wash and the ink are the theme's, passed in
+ * rather than read from the document, because the accent on the document belongs to whoever is
+ * holding a character. No mark: the name says what a mark would. Held small beside the
+ * question, which is what is being asked — the theme is only the kind of thing it is asking
+ * about. */
+.Root {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  align-self: stretch;
+  padding: var(--Space-Sm) var(--Space-Md);
+  border-radius: var(--Radius-Card);
+  font-family: var(--FontFamily-Body);
+  font-size: var(--FontSize-Body);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* The question in the quiet text colour, holding back from the theme's name beside it: the name
+ * is what the round is and the question is what it is asking, and two things at the same weight
+ * in one line would say they were equally important. Not the title token, which is the local
+ * player's own tint and would make the question a different colour per player. */
+.Topic {
+  flex: 0 1 auto;
+  font-family: var(--FontFamily-Body);
+  font-size: var(--FontSize-Body);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--Color-Text-Quiet);
+  overflow-wrap: break-word;
+  hyphens: auto;
+  min-width: 0;
+}

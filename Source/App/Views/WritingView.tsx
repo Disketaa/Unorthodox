@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import { WritingScreen } from '@/Screens';
+import { themeAccent } from '@/Core';
 import { useCountdown } from '../Hooks/UseCountdown';
 import { PhaseViewProps } from './LobbyView';
 
@@ -14,11 +15,15 @@ export function WritingView({ view }: PhaseViewProps) {
     undefined,
     view.paused
   );
-  const topic = view.publicState?.phase === 'Writing' ? view.publicState.topic : '';
+  const writing = view.publicState?.phase === 'Writing' ? view.publicState : undefined;
+  const theme = writing?.theme;
+  const accent = theme === undefined ? undefined : themeAccent(theme);
 
   return (
     <WritingScreen
-      topic={topic}
+      topic={writing?.topic ?? ''}
+      theme={theme}
+      themeAccent={accent}
       remainingMs={remainingMs}
       value={draft}
       submitted={view.hasSubmitted}

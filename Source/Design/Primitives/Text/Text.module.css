@@ -38,15 +38,15 @@
 
 /* The round's question. Wrapped rather than cut, unlike `Title`, because a question is read and
  * a name is scanned: cutting it with an ellipsis drops the part that says what is being asked,
- * and a question is the one piece of text a player must not lose the end of. The size is
- * clamped to the viewport rather than fixed, so a long question wraps to a second line instead
- * of pushing the answer field below it off the screen. */
+ * and a question is the one piece of text a player must not lose the end of. At the body's size
+ * rather than a display one, and sitting on one line beside the theme it was drawn from: a long
+ * question wraps to a second line and the theme beside it grows to match rather than being left
+ * beside the first line alone. */
 .VariantTopic {
-  display: block;
-  font-family: var(--FontFamily-Display);
-  font-size: clamp(var(--FontSize-Lg), 6vw, var(--FontSize-H1));
+  font-family: var(--FontFamily-Body);
+  font-size: var(--FontSize-Body);
+  font-weight: 700;
   line-height: 1.25;
-  color: var(--Color-Text-Title);
   overflow-wrap: break-word;
   hyphens: auto;
   min-width: 0;

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'preact/hooks';
 import styles from './Keyboard.module.css';
 import { Key } from './KeyboardKey';
 import { useHeldKeys } from './UseHeldKeys';
-import { Layouts, otherLang, type KeyboardLang } from './KeyboardLayouts';
+import { columnsOf, Layouts, otherLang, type KeyboardLang } from './KeyboardLayouts';
 import { keyNamer } from './KeyNamer';
 
 export type KeyboardKey = string | 'Backspace' | 'Space' | 'Enter' | 'Lang';
@@ -35,6 +35,8 @@ disabled?: boolean;
   langLabel: string;
 }
 
+/** What every part of a row is passed. The column count is not one of them: only the whole
+ * keyboard divides itself by it, and a row takes its width from the keys inside. */
 interface RowProps {
   row: readonly string[];
   rowIndex: number;
@@ -43,6 +45,18 @@ interface RowProps {
   held: ReadonlySet<string>;
   labels: Record<'Backspace' | 'Space' | 'Enter' | 'Lang', string>;
   onKeyPress?: (key: KeyboardKey) => void;
+}
+
+/** A row of letters, closed by whichever named key belongs at the end of that row. Every key is
+ * the same width in every row, so a short row can be centred and still line up with the letters
+ * above it. The bottom row stretches instead, holding no letters to line up with. */
+function RowKeys(props: RowProps) {
+  return (
+    <div class={props.rowIndex === BottomRow ? styles.Bottom : styles.Row}>
+      <Letters {...props} />
+      <NamedKeys {...props} />
+    </div>
+  );
 }
 
 /** The letters of one row, which is all the row holds when no named key belongs to it. */
@@ -120,16 +134,6 @@ function NamedKeys(props: RowProps) {
   );
 }
 
-/** A row of letters, closed by whichever named key belongs at the end of that row. */
-function RowKeys(props: RowProps) {
-  return (
-    <div class={styles.Row}>
-      <Letters {...props} />
-      <NamedKeys {...props} />
-    </div>
-  );
-}
-
 /** The on-screen letter keys of the writing phase, in Russian or English. The language is held
  * here rather than asked for, since it is a fact about the keys and nothing else in the game
  * reads it: the draft is a string and a letter is a letter whichever set it came from. */
@@ -144,6 +148,8 @@ export function Keyboard({
 }: KeyboardProps) {
   const [lang, setLang] = useState<KeyboardLang>('ru');
   const rows = Layouts[lang];
+  const columns = columnsOf(rows);
+  const classes = [styles.Root, styles[`Columns${columns}`]].join(' ');
   // Held across renders on the letters rather than rebuilt each time, since the effect under it
   // would otherwise take the keyboard's keys back off and put them on again every frame.
   const name = useMemo(() => keyNamer(new Set(rows.flat())), [lang]);
@@ -159,7 +165,7 @@ export function Keyboard({
   };
 
   return (
-    <div class={styles.Root}>
+    <div class={classes}>
       {rows.map((row, rowIndex) => (
         <RowKeys
           key={rowIndex}

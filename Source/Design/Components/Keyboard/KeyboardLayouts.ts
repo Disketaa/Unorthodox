@@ -25,3 +25,10 @@ export type KeyboardLang = keyof typeof Layouts;
 export function otherLang(lang: KeyboardLang): KeyboardLang {
   return lang === 'ru' ? 'en' : 'ru';
 }
+
+/** How many keys the longest row of a layout holds, which is how many the keyboard's width is
+ * divided by. Taken from the layout: the two letter sets are not the same size, and one count
+ * for both would leave the narrower one with unused width at the row's edge. */
+export function columnsOf(rows: readonly (readonly string[])[]): number {
+  return rows.reduce((widest, row) => Math.max(widest, row.length), 0);
+}

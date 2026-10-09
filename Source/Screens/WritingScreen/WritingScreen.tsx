@@ -5,6 +5,12 @@ import { AnswerInput } from './AnswerInput';
 
 export interface WritingScreenProps {
   topic: string;
+  /** The round's theme, which is its own name: a theme's id is the Russian word on its file, so
+   * there is nothing to translate. Undefined before the round's theme is known, which is the
+   * only time there is nothing to name. */
+  theme: string | undefined;
+  /** The theme's own wash and ink, for naming it. Undefined for as long as the theme is. */
+  themeAccent: { wash: string; ink: string } | undefined;
   remainingMs: number;
   value: string;
   submitted: boolean;
@@ -17,6 +23,8 @@ export interface WritingScreenProps {
 /** Writing phase: topic, timer, one answer field. */
 export function WritingScreen({
   topic,
+  theme,
+  themeAccent,
   remainingMs,
   value,
   submitted,
@@ -31,6 +39,8 @@ export function WritingScreen({
       <Card variant="Elevated">
         <AnswerInput
           topic={topic}
+          theme={theme}
+          themeAccent={themeAccent}
           value={value}
           submitted={submitted}
           timeUp={timeUp}

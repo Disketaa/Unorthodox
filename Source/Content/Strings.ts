@@ -89,7 +89,6 @@ export const Strings = {
     customize: 'Кастомизация',
   },
   writing: {
-    topicLabel: 'Тема',
     answerPlaceholder: 'Ваш ответ',
     submitButton: 'Ответить',
     submitted: 'Ответ принят',
@@ -152,24 +151,6 @@ export const Strings = {
     headline: 'Итоги',
     playAgain: 'Сыграть ещё раз',
     place: (rank: number) => `Место: ${rank}`,
-  },
-  /** The themes a lobby is offered, by the same key as `ThemeId`. Here rather than beside the
-   * theme bank because a theme's name is text and the bank is ids: adding a theme means a key
-   * in `Core/Themes.ts` and a word here. */
-  themes: {
-    /** Names the row of cards, so the six read as one set rather than as six cards. */
-    title: 'Темы',
-    names: {
-      VideoGames: 'Видеоигры',
-      Nature: 'Природа',
-      Internet: 'Интернет',
-      Food: 'Еда',
-      Music: 'Музыка',
-      Movies: 'Кино',
-      Work: 'Работа',
-      Travel: 'Путешествия',
-      Random: 'Случайная',
-    },
   },
   status: {
     /** One short sentence each: what happened, and nothing else. */

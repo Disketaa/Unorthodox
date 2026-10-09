@@ -7,6 +7,8 @@ export interface TextFieldProps {
   value?: string;
   placeholder?: string;
   disabled?: boolean;
+  /** Off unless a caller asks for it. The limit belongs to whatever the field is for, and that
+   * limit is data rather than design, so this component does not guess one. */
   maxLength?: number;
   /** Shows the field as invalid and reveals the message below it. */
   error?: boolean;
@@ -22,7 +24,7 @@ export function TextField({
   value = '',
   placeholder = '',
   disabled = false,
-  maxLength = 80,
+  maxLength,
   error = false,
   errorText = '',
   inputMode = 'text',

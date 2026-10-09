@@ -1,5 +1,5 @@
 import { Stack, Text } from '@/Design/Primitives';
-import { Keyboard, TextField } from '@/Design/Components';
+import { Keyboard, TextField, ThemeLabel } from '@/Design/Components';
 import type { KeyboardKey } from '@/Design/Components';
 import { Strings } from '@/Content';
 import { GameConfig } from '@/Game';
@@ -8,6 +8,13 @@ export interface AnswerInputProps {
   /** The round's question, headed over the keys: the answer is typed into this box, so the
    * question belongs on it rather than somewhere above the card. */
   topic: string;
+  /** The round's theme, which is its own name: a theme's id is the Russian word on its file, so
+   * there is nothing to translate. Shown in the theme's own colours because the kind of answer
+   * wanted is half of knowing what is being asked. */
+  theme: string | undefined;
+  /** The theme's own wash and ink. Supplied rather than looked up, because a screen is given
+   * data and does not go and find it. Absent until the round's theme is known. */
+  themeAccent: { wash: string; ink: string } | undefined;
   value: string;
   submitted: boolean;
   timeUp: boolean;
@@ -46,9 +53,53 @@ function pressKey(
   onValueChange(value + key);
 }
 
+/** What the round is asking, under the two names that frame it: the topic, and the theme it
+ * comes from. Its own component because it is the one part that does not change while an answer
+ * is typed, and re-rendering it on every keystroke is work for nothing. */
+/** What the round is asking: the theme it was drawn from, and the question itself in that
+ * theme's own colour. One component because both take their colour from the same accent, and
+ * its own because it is the one part here that does not change while an answer is typed. */
+function AnswerHeading({
+  topic,
+  theme,
+  themeAccent,
+}: Pick<AnswerInputProps, 'topic' | 'theme' | 'themeAccent'>) {
+  if (theme === undefined || themeAccent === undefined) {
+    return <Text variant="Body" fontWeight="Bold">{topic}</Text>;
+  }
+  return <ThemeLabel theme={theme} accent={themeAccent} topic={topic} />;
+}
+
+/** The on-screen keys under the field, which is where an answer is typed on a device with no
+ * keyboard of its own. Not drawn once the answer is sent: there is nothing left to type. */
+function AnswerKeys({
+  value,
+  canSubmit,
+  timeUp,
+  onValueChange,
+  onSubmit,
+}: Pick<
+  AnswerInputProps,
+  'value' | 'timeUp' | 'onValueChange' | 'onSubmit'
+> & { canSubmit: boolean }) {
+  return (
+    <Keyboard
+      disabled={timeUp}
+      canSubmit={canSubmit}
+      backspaceLabel={Strings.writing.backspaceKey}
+      spaceLabel={Strings.writing.spaceKey}
+      enterLabel={Strings.writing.enterKey}
+      langLabel={Strings.writing.langKey}
+      onKeyPress={(key) => pressKey(key, value, canSubmit, onValueChange, onSubmit)}
+    />
+  );
+}
+
 /** The single answer field of the writing phase, or the confirmation after it. */
 export function AnswerInput({
   topic,
+  theme,
+  themeAccent,
   value,
   submitted,
   timeUp,
@@ -61,8 +112,7 @@ export function AnswerInput({
 
   return (
     <Stack gap="Md">
-      <Text variant="Caption">{Strings.writing.topicLabel}</Text>
-      <Text variant="Topic">{topic}</Text>
+      <AnswerHeading topic={topic} theme={theme} themeAccent={themeAccent} />
       {submitted ? (
         <Text variant="Body">{Strings.writing.submitted}</Text>
       ) : (
@@ -75,14 +125,12 @@ export function AnswerInput({
         />
       )}
       {!submitted && (
-        <Keyboard
-          disabled={timeUp}
+        <AnswerKeys
+          value={value}
           canSubmit={canSubmit}
-          backspaceLabel={Strings.writing.backspaceKey}
-          spaceLabel={Strings.writing.spaceKey}
-          enterLabel={Strings.writing.enterKey}
-          langLabel={Strings.writing.langKey}
-          onKeyPress={(key) => pressKey(key, value, canSubmit, onValueChange, onSubmit)}
+          timeUp={timeUp}
+          onValueChange={onValueChange}
+          onSubmit={onSubmit}
         />
       )}
     </Stack>

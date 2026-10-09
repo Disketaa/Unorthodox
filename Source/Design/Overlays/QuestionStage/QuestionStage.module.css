@@ -25,20 +25,12 @@
   max-width: 92vw;
 }
 
-/* The theme the question was drawn from, in a small block above it. Its own wash and ink,
- * passed in rather than taken from the room's accent: the label names the theme, and the accent
- * on the document belongs to whoever is holding a character. No mark, since the name says what
- * the block would have said with one. Centred over the question rather than beside it, since it
- * names the round rather than being part of it. */
-.Label {
-  align-self: center;
-  padding: var(--Space-Sm) var(--Space-Md);
-  border-radius: var(--Radius-Card);
-  font-family: var(--FontFamily-Body);
-  font-size: min(2.6vw, calc(var(--FontSize-4xl) * 0.32));
-  font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
+/* The theme sits centred over the question rather than on its left edge: it names the round
+ * rather than being part of the question, and a pill sharing the words' left margin reads as
+ * the first word of it. */
+.Heading {
+  display: flex;
+  justify-content: center;
 }
 
 /* Wrapped rather than stacked on several lines by hand, since a question is a phrase and reads

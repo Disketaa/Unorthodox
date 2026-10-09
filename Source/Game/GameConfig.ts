@@ -94,7 +94,10 @@ export const GameConfig = {
   },
   limits: {
     nameMaxLength: 16,
-    answerMaxLength: 80,
+    /** How long an answer may be. Short, because an answer is a joke to be read at a glance and
+     * the review screen shows the whole room's at once; a player reaching for a sentence has
+     * written the wrong game. */
+    answerMaxLength: 20,
     roomCodeLength: 4,
     minPlayers: 2,
     /** How many players a room holds. The bar of hexes across the top of a game holds this many

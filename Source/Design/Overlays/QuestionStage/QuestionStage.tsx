@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'preact/hooks';
 import type { ComponentChildren } from 'preact';
 import styles from './QuestionStage.module.css';
+import { ThemeLabel } from '../../Components/ThemeLabel';
 import { useSwayMotion } from '@/Design/Primitives';
 import { playSound } from '../../Sounds';
 import swayStyles from '../../Primitives/Sway/Sway.module.css';
@@ -34,10 +35,10 @@ export function QuestionStage({ words, revealed, label, accent }: QuestionStageP
   heardRef.current = revealed;
   return (
     <div class={styles.Root}>
-      <div class={styles.Column}>
-        <span class={styles.Label} style={{ background: accent.wash, color: accent.ink }}>
-          {label}
-        </span>
+<div class={styles.Column}>
+        <div class={styles.Heading}>
+          <ThemeLabel theme={label} accent={accent} />
+        </div>
         <span class={styles.Stage}>
           {words.map((word, index) => (
             <Word

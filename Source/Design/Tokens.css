@@ -713,6 +713,9 @@ body.PageFade {
    * `--Size-TouchTarget`, so a key shrinks with the screen but never under what a finger may
    * hit. */
   --Size-KeyboardKeyHeightMax: 72px;
+  /* How many key columns the on-screen keyboard is drawn on: the longest row's letter count, so
+   * every other row is a prefix of it and a key sits in the same column in every row. */
+  --Size-KeyboardColumns: 12;
 
   /* The cursors, as the platform's own. These are the fallbacks, and on a touch device they are
    * all that is ever applied: a finger has no cursor to redraw, and shipping the images there
