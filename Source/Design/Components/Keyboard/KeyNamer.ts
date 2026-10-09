@@ -1,16 +1,43 @@
 import { Backspace, Enter, Space } from './Keyboard';
 
-/** What the layout calls the key a physical keydown names. Answers nothing for a key the layout
- * does not draw, so a press lights only a letter the keys on screen actually have. Built once
- * per language: per render would resubscribe the window's listeners on every frame. */
+/** The physical keys of a QWERTY board, row by row, in the order a ЙЦУКЕН layout puts its
+ * letters — including the bracket and punctuation keys, which is where the extra letters live. */
+const Positions: readonly (readonly string[])[] = [
+  [
+    'KeyQ',
+    'KeyW',
+    'KeyE',
+    'KeyR',
+    'KeyT',
+    'KeyY',
+    'KeyU',
+    'KeyI',
+    'KeyO',
+    'KeyP',
+    'BracketLeft',
+    'BracketRight',
+  ],
+  ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyG', 'KeyH', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon', 'Quote'],
+  ['KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyB', 'KeyN', 'KeyM', 'Comma', 'Period', 'Slash'],
+];
+
+/** What the layout calls the key a physical keydown names, read from the key's position rather
+ * than its character: the layout decides the letter, so an English board pressing `KeyA`
+ * answers with `Ф` rather than with an `A` the layout does not draw. */
 export function keyNamer(
-  letters: ReadonlySet<string>,
+  rows: readonly (readonly string[])[],
 ): (event: KeyboardEvent) => string | undefined {
+  const byPosition = new Map<string, string>();
+  Positions.forEach((positions, row) => {
+    positions.forEach((code, column) => {
+      const letter = rows[row]?.[column];
+      if (letter !== undefined) byPosition.set(code, letter);
+    });
+  });
   return (event) => {
     if (event.key === 'Backspace') return Backspace.key;
     if (event.key === ' ') return Space.key;
     if (event.key === 'Enter') return Enter.key;
-    const letter = event.key.toUpperCase();
-    return letters.has(letter) ? letter : undefined;
+    return byPosition.get(event.code);
   };
 }

@@ -7,6 +7,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--Key-Gap, var(--Space-Sm));
+  --Key-Pop-Animation: KeyPop var(--Duration-KeyPop) var(--Easing-Smooth) both;
 }
 
 /* Centred rather than left-aligned: a short row sits under the middle of the long one, the way
@@ -77,8 +78,39 @@
   background: var(--Color-Surface-Active);
 }
 
+/* A key being pressed. The element is rebuilt on every press, so this runs once rather than
+ * being a state set and cleared: a press and a release in one frame used to paint nothing. The
+ * colour travels inside the animation rather than being set here, because a class that stays on
+ * would leave the key yellow for good, and a mark on yellow is one nobody sees. */
 .Key:active:not(:disabled) {
-  transform: scale(0.97);
+  background: var(--Color-Room-Yellow);
+  color: var(--Color-Text-Default);
+}
+
+.KeyPopped {
+  animation: var(--Key-Pop-Animation);
+}
+
+/* Up rather than down: a key being pressed answers by coming towards the finger, the way the
+ * rest of the room answers a tap. Shrinking it reads as pressed away from you. */
+@keyframes KeyPop {
+  0% {
+    transform: scale(1);
+    background-color: var(--Color-Surface-Hover);
+    color: var(--Color-Text-Default);
+  }
+
+  35% {
+    transform: scale(1.12);
+    background-color: var(--Color-Room-Yellow);
+    color: var(--Color-Text-Default);
+  }
+
+  100% {
+    transform: scale(1);
+    background-color: var(--Color-Surface-Hover);
+    color: var(--Color-Text-Default);
+  }
 }
 
 .Key:disabled {
@@ -170,14 +202,6 @@
 .MarkSpace .Icon {
   mask-image: url('../../Icons/Spacebar.svg');
   mask-size: contain;
-}
-
-/* The key under a finger right now, whether that finger is a thumb on the screen or a hand on a
- * hardware keyboard. Held for as long as the key is down rather than for the length of the tap,
- * so a key that is read twice is read as one press. */
-.KeyHeld {
-  background: var(--Color-Surface-Active);
-  transform: scale(0.94);
 }
 
 /* The gap between keys closes up on a narrow layout: at the width a phone leaves, the full gap

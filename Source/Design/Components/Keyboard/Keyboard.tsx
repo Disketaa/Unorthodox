@@ -1,16 +1,11 @@
-import { useMemo, useState } from 'preact/hooks';
+import { useCallback, useMemo, useState } from 'preact/hooks';
 import styles from './Keyboard.module.css';
-import { Key } from './KeyboardKey';
-import { useHeldKeys } from './UseHeldKeys';
+import { useHardwareTyping } from './HardwareKeys';
 import { columnsOf, Layouts, otherLang, type KeyboardLang } from './KeyboardLayouts';
 import { keyNamer } from './KeyNamer';
+import { RowKeys } from './KeyboardRow';
 
 export type KeyboardKey = string | 'Backspace' | 'Space' | 'Enter' | 'Lang';
-
-/** The row each of the keys that are not letters sits at the end of: backspace on the third row,
- * and the language, the space bar and enter on the fourth, which is the row a thumb rests on. */
-const BackspaceRow = 2;
-const BottomRow = 3;
 
 /** The keys that are not letters. Each carries only its own name, since a screen reader reads
  * the label beside it and a character on the key would say the same thing twice. */
@@ -20,13 +15,14 @@ export const Enter = { key: 'Enter' } as const;
 export const Lang = { key: 'Lang' } as const;
 
 export interface KeyboardProps {
-disabled?: boolean;
+  disabled?: boolean;
   /** Whether enter can send what is typed. Drives the one key that sends rather than types,
    * which is drawn and animated only while it can: a send key that breathes on an empty draft
    * promises something it cannot do. */
   canSubmit?: boolean;
-  /** Letter or one of the named keys pressed. The layout itself holds no text, so the field
-   * being typed into stays the single place a draft exists. */
+  /** Letter or one of the named keys pressed, from a tap on the keys or from the hardware
+   * keyboard behind them. The layout itself holds no text, so the field being typed into stays
+   * the single place a draft exists. */
   onKeyPress?: (key: KeyboardKey) => void;
   /** Read out by a screen reader on the keys that carry a glyph rather than a letter. */
   backspaceLabel: string;
@@ -35,102 +31,40 @@ disabled?: boolean;
   langLabel: string;
 }
 
-/** What every part of a row is passed. The column count is not one of them: only the whole
- * keyboard divides itself by it, and a row takes its width from the keys inside. */
-interface RowProps {
-  row: readonly string[];
-  rowIndex: number;
-  disabled: boolean;
-  canSubmit: boolean;
-  held: ReadonlySet<string>;
-  labels: Record<'Backspace' | 'Space' | 'Enter' | 'Lang', string>;
-  onKeyPress?: (key: KeyboardKey) => void;
-}
-
-/** A row of letters, closed by whichever named key belongs at the end of that row. Every key is
- * the same width in every row, so a short row can be centred and still line up with the letters
- * above it. The bottom row stretches instead, holding no letters to line up with. */
-function RowKeys(props: RowProps) {
-  return (
-    <div class={props.rowIndex === BottomRow ? styles.Bottom : styles.Row}>
-      <Letters {...props} />
-      <NamedKeys {...props} />
-    </div>
+/** The four names a screen has to hand over, gathered once so the row and the keys that need
+ * them are not handed the same five props separately. */
+function useLabels(
+  backspaceLabel: string,
+  spaceLabel: string,
+  enterLabel: string,
+  langLabel: string,
+): Record<'Backspace' | 'Space' | 'Enter' | 'Lang', string> {
+  return useMemo(
+    () => ({ Backspace: backspaceLabel, Space: spaceLabel, Enter: enterLabel, Lang: langLabel }),
+    [backspaceLabel, spaceLabel, enterLabel, langLabel],
   );
 }
 
-/** The letters of one row, which is all the row holds when no named key belongs to it. */
-function Letters({ row, disabled, held, onKeyPress }: RowProps) {
-  return (
-    <>
-      {row.map((letter) => (
-        <Key
-          key={letter}
-          keyName={letter}
-          disabled={disabled}
-          pressed={held.has(letter)}
-          onKeyPress={onKeyPress}
-        />
-      ))}
-    </>
-  );
-}
+type Presses = Readonly<Record<string, number>>;
 
-/** The row a thumb rests on: the language, the space bar and enter. The language key draws the
- * same mark whichever set is up, since it points at the other one rather than naming either. */
-function BottomKeys({ disabled, canSubmit, held, labels, onKeyPress }: RowProps) {
-  return (
-    <>
-      <Key
-        keyName={Lang.key}
-        icon={styles.MarkLang}
-        label={labels.Lang}
-        extra={styles.Action}
-        disabled={disabled}
-        pressed={held.has(Lang.key)}
-        onKeyPress={onKeyPress}
-      />
-      <Key
-        keyName={Space.key}
-        icon={styles.MarkSpace}
-        label={labels.Space}
-        extra={styles.Space}
-        disabled={disabled}
-        pressed={held.has(Space.key)}
-        onKeyPress={onKeyPress}
-      />
-      <Key
-        keyName={Enter.key}
-        icon={styles.MarkEnter}
-        label={labels.Enter}
-        extra={[styles.Action, canSubmit ? styles.MarkSend : ''].filter(Boolean).join(' ')}
-        disabled={disabled}
-        pressed={held.has(Enter.key)}
-        onKeyPress={onKeyPress}
-      />
-    </>
-  );
-}
-
-/** The keys that are not letters, at the end of the row they belong to. Each draws its own mark
- * rather than a character: the blob face has none of these three, so they rendered as tofu. */
-function NamedKeys(props: RowProps) {
-  const { rowIndex, disabled, held, labels, onKeyPress } = props;
-  return (
-    <>
-      {rowIndex === BackspaceRow && (
-        <Key
-          keyName={Backspace.key}
-          icon={styles.MarkBackspace}
-          label={labels.Backspace}
-          extra={styles.Action}
-          disabled={disabled}
-          pressed={held.has(Backspace.key)}
-          onKeyPress={onKeyPress}
-        />
-      )}
-      {rowIndex === BottomRow && <BottomKeys {...props} />}
-    </>
+/** What one press does: count it against the key that was pressed, and hand it on. The count is
+ * what plays the pop, so a tap and a held key move the key the same way and exactly once. */
+function usePress(
+  lang: KeyboardLang,
+  setLang: (lang: KeyboardLang) => void,
+  setPresses: (next: (current: Presses) => Presses) => void,
+  onKeyPress: ((key: KeyboardKey) => void) | undefined,
+): (key: KeyboardKey) => void {
+  return useCallback(
+    (key: KeyboardKey) => {
+      if (key === Lang.key) {
+        setLang(otherLang(lang));
+        return;
+      }
+      setPresses((current) => ({ ...current, [key]: (current[key] ?? 0) + 1 }));
+      onKeyPress?.(key);
+    },
+    [lang, setLang, onKeyPress, setPresses],
   );
 }
 
@@ -147,22 +81,14 @@ export function Keyboard({
   langLabel,
 }: KeyboardProps) {
   const [lang, setLang] = useState<KeyboardLang>('ru');
+  const [presses, setPresses] = useState<Readonly<Record<string, number>>>({});
   const rows = Layouts[lang];
   const columns = columnsOf(rows);
   const classes = [styles.Root, styles[`Columns${columns}`]].join(' ');
-  // Held across renders on the letters rather than rebuilt each time, since the effect under it
-  // would otherwise take the keyboard's keys back off and put them on again every frame.
-  const name = useMemo(() => keyNamer(new Set(rows.flat())), [lang]);
-  const held = useHeldKeys(!disabled, name);
-  const labels = { Backspace: backspaceLabel, Space: spaceLabel, Enter: enterLabel, Lang: langLabel };
-
-  const press = (key: KeyboardKey) => {
-    if (key === Lang.key) {
-      setLang(otherLang(lang));
-      return;
-    }
-    onKeyPress?.(key);
-  };
+  const name = useMemo(() => keyNamer(rows), [lang]);
+  const press = usePress(lang, setLang, setPresses, onKeyPress);
+  useHardwareTyping(!disabled, name, press);
+  const labels = useLabels(backspaceLabel, spaceLabel, enterLabel, langLabel);
 
   return (
     <div class={classes}>
@@ -173,7 +99,7 @@ export function Keyboard({
           rowIndex={rowIndex}
           disabled={disabled}
           canSubmit={canSubmit}
-          held={held}
+          presses={presses}
           labels={labels}
           onKeyPress={press}
         />
