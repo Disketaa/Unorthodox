@@ -12,6 +12,7 @@ import {
 } from './KeyboardLayouts';
 import { keyNamer } from './KeyNamer';
 import { RowKeys } from './KeyboardRow';
+import { playSound } from '@/Design';
 
 export type KeyboardKey = string | 'Backspace' | 'Space' | 'Enter' | 'Lang';
 
@@ -85,7 +86,11 @@ function usePress(
   onKeyPress: ((key: KeyboardKey) => void) | undefined,
 ): (key: KeyboardKey) => void {
   return useCallback(
-    (key: KeyboardKey) => {
+(key: KeyboardKey) => {
+      // The pop is the press, not the letter: it answers a tap on the language key and one on a
+      // backspace the same as it answers a letter, and it is pitched at random so a run of typing
+      // is a run of notes rather than one note repeated.
+      playSound('Pop');
       // Counted against the slot rather than the letter, so a count does not follow the letter
       // when the layout changes and replay every key's last pop on the way back to where it was.
       const slot =

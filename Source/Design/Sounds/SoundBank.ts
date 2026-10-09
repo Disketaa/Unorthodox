@@ -2,16 +2,18 @@ import plingUrl from './Pling.ogg';
 import popUrl from './Pop.ogg';
 import tickUrl from './Tick.ogg';
 import alarmUrl from './Alarm.ogg';
+import submitUrl from './Submit.ogg';
 
-export type SoundName = 'Pop' | 'Pling' | 'Tick' | 'Alarm';
+export type SoundName = 'Pop' | 'Pling' | 'Tick' | 'Alarm' | 'Submit';
 
-export const SoundNames: readonly SoundName[] = ['Pop', 'Pling', 'Tick', 'Alarm'];
+export const SoundNames: readonly SoundName[] = ['Pop', 'Pling', 'Tick', 'Alarm', 'Submit'];
 
 const Sources: Record<SoundName, string> = {
   Pop: popUrl,
   Pling: plingUrl,
   Tick: tickUrl,
   Alarm: alarmUrl,
+  Submit: submitUrl,
 };
 
 /** Per clip, since the countdown's beat sits under the words rather than beside them: a tick at
@@ -21,6 +23,7 @@ const Volumes: Record<SoundName, number> = {
   Pling: 0.3,
   Tick: 0.06,
   Alarm: 0.22,
+  Submit: 0.3,
 };
 
 /** How far either side of the recorded pitch a press may land, in semitones. Wide enough that
@@ -32,12 +35,14 @@ const PressPitchSpread = 2.5;
  * wanders by a quarter tone every second is a wobble rather than a beat. */
 const TickPitchSpread = 1;
 
-/** The alarm has none — it happens once, and there is nothing to vary against. */
+/** Neither the alarm nor the submit has one — each happens once, and there is nothing to vary it
+ * against. A send that wandered in pitch would be a second send waiting to be heard. */
 const PitchSpreads: Record<SoundName, number> = {
   Pop: PressPitchSpread,
   Pling: PressPitchSpread,
-  Tick: TickPitchSpread,
+Tick: TickPitchSpread,
   Alarm: 0,
+  Submit: 0,
 };
 
 interface Voice {

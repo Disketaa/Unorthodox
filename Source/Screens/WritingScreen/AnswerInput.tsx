@@ -4,6 +4,7 @@ import { Keyboard, TextField, ThemeLabel } from '@/Design/Components';
 import type { KeyboardKey } from '@/Design/Components';
 import { Strings } from '@/Content';
 import { GameConfig } from '@/Game';
+import { playSound } from '@/Design';
 
 export interface AnswerInputProps {
   /** The round's question, headed over the keys: the answer is typed into this box, so the
@@ -162,7 +163,6 @@ export function AnswerInput({
   // be timed against a round that is not running. The keys close as well as the field, since they
   // are what writes it now.
   const closed = timeUp || held;
-  const canSubmit = !closed && !clean && value.trim().length > 0;
 
   function change(next: string): void {
     setTouched(true);
@@ -172,6 +172,7 @@ export function AnswerInput({
   function send(): void {
     setSent(value);
     setTouched(false);
+    playSound('Submit');
     onSubmit();
   }
 
@@ -181,7 +182,7 @@ export function AnswerInput({
       <AnswerField value={value} sent={clean} closed={closed} onValueChange={change} />
       <AnswerKeys
         value={value}
-        canSubmit={canSubmit}
+        canSubmit={!closed && !clean && value.trim().length > 0}
         timeUp={closed}
         onValueChange={change}
         onSubmit={send}

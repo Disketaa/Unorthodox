@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { installFakeAudio, type FakeAudio } from './FakeAudio';
+import { SoundNames } from './SoundBank';
 
 let fake: FakeAudio;
 
@@ -18,20 +19,20 @@ describe('SoundBank preloading', () => {
   it('decodes the clips up front, so a press is not waiting on the network', async () => {
     const { preloadSounds } = await freshBank();
     await preloadSounds();
-    expect(fake.decoded.length).toBe(4);
+    expect(fake.decoded.length).toBe(SoundNames.length);
   });
 
   it('fetches each clip once, however many callers ask at once', async () => {
     const { preloadSounds } = await freshBank();
     await Promise.all([preloadSounds(), preloadSounds()]);
-    expect(fake.fetched.length).toBe(4);
+    expect(fake.fetched.length).toBe(SoundNames.length);
   });
 
   it('leaves the clips already decoded alone', async () => {
     const { preloadSounds } = await freshBank();
     await preloadSounds();
     await preloadSounds();
-    expect(fake.decoded.length).toBe(4);
+    expect(fake.decoded.length).toBe(SoundNames.length);
   });
 
   it('warms the context on any press in the page, not on the button', async () => {
