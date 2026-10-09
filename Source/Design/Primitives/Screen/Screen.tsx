@@ -7,9 +7,8 @@ export type ScreenAlign = 'Center' | 'Start';
 
 export interface ScreenProps {
   /** Where the screen sits in the viewport when it is shorter than it. `Center` for one short
-   * block worth arriving at; `Top` for a page of controls, which belongs at the top where its
-   * first thing is reachable without scrolling; `Bottom` for keys pressed by a thumb reaching
-   * down the screen. */
+   * block worth arriving at, `Top` for a page of controls, `Bottom` for keys pressed by a thumb
+   * reaching down the screen. */
   vertical?: ScreenVertical;
   /** How containers line up with one another where they sit side by side. `Center` for
    * noticeably different heights read as one arrangement; `Top` for containers that continue

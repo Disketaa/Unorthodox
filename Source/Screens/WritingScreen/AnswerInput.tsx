@@ -1,5 +1,5 @@
 import { Stack, Text } from '@/Design/Primitives';
-import { Button, Keyboard, TextField } from '@/Design/Components';
+import { Keyboard, TextField } from '@/Design/Components';
 import type { KeyboardKey } from '@/Design/Components';
 import { Strings } from '@/Content';
 import { GameConfig } from '@/Game';
@@ -78,13 +78,11 @@ export function AnswerInput({
         <Keyboard
           disabled={timeUp}
           backspaceLabel={Strings.writing.backspaceKey}
+          spaceLabel={Strings.writing.spaceKey}
           enterLabel={Strings.writing.enterKey}
           onKeyPress={(key) => pressKey(key, value, canSubmit, onValueChange, onSubmit)}
         />
       )}
-      <Button variant="Primary" size="Large" disabled={!canSubmit} onClick={onSubmit}>
-        {Strings.writing.submitButton}
-      </Button>
     </Stack>
   );
 }

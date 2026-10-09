@@ -710,7 +710,8 @@ body.PageFade {
   /* The smallest thing a finger may be asked to hit. */
   --Size-TouchTarget: 44px;
   /* The ceiling on an on-screen key's height, where the layout has width to spare. The floor is
-   * `--Size-TouchTarget`, so a key shrinks with the screen but never under what a finger may hit. */
+   * `--Size-TouchTarget`, so a key shrinks with the screen but never under what a finger may
+   * hit. */
   --Size-KeyboardKeyHeightMax: 72px;
 
   /* The cursors, as the platform's own. These are the fallbacks, and on a touch device they are

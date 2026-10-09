@@ -1,15 +1,13 @@
-import { useEffect, useState } from 'preact/hooks';
 import styles from './Keyboard.module.css';
 import { Key } from './KeyboardKey';
-import type { KeyProps } from './KeyboardKey';
+import { useHeldKeys } from './UseHeldKeys';
 
 export type KeyboardKey = string | 'Backspace' | 'Space' | 'Enter';
 
-/** ЙЦУКЕН, the letters in the rows a Russian player expects to find them in. The shape is the
- * QWERTY arrangement rather than a grid of equal rows, so the rows a hand knows from a desktop
- * keyboard land where the fingers expect them. The fourth row is empty: it carries the space bar
- * and enter, which are not letters. */
-const Rows: readonly (readonly string[])[] = [
+/** ЙЦУКЕН, in the rows a Russian player expects to find them in, and the QWERTY arrangement
+ * rather than a grid of equal rows. The fourth row is empty: it carries the space bar and
+ * enter, which are not letters. */
+export const Rows: readonly (readonly string[])[] = [
   ['Й', 'Ц', 'У', 'К', 'Е', 'Н', 'Г', 'Ш', 'Щ', 'З', 'Х', 'Ъ'],
   ['Ф', 'Ы', 'В', 'А', 'П', 'Р', 'О', 'Л', 'Д', 'Ж', 'Э'],
   ['Я', 'Ч', 'С', 'М', 'И', 'Т', 'Ь', 'Б', 'Ю'],
@@ -24,70 +22,19 @@ const EnterRow = 3;
 
 /** What each non-letter key draws and what a screen reader reads for it. The glyph rather than
  * the name on the key, since the letters are the only part a player reads at a glance. */
-const Backspace = { glyph: '⌫', key: 'Backspace' } as const;
-const Space = { glyph: '␣', key: 'Space' } as const;
-const Enter = { glyph: '⏎', key: 'Enter' } as const;
+export const Backspace = { glyph: '⌫', key: 'Backspace' } as const;
+export const Space = { glyph: '␣', key: 'Space' } as const;
+export const Enter = { glyph: '⏎', key: 'Enter' } as const;
 
 export interface KeyboardProps {
   disabled?: boolean;
-  /** Letter or one of the named keys pressed. The layout itself holds no text, so the field being
-   * typed into stays the single place a draft exists. */
+  /** Letter or one of the named keys pressed. The layout itself holds no text, so the field
+   * being typed into stays the single place a draft exists. */
   onKeyPress?: (key: KeyboardKey) => void;
   /** Read out by a screen reader on the keys that carry a glyph rather than a letter. */
   backspaceLabel: string;
   spaceLabel: string;
   enterLabel: string;
-}
-
-/** What the layout calls the key a physical keydown names. `event.key` for a letter arrives
- * lowercase, and only the layout's own letters are answered, so a key the layout does not draw
- * lights nothing rather than a key that is not there. */
-function keyFor(event: KeyboardEvent): KeyboardKey | undefined {
-  if (event.key === 'Backspace') return Backspace.key;
-  if (event.key === ' ') return Space.key;
-  if (event.key === 'Enter') return Enter.key;
-  const letter = event.key.toUpperCase();
-  return Rows.some((row) => row.includes(letter)) ? letter : undefined;
-}
-
-/** Which keys a hardware keyboard is holding down right now, so that pressing one is seen on the
- * on-screen layout too. Held as a set rather than a single key because a hand can have two down
- * at once while typing quickly. */
-function useHeldKeys(enabled: boolean): ReadonlySet<KeyboardKey> {
-  const [held, setHeld] = useState<ReadonlySet<KeyboardKey>>(() => new Set());
-
-  useEffect(() => {
-    if (!enabled) return;
-    const set = (key: KeyboardKey, down: boolean) =>
-      setHeld((current) => {
-        if (current.has(key) === down) return current;
-        const next = new Set(current);
-        if (down) next.add(key);
-        else next.delete(key);
-        return next;
-      });
-    const onDown = (event: KeyboardEvent) => {
-      const key = keyFor(event);
-      if (key !== undefined) set(key, true);
-    };
-    const onUp = (event: KeyboardEvent) => {
-      const key = keyFor(event);
-      if (key !== undefined) set(key, false);
-    };
-    // A keydown whose keyup arrives after the window has lost focus would otherwise stay held
-    // forever, so losing focus releases everything.
-    const onBlur = () => setHeld(new Set());
-    window.addEventListener('keydown', onDown);
-    window.addEventListener('keyup', onUp);
-    window.addEventListener('blur', onBlur);
-    return () => {
-      window.removeEventListener('keydown', onDown);
-      window.removeEventListener('keyup', onUp);
-      window.removeEventListener('blur', onBlur);
-    };
-  }, [enabled]);
-
-  return held;
 }
 
 interface RowProps {
@@ -99,11 +46,10 @@ interface RowProps {
   onKeyPress?: (key: KeyboardKey) => void;
 }
 
-/** A row of letters, closed by whichever named key belongs at the end of that row. The fourth
- * row holds both the space bar and enter, since that is the row a thumb rests on. */
-function RowKeys({ row, rowIndex, disabled, held, labels, onKeyPress }: RowProps) {
+/** The letters of one row, which is all the row holds when no named key belongs to it. */
+function Letters({ row, disabled, held, onKeyPress }: RowProps) {
   return (
-    <div class={styles.Row}>
+    <>
       {row.map((letter) => (
         <Key
           key={letter}
@@ -113,6 +59,15 @@ function RowKeys({ row, rowIndex, disabled, held, labels, onKeyPress }: RowProps
           onKeyPress={onKeyPress}
         />
       ))}
+    </>
+  );
+}
+
+/** The keys that are not letters, at the end of the row they belong to. The fourth row holds
+ * both the space bar and enter, since that is the row a thumb rests on. */
+function NamedKeys({ rowIndex, disabled, held, labels, onKeyPress }: RowProps) {
+  return (
+    <>
       {rowIndex === BackspaceRow && (
         <Key
           keyName={Backspace.key}
@@ -146,6 +101,16 @@ function RowKeys({ row, rowIndex, disabled, held, labels, onKeyPress }: RowProps
           />
         </>
       )}
+    </>
+  );
+}
+
+/** A row of letters, closed by whichever named key belongs at the end of that row. */
+function RowKeys(props: RowProps) {
+  return (
+    <div class={styles.Row}>
+      <Letters {...props} />
+      <NamedKeys {...props} />
     </div>
   );
 }

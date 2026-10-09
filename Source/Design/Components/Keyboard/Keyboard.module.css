@@ -1,8 +1,8 @@
 /* The rows are flex rather than a grid of fixed cells, so the same layout fills a narrow phone
  * and a wide desktop without a second set of numbers. Keys take an equal share of their row and
- * only ask for a floor, which is what keeps a row of eleven from crushing its own labels. Height
- * is not shared between the rows: every key is sized from the window instead, so the keyboard is
- * the same whether or not the parent has a height to hand out. */
+ * only ask for a floor, which is what keeps a row of eleven from crushing its own labels.
+ * Height is not shared between the rows: every key is sized from the window instead, so the
+ * keyboard is the same whether or not the parent has a height to hand out. */
 .Root {
   display: flex;
   flex-direction: column;
@@ -17,9 +17,9 @@
   justify-content: center;
 }
 
-/* Height follows the window on both axes, between the touch target the design system asks for and
- * a comfortable desktop key. A device on its side has the width for a full row and almost no
- * height, and a key sized from the width alone is a row of three that runs off the bottom. */
+/* Height follows the window on both axes, between the touch target the design system asks for
+ * and a comfortable desktop key. A device on its side has the width for a full row and almost
+ * no height, and a key sized from the width alone is a row of three that runs off the bottom. */
 .Key {
   flex: 1 1 0;
   min-width: 0;
@@ -32,8 +32,8 @@
   background: var(--Color-Surface-Hover);
   color: var(--Color-Text-Default);
   font-family: var(--FontFamily-Body);
-  /* The letter follows the key rather than the window on its own, since a letter that fills a short
-   * key is a letter that spills out of it. */
+  /* The letter follows the key rather than the window on its own, since a letter that fills a
+   * short key is a letter that spills out of it. */
   font-size: clamp(var(--FontSize-Sm), min(3.4vw, 5.5vh), var(--FontSize-Md));
   font-weight: 600;
   cursor: var(--Cursor-Pointer);
@@ -61,8 +61,8 @@
   flex: 1.5 1 0;
 }
 
-/* The space bar is the one key meant to be hit without aiming at anything, so it takes the width
- * of the letters around it rather than a single key's share. */
+/* The space bar is the one key meant to be hit without aiming at anything, so it takes the
+ * width of the letters around it rather than a single key's share. */
 .Space {
   flex: 6 1 0;
 }

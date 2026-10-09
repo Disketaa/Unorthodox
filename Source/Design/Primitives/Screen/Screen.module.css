@@ -81,8 +81,8 @@
   align-content: center;
 }
 
-/* In the bottom of the viewport, for a screen whose controls belong under the hand rather than in
- * the middle of what is left: the writing phase's keys are pressed by a thumb reaching down. */
+/* In the bottom of the viewport, for a screen whose controls belong under the hand rather than
+ * in the middle of what is left: the writing phase's keys are pressed by a thumb reaching down. */
 .VerticalBottom {
   align-content: end;
 }

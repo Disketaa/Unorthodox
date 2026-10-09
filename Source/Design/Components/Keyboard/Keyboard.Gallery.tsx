@@ -5,9 +5,19 @@ export function KeyboardGallery() {
   return (
     <Stack direction="Vertical" gap="Lg">
       <Text variant="Body">Keyboard</Text>
-      <Keyboard backspaceLabel="Удалить символ" enterLabel="Ответить" onKeyPress={() => {}} />
+      <Keyboard
+        backspaceLabel="Удалить символ"
+        spaceLabel="Пробел"
+        enterLabel="Ответить"
+        onKeyPress={() => {}}
+      />
       <Text variant="Caption">Disabled</Text>
-      <Keyboard backspaceLabel="Удалить символ" enterLabel="Ответить" disabled />
+      <Keyboard
+        backspaceLabel="Удалить символ"
+        spaceLabel="Пробел"
+        enterLabel="Ответить"
+        disabled
+      />
     </Stack>
   );
 }
