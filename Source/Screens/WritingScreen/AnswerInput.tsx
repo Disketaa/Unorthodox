@@ -109,6 +109,10 @@ export function AnswerInput({
 }: AnswerInputProps) {
   const canSubmit = !submitted && !timeUp && !held && value.trim().length > 0;
   const maxLength = GameConfig.limits.answerMaxLength;
+  // A held room is not writing: the clock is stopped for everyone, so an answer written now
+  // would be timed against a round that is not running. It has to close the field as well as the
+  // keys, since the browser types into a real input whatever these keys are told.
+  const closed = timeUp || held;
 
   return (
     <Stack gap="Md">
@@ -120,7 +124,7 @@ export function AnswerInput({
           value={value}
           placeholder={Strings.writing.answerPlaceholder}
           maxLength={maxLength}
-          disabled={timeUp}
+          disabled={closed}
           onChange={onValueChange}
         />
       )}
@@ -128,7 +132,7 @@ export function AnswerInput({
         <AnswerKeys
           value={value}
           canSubmit={canSubmit}
-          timeUp={timeUp}
+          timeUp={closed}
           onValueChange={onValueChange}
           onSubmit={onSubmit}
         />
