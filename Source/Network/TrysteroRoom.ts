@@ -1,5 +1,6 @@
 import { readRole, readTag } from './Payload';
 import { roomConfig } from './Signaling';
+import { correctClockFromServer, syncClockFromServer } from './Clock';
 import { createLogger } from '@/Core';
 import { joinRoom, type JsonValue, type MessageAction } from 'trystero';
 
@@ -146,6 +147,8 @@ export function warmRelays(): void {
   if (warmRoom !== null) {
     return;
   }
+  correctClockFromServer();
+  void syncClockFromServer();
   warmRoom = joinRoom({ ...roomConfig('unorthodox-game'), passive: true }, RelayWarmupRoom);
 }
 

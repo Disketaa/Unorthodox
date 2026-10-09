@@ -1,4 +1,5 @@
 export * from './Transport';
+export * from './Clock';
 export * from './Protocol';
 export * from './TrysteroRoom';
 export * from './TrysteroTransport';

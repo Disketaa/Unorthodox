@@ -4,9 +4,9 @@ import { note } from './Report';
  * 5.3s and a few seconds of NTP drift is ordinary rather than a fault. */
 const SkewWorthWarningAbout = 5;
 
-/** How far this device's clock is from the server's, in seconds. Nostr subscriptions carry a
- * `since` from the local clock, so a phone far enough out stops hearing the other peer with
- * every relay open and nothing logged. */
+/** How far the device's own clock is from the server's, before the correction is applied.
+ * Reported raw on purpose: it is the drift a player would fix by hand if the correction failed,
+ * and a skew just corrected would otherwise read as alarming. */
 export async function reportClockSkew(): Promise<void> {
   try {
     // The document's own URL rather than the site root: a static host answers `HEAD /` with 404,
@@ -20,9 +20,11 @@ export async function reportClockSkew(): Promise<void> {
     const skewSeconds = Math.round((Date.now() - new Date(serverDate).getTime()) / 1000);
     note(
       skewSeconds > SkewWorthWarningAbout ? 'warn' : 'info',
-      'clock skew in seconds',
+      'own clock off by seconds',
       skewSeconds,
-      skewSeconds > SkewWorthWarningAbout ? 'announces land outside this window' : 'in step'
+      skewSeconds > SkewWorthWarningAbout
+        ? 'corrected for signalling, but the device clock is wrong'
+        : 'in step',
     );
   } catch (reason) {
     note('warn', 'clock skew could not be read', String(reason));
