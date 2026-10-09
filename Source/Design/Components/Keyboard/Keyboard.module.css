@@ -65,6 +65,13 @@
   font-size: clamp(var(--FontSize-Sm), min(3.4vw, 5.5vh), var(--FontSize-Md));
   font-weight: 600;
   cursor: var(--Cursor-Pointer);
+  /* A held key has to be a key and nothing else: the browser's own long-press menu, its text
+   * selection and its scroll all take the finger away from a key that is being held down, and a
+   * scroll that starts on a key is a scroll that cancels the pointer and stops the repeat. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   transition:
     background var(--Transition-Standard),
     transform var(--Transition-Standard);
@@ -74,10 +81,9 @@
   background: var(--Color-Surface-Active);
 }
 
-/* A key being pressed. The element is rebuilt on every press, so this runs once rather than
- * being a state set and cleared: a press and a release in one frame used to paint nothing. The
- * colour travels inside the animation rather than being set here, because a class that stays on
- * would leave the key yellow for good, and a mark on yellow is one nobody sees. */
+/* A key being pressed. The colour travels inside the animation rather than being set here,
+ * because a class that stays on would leave the key yellow for good, and a mark on yellow is
+ * one nobody sees. */
 .Key:active:not(:disabled) {
   background: var(--Color-Room-Yellow);
   color: var(--Color-Text-Default);

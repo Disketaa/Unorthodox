@@ -1,4 +1,4 @@
-import { useCallback } from 'preact/hooks';
+import { useCallback, useEffect, useRef } from 'preact/hooks';
 import type { VNode } from 'preact';
 import styles from './Keyboard.module.css';
 import { Lang, type KeyboardKey } from './Keyboard';
@@ -6,9 +6,9 @@ import { useHoldRepeat } from './UseHoldRepeat';
 
 export interface KeyProps {
   keyName: KeyboardKey;
-  /** How many times this key has been pressed. The element is keyed on it by the caller, so a
-   * press is a new element and the pop runs from the start: a press and a release inside one
-   * frame would otherwise paint nothing, and a key held lit would go out late. */
+  /** How many times this key has been pressed. The pop is restarted off it rather than the key
+   * being rebuilt on it: a key remounted per press would take the hold-repeat timer with it, so
+   * a held key would fire once and then stop. */
   pressCount: number;
   disabled: boolean;
   /** Whether holding this key repeats it. Off for the language key, which swaps two layouts and
@@ -33,7 +33,7 @@ function useKeyPress(
 ) {
   const fire = useCallback(() => onKeyPress?.(keyName), [onKeyPress, keyName]);
   const hold = useHoldRepeat(fire);
-  return repeats ? hold : { ...hold, onPointerDown: undefined, onPointerUp: undefined };
+  return repeats ? hold : { ...hold, onPointerDown: undefined };
 }
 
 /** One key: a letter, a glyph, or a drawn mark. */
@@ -49,8 +49,20 @@ export function Key({
   onKeyPress,
 }: KeyProps) {
   const hold = useKeyPress(keyName, repeats, onKeyPress);
+  const button = useRef<HTMLButtonElement>(null);
+  // The pop is restarted by hand: dropping the class and putting it back on the same element is
+  // what makes the animation run again, where a class that merely stays on would play once and
+  // then sit there. The reflow read in between is what makes the browser notice the change.
+  useEffect(() => {
+    const node = button.current;
+    if (node === null || pressCount === 0) return;
+    node.classList.remove(styles.KeyPopped);
+    void node.offsetWidth;
+    node.classList.add(styles.KeyPopped);
+  }, [pressCount]);
   return (
     <button
+      ref={button}
       class={keyClass(pressCount, icon, extra)}
       type="button"
       disabled={disabled}
@@ -63,6 +75,8 @@ export function Key({
   );
 }
 
+/** The classes a key carries. The pop is not one of them: it is put on and taken off the element
+ * by hand, so that a second press restarts it rather than leaving it already running. */
 function keyClass(pressCount: number, icon?: string, extra?: string): string {
   return [styles.Key, pressCount > 0 ? styles.KeyPopped : '', icon ?? '', extra ?? '']
     .filter(Boolean)

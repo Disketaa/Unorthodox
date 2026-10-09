@@ -46,7 +46,7 @@ function Letters({ row, rowIndex, disabled, presses, onKeyPress }: RowProps) {
         const pressCount = count(presses, slot);
         return (
           <Key
-            key={`${slot}:${pressCount}`}
+            key={slot}
             keyName={letter}
             pressCount={pressCount}
             disabled={disabled}
@@ -67,7 +67,7 @@ function NamedKeys(props: RowProps) {
     <>
       {rowIndex === BackspaceRow && (
         <Key
-          key={`${Slots.Backspace}:${pressCount}`}
+          key={Slots.Backspace}
           keyName={Backspace.key}
           pressCount={pressCount}
           icon={styles.MarkBackspace}
@@ -88,7 +88,7 @@ function BottomKeys({ disabled, canSubmit, presses, labels, onKeyPress }: RowPro
   return (
     <>
       <LangKey
-        key={`${Slots.Lang}:${count(presses, Slots.Lang)}`}
+        key={Slots.Lang}
         pressCount={count(presses, Slots.Lang)}
         icon={styles.MarkLang}
         label={labels.Lang}
@@ -97,7 +97,7 @@ function BottomKeys({ disabled, canSubmit, presses, labels, onKeyPress }: RowPro
         onKeyPress={onKeyPress}
       />
       <Key
-        key={`${Slots.Space}:${count(presses, Slots.Space)}`}
+        key={Slots.Space}
         keyName={Space.key}
         pressCount={count(presses, Slots.Space)}
         icon={styles.MarkSpace}
@@ -107,7 +107,7 @@ function BottomKeys({ disabled, canSubmit, presses, labels, onKeyPress }: RowPro
         onKeyPress={onKeyPress}
       />
       <Key
-        key={`${Slots.Enter}:${count(presses, Slots.Enter)}`}
+        key={Slots.Enter}
         keyName={Enter.key}
         pressCount={count(presses, Slots.Enter)}
         icon={styles.MarkEnter}
