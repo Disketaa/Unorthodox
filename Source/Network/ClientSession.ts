@@ -1,12 +1,11 @@
 import { Transport } from './Transport';
-import { isHostMessage, HostMessage, BlockedReason } from './Protocol';
-import { refusalFor } from './ClientRefusals';
+import type { BlockedReason } from './Protocol';
 import { JoinRetry } from './JoinRetry';
 import { clientId } from './ClientIdentity';
-import { clockStatus } from './Clock';
-import { StallHintMs, type ConnectionHint } from './ConnectionHint';
+import { ClientInbox, isFromHost } from './ClientInbox';
+import { stallHint, StallHintMs, type ConnectionHint } from './ConnectionHint';
 import * as Game from '@/Game';
-import { ClockFollow, PlayerLook, ThemeId, createLogger } from '@/Core';
+import { PlayerLook, ThemeId, createLogger } from '@/Core';
 
 export type { BlockedReason } from './Protocol';
 
@@ -17,34 +16,55 @@ const log = createLogger('ClientSession');
  * waking, since the state carries the host's start time. */
 export const SyncIntervalMs = 5_000;
 
-/** What this device can say about a wait going on too long. A drifted clock stops a peer hearing
- * anyone at all while every relay still reports open, so the wait looks identical to a bad
- * network from the outside — hence naming the clock whenever this device could not check its
- * own. */
-function stallHint(): ConnectionHint {
-  return clockStatus() === 'failed' ? 'clockUnchecked' : 'noPeers';
-}
-
 export class ClientSession {
-  private state: Game.PublicState | undefined = undefined;
   private transport: Transport;
-  /** Assigned by the host on Join, never chosen here. */
-  private playerId: string | null = null;
-  private updateListener: (() => void) | undefined = undefined;
-  /** The join, held and re-sent until the host answers it or refuses it. */
   private readonly joinRetry: JoinRetry;
+  private updateListener: (() => void) | undefined = undefined;
   /** Asks the host for the current state, so a gap does not desync the client. */
   private syncTimer: ReturnType<typeof setInterval> | null = null;
   /** Starts counting when the wait begins, so a stall can be reported without a poll. */
   private stallTimer: ReturnType<typeof setTimeout> | null = null;
   /** What this device can say about a wait going on too long. */
   private connectionHint: ConnectionHint | undefined = undefined;
-  /** Skew between the host's clock and this device's, narrowed over every message received. */
-  private readonly clock = new ClockFollow();
-  /** Why this player is not in the room, if they are not. */
-  private blocked: BlockedReason | undefined = undefined;
-  /** How many players the room holds, as the host reported it in a full-room refusal. */
-  private roomLimit = 0;
+
+  constructor(transport: Transport) {
+    this.transport = transport;
+    this.joinRetry = new JoinRetry(transport);
+    const inbox = new ClientInbox(transport, this.joinRetry, () => this.updateListener?.());
+
+    // The host is reachable the moment it registers on the in-memory broker,
+    // so the join can go out without waiting for a retry tick.
+    transport.onHostReady(() => this.joinRetry.flush());
+
+    transport.onMessage((message, fromHost) => {
+      log('debug', 'onMessage', message, 'fromHost:', fromHost);
+      if (isFromHost(message, fromHost)) {
+        inbox.receive(message);
+      } else if (fromHost) {
+        log('warn', 'ignoring unrecognised host message');
+      }
+    });
+
+    this.inbox = inbox;
+  }
+
+  private readonly inbox: ClientInbox;
+
+  start(roomCode: string, playerName: string): void {
+    // The host addresses us by the peer the transport sees, so there is no id
+    // for us to declare here. The host assigns our game player id on join.
+    this.transport.start(roomCode, playerName, false);
+    // A suspended client misses state updates, so it keeps asking where the game is.
+    this.syncTimer = setInterval(() => this.requestSync(), SyncIntervalMs);
+    this.stallTimer = setTimeout(() => {
+      if (this.inbox.playerId !== null) {
+        return;
+      }
+      this.connectionHint = stallHint();
+      log('warn', 'still no answer; hinting', this.connectionHint);
+      this.updateListener?.();
+    }, StallHintMs);
+  }
 
   /** Subscribe to state changes so the UI can re-render. */
   onUpdate(listener: () => void): void {
@@ -56,46 +76,9 @@ export class ClientSession {
     this.transport.onPeerLeave(() => listener());
   }
 
-  constructor(transport: Transport) {
-    this.transport = transport;
-    this.joinRetry = new JoinRetry(transport);
-
-    // The host is reachable the moment it registers on the in-memory broker,
-    // so the join can go out without waiting for a retry tick.
-    transport.onHostReady(() => this.joinRetry.flush());
-
-    this.transport.onMessage((message, fromHost) => {
-      log('debug', 'onMessage', message, 'fromHost:', fromHost);
-      if (!fromHost) {
-        return;
-      }
-      if (!isHostMessage(message)) {
-        log('warn', 'ignoring unrecognised host message');
-        return;
-      }
-      this.handleHostMessage(message);
-    });
-  }
-
-  start(roomCode: string, playerName: string): void {
-    // The host addresses us by the peer the transport sees, so there is no id
-    // for us to declare here. The host assigns our game player id on join.
-    this.transport.start(roomCode, playerName, false);
-    // A suspended client misses state updates, so it keeps asking where the game is.
-    this.syncTimer = setInterval(() => this.requestSync(), SyncIntervalMs);
-    this.stallTimer = setTimeout(() => {
-      if (this.playerId !== null) {
-        return;
-      }
-      this.connectionHint = stallHint();
-      log('warn', 'still no answer; hinting', this.connectionHint);
-      this.updateListener?.();
-    }, StallHintMs);
-  }
-
   /** Ask the host to resend the current state and phase start time. */
   requestSync(): void {
-    if (this.playerId === null) {
+    if (this.inbox.playerId === null) {
       // Not in the room yet; the join retry covers this case.
       return;
     }
@@ -115,76 +98,31 @@ export class ClientSession {
       this.stallTimer = null;
     }
     this.transport.stop();
-    this.state = undefined;
-    this.playerId = null;
-    this.blocked = undefined;
+    this.inbox.clear();
     this.connectionHint = undefined;
     this.updateListener = undefined;
-  }
-
-  private handleHostMessage(message: HostMessage): void {
-    const refusal = refusalFor(message);
-    if (refusal !== undefined) {
-      log('info', 'refused by the host:', refusal.reason);
-      this.blocked = refusal.reason;
-      this.roomLimit = refusal.roomLimit;
-      // The retry stops either way: the join has been answered, and a host that has just
-      // refused one will refuse it again, so a retry would be this tab knocking on a closed
-      // door rather than the player asking to come in.
-      this.joinRetry.stop();
-      if (refusal.closes) {
-        this.transport.stop();
-      }
-      this.updateListener?.();
-      return;
-    }
-    switch (message.type) {
-      case 'State':
-        this.state = message.state;
-        // Remember how far the host's clock is from ours, so the phase start time in the state can
-        // be read locally. Narrowed rather than replaced, since one sample carries a whole one-way
-        // trip in it and the room is only in step at its shortest.
-        this.clock.read(message.hostNow, Date.now());
-        log('debug', 'state updated to', message.state.phase, 'offset', this.clock.offset);
-        this.updateListener?.();
-        break;
-      case 'SetPlayerId':
-        log('info', 'playerId assigned:', message.playerId);
-        this.playerId = message.playerId;
-        // The host has answered, so the join no longer needs retrying.
-        this.joinRetry.stop();
-        this.updateListener?.();
-        break;
-    }
   }
 
   join(playerName: string, look: PlayerLook): void {
     log('info', 'joining as', playerName);
     // Held and re-sent until the host seats us or refuses the join.
-    this.joinRetry.send({
-      type: 'Join',
-      name: playerName,
-      look,
-      clientId: clientId(),
-    });
+    this.joinRetry.send({ type: 'Join', name: playerName, look, clientId: clientId() });
   }
 
-  /** Ask the host to change this player's character. The look the player picks here is the one
-   * they arrived with, until they change it. The host may refuse: it keeps the character a
-   * returning player already had, and it stops honouring changes once the game starts. */
+  /** Ask the host to change this player's character. The host may refuse: it keeps the character
+   * a returning player already had, and it stops honouring changes once the game starts. */
   setLook(look: PlayerLook): void {
-    if (this.playerId === null) {
+    if (this.inbox.playerId === null) {
       log('warn', 'cannot set a look before receiving a playerId');
       return;
     }
-    this.transport.sendToHost({ type: 'SetLook', playerId: this.playerId, look });
+    this.transport.sendToHost({ type: 'SetLook', playerId: this.inbox.playerId, look });
   }
 
   /** Whether this client is seated yet, logging why not if it is not. Every action that names a
-   * player goes through here, since all are meaningless before the host has assigned an id, and
-   * it catches a click arriving before the player's own join. */
+   * player goes through here, since all are meaningless before the host has assigned an id. */
   private seated(action: string): boolean {
-    if (this.playerId !== null) {
+    if (this.inbox.playerId !== null) {
       return true;
     }
     log('warn', `cannot ${action} before receiving a playerId`);
@@ -192,53 +130,62 @@ export class ClientSession {
   }
 
   submitAnswer(text: string): void {
-    if (!this.seated('submit answer')) {
-      return;
+    if (this.seated('submit answer')) {
+      this.transport.sendToHost({
+        type: 'SubmitAnswer',
+        text,
+        playerId: this.inbox.playerId,
+      });
     }
-    this.transport.sendToHost({ type: 'SubmitAnswer', text, playerId: this.playerId });
   }
 
   rejectGroup(groupId: number): void {
-    if (!this.seated('reject group')) {
-      return;
+    if (this.seated('reject group')) {
+      this.transport.sendToHost({
+        type: 'RejectGroup',
+        groupId,
+        playerId: this.inbox.playerId,
+      });
     }
-    this.transport.sendToHost({ type: 'RejectGroup', groupId, playerId: this.playerId });
   }
 
   /** Ask the host to play this round in this theme. The host refuses a press from anybody but
    * the player on turn, so the muted cards are not merely a promise the client keeps to itself. */
   chooseTheme(theme: ThemeId): void {
     if (this.seated('choose a theme')) {
-      this.transport.sendToHost({ type: 'ChooseTheme', theme, playerId: this.playerId });
+      this.transport.sendToHost({
+        type: 'ChooseTheme',
+        theme,
+        playerId: this.inbox.playerId,
+      });
     }
   }
 
   getState(): Game.PublicState | undefined {
-    return this.state;
+    return this.inbox.state;
   }
 
   getClockOffsetMs(): number {
-    return this.clock.offset;
+    return this.inbox.clock.offset;
   }
 
   getPlayerId(): string | null {
-    return this.playerId;
+    return this.inbox.playerId;
   }
 
   /** Why this client is not in a room, or undefined if it is in one. */
   getBlocked(): BlockedReason | undefined {
-    return this.blocked;
+    return this.inbox.blocked;
   }
 
   /** What this device can say about a wait going on too long, or undefined while it is short. */
   getConnectionHint(): ConnectionHint | undefined {
-    return this.playerId === null ? this.connectionHint : undefined;
+    return this.inbox.playerId === null ? this.connectionHint : undefined;
   }
 
   /** How many players the room holds, as the host last reported it. Zero until a refusal says
-   * otherwise, which is the only thing the UI reads it for: a full-room refusal is the one
-   * refusal whose sentence carries a number. */
+   * otherwise, which is the only thing the UI reads it for. */
   getRoomLimit(): number {
-    return this.roomLimit;
+    return this.inbox.roomLimit;
   }
 }

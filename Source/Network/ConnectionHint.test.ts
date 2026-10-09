@@ -16,7 +16,7 @@ describe('a client waiting too long', () => {
     vi.useRealTimers();
   });
 
-  /** A client that has asked to join and has been answered by nobody. */
+  // A client that has asked to join and has been answered by nobody.
   function waiting(): ClientSession {
     const session = new ClientSession(new InMemoryTransport());
     session.start(roomCode, 'Ann');
