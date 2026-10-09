@@ -67,6 +67,24 @@
   flex: 6 1 0;
 }
 
+/* A key that draws a mark instead of a letter. Masked rather than an image so it takes the
+ * key's own text colour and disabled opacity, and reaches the mark by descendant. */
+.Icon {
+  display: block;
+  width: 1.4em;
+  height: 1.4em;
+  background-color: currentColor;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+
+/* The globe on the language key: the other language is somewhere else, which is what a globe
+ * says and what a pair of letters cannot. */
+.MarkLang .Icon {
+  mask-image: url('../../Icons/Internet.svg');
+  mask-size: contain;
+}
+
 /* The key under a finger right now, whether that finger is a thumb on the screen or a hand on a
  * hardware keyboard. Held for as long as the key is down rather than for the length of the tap,
  * so a key that is read twice is read as one press. */

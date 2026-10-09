@@ -100,6 +100,8 @@ export const Strings = {
     backspaceKey: 'Удалить символ',
     /** Read out on the space bar, which puts a space in the answer. */
     spaceKey: 'Пробел',
+    /** Read out on the key that swaps the letters to the other language. */
+    langKey: 'Сменить язык',
     /** Read out on the enter key, which sends the answer rather than typing into the field. */
     enterKey: 'Ответить',
   },

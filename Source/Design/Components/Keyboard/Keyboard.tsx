@@ -1,30 +1,22 @@
+import { useMemo, useState } from 'preact/hooks';
 import styles from './Keyboard.module.css';
 import { Key } from './KeyboardKey';
 import { useHeldKeys } from './UseHeldKeys';
+import { Layouts, otherLang, type KeyboardLang } from './KeyboardLayouts';
 
-export type KeyboardKey = string | 'Backspace' | 'Space' | 'Enter';
-
-/** ЙЦУКЕН, in the rows a Russian player expects to find them in, and the QWERTY arrangement
- * rather than a grid of equal rows. The fourth row is empty: it carries the space bar and
- * enter, which are not letters. */
-export const Rows: readonly (readonly string[])[] = [
-  ['Й', 'Ц', 'У', 'К', 'Е', 'Н', 'Г', 'Ш', 'Щ', 'З', 'Х', 'Ъ'],
-  ['Ф', 'Ы', 'В', 'А', 'П', 'Р', 'О', 'Л', 'Д', 'Ж', 'Э'],
-  ['Я', 'Ч', 'С', 'М', 'И', 'Т', 'Ь', 'Б', 'Ю'],
-  [],
-];
+export type KeyboardKey = string | 'Backspace' | 'Space' | 'Enter' | 'Lang';
 
 /** The row each of the keys that are not letters sits at the end of: backspace on the third row,
- * and enter with the space bar on the fourth, which is where every keyboard a thumb is used to
- * has them. */
+ * and the language, the space bar and enter on the fourth, which is the row a thumb rests on. */
 const BackspaceRow = 2;
-const EnterRow = 3;
+const BottomRow = 3;
 
 /** What each non-letter key draws and what a screen reader reads for it. The glyph rather than
  * the name on the key, since the letters are the only part a player reads at a glance. */
 export const Backspace = { glyph: '⌫', key: 'Backspace' } as const;
 export const Space = { glyph: '␣', key: 'Space' } as const;
 export const Enter = { glyph: '⏎', key: 'Enter' } as const;
+export const Lang = { key: 'Lang' } as const;
 
 export interface KeyboardProps {
   disabled?: boolean;
@@ -35,14 +27,27 @@ export interface KeyboardProps {
   backspaceLabel: string;
   spaceLabel: string;
   enterLabel: string;
+  langLabel: string;
+}
+
+/** What the layout calls the key a physical keydown names. Rebuilt whenever the letters change,
+ * so a key is only lit for a letter the keys on screen actually have. */
+function keyNamer(letters: ReadonlySet<string>): (event: KeyboardEvent) => string | undefined {
+  return (event) => {
+    if (event.key === 'Backspace') return Backspace.key;
+    if (event.key === ' ') return Space.key;
+    if (event.key === 'Enter') return Enter.key;
+    const letter = event.key.toUpperCase();
+    return letters.has(letter) ? letter : undefined;
+  };
 }
 
 interface RowProps {
   row: readonly string[];
   rowIndex: number;
   disabled: boolean;
-  held: ReadonlySet<KeyboardKey>;
-  labels: Record<'Backspace' | 'Space' | 'Enter', string>;
+  held: ReadonlySet<string>;
+  labels: Record<'Backspace' | 'Space' | 'Enter' | 'Lang', string>;
   onKeyPress?: (key: KeyboardKey) => void;
 }
 
@@ -63,9 +68,45 @@ function Letters({ row, disabled, held, onKeyPress }: RowProps) {
   );
 }
 
-/** The keys that are not letters, at the end of the row they belong to. The fourth row holds
- * both the space bar and enter, since that is the row a thumb rests on. */
-function NamedKeys({ rowIndex, disabled, held, labels, onKeyPress }: RowProps) {
+/** The row a thumb rests on: the language, the space bar and enter. The language key draws the
+ * same mark whichever set is up, since it points at the other one rather than naming either. */
+function BottomKeys({ disabled, held, labels, onKeyPress }: RowProps) {
+  return (
+    <>
+      <Key
+        keyName={Lang.key}
+        icon={styles.MarkLang}
+        label={labels.Lang}
+        extra={styles.Action}
+        disabled={disabled}
+        pressed={held.has(Lang.key)}
+        onKeyPress={onKeyPress}
+      />
+      <Key
+        keyName={Space.key}
+        glyph={Space.glyph}
+        label={labels.Space}
+        extra={styles.Space}
+        disabled={disabled}
+        pressed={held.has(Space.key)}
+        onKeyPress={onKeyPress}
+      />
+      <Key
+        keyName={Enter.key}
+        glyph={Enter.glyph}
+        label={labels.Enter}
+        extra={styles.Action}
+        disabled={disabled}
+        pressed={held.has(Enter.key)}
+        onKeyPress={onKeyPress}
+      />
+    </>
+  );
+}
+
+/** The keys that are not letters, at the end of the row they belong to. */
+function NamedKeys(props: RowProps) {
+  const { rowIndex, disabled, held, labels, onKeyPress } = props;
   return (
     <>
       {rowIndex === BackspaceRow && (
@@ -79,28 +120,7 @@ function NamedKeys({ rowIndex, disabled, held, labels, onKeyPress }: RowProps) {
           onKeyPress={onKeyPress}
         />
       )}
-      {rowIndex === EnterRow && (
-        <>
-          <Key
-            keyName={Space.key}
-            glyph={Space.glyph}
-            label={labels.Space}
-            extra={styles.Space}
-            disabled={disabled}
-            pressed={held.has(Space.key)}
-            onKeyPress={onKeyPress}
-          />
-          <Key
-            keyName={Enter.key}
-            glyph={Enter.glyph}
-            label={labels.Enter}
-            extra={styles.Action}
-            disabled={disabled}
-            pressed={held.has(Enter.key)}
-            onKeyPress={onKeyPress}
-          />
-        </>
-      )}
+      {rowIndex === BottomRow && <BottomKeys {...props} />}
     </>
   );
 }
@@ -115,20 +135,36 @@ function RowKeys(props: RowProps) {
   );
 }
 
-/** The on-screen letter keys of the writing phase. */
+/** The on-screen letter keys of the writing phase, in Russian or English. The language is held
+ * here rather than asked for, since it is a fact about the keys and nothing else in the game
+ * reads it: the draft is a string and a letter is a letter whichever set it came from. */
 export function Keyboard({
   disabled = false,
   onKeyPress,
   backspaceLabel,
   spaceLabel,
   enterLabel,
+  langLabel,
 }: KeyboardProps) {
-  const held = useHeldKeys(!disabled);
-  const labels = { Backspace: backspaceLabel, Space: spaceLabel, Enter: enterLabel };
+  const [lang, setLang] = useState<KeyboardLang>('ru');
+  const rows = Layouts[lang];
+  // Held across renders on the letters rather than rebuilt each time, since the effect under it
+  // would otherwise take the keyboard's keys back off and put them on again every frame.
+  const name = useMemo(() => keyNamer(new Set(rows.flat())), [lang]);
+  const held = useHeldKeys(!disabled, name);
+  const labels = { Backspace: backspaceLabel, Space: spaceLabel, Enter: enterLabel, Lang: langLabel };
+
+  const press = (key: KeyboardKey) => {
+    if (key === Lang.key) {
+      setLang(otherLang(lang));
+      return;
+    }
+    onKeyPress?.(key);
+  };
 
   return (
     <div class={styles.Root}>
-      {Rows.map((row, rowIndex) => (
+      {rows.map((row, rowIndex) => (
         <RowKeys
           key={rowIndex}
           row={row}
@@ -136,7 +172,7 @@ export function Keyboard({
           disabled={disabled}
           held={held}
           labels={labels}
-          onKeyPress={onKeyPress}
+          onKeyPress={press}
         />
       ))}
     </div>

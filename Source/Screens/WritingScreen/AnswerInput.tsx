@@ -80,6 +80,7 @@ export function AnswerInput({
           backspaceLabel={Strings.writing.backspaceKey}
           spaceLabel={Strings.writing.spaceKey}
           enterLabel={Strings.writing.enterKey}
+          langLabel={Strings.writing.langKey}
           onKeyPress={(key) => pressKey(key, value, canSubmit, onValueChange, onSubmit)}
         />
       )}
