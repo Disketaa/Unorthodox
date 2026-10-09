@@ -57,7 +57,7 @@ const timing = {
    * pace. */
   questionWordMs: 210,
   /** How long the whole question stands there once every word is in, before the round starts. */
-  questionHoldMs: 5500,
+  questionHoldMs: 5000,
 };
 
 export const GameConfig = {

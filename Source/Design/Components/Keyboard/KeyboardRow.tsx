@@ -1,6 +1,6 @@
 import styles from './Keyboard.module.css';
-import { Key } from './KeyboardKey';
-import { Backspace, Enter, Lang, Space, type KeyboardKey } from './Keyboard';
+import { Backspace, Enter, Space, type KeyboardKey } from './Keyboard';
+import { Key, LangKey } from './KeyboardKey';
 import { Slots } from './KeyboardLayouts';
 
 /** The row each of the keys that are not letters sits at the end of: backspace on the third row,
@@ -87,9 +87,8 @@ function NamedKeys(props: RowProps) {
 function BottomKeys({ disabled, canSubmit, presses, labels, onKeyPress }: RowProps) {
   return (
     <>
-      <Key
+      <LangKey
         key={`${Slots.Lang}:${count(presses, Slots.Lang)}`}
-        keyName={Lang.key}
         pressCount={count(presses, Slots.Lang)}
         icon={styles.MarkLang}
         label={labels.Lang}

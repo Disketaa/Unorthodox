@@ -17,7 +17,19 @@ const Positions: readonly (readonly string[])[] = [
     'BracketLeft',
     'BracketRight',
   ],
-  ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyG', 'KeyH', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon', 'Quote'],
+  [
+    'KeyA',
+    'KeyS',
+    'KeyD',
+    'KeyF',
+    'KeyG',
+    'KeyH',
+    'KeyJ',
+    'KeyK',
+    'KeyL',
+    'Semicolon',
+    'Quote',
+  ],
   ['KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyB', 'KeyN', 'KeyM', 'Comma', 'Period', 'Slash'],
 ];
 
@@ -25,7 +37,7 @@ const Positions: readonly (readonly string[])[] = [
  * than its character: the layout decides the letter, so an English board pressing `KeyA`
  * answers with `Ф` rather than with an `A` the layout does not draw. */
 export function keyNamer(
-  rows: readonly (readonly string[])[],
+  rows: readonly (readonly string[])[]
 ): (event: KeyboardEvent) => string | undefined {
   const byPosition = new Map<string, string>();
   Positions.forEach((positions, row) => {

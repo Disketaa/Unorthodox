@@ -55,6 +55,13 @@
   background: var(--Color-Feedback-Error);
 }
 
+/* The words on the paper go with the bar under them, so the alarm is the whole block rather
+ * than a bar under black type. Only the copy that is not already light: that one is drawn over
+ * the fill, where white is what reads against the alarm and red is not. */
+.Urgent .Content:not(.Filled) {
+  color: var(--Color-Feedback-Error);
+}
+
 /* The words, dark on the paper. Left in the flow, because this layer is what measures the
  * block: an absolved pair would leave it sized by its own padding and every sentence the same
  * width. */

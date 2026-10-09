@@ -34,7 +34,7 @@ export type KeySlot = string;
 /** The slot a letter sits in, or undefined for a key that is not on the board. */
 export function slotOf(
   rows: readonly (readonly string[])[],
-  letter: string,
+  letter: string
 ): KeySlot | undefined {
   for (const [rowIndex, row] of rows.entries()) {
     const column = row.indexOf(letter);

@@ -26,7 +26,7 @@ export function useHardwareTyping(
   enabled: boolean,
   name: (event: KeyboardEvent) => string | undefined,
   onPress: (key: string) => void,
-  onSwitch: () => void,
+  onSwitch: () => void
 ): void {
   const latest = useRef({ name, onPress, onSwitch });
   latest.current = { name, onPress, onSwitch };

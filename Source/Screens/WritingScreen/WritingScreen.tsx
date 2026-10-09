@@ -13,7 +13,7 @@ export interface WritingScreenProps {
   remainingMs: number;
   /** How long the phase runs for, which is what the question is measured against as it drains. */
   durationMs: number;
-value: string;
+  value: string;
   /** Whether the host is holding the room, which stops the answer being sent. */
   held: boolean;
   onValueChange: (value: string) => void;

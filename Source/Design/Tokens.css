@@ -713,8 +713,8 @@ body.PageFade {
    * `--Size-TouchTarget`, so a key shrinks with the screen but never under what a finger may
    * hit. */
   --Size-KeyboardKeyHeightMax: 72px;
-/* How many key columns the keyboard is drawn on: the longest row's letter count, so every other
- * row is a prefix of it and a key holds the same column in every row. */
+  /* How many key columns the keyboard is drawn on: the longest row's letter count, so every
+   * other row is a prefix of it and a key holds the same column in every row. */
   --Size-KeyboardColumns: 12;
   /* How long a key takes to pop up and settle when it is pressed. Long enough to be read as a
    * movement rather than a flicker, and shorter than a fast typist's gap between keys. */

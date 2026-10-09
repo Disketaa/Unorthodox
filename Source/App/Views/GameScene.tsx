@@ -12,7 +12,10 @@ import type { PhaseViewProps } from './LobbyView';
 /** The stage the game plays on: what the room is doing at the very top, the room's hexes under
  * it, and the themes below. The bank sits under the note rather than in the middle of what is
  * left: it was measured against the viewport, so it moved as the note above it changed height. */
-export function GameScene({ view, children }: PhaseViewProps & { children?: ComponentChildren }) {
+export function GameScene({
+  view,
+  children,
+}: PhaseViewProps & { children?: ComponentChildren }) {
   const choosing = view.publicState?.phase === 'Choosing' ? view.publicState : undefined;
   // The bank leaves once the question is on screen. It was never going to be answered then, and it
   // takes the whole window, which is the one place the question has to be read.

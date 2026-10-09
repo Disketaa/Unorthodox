@@ -35,7 +35,7 @@ export function QuestionStage({ words, revealed, label, accent }: QuestionStageP
   heardRef.current = revealed;
   return (
     <div class={styles.Root}>
-<div class={styles.Column}>
+      <div class={styles.Column}>
         <div class={styles.Heading}>
           <ThemeLabel theme={label} accent={accent} />
         </div>

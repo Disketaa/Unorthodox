@@ -49,11 +49,16 @@ function useLabels(
   backspaceLabel: string,
   spaceLabel: string,
   enterLabel: string,
-  langLabel: string,
+  langLabel: string
 ): Record<'Backspace' | 'Space' | 'Enter' | 'Lang', string> {
   return useMemo(
-    () => ({ Backspace: backspaceLabel, Space: spaceLabel, Enter: enterLabel, Lang: langLabel }),
-    [backspaceLabel, spaceLabel, enterLabel, langLabel],
+    () => ({
+      Backspace: backspaceLabel,
+      Space: spaceLabel,
+      Enter: enterLabel,
+      Lang: langLabel,
+    }),
+    [backspaceLabel, spaceLabel, enterLabel, langLabel]
   );
 }
 
@@ -62,9 +67,7 @@ type Presses = Readonly<Record<string, number>>;
 /** Open on the letters the player's keyboard is set to, where the browser will say. Settles on
  * it without moving the language key: the game noticing a board is not the player switching,
  * and the keyboard is rebuilt every round, so a pop here would report a change on every one. */
-function useDetectedLayout(
-  setLang: (lang: KeyboardLang) => void,
-): void {
+function useDetectedLayout(setLang: (lang: KeyboardLang) => void): void {
   useEffect(() => {
     let mounted = true;
     void detectLayout().then((found) => {
@@ -83,10 +86,10 @@ function usePress(
   lang: KeyboardLang,
   setLang: (lang: KeyboardLang) => void,
   setPresses: (next: (current: Presses) => Presses) => void,
-  onKeyPress: ((key: KeyboardKey) => void) | undefined,
+  onKeyPress: ((key: KeyboardKey) => void) | undefined
 ): (key: KeyboardKey) => void {
   return useCallback(
-(key: KeyboardKey) => {
+    (key: KeyboardKey) => {
       // The pop is the press, not the letter: it answers a tap on the language key and one on a
       // backspace the same as it answers a letter, and it is pitched at random so a run of typing
       // is a run of notes rather than one note repeated.
@@ -108,13 +111,13 @@ function usePress(
       if (slot !== undefined) {
         setPresses((current) => ({ ...current, [slot]: (current[slot] ?? 0) + 1 }));
       }
-if (key === Lang.key) {
+      if (key === Lang.key) {
         setLang(otherLang(lang));
         return;
       }
       onKeyPress?.(key);
     },
-    [rows, lang, setLang, onKeyPress, setPresses],
+    [rows, lang, setLang, onKeyPress, setPresses]
   );
 }
 

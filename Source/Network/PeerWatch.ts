@@ -24,7 +24,7 @@ export async function reportClockSkew(): Promise<void> {
       skewSeconds,
       skewSeconds > SkewWorthWarningAbout
         ? 'corrected for signalling, but the device clock is wrong'
-        : 'in step',
+        : 'in step'
     );
   } catch (reason) {
     note('warn', 'clock skew could not be read', String(reason));

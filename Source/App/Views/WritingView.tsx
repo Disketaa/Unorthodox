@@ -24,7 +24,7 @@ export function WritingView({ view }: PhaseViewProps) {
       topic={writing?.topic ?? ''}
       theme={theme}
       themeAccent={accent}
-remainingMs={remainingMs}
+      remainingMs={remainingMs}
       durationMs={view.durationMs}
       value={draft}
       held={view.paused}

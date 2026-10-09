@@ -40,7 +40,7 @@ const TickPitchSpread = 1;
 const PitchSpreads: Record<SoundName, number> = {
   Pop: PressPitchSpread,
   Pling: PressPitchSpread,
-Tick: TickPitchSpread,
+  Tick: TickPitchSpread,
   Alarm: 0,
   Submit: 0,
 };

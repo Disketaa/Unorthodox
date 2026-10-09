@@ -25,7 +25,7 @@ export class ClientInbox {
   constructor(
     private readonly transport: Transport,
     private readonly joinRetry: JoinRetry,
-    private readonly onChange: () => void,
+    private readonly onChange: () => void
   ) {}
 
   /** Apply one message from the host, or discard it if it is not one this client understands. */

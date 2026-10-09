@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks';
 import { Stack, Text } from '@/Design/Primitives';
 import { Keyboard, TextField, ThemeLabel } from '@/Design/Components';
-import type { KeyboardKey } from '@/Design/Components';
+import { pressKey } from './PressKey';
 import { Strings } from '@/Content';
 import { GameConfig } from '@/Game';
 import { playSound } from '@/Design';
@@ -30,33 +30,6 @@ export interface AnswerInputProps {
   onSubmit: () => void;
 }
 
-/** A key's effect on the draft, or on the room when the key sends it. The field is the only
- * place the draft lives, so the keyboard only reports what was pressed, and an answer sent from
- * enter is the same send as the button under the keys. */
-function pressKey(
-  key: KeyboardKey,
-  value: string,
-  canSubmit: boolean,
-  onValueChange: (value: string) => void,
-  onSubmit: () => void,
-): void {
-  if (key === 'Enter') {
-    if (canSubmit) onSubmit();
-    return;
-  }
-  if (key === 'Backspace') {
-    onValueChange(value.slice(0, -1));
-    return;
-  }
-  if (key === 'Space') {
-    if (value.length >= GameConfig.limits.answerMaxLength) return;
-    onValueChange(value + ' ');
-    return;
-  }
-  if (value.length >= GameConfig.limits.answerMaxLength) return;
-  onValueChange(value + key);
-}
-
 /** What the round is asking: the theme it was drawn from, and the question itself, which goes
  * out with the time rather than sitting there full dark while the bar counts it down. Its own
  * component because it is the one part here that does not change while an answer is typed. */
@@ -71,7 +44,11 @@ function AnswerHeading({
   totalMs: number;
 }) {
   if (theme === undefined || themeAccent === undefined) {
-    return <Text variant="Body" fontWeight="Bold">{topic}</Text>;
+    return (
+      <Text variant="Body" fontWeight="Bold">
+        {topic}
+      </Text>
+    );
   }
   return (
     <ThemeLabel
@@ -80,6 +57,7 @@ function AnswerHeading({
       topic={topic}
       remainingMs={remainingMs}
       totalMs={totalMs}
+      urgent={remainingMs <= GameConfig.timing.countdownUrgentMs}
     />
   );
 }
@@ -93,10 +71,9 @@ function AnswerKeys({
   timeUp,
   onValueChange,
   onSubmit,
-}: Pick<
-  AnswerInputProps,
-  'value' | 'timeUp' | 'onValueChange' | 'onSubmit'
-> & { canSubmit: boolean }) {
+}: Pick<AnswerInputProps, 'value' | 'timeUp' | 'onValueChange' | 'onSubmit'> & {
+  canSubmit: boolean;
+}) {
   return (
     <Keyboard
       disabled={timeUp}
@@ -138,6 +115,31 @@ function AnswerField({
   );
 }
 
+/** What was last sent, and whether the field has been touched since. Kept rather than compared
+ * with what is in the field, since typing past an answer and deleting back to it would look
+ * sent again and turn words yellow that nobody sent. */
+function useSentAnswer(
+  value: string,
+  onValueChange: (value: string) => void,
+  onSubmit: () => void
+) {
+  const [sent, setSent] = useState<string | undefined>(undefined);
+  const [touched, setTouched] = useState(false);
+  return {
+    clean: !touched && sent === value,
+    change: (next: string) => {
+      setTouched(true);
+      onValueChange(next);
+    },
+    send: () => {
+      setSent(value);
+      setTouched(false);
+      playSound('Submit');
+      onSubmit();
+    },
+  };
+}
+
 /** The writing phase: the question above, the words in the middle, the keys under. The words
  * stay once sent and stay editable: a player who has sent an answer can change their mind, and
  * the room takes the last one they send. */
@@ -153,32 +155,21 @@ export function AnswerInput({
   onValueChange,
   onSubmit,
 }: AnswerInputProps) {
-  // What was last sent, and whether it has been touched since. Not a comparison of the two:
-  // typing past an answer and deleting back to it would then look sent again, and words would
-  // turn yellow that nobody sent.
-  const [sent, setSent] = useState<string | undefined>(undefined);
-  const [touched, setTouched] = useState(false);
-  const clean = !touched && sent === value;
   // A held room is not writing: the clock is stopped for everyone, so an answer written now would
   // be timed against a round that is not running. The keys close as well as the field, since they
   // are what writes it now.
   const closed = timeUp || held;
-
-  function change(next: string): void {
-    setTouched(true);
-    onValueChange(next);
-  }
-
-  function send(): void {
-    setSent(value);
-    setTouched(false);
-    playSound('Submit');
-    onSubmit();
-  }
+  const { clean, change, send } = useSentAnswer(value, onValueChange, onSubmit);
 
   return (
     <Stack gap="Sm">
-      <AnswerHeading topic={topic} theme={theme} themeAccent={themeAccent} remainingMs={remainingMs} totalMs={totalMs} />
+      <AnswerHeading
+        topic={topic}
+        theme={theme}
+        themeAccent={themeAccent}
+        remainingMs={remainingMs}
+        totalMs={totalMs}
+      />
       <AnswerField value={value} sent={clean} closed={closed} onValueChange={change} />
       <AnswerKeys
         value={value}

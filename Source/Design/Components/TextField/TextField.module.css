@@ -60,8 +60,8 @@
   font-size: clamp(var(--FontSize-Lg), 5.5vw, var(--FontSize-H1));
   font-weight: 400;
   line-height: 1.25;
-  /* Nothing here is to be picked up and carried off: the words are an answer being written under
-   * the keys, and selecting them would offer a copy that is not what the room has. */
+  /* Nothing here is to be picked up and carried off: the words are an answer being written
+   * under the keys, and selecting them would offer a copy that is not what the room has. */
   user-select: none;
   -webkit-user-select: none;
 }

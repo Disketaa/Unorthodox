@@ -25,15 +25,11 @@
  * strip of unused width at the row's edge. A count is a layout fact rather than a style, so it
  * is set by the class the layout picks rather than written in the stylesheet twice. */
 .Columns10 {
-  --Key-Width: calc(
-    (100% - (10 - 1) * var(--Key-Gap, var(--Space-Sm))) / 10
-  );
+  --Key-Width: calc((100% - (10 - 1) * var(--Key-Gap, var(--Space-Sm))) / 10);
 }
 
 .Columns12 {
-  --Key-Width: calc(
-    (100% - (12 - 1) * var(--Key-Gap, var(--Space-Sm))) / 12
-  );
+  --Key-Width: calc((100% - (12 - 1) * var(--Key-Gap, var(--Space-Sm))) / 12);
 }
 
 /* The width the keys that are not letters hold, measured against the widest layout rather than
@@ -44,8 +40,8 @@
  * larger than the largest letter. */
 .Root {
   --Named-Key-Width: calc(
-    (100% - (12 - 1) * var(--Key-Gap, var(--Space-Sm))) / 12 * 1.5 + var(--Key-Gap, var(--Space-Sm)) *
-      0.5
+    (100% - (12 - 1) * var(--Key-Gap, var(--Space-Sm))) / 12 * 1.5 +
+      var(--Key-Gap, var(--Space-Sm)) * 0.5
   );
 }
 

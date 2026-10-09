@@ -44,7 +44,12 @@ describe('the clock correction', () => {
     await clock.syncClockFromServer();
 
     expect(clock.clockStatus()).toBe('fine');
-    expect(Date.now()).toBe(RealDateNow());
+    // Bracketed rather than compared exactly: the shim hands back the real time, read a moment
+    // before the unpatched clock is read again, and a millisecond of that gap is not a patch.
+    const before = RealDateNow();
+    const shown = Date.now();
+    expect(shown).toBeGreaterThanOrEqual(before);
+    expect(shown).toBeLessThanOrEqual(RealDateNow());
   });
 
   it('corrects a device past the threshold, since trystero stamps from Date.now', async () => {
