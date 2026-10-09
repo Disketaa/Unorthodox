@@ -47,18 +47,29 @@ function blockedMessage(reason: BlockedReason, roomLimit: number): string {
   }
 }
 
-/** Still reaching the host. The same screen as the failures, a moment earlier: the mark says it
- * is still waiting rather than that something is wrong, and the button gives up the wait. */
+/** Still reaching the host, or failing to. An ordinary wait is the loading screen. Once it has
+ * outlasted that the wait is over — no room that cannot be found is found by waiting — so the
+ * screen becomes the verdict instead, on the error fill and the reporting mark. */
 function ConnectingScreen({ view }: { view: GameSessionView }) {
-  const hint =
+  const failure =
     view.connectionHint === 'clockUnchecked'
       ? Strings.status.clockUnchecked
       : view.connectionHint === 'noPeers'
         ? Strings.status.stillLooking
         : undefined;
+  if (failure !== undefined) {
+    return (
+      <InfoScreen
+        message={failure}
+        variant="Error"
+        action={Strings.common.cancel}
+        onAcknowledge={view.exitRoom}
+      />
+    );
+  }
   return (
     <InfoScreen
-      message={hint === undefined ? Strings.status.connecting : `${Strings.status.connecting} ${hint}`}
+      message={Strings.status.connecting}
       mark="Loading"
       action={Strings.common.cancel}
       onAcknowledge={view.exitRoom}

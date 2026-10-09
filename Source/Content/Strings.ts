@@ -180,9 +180,9 @@ export const Strings = {
     roomFull: (maxPlayers: number) => `В комнате уже ${maxPlayers} игроков`,
     kicked: 'Вы были исключены',
     connecting: 'Подключаемся…',
-        /** Shown under the waiting one, once the wait has outlasted the usual connect. Names the
-         * clock because a device whose own time has drifted is the one fault the player can put
-         * right. */
+    /** Said instead of the waiting one once the wait has outlasted the usual connect, and it
+     * stands alone rather than being read after it: the room was not found, and waiting longer
+     * will not find it. */
     stillLooking: 'Комната не найдена.',
     /** The stronger version: this device's clock could not be measured at all, so it is still
      * the first thing to suspect rather than one thing among several. */

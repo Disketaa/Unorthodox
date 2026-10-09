@@ -1,4 +1,4 @@
-import { Banner, BannerMark, Button } from '@/Design/Components';
+import { Banner, BannerMark, BannerVariant, Button } from '@/Design/Components';
 import { Screen, Stack } from '@/Design/Primitives';
 import { Strings } from '@/Content';
 
@@ -15,16 +15,26 @@ export interface InfoScreenProps {
    * to acknowledging, which is what a settled fact wants; a screen still waiting has settled
    * nothing and would be promising an outcome it cannot deliver. */
   action?: string;
+  /** The banner's colour. Defaults to the quiet one, since most of these screens report a fact.
+   * A screen reporting that the wait has failed takes the error fill, so the colour is what
+   * says the wait is over rather than the sentence having to. */
+  variant?: BannerVariant;
 }
 
 /** The screen shown in place of the game when there is nothing to play. One screen for every
- * case, so a player who lands on one learns it as any other. No heading and no alarm colour:
- * the message is the whole screen. The connecting screen is this one seen early. */
-export function InfoScreen({ message, onAcknowledge, mark = 'Info', action }: InfoScreenProps) {
+ * case, so a player who lands on one learns it as any other. No heading: the message is the
+ * whole screen. The connecting screen is this one seen early. */
+export function InfoScreen({
+  message,
+  onAcknowledge,
+  mark = 'Info',
+  action,
+  variant = 'Info',
+}: InfoScreenProps) {
   return (
     <Screen vertical="Center">
       <Stack gap="Md" align="Center">
-        <Banner variant="Info" align="Center" mark={mark}>
+        <Banner variant={variant} align="Center" mark={mark}>
           {message}
         </Banner>
         <Button variant="Primary" size="Large" onClick={onAcknowledge}>
