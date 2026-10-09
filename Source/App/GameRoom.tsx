@@ -8,8 +8,7 @@ import {
   TurnDebugTools,
 } from '@/Screens';
 import { Strings } from '@/Content';
-import { PlayerLook, ThemeId, assertNever } from '@/Core';
-import { Stack } from '@/Design/Primitives';
+import { PlayerLook, assertNever } from '@/Core';
 import { DebugDock, PausedRoom, StartCountdown } from '@/Design/Overlays';
 import { useGameSession } from './Hooks/UseGameSession';
 import { useDebugToggle } from './Hooks/UseDebugToggle';
@@ -18,10 +17,7 @@ import type { GameSessionView } from './Hooks/UseGameSession';
 import type { SessionPhaseName } from './Hooks/UseSessionPhase';
 import { SessionRole, BlockedReason } from './Session';
 import { LobbyView } from './Views/LobbyView';
-import { PhaseInfoView } from './Views/PhaseInfoView';
-import { PlayerBarView } from './Views/PlayerBarView';
-import { ThemeCardsView } from './Views/ThemeCardsView';
-import { QuestionOverlay } from './Views/QuestionOverlay';
+import { GameScene, WritingScene } from './Views/GameScene';
 
 export interface GameRoomProps {
   roomCode: string;
@@ -51,47 +47,6 @@ function blockedMessage(reason: BlockedReason, roomLimit: number): string {
   }
 }
 
-/** The stage the game plays on: what the room is doing at the very top, the room's hexes under
- * it, and the themes below. The bank sits under the note rather than in the middle of what is
- * left: it was measured against the viewport, so it moved as the note above it changed height. */
-function GameScene({ view }: { view: GameSessionView }) {
-  const choosing = view.publicState?.phase === 'Choosing' ? view.publicState : undefined;
-  // The bank leaves once the question is on screen. It was never going to be answered then, and it
-  // takes the whole window, which is the one place the question has to be read.
-  const bankOpen = view.phase === 'Choosing' && choosing?.question === undefined;
-  return (
-    <Stack align="Center" gap="Md" grow clip>
-      <Stack gap="Md" align="Center">
-        <PhaseInfoView view={view} />
-        <PlayerBarView view={view} />
-      </Stack>
-      {bankOpen && (
-        <ThemeCardsView
-          roomCode={view.roomCode}
-          choosing
-          myTurn={view.playerId !== null && view.playerId === view.turnPlayerId}
-          theme={view.publicState?.phase === 'Lobby' ? undefined : view.publicState?.theme}
-          picking={choosing?.picking}
-          clockOffsetMs={view.clockOffsetMs}
-          onPickTheme={view.chooseTheme}
-          spent={spentByTheme(view.publicState)}
-        />
-      )}
-      {!bankOpen && <QuestionOverlay view={view} />}
-    </Stack>
-  );
-}
-
-/** The room's per-theme round counts as the map the cards read, built here because the state
- * arrives as the pairs it went out as. Nothing counted is an empty map rather than a full one,
- * so a room that has not played a round draws a bank of full bars. */
-function spentByTheme(state: GameSessionView['publicState']): Map<ThemeId, number> | undefined {
-  if (state === undefined) {
-    return undefined;
-  }
-  return new Map(state.spent.map(({ theme, rounds }) => [theme, rounds]));
-}
-
 /** Still reaching the host. The same screen as the failures, a moment earlier: the mark says it
  * is still waiting rather than that something is wrong, and the button gives up the wait. */
 function ConnectingScreen({ view }: { view: GameSessionView }) {
@@ -114,7 +69,7 @@ const PhaseScreens: Record<
   Connecting: ConnectingScreen,
   Lobby: LobbyView,
   Choosing: GameScene,
-  Writing: GameScene,
+  Writing: WritingScene,
   Reviewing: GameScene,
   Scores: GameScene,
   Final: GameScene,

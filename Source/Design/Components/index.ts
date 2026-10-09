@@ -17,3 +17,4 @@ export * from './Wordmark';
 export * from './RoundMeter';
 export * from './ThemeCard';
 export * from './ThemeCards';
+export * from './Keyboard';

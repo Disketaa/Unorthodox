@@ -96,6 +96,10 @@ export const Strings = {
     waitForOthers: 'Ждём остальных',
     submittedCount: (count: number, total: number) => `Ответили: ${count} из ${total}`,
     timeUp: 'Время вышло',
+    /** Read out on the one on-screen key that has no letter on it. */
+    backspaceKey: 'Удалить символ',
+    /** Read out on the enter key, which sends the answer rather than typing into the field. */
+    enterKey: 'Ответить',
   },
   reviewing: {
     topicLabel: 'Тема',

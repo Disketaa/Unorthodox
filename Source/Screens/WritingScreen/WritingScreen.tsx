@@ -1,5 +1,5 @@
-import { Stack, Screen, Text } from '@/Design/Primitives';
-import { Card, Banner } from '@/Design/Components';
+import { Screen, Text } from '@/Design/Primitives';
+import { Card } from '@/Design/Components';
 import { Strings } from '@/Content';
 import { AnswerInput } from './AnswerInput';
 
@@ -8,8 +8,6 @@ export interface WritingScreenProps {
   remainingMs: number;
   value: string;
   submitted: boolean;
-  submittedCount: number;
-  playerCount: number;
   /** Whether the host is holding the room, which stops the answer being sent. */
   held: boolean;
   onValueChange: (value: string) => void;
@@ -22,8 +20,6 @@ export function WritingScreen({
   remainingMs,
   value,
   submitted,
-  submittedCount,
-  playerCount,
   held,
   onValueChange,
   onSubmit,
@@ -31,13 +27,10 @@ export function WritingScreen({
   const timeUp = remainingMs <= 0;
 
   return (
-    <Screen>
-      <Stack gap="Lg" align="Stretch">
-        <Text variant="Caption">{Strings.writing.topicLabel}</Text>
-        <Text variant="Title">{topic}</Text>
-      </Stack>
+    <Screen vertical="Bottom">
       <Card variant="Elevated">
         <AnswerInput
+          topic={topic}
           value={value}
           submitted={submitted}
           timeUp={timeUp}
@@ -46,13 +39,7 @@ export function WritingScreen({
           onSubmit={onSubmit}
         />
       </Card>
-      <Stack gap="Md" align="Stretch">
-        {timeUp && <Banner variant="Warning">{Strings.writing.timeUp}</Banner>}
-        <Text variant="Caption">
-          {Strings.writing.submittedCount(submittedCount, playerCount)}
-        </Text>
-        {submitted && <Text variant="Caption">{Strings.writing.waitForOthers}</Text>}
-      </Stack>
+      {submitted && <Text variant="Caption">{Strings.writing.waitForOthers}</Text>}
     </Screen>
   );
 }

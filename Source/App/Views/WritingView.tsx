@@ -22,8 +22,6 @@ export function WritingView({ view }: PhaseViewProps) {
       remainingMs={remainingMs}
       value={draft}
       submitted={view.hasSubmitted}
-      submittedCount={view.submittedCount}
-      playerCount={view.playerCount}
       held={view.paused}
       onValueChange={setDraft}
       onSubmit={() => {
