@@ -1,6 +1,5 @@
-import { Screen, Text } from '@/Design/Primitives';
+import { Screen } from '@/Design/Primitives';
 import { Card } from '@/Design/Components';
-import { Strings } from '@/Content';
 import { AnswerInput } from './AnswerInput';
 
 export interface WritingScreenProps {
@@ -12,22 +11,25 @@ export interface WritingScreenProps {
   /** The theme's own wash and ink, for naming it. Undefined for as long as the theme is. */
   themeAccent: { wash: string; ink: string } | undefined;
   remainingMs: number;
-  value: string;
-  submitted: boolean;
+  /** How long the phase runs for, which is what the question is measured against as it drains. */
+  durationMs: number;
+value: string;
   /** Whether the host is holding the room, which stops the answer being sent. */
   held: boolean;
   onValueChange: (value: string) => void;
   onSubmit: () => void;
 }
 
-/** Writing phase: topic, timer, one answer field. */
+/** Writing phase: the question, the answer field, and the keys that write it. What the room is
+ * waiting for is not said in a line of its own — the answer itself turns yellow once it is
+ * sent, which says it where the player is already looking. */
 export function WritingScreen({
   topic,
   theme,
   themeAccent,
   remainingMs,
+  durationMs,
   value,
-  submitted,
   held,
   onValueChange,
   onSubmit,
@@ -41,15 +43,15 @@ export function WritingScreen({
           topic={topic}
           theme={theme}
           themeAccent={themeAccent}
+          remainingMs={remainingMs}
+          totalMs={durationMs}
           value={value}
-          submitted={submitted}
           timeUp={timeUp}
           held={held}
           onValueChange={onValueChange}
           onSubmit={onSubmit}
         />
       </Card>
-      {submitted && <Text variant="Caption">{Strings.writing.waitForOthers}</Text>}
     </Screen>
   );
 }

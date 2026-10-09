@@ -60,10 +60,24 @@
   font-size: clamp(var(--FontSize-Lg), 5.5vw, var(--FontSize-H1));
   font-weight: 400;
   line-height: 1.25;
+  /* Nothing here is to be picked up and carried off: the words are an answer being written under
+   * the keys, and selecting them would offer a copy that is not what the room has. */
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .VariantBare:focus-visible {
   outline: none;
+  /* A line under the words rather than a ring around them: a field with nothing around it has
+   * nothing for a ring to be drawn on, and the focus still has to be somewhere a player sees. */
+  box-shadow: inset 0 -2px 0 var(--Color-Room-Yellow);
+}
+
+/* The bare field with its words already sent. Yellow is the room's own, the colour the pressed
+ * keys are and the colour the phase's fill reaches, so a sent answer is drawn in the same three
+ * places as everything else the player is doing. */
+.VariantSent {
+  composes: VariantBare;
   color: var(--Color-Room-Yellow);
 }
 

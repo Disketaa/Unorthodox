@@ -1,3 +1,4 @@
+import { useState } from 'preact/hooks';
 import { Stack, Text } from '@/Design/Primitives';
 import { Keyboard, TextField, ThemeLabel } from '@/Design/Components';
 import type { KeyboardKey } from '@/Design/Components';
@@ -15,12 +16,14 @@ export interface AnswerInputProps {
   /** The theme's own wash and ink. Supplied rather than looked up, because a screen is given
    * data and does not go and find it. Absent until the round's theme is known. */
   themeAccent: { wash: string; ink: string } | undefined;
+  /** What is left of the writing phase and how long it runs for, so the question can go out with
+   * the time rather than sitting there full dark while the bar counts it down. */
+  remainingMs: number;
+  totalMs: number;
   value: string;
-  submitted: boolean;
   timeUp: boolean;
-  /** Whether the host is holding the room. The field stays and the draft stays, since a held
-   * room has not forgotten what was typed; only the sending stops, because an answer sent into
-   * a held room would be counted before the room had finished being asked. */
+  /** Whether the host is holding the room. The draft stays, since a held room has not forgotten
+   * what was typed, but the field closes: a round whose clock is stopped is not being written. */
   held: boolean;
   onValueChange: (value: string) => void;
   onSubmit: () => void;
@@ -53,25 +56,36 @@ function pressKey(
   onValueChange(value + key);
 }
 
-/** What the round is asking, under the two names that frame it: the topic, and the theme it
- * comes from. Its own component because it is the one part that does not change while an answer
- * is typed, and re-rendering it on every keystroke is work for nothing. */
-/** What the round is asking: the theme it was drawn from, and the question itself in that
- * theme's own colour. One component because both take their colour from the same accent, and
- * its own because it is the one part here that does not change while an answer is typed. */
+/** What the round is asking: the theme it was drawn from, and the question itself, which goes
+ * out with the time rather than sitting there full dark while the bar counts it down. Its own
+ * component because it is the one part here that does not change while an answer is typed. */
 function AnswerHeading({
   topic,
   theme,
   themeAccent,
-}: Pick<AnswerInputProps, 'topic' | 'theme' | 'themeAccent'>) {
+  remainingMs,
+  totalMs,
+}: Pick<AnswerInputProps, 'topic' | 'theme' | 'themeAccent'> & {
+  remainingMs: number;
+  totalMs: number;
+}) {
   if (theme === undefined || themeAccent === undefined) {
     return <Text variant="Body" fontWeight="Bold">{topic}</Text>;
   }
-  return <ThemeLabel theme={theme} accent={themeAccent} topic={topic} />;
+  return (
+    <ThemeLabel
+      theme={theme}
+      accent={themeAccent}
+      topic={topic}
+      remainingMs={remainingMs}
+      totalMs={totalMs}
+    />
+  );
 }
 
 /** The on-screen keys under the field, which is where an answer is typed on a device with no
- * keyboard of its own. Not drawn once the answer is sent: there is nothing left to type. */
+ * keyboard of its own. which stay on screen after the answer is sent, since a player may change
+ * their mind. */
 function AnswerKeys({
   value,
   canSubmit,
@@ -99,17 +113,20 @@ function AnswerKeys({
  * will follow it rather than a box sized to guess at it. */
 const Beam = '|';
 
-/** The answer as it is shown to the player: the words in the field, or the confirmation once it
- * has gone. Read-only, because the keys below are how an answer is written and a field that
- * could also be typed into would answer to two things at once. */
+/** The words in the field, yellow once they have been sent and black again the moment anything
+ * is changed. Read-only, because the keys below are how an answer is written. */
 function AnswerField({
   value,
+  sent,
   closed,
   onValueChange,
-}: Pick<AnswerInputProps, 'value' | 'onValueChange'> & { closed: boolean }) {
+}: Pick<AnswerInputProps, 'value' | 'onValueChange'> & {
+  sent: boolean;
+  closed: boolean;
+}) {
   return (
     <TextField
-      variant="Bare"
+      variant={sent ? 'Sent' : 'Bare'}
       value={value}
       placeholder={Beam}
       maxLength={GameConfig.limits.answerMaxLength}
@@ -120,41 +137,55 @@ function AnswerField({
   );
 }
 
-/** The single answer field of the writing phase, or the confirmation after it. */
+/** The writing phase: the question above, the words in the middle, the keys under. The words
+ * stay once sent and stay editable: a player who has sent an answer can change their mind, and
+ * the room takes the last one they send. */
 export function AnswerInput({
   topic,
   theme,
   themeAccent,
+  remainingMs,
+  totalMs,
   value,
-  submitted,
   timeUp,
   held,
   onValueChange,
   onSubmit,
 }: AnswerInputProps) {
-  const canSubmit = !submitted && !timeUp && !held && value.trim().length > 0;
+  // What was last sent, and whether it has been touched since. Not a comparison of the two:
+  // typing past an answer and deleting back to it would then look sent again, and words would
+  // turn yellow that nobody sent.
+  const [sent, setSent] = useState<string | undefined>(undefined);
+  const [touched, setTouched] = useState(false);
+  const clean = !touched && sent === value;
   // A held room is not writing: the clock is stopped for everyone, so an answer written now would
   // be timed against a round that is not running. The keys close as well as the field, since they
   // are what writes it now.
   const closed = timeUp || held;
+  const canSubmit = !closed && !clean && value.trim().length > 0;
+
+  function change(next: string): void {
+    setTouched(true);
+    onValueChange(next);
+  }
+
+  function send(): void {
+    setSent(value);
+    setTouched(false);
+    onSubmit();
+  }
 
   return (
     <Stack gap="Sm">
-      <AnswerHeading topic={topic} theme={theme} themeAccent={themeAccent} />
-      {submitted ? (
-        <Text variant="Body">{Strings.writing.submitted}</Text>
-      ) : (
-        <AnswerField value={value} closed={closed} onValueChange={onValueChange} />
-      )}
-      {!submitted && (
-        <AnswerKeys
-          value={value}
-          canSubmit={canSubmit}
-          timeUp={closed}
-          onValueChange={onValueChange}
-          onSubmit={onSubmit}
-        />
-      )}
+      <AnswerHeading topic={topic} theme={theme} themeAccent={themeAccent} remainingMs={remainingMs} totalMs={totalMs} />
+      <AnswerField value={value} sent={clean} closed={closed} onValueChange={change} />
+      <AnswerKeys
+        value={value}
+        canSubmit={canSubmit}
+        timeUp={closed}
+        onValueChange={change}
+        onSubmit={send}
+      />
     </Stack>
   );
 }

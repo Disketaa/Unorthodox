@@ -1,6 +1,6 @@
 import styles from './TextField.module.css';
 
-export type TextFieldVariant = 'Bare' | 'Filled' | 'Underline';
+export type TextFieldVariant = 'Bare' | 'Filled' | 'Sent' | 'Underline';
 
 export interface TextFieldProps {
   variant?: TextFieldVariant;

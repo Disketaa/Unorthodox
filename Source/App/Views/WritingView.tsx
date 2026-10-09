@@ -24,15 +24,12 @@ export function WritingView({ view }: PhaseViewProps) {
       topic={writing?.topic ?? ''}
       theme={theme}
       themeAccent={accent}
-      remainingMs={remainingMs}
+remainingMs={remainingMs}
+      durationMs={view.durationMs}
       value={draft}
-      submitted={view.hasSubmitted}
       held={view.paused}
       onValueChange={setDraft}
-      onSubmit={() => {
-        view.submitAnswer(draft);
-        setDraft('');
-      }}
+      onSubmit={() => view.submitAnswer(draft)}
     />
   );
 }

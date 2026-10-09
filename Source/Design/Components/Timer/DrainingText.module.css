@@ -1,0 +1,32 @@
+/* Words going out with the phase. Sized by the copy in the flow, which is the one the layer
+ * above is measured against, and held open for the clip to sweep across. */
+.Root {
+  position: relative;
+  display: inline-block;
+  min-width: 0;
+}
+
+/* The words as they end up: a neutral grey rather than the timer's own fill, which is an
+ * accent. This is a question going out and it is read rather than watched, so it takes the
+ * greys the rest of the text on this screen is drawn in. */
+.Gray {
+  color: var(--Color-Text-Muted);
+}
+
+/* The same words again, dark, absolved over the whole line and clipped to what is left of the
+ * phase, so the dark part is measured against the whole sentence and the grey comes in behind
+ * it from the right. Clipped away to begin with: an unclipped first paint would draw the dark
+ * copy whole and then ease out of `none`, which leaves it showing longer than a frame. */
+.Ink {
+  position: absolute;
+  inset: 0;
+  color: var(--Color-Text-Default);
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path var(--Duration-Normal) var(--Easing-Standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .Ink {
+    transition: none;
+  }
+}

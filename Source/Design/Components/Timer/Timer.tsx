@@ -1,6 +1,7 @@
 import { ComponentChildren, Ref } from 'preact';
 import { useRef } from 'preact/hooks';
 import { useCountdownBeat } from './UseCountdownBeat';
+import { shareLeft } from './DrainingText';
 import { useTimerFill } from './UseTimerFill';
 import styles from './Timer.module.css';
 
@@ -20,13 +21,6 @@ export interface TimerProps {
    * since a phase the whole room is in has nobody to be coloured after. */
   tint?: string;
   children?: ComponentChildren;
-}
-
-function shareLeft(remainingMs: number, totalMs: number): number {
-  if (totalMs <= 0) {
-    return 0;
-  }
-  return Math.max(0, Math.min(100, (remainingMs / totalMs) * 100));
 }
 
 /** The mark and the words, drawn twice: dark for the paper, and light where the fill has
