@@ -3,6 +3,8 @@ import { isHostMessage, HostMessage, BlockedReason } from './Protocol';
 import { refusalFor } from './ClientRefusals';
 import { JoinRetry } from './JoinRetry';
 import { clientId } from './ClientIdentity';
+import { clockStatus } from './Clock';
+import { StallHintMs, type ConnectionHint } from './ConnectionHint';
 import * as Game from '@/Game';
 import { ClockFollow, PlayerLook, ThemeId, createLogger } from '@/Core';
 
@@ -15,6 +17,14 @@ const log = createLogger('ClientSession');
  * waking, since the state carries the host's start time. */
 export const SyncIntervalMs = 5_000;
 
+/** What this device can say about a wait going on too long. A drifted clock stops a peer hearing
+ * anyone at all while every relay still reports open, so the wait looks identical to a bad
+ * network from the outside — hence naming the clock whenever this device could not check its
+ * own. */
+function stallHint(): ConnectionHint {
+  return clockStatus() === 'failed' ? 'clockUnchecked' : 'noPeers';
+}
+
 export class ClientSession {
   private state: Game.PublicState | undefined = undefined;
   private transport: Transport;
@@ -25,6 +35,10 @@ export class ClientSession {
   private readonly joinRetry: JoinRetry;
   /** Asks the host for the current state, so a gap does not desync the client. */
   private syncTimer: ReturnType<typeof setInterval> | null = null;
+  /** Starts counting when the wait begins, so a stall can be reported without a poll. */
+  private stallTimer: ReturnType<typeof setTimeout> | null = null;
+  /** What this device can say about a wait going on too long. */
+  private connectionHint: ConnectionHint | undefined = undefined;
   /** Skew between the host's clock and this device's, narrowed over every message received. */
   private readonly clock = new ClockFollow();
   /** Why this player is not in the room, if they are not. */
@@ -69,6 +83,14 @@ export class ClientSession {
     this.transport.start(roomCode, playerName, false);
     // A suspended client misses state updates, so it keeps asking where the game is.
     this.syncTimer = setInterval(() => this.requestSync(), SyncIntervalMs);
+    this.stallTimer = setTimeout(() => {
+      if (this.playerId !== null) {
+        return;
+      }
+      this.connectionHint = stallHint();
+      log('warn', 'still no answer; hinting', this.connectionHint);
+      this.updateListener?.();
+    }, StallHintMs);
   }
 
   /** Ask the host to resend the current state and phase start time. */
@@ -88,10 +110,15 @@ export class ClientSession {
       clearInterval(this.syncTimer);
       this.syncTimer = null;
     }
+    if (this.stallTimer !== null) {
+      clearTimeout(this.stallTimer);
+      this.stallTimer = null;
+    }
     this.transport.stop();
     this.state = undefined;
     this.playerId = null;
     this.blocked = undefined;
+    this.connectionHint = undefined;
     this.updateListener = undefined;
   }
 
@@ -201,6 +228,11 @@ export class ClientSession {
   /** Why this client is not in a room, or undefined if it is in one. */
   getBlocked(): BlockedReason | undefined {
     return this.blocked;
+  }
+
+  /** What this device can say about a wait going on too long, or undefined while it is short. */
+  getConnectionHint(): ConnectionHint | undefined {
+    return this.playerId === null ? this.connectionHint : undefined;
   }
 
   /** How many players the room holds, as the host last reported it. Zero until a refusal says

@@ -1,10 +1,15 @@
 import { PlayerLook, ThemeId } from '@/Core';
 import { PublicState, Pace } from '@/Game';
+import type { ConnectionHint } from '@/Network';
 
 export type SessionRole = 'Host' | 'Player';
 
 /** Why this player is not in the room, if they are not. */
 export type BlockedReason = 'NameTaken' | 'AlreadyStarted' | 'RoomFull' | 'Kicked';
+
+/** What this device can say about a wait going on too long, worked out in the Network layer and
+ * re-exported rather than re-declared, so the two cannot drift into disagreeing. */
+export type { ConnectionHint } from '@/Network';
 
 /** One API for the host and a client, so the UI can be written once. Methods a role does not
  * support are no-ops. */
@@ -18,6 +23,9 @@ export interface Session {
   onHostLeave(listener: () => void): void;
   /** Why this player is not in the room, or undefined if they are in one. */
   getBlocked(): BlockedReason | undefined;
+  /** What this device can say about a wait that is going on too long, or undefined while it is
+   * still within the ordinary time a room takes to answer. */
+  getConnectionHint(): ConnectionHint | undefined;
   /** How many players the room holds, for the refusal that says the room is full. The host's own
    * number: `App` may not read `GameConfig` for a client's state, and a refusal quoting a
    * different limit would be a number nobody can argue with. */

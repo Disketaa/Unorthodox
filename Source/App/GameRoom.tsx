@@ -50,9 +50,15 @@ function blockedMessage(reason: BlockedReason, roomLimit: number): string {
 /** Still reaching the host. The same screen as the failures, a moment earlier: the mark says it
  * is still waiting rather than that something is wrong, and the button gives up the wait. */
 function ConnectingScreen({ view }: { view: GameSessionView }) {
+  const hint =
+    view.connectionHint === 'clockUnchecked'
+      ? Strings.status.clockUnchecked
+      : view.connectionHint === 'noPeers'
+        ? Strings.status.stillLooking
+        : undefined;
   return (
     <InfoScreen
-      message={Strings.status.connecting}
+      message={hint === undefined ? Strings.status.connecting : `${Strings.status.connecting} ${hint}`}
       mark="Loading"
       action={Strings.common.cancel}
       onAcknowledge={view.exitRoom}

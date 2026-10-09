@@ -3,7 +3,7 @@ import { Pace, PublicState } from '@/Game';
 import { PlayerId, PlayerLook, CharacterColor, CharacterId, ThemeId } from '@/Core';
 import { createSession } from '../SessionFactory';
 import { navigate } from '../Routes';
-import { Session, SessionRole, BlockedReason } from '../Session';
+import { Session, SessionRole, BlockedReason, ConnectionHint } from '../Session';
 import { useSessionPhase, SessionPhase } from './UseSessionPhase';
 import { useGameActions } from './UseGameActions';
 import type { GameActions } from './UseGameActions';
@@ -33,6 +33,8 @@ export interface GameSessionView extends SessionPhase {
   hostLeft: boolean;
   /** Why this player is not in the room, if they are not. */
   blocked: BlockedReason | undefined;
+  /** What this device can say about a wait going on too long, if anything yet. */
+  connectionHint: ConnectionHint | undefined;
   /** How many players the room holds, which the full-room refusal quotes. */
   roomLimit: number;
   /** The host removing a player from the room. */
@@ -156,6 +158,7 @@ export function useGameSession(
     rejectedGroupIds: rejectedIn(marks, topic),
     hostLeft,
     blocked: session.getBlocked(),
+    connectionHint: session.getConnectionHint(),
     roomLimit: session.getRoomLimit(),
     kickPlayer: (playerId) => session.kick(playerId),
     ownLook,

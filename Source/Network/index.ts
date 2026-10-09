@@ -1,5 +1,6 @@
 export * from './Transport';
 export * from './Clock';
+export * from './ConnectionHint';
 export * from './Protocol';
 export * from './TrysteroRoom';
 export * from './TrysteroTransport';

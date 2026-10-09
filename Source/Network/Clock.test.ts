@@ -1,12 +1,19 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { clockOffsetMs, correctClockFromServer, serverNow, syncClockFromServer } from './Clock';
+import { OffsetWorthCorrecting } from './Clock';
 
 const RealDateNow = Date.now;
 
+/** Stand in for a server whose clock reads `seconds` ahead of this device's. */
+function serverSaying(seconds: number) {
+  return async () => ({
+    headers: { get: () => new Date(RealDateNow() + seconds * 1000).toUTCString() },
+  });
+}
+
 describe('the clock correction', () => {
   beforeEach(() => {
-    // Each test gets a fresh module, since installing the shim is deliberately once-only.
+    // A fresh module each time, since installing the shim is deliberately once-only.
     vi.resetModules();
   });
 
@@ -15,35 +22,53 @@ describe('the clock correction', () => {
     vi.unstubAllGlobals();
   });
 
-  it('leaves Date.now alone until the correction is installed', async () => {
-    const before = Date.now();
-    await import('./Clock');
-    expect(Date.now()).toBeGreaterThanOrEqual(before);
-  });
-
-  it('reports no offset before the server has answered', async () => {
-    const clock = await import('./Clock');
-    expect(clock.clockOffsetMs()).toBe(0);
-    expect(clock.serverNow()).toBe(Date.now());
-  });
-
-  it('shifts Date.now by the measured offset, which is what trystero stamps from', async () => {
+  it('leaves a device whose clock is right alone entirely', async () => {
     const clock = await import('./Clock');
     clock.correctClockFromServer();
-
-    const raw = RealDateNow();
-    expect(Date.now()).toBe(raw);
-
-    // A server ten seconds ahead is the failure this exists for: a player whose clock drifts
-    // stops hearing peers while every relay still reports open.
-    const serverNow = raw + 10_000;
-    vi.stubGlobal('fetch', async () => ({
-      headers: { get: () => new Date(serverNow).toUTCString() },
-    }));
+    vi.stubGlobal('fetch', serverSaying(0));
 
     await clock.syncClockFromServer();
-    expect(clock.clockOffsetMs()).toBeGreaterThan(9_000);
-    expect(clock.serverNow()).toBeGreaterThan(raw + 9_000);
+
+    expect(clock.clockStatus()).toBe('fine');
+    expect(clock.clockOffsetMs()).toBe(0);
+    expect(Date.now()).toBe(RealDateNow());
+  });
+
+  it('leaves a device a second out alone, since trystero has five seconds to spare', async () => {
+    // The whole point of the threshold: most players are never patched at all, so the blast
+    // radius is the small set whose clock actually costs them a peer.
+    const clock = await import('./Clock');
+    clock.correctClockFromServer();
+    vi.stubGlobal('fetch', serverSaying(1));
+
+    await clock.syncClockFromServer();
+
+    expect(clock.clockStatus()).toBe('fine');
+    expect(Date.now()).toBe(RealDateNow());
+  });
+
+  it('corrects a device past the threshold, since trystero stamps from Date.now', async () => {
+    const clock = await import('./Clock');
+    clock.correctClockFromServer();
+    const drifted = clock.OffsetWorthCorrecting / 1000 + 8;
+    vi.stubGlobal('fetch', serverSaying(drifted));
+
+    await clock.syncClockFromServer();
+
+    expect(clock.clockStatus()).toBe('corrected');
+    expect(clock.clockOffsetMs()).toBeGreaterThan(clock.OffsetWorthCorrecting / 2);
+    expect(Date.now()).toBeGreaterThan(RealDateNow() + 8_000);
+  });
+
+  it('corrects a ninety second drift, which is the case that showed up in the field', async () => {
+    const clock = await import('./Clock');
+    clock.correctClockFromServer();
+    vi.stubGlobal('fetch', serverSaying(-92));
+
+    await clock.syncClockFromServer();
+
+    expect(clock.clockStatus()).toBe('corrected');
+    expect(clock.clockOffsetMs()).toBeLessThan(-90_000);
   });
 
   it('installs the shim once, so repeated calls do not stack offsets', async () => {
@@ -52,20 +77,23 @@ describe('the clock correction', () => {
     clock.correctClockFromServer();
     clock.correctClockFromServer();
 
-    const raw = RealDateNow();
-    expect(Date.now()).toBe(raw);
+    expect(Date.now()).toBe(RealDateNow());
   });
 
-  it('leaves the clock alone when the server sends no Date header', async () => {
+  it('reports a failure rather than silently keeping a wrong clock', async () => {
+    // A captive portal can answer this request with a header of its own. Without a signal the
+    // original bug returns in exactly the same silence it had before.
     const clock = await import('./Clock');
     clock.correctClockFromServer();
     vi.stubGlobal('fetch', async () => ({ headers: { get: () => null } }));
 
     await clock.syncClockFromServer();
+
+    expect(clock.clockStatus()).toBe('failed');
     expect(clock.clockOffsetMs()).toBe(0);
   });
 
-  it('leaves the clock alone when the request fails outright', async () => {
+  it('reports a failure when the request never lands', async () => {
     const clock = await import('./Clock');
     clock.correctClockFromServer();
     vi.stubGlobal('fetch', async () => {
@@ -73,6 +101,15 @@ describe('the clock correction', () => {
     });
 
     await expect(clock.syncClockFromServer()).resolves.toBeUndefined();
-    expect(clock.clockOffsetMs()).toBe(0);
+    expect(clock.clockStatus()).toBe('failed');
+  });
+
+  it('starts out measuring, so a room opened early knows to try again', async () => {
+    const clock = await import('./Clock');
+    expect(clock.clockStatus()).toBe('measuring');
+  });
+
+  it('exports the threshold it corrects at, so a caller can explain the number', () => {
+    expect(OffsetWorthCorrecting).toBeGreaterThan(0);
   });
 });

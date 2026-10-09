@@ -98,6 +98,8 @@ export const Strings = {
     timeUp: 'Время вышло',
     /** Read out on the one on-screen key that has no letter on it. */
     backspaceKey: 'Удалить символ',
+    /** Read out on the space bar, which puts a space in the answer. */
+    spaceKey: 'Пробел',
     /** Read out on the enter key, which sends the answer rather than typing into the field. */
     enterKey: 'Ответить',
   },
@@ -178,5 +180,12 @@ export const Strings = {
     roomFull: (maxPlayers: number) => `В комнате уже ${maxPlayers} игроков`,
     kicked: 'Вы были исключены',
     connecting: 'Подключаемся…',
+        /** Shown under the waiting one, once the wait has outlasted the usual connect. Names the
+         * clock because a device whose own time has drifted is the one fault the player can put
+         * right. */
+    stillLooking: 'Комната не найдена.',
+    /** The stronger version: this device's clock could not be measured at all, so it is still
+     * the first thing to suspect rather than one thing among several. */
+    clockUnchecked: 'Время не синхронизировано.',
   },
 } as const;

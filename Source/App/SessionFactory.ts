@@ -22,6 +22,8 @@ function createHostSession(roomCode: string, playerName: string, look: PlayerLoo
     onHostLeave: () => {},
     // The host is the name in the room, so nothing can collide with it.
     getBlocked: () => undefined,
+    // A host opens the room it is answering, so it is never the one waiting to be found.
+    getConnectionHint: () => undefined,
     // The host cannot be refused a seat, so it has no room limit to quote.
     getRoomLimit: () => GameConfig.limits.maxPlayers,
     join: () => {},
@@ -60,6 +62,7 @@ function createPlayerSession(roomCode: string, playerName: string, look: PlayerL
     onUpdate: (listener) => clientSession.onUpdate(listener),
     onHostLeave: (listener) => clientSession.onHostLeave(listener),
     getBlocked: () => clientSession.getBlocked(),
+    getConnectionHint: () => clientSession.getConnectionHint(),
     getRoomLimit: () => clientSession.getRoomLimit(),
     join: () => {},
     setLook: (look) => clientSession.setLook(look),
