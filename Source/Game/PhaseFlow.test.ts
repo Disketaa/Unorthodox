@@ -8,6 +8,7 @@ import {
   phaseAfterCycling,
   phaseDurationMs,
   phaseGraceMs,
+  splashesOnArrival,
 } from './PhaseFlow';
 import type { PhaseName } from './PhaseFlow';
 
@@ -76,5 +77,28 @@ describe('the phase table', () => {
   it('cycles back to the first phase where the table runs out', () => {
     expect(phaseAfterCycling('Final')).toBe('Lobby');
     expect(phaseAfterCycling('Scores')).toBe('Choosing');
+  });
+});
+
+describe('the splash column', () => {
+  it('splashes into the two phases the room arrives at with nothing done yet', () => {
+    // Before a theme is chosen, and before anyone has voted. Both are moments nobody has acted
+    // on, which is what a hand-off is.
+    expect(phases.filter(splashesOnArrival)).toEqual(['Choosing', 'Reviewing']);
+  });
+
+  it('leaves the phases that have no such moment alone', () => {
+    // Writing follows the theme being picked, which the room has already watched happen, and a
+    // splash over the end of a round would cover the scores the room is still reading.
+    expect(splashesOnArrival('Writing')).toBe(false);
+    expect(splashesOnArrival('Scores')).toBe(false);
+    expect(splashesOnArrival('Lobby')).toBe(false);
+  });
+
+  it('splashes nowhere for a name that is not a row', () => {
+    // `Connecting` is this browser's own moment before the host has said anything, so there is
+    // no row to ask and no phase to announce.
+    expect(splashesOnArrival('Connecting')).toBe(false);
+    expect(splashesOnArrival('Nonsense')).toBe(false);
   });
 });

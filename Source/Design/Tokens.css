@@ -241,6 +241,12 @@ body.PageFade {
    * through. */
   --Duration-CountVeil: 300ms;
 
+  /* How long the whole phase-change splash runs, the mark's growth and the yellow's closing
+   * together. A duration rather than a phase length: nothing waits on it, and the room moves on
+   * when the host says so. Exported as `PhaseSplashMs` from the overlay, which is the one thing
+   * that knows the movement; `Tests/PhaseSplash.test.ts` holds the two in step. */
+  --Duration-PhaseSplash: 750ms;
+
   /* How long one turn of the pulse on a button runs, from nothing to full and back. A loop, so
    * a symmetric easing and not one of the three movements above, which are sized to a movement
    * that ends. Slow enough to read as breathing rather than as a flash: a sweep that comes back

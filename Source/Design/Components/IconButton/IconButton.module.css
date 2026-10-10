@@ -100,6 +100,13 @@
   mask-size: 112%;
 }
 
+/* The phase-change splash, drawn as the mark it puts on screen: the logo's own ring of letters,
+ * with a band of the room's yellow behind it. */
+.IconTransition .Icon {
+  mask-image: url('../../Icons/Transition.svg');
+  mask-size: 112%;
+}
+
 .IconPause .Icon {
   mask-image: url('../../Icons/Pause.svg');
   mask-size: 110%;

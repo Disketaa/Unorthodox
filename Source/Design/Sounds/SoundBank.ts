@@ -3,10 +3,18 @@ import popUrl from './Pop.ogg';
 import tickUrl from './Tick.ogg';
 import alarmUrl from './Alarm.ogg';
 import submitUrl from './Submit.ogg';
+import whooshUrl from './Whoosh.ogg';
 
-export type SoundName = 'Pop' | 'Pling' | 'Tick' | 'Alarm' | 'Submit';
+export type SoundName = 'Pop' | 'Pling' | 'Tick' | 'Alarm' | 'Submit' | 'Whoosh';
 
-export const SoundNames: readonly SoundName[] = ['Pop', 'Pling', 'Tick', 'Alarm', 'Submit'];
+export const SoundNames: readonly SoundName[] = [
+  'Pop',
+  'Pling',
+  'Tick',
+  'Alarm',
+  'Submit',
+  'Whoosh',
+];
 
 const Sources: Record<SoundName, string> = {
   Pop: popUrl,
@@ -14,6 +22,7 @@ const Sources: Record<SoundName, string> = {
   Tick: tickUrl,
   Alarm: alarmUrl,
   Submit: submitUrl,
+  Whoosh: whooshUrl,
 };
 
 /** Per clip, since the countdown's beat sits under the words rather than beside them: a tick at
@@ -24,6 +33,7 @@ const Volumes: Record<SoundName, number> = {
   Tick: 0.06,
   Alarm: 0.22,
   Submit: 0.3,
+  Whoosh: 0.22,
 };
 
 /** How far either side of the recorded pitch a press may land, in semitones. Wide enough that
@@ -35,14 +45,16 @@ const PressPitchSpread = 2.5;
  * wanders by a quarter tone every second is a wobble rather than a beat. */
 const TickPitchSpread = 1;
 
-/** Neither the alarm nor the submit has one — each happens once, and there is nothing to vary it
- * against. A send that wandered in pitch would be a second send waiting to be heard. */
+/** Neither the alarm, the submit nor the whoosh has one — each happens once, and there is
+ * nothing to vary it against. A send that wandered in pitch would be a second send waiting to
+ * be heard. The whoosh sits with them because it is the one sound played rather than pressed. */
 const PitchSpreads: Record<SoundName, number> = {
   Pop: PressPitchSpread,
   Pling: PressPitchSpread,
   Tick: TickPitchSpread,
   Alarm: 0,
   Submit: 0,
+  Whoosh: 0,
 };
 
 interface Voice {

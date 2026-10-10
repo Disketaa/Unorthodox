@@ -14,7 +14,7 @@
   width: clamp(160px, 45vw, 280px);
   aspect-ratio: 1;
   background-color: var(--Color-Action-Primary-Background);
-  mask-image: url('../../Icons/Games/Unorthodox.png');
+  mask-image: url('../../Icons/Games/Unorthodox.svg');
   mask-repeat: no-repeat;
   mask-position: center;
   mask-size: contain;

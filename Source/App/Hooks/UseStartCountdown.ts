@@ -19,10 +19,14 @@ export interface StartCount {
   veiling: boolean;
   /** The number on screen, or null while there is only the shade. */
   count: number | null;
+  /** When the count-in finished, on this device's clock, or 0 where there was none to finish.
+   * What a splash played into this phase waits behind: the count is the room being told the
+   * phase has started, and a splash over the top of it would announce the same thing twice. */
+  endedAt: number;
 }
 
 /** The count-in is over the moment it is asked for and not asked for. */
-export const NoCount: StartCount = { veiling: false, count: null };
+export const NoCount: StartCount = { veiling: false, count: null, endedAt: 0 };
 
 /** How long the whole count-in takes, shade and numbers together. */
 function countInMs(): number {
@@ -84,6 +88,10 @@ export function useStartCountdown(phase: SessionPhase, roomCode: string): StartC
     playSound('Pling', (FirstNumber - count) * PitchStepSemitones);
   }, [count]);
 
-  if (!counting || remainingMs <= 0) return NoCount;
-  return { veiling: count === null, count };
+  // The moment the count ends, the same number whether it is still running or already over:
+  // `startedRef` is set once when the count begins and never moves. Zero where this device never
+  // counted in at all, which is a room it joined after the count or refreshed in the middle of.
+  const endedAt = startedRef.current === null ? 0 : startedRef.current + countInMs();
+  if (!counting || remainingMs <= 0) return { veiling: false, count: null, endedAt };
+  return { veiling: count === null, count, endedAt };
 }

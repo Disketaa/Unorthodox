@@ -4,7 +4,8 @@ import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { GameConfig } from '@/Game';
 import { clearCountIn, markCountedIn } from '@/Network/CountIn';
-import type { SessionPhase, SessionPhaseName } from './UseSessionPhase';
+import { phaseOf } from './SessionPhaseHarness';
+import type { SessionPhase } from './UseSessionPhase';
 
 const { playSound } = vi.hoisted(() => ({ playSound: vi.fn() }));
 
@@ -13,26 +14,6 @@ vi.mock('@/Design/Sounds', () => ({ playSound }));
 const { useStartCountdown } = await import('./UseStartCountdown');
 
 const roomCode = 'CNTD';
-
-/** The room's own shape, since that is all the hook reads. */
-function phaseOf(name: SessionPhaseName, startedAt = Date.now()): SessionPhase {
-  return {
-    phase: name,
-    durationMs: 63_000,
-    phaseStartedAt: startedAt,
-    clockOffsetMs: 0,
-    answeredAt: undefined,
-    pausedAt: undefined,
-    editingIds: new Set(),
-    playerNames: new Map(),
-    playerLooks: new Map(),
-    playerPresence: new Map(),
-    playerCount: 2,
-    submittedCount: 0,
-    submittedIds: new Set(),
-    turnPlayerId: null,
-  };
-}
 
 /** The count-in as it stands, rendered by a probe so the hook really runs. */
 function Count({ phase, room }: { phase: SessionPhase; room: string }) {

@@ -115,6 +115,14 @@ export const Strings = {
     nextRound: 'Следующий раунд',
     waitingForHost: 'Ждём следующий раунд',
   },
+  /** What the mark says while the room is moving between two phases. Read out rather than shown
+   * in words, since the splash is the one moment in the game with no sentence on it at all. */
+  phaseSplash: {
+    label: 'Фаза сменилась',
+    /** Plays the splash on this device, so it can be looked at without waiting out a round to
+     * reach the phase it belongs to. */
+    replay: 'Переход между фазами',
+  },
   /** The room's own turn, said from the console rather than drawn as a game rule. */
   turn: {
     /** Hands the turn to the next player, whoever the room has seated next. */

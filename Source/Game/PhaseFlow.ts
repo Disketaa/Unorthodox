@@ -23,27 +23,45 @@ export interface PhaseSpec {
    * worth naming: it reaches `Writing` only if a theme was picked, so that move is the
    * player's. */
   next: PhaseName | null;
+  /** Whether arriving at this phase plays the splash. A row here rather than a list in the
+   * overlay, so a hand-off is added by naming a phase and the movement stays the same
+   * everywhere it is used. */
+  splash: boolean;
 }
 
 /** The flow of a game, in order. The `next` field repeats the order because a caller in the
  * middle of a round cannot know where it is. */
 export const PhaseFlow: Record<PhaseName, PhaseSpec> = {
-  Lobby: { timed: false, waitMs: () => null, graceMs: 0, next: 'Choosing' },
-  Choosing: { timed: true, waitMs: (pace) => pace.categoryMs, graceMs: 0, next: 'Writing' },
+  Lobby: { timed: false, waitMs: () => null, graceMs: 0, next: 'Choosing', splash: false },
+  Choosing: {
+    timed: true,
+    waitMs: (pace) => pace.categoryMs,
+    graceMs: 0,
+    next: 'Writing',
+    splash: true,
+  },
   Writing: {
     timed: true,
     waitMs: (pace) => pace.writingMs,
     graceMs: GameConfig.timing.graceMs,
     next: 'Reviewing',
+    splash: false,
   },
-  Reviewing: { timed: true, waitMs: (pace) => pace.decidingMs, graceMs: 0, next: 'Scores' },
+  Reviewing: {
+    timed: true,
+    waitMs: (pace) => pace.decidingMs,
+    graceMs: 0,
+    next: 'Scores',
+    splash: true,
+  },
   Scores: {
     timed: true,
     waitMs: () => GameConfig.timing.scoresDurationMs,
     graceMs: 0,
     next: 'Choosing',
+    splash: false,
   },
-  Final: { timed: false, waitMs: () => null, graceMs: 0, next: null },
+  Final: { timed: false, waitMs: () => null, graceMs: 0, next: null, splash: false },
 };
 
 /** Whether a name is a phase the game runs, as opposed to `Connecting`, which is this browser's
@@ -78,4 +96,11 @@ export function phaseAfterCycling(phase: PhaseName): PhaseName {
  * over it at all. */
 export function isTimedPhase(phase: PhaseName): boolean {
   return PhaseFlow[phase].timed;
+}
+
+/** Whether arriving at this phase plays the splash. Asked of a name rather than of a row, since
+ * `Connecting` is this browser's own moment before the host has said anything and so is not a
+ * row in the table: it never splashes. */
+export function splashesOnArrival(phase: string): boolean {
+  return isPhaseName(phase) && PhaseFlow[phase].splash;
 }

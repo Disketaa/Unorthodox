@@ -5,3 +5,4 @@ export * from './CenterStage';
 export * from './QuestionStage';
 export * from './PausedRoom';
 export * from './StartCountdown';
+export * from './PhaseSplash';

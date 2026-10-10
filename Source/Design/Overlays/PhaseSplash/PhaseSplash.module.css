@@ -1,0 +1,142 @@
+/* The change-of-phase splash: the room's yellow growing out of nothing as a disc until it fills
+ * the window, the mark arriving inside it, and the two of them going back down together.
+ * `fixed` against the window rather than in the page flow, like the count-in, since what it
+ * announces is the room and not one screen of it. Above the paper at 1, and below the count-in
+ * at 3. Takes the pointer for the count-in's reason: a click reaches the splash and nothing
+ * under it. */
+.Root {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+}
+
+/* The yellow, in the room's own: the fixed colour for facts about the room that everybody in it
+ * agrees on, the same ground the crown and the start button stand on. It comes up as a disc
+ * rather than a sheet, because a flat fill arriving all at once is the one thing this competes
+ * with, and drawn oversize because a circle has to reach the corners of a window it is centred
+ * in. Its way out is the entrance backwards: a hole opens in the middle and grows until nothing
+ * is left, so the room comes back through the yellow with its own paper on it. */
+.Disc {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: 150vmax;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-color: var(--Color-Room-Yellow);
+  mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent var(--Splash-Hole),
+    #000 var(--Splash-Hole)
+  );
+  animation:
+    PhaseSplashDisc var(--Duration-PhaseSplash) linear both,
+    PhaseSplashHole var(--Duration-PhaseSplash) linear both;
+}
+
+/* Registered rather than a plain custom property, because one with no type on it cannot be
+ * interpolated and would jump from a pinhole to the whole disc instead of opening. */
+@property --Splash-Hole {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+/* It is up before the mark has settled, so the mark always lands on the colour rather than on
+ * the room, and it holds under the mark until the last step, so the mark is leaving a colour
+ * and not leaving into a screen. */
+@keyframes PhaseSplashDisc {
+  0% {
+    scale: 0;
+  }
+
+  16% {
+    scale: 1;
+    animation-timing-function: linear;
+  }
+
+  85%,
+  100% {
+    scale: 1;
+  }
+}
+
+/* The hole, opened from nothing to the whole of it over the last seventh of the movement, so
+ * the rim of yellow closes inward to the middle rather than the yellow dimming where it stands.
+ * Held shut until then: a hole opening over the mark while the room is still reading it would
+ * take the screen away from underneath them. */
+@keyframes PhaseSplashHole {
+  0%,
+  85% {
+    --Splash-Hole: 0%;
+  }
+
+  100% {
+    --Splash-Hole: 100%;
+  }
+}
+
+/* The mark, centred on the window in the same way the disc above is. Laid out at the whole
+ * window rather than at the size it is seen at, so the scale in the keyframes below is the
+ * share of the window the mark takes: 0.25 there is a quarter of it here. That also keeps the
+ * drawing a vector — `scale` rasterises a mask at the element's laid-out size and stretches
+ * that bitmap afterwards, so a mark laid out small and grown is a raster one. */
+.Mark {
+  composes: Moving from '../../Primitives/Sway/Sway.module.css';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: min(100vw, 100vh);
+  aspect-ratio: 1;
+  background-color: var(--Color-Text-Default);
+  mask-image: url('../../Icons/Games/Unorthodox.svg');
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  /* Both movements named in one list, because `animation` is one property: the sway ships as a
+   * variable for exactly this, and a second class declaring its own `animation` would replace
+   * the growth rather than join it. They stay separate movements, one writing `transform` and
+   * the other `scale`, so the name sways while it grows and nothing is displaced. */
+  animation:
+    var(--Sway-Animation),
+    PhaseSplashGrow var(--Duration-PhaseSplash) linear both;
+}
+
+/* The growth, as a share of the window: nothing, up to a quarter of it, held while the room
+ * reads it, gone in the last of it. It gets there in the first fifth, so most of the movement
+ * is the mark standing still being looked at — the growth is punctuation around a hold, not the
+ * thing held. It leaves by growing as it fades rather than shrinking, and the opacity is named
+ * at every step so it is held flat at one throughout: written only at the last step, the
+ * browser may interpolate it across the steps in between. */
+@keyframes PhaseSplashGrow {
+  0% {
+    scale: 0;
+    opacity: 1;
+    animation-timing-function: var(--Easing-Bounce);
+  }
+
+  16% {
+    scale: 0.26;
+    opacity: 1;
+    animation-timing-function: var(--Easing-Smooth);
+  }
+
+  20% {
+    scale: 0.25;
+    opacity: 1;
+    animation-timing-function: linear;
+  }
+
+  85% {
+    scale: 0.25;
+    opacity: 1;
+    animation-timing-function: var(--Easing-Smooth);
+  }
+
+  100% {
+    scale: 0.3;
+    opacity: 0;
+  }
+}

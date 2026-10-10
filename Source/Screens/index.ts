@@ -4,6 +4,7 @@ export * from './LobbyScreen';
 export * from './TurnDebugTools';
 export * from './PhaseDebugTools';
 export * from './PauseDebugTools';
+export * from './TransitionDebugTools';
 export * from './WritingScreen';
 export * from './ReviewScreen';
 export * from './ScoresScreen';

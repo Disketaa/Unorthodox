@@ -1,17 +1,19 @@
-import { useState } from 'preact/hooks';
+import { useRef } from 'preact/hooks';
 import type { ComponentChildren } from 'preact';
 import {
   InfoScreen,
   LobbyDebugTools,
   PauseDebugTools,
   PhaseDebugTools,
+  TransitionDebugTools,
   TurnDebugTools,
 } from '@/Screens';
 import { Strings } from '@/Content';
 import { PlayerLook, assertNever } from '@/Core';
-import { DebugDock, PausedRoom, StartCountdown } from '@/Design/Overlays';
+import { DebugDock, PausedRoom, PhaseSplash, StartCountdown } from '@/Design/Overlays';
 import { useGameSession } from './Hooks/UseGameSession';
 import { useDebugToggle } from './Hooks/UseDebugToggle';
+import { usePhaseSplash } from './Hooks/UsePhaseSplash';
 import { useStartCountdown } from './Hooks/UseStartCountdown';
 import type { GameSessionView } from './Hooks/UseGameSession';
 import type { SessionPhaseName } from './Hooks/UseSessionPhase';
@@ -129,25 +131,29 @@ interface CountedRoomProps {
  * Start on: the theme cards would otherwise arrive under the numbers in the same frame as the
  * press, so the count would be counting over a screen nobody has looked at yet. */
 function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
-  const { veiling, count } = useStartCountdown(view, roomCode);
+  const { veiling, count, endedAt } = useStartCountdown(view, roomCode);
+  const { splashing, replay } = usePhaseSplash(view, endedAt);
   const counting = veiling || count !== null;
-  // The last lobby seen, which is the screen the count belongs over. Set while rendering, so the
-  // frame the room leaves the lobby on still has it: by the time an effect ran, it would be gone.
-  const [lobby, setLobby] = useState<GameSessionView | null>(null);
-  if (view.phase === 'Lobby') {
-    setLobby(view);
+  // The screen the count-in and the splash are played over: the phase the room is leaving, held
+  // until the movement has covered it. A ref rather than state, because a view is a new object on
+  // every render and holding one in state would re-render the room forever.
+  const underRef = useRef<GameSessionView | null>(null);
+  if (!counting && !splashing) {
+    underRef.current = view;
   }
 
   return (
     <>
       {counting && <StartCountdown veiling={veiling} count={count} />}
+      {splashing && <PhaseSplash label={Strings.phaseSplash.label} />}
       {view.paused && <PausedRoom label={Strings.pause.held} />}
-      <PhaseScreen view={counting && lobby !== null ? lobby : view} />
-      {!counting && (
+      <PhaseScreen view={underRef.current ?? view} />
+      {!counting && !splashing && (
         <DebugDock enabled={debugEnabled}>
           {view.isHost && (
             <>
               <LobbyDebugTools publicState={view.publicState} onAddBot={view.addBot} />
+              <TransitionDebugTools onReplay={replay} />
               <TurnDebugTools publicState={view.publicState} onNextTurn={view.nextTurn} />
               <PauseDebugTools paused={view.paused} onSetPaused={view.setPaused} />
               <PhaseDebugTools publicState={view.publicState} onNextPhase={view.nextPhase} />
