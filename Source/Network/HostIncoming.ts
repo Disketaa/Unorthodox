@@ -81,6 +81,8 @@ export function toAction(context: IncomingContext): GameAction | undefined {
       };
     case 'SubmitAnswer':
       return { type: 'SUBMIT_ANSWER', playerId: message.playerId, text: message.text };
+    case 'EditingAnswer':
+      return { type: 'EDITING_ANSWER', playerId: message.playerId, editing: message.editing };
     case 'RejectGroup':
       return { type: 'REJECT_GROUP', playerId: message.playerId, groupId: message.groupId };
     default:

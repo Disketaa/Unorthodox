@@ -38,10 +38,12 @@ export function PlayerBarView({ view }: PhaseViewProps) {
       isTurning: waitingOnTurn && id === view.turnPlayerId,
       // Every seat still at work, and not only this browser's own: the room says who has written,
       // so a row of seats fills up as the answers come in. Writing over an answer already sent
-      // counts as work again, since from the room's side the player is back on the answer.
+      // counts as work again, and the room is told that too, so it holds for everybody's bar.
       isWorking:
         view.phase === 'Writing' &&
-        (!view.submittedIds.has(id) || (id === view.playerId && view.editing)),
+        (!view.submittedIds.has(id) ||
+          view.editingIds.has(id) ||
+          (id === view.playerId && view.editing)),
     };
   });
 

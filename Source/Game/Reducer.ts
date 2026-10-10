@@ -14,6 +14,7 @@ import {
 } from './PhaseActions';
 import { handleBankPick } from './RandomPick';
 import { handleRevealQuestion } from './PhaseActions';
+import { handleEditingAnswer } from './AnswerEditing';
 import { handleGoToPhase } from './PhaseJumps';
 import { handleNextTurn } from './Turns';
 import { handleRoster } from './LobbyActions';
@@ -69,6 +70,8 @@ function dispatch(state: HostState, action: GameAction): HostState {
       return handleStartWriting(state, action);
     case 'SUBMIT_ANSWER':
       return handleSubmitAnswer(state, action);
+    case 'EDITING_ANSWER':
+      return handleEditingAnswer(state, action);
     case 'START_REVIEWING':
       return handleStartReviewing(state, action);
     case 'REJECT_GROUP':

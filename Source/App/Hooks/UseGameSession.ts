@@ -30,8 +30,8 @@ export interface GameSessionView extends SessionPhase {
   paused: boolean;
   hasSubmitted: boolean;
   /** Whether this player is writing over an answer they already sent, which puts them back at
-   * work in the bar. Local to this browser: the room is told the answer, not that it is being
-   * changed, and a change has to be sent again before the room could know of it. */
+   * work in the bar. Held here as well as sent, so their own seat does not wait on the round
+   * trip. */
   editing: boolean;
   setEditing: (editing: boolean) => void;
   rejectedGroupIds: ReadonlySet<number>;
@@ -124,12 +124,33 @@ function useLocalFlags(): {
   editing: boolean;
   bump: () => void;
   setHostLeft: (v: boolean) => void;
-  setEditing: (v: boolean) => void;
+  markEditing: (v: boolean) => void;
 } {
   const [hostLeft, setHostLeft] = useState(false);
-  const [editing, setEditing] = useState(false);
+  const [editing, markEditing] = useState(false);
   const [, setVersion] = useState(0);
-  return { hostLeft, editing, bump: () => setVersion((v) => v + 1), setHostLeft, setEditing };
+  return { hostLeft, editing, bump: () => setVersion((v) => v + 1), setHostLeft, markEditing };
+}
+
+/** Marking the seat locally and telling the room in one step, so their own bar answers on the
+ * keystroke rather than a round trip later while everybody else's answers on the room's. */
+const reportEditing =
+  (mark: (v: boolean) => void, send: (v: boolean) => void) =>
+  (next: boolean): void => {
+    mark(next);
+    send(next);
+  };
+
+/** This player's own character, once the host has said which one it kept. */
+function useOwnLook(
+  session: Session,
+  looks: ReadonlyMap<PlayerId, PlayerLook>,
+  onLook: (look: PlayerLook) => void
+): PlayerLook | undefined {
+  const playerId = session.getPlayerId();
+  const own = playerId === null ? undefined : looks.get(playerId);
+  useRememberLook(own, onLook);
+  return own;
 }
 
 /** Join a room and expose one uniform view of the game for the screens. */
@@ -141,7 +162,7 @@ export function useGameSession(
   onLook: (look: PlayerLook) => void
 ): GameSessionView {
   const [session] = useState<Session>(() => createSession(role, roomCode, playerName, look));
-  const { hostLeft, editing, bump, setHostLeft, setEditing } = useLocalFlags();
+  const { hostLeft, editing, bump, setHostLeft, markEditing } = useLocalFlags();
   useSessionUpdates(session, bump, setHostLeft);
   const publicState = session.getPublicState();
   const phase = useSessionPhase(publicState, session.getClockOffsetMs());
@@ -149,8 +170,7 @@ export function useGameSession(
   const { marks, actions } = useRoundMarks(session, publicState, roomCode, topic);
   useRoundClocks(session, role === 'Host', phase, actions);
   const playerId = session.getPlayerId();
-  const ownLook = playerId === null ? undefined : phase.playerLooks.get(playerId);
-  useRememberLook(ownLook, onLook);
+  const ownLook = useOwnLook(session, phase.playerLooks, onLook);
   return {
     ...phase,
     ...actions,
@@ -164,7 +184,7 @@ export function useGameSession(
     hasSubmitted: hasSubmittedIn(marks, topic),
     editing,
     rejectedGroupIds: rejectedIn(marks, topic),
-    setEditing,
+    setEditing: reportEditing(markEditing, actions.setEditingAnswer),
     hostLeft,
     blocked: session.getBlocked(),
     connectionHint: session.getConnectionHint(),

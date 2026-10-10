@@ -37,6 +37,7 @@ function room(state: HostState): PublicRoom {
     pace: state.pace,
     spent: spentByTheme(state.themeRounds),
     paused: state.paused,
+    ...(state.pausedAt === undefined ? {} : { pausedAt: state.pausedAt }),
   };
 }
 
@@ -97,6 +98,7 @@ export function toPublicWritingState(state: HostState): PublicWritingState {
     // The keys and not the values: who has written is what the bar of players draws, and the
     // answers themselves are nobody's business until the review groups them.
     submittedIds: [...state.answers.keys()],
+    editingIds: [...(state.editing ?? [])],
     players: publicPlayers(state),
     ...themeOf(state),
   };

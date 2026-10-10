@@ -13,7 +13,8 @@ export function WritingView({ view }: PhaseViewProps) {
     view.clockOffsetMs,
     true,
     undefined,
-    view.paused
+    view.paused,
+    view.pausedAt
   );
   const writing = view.publicState?.phase === 'Writing' ? view.publicState : undefined;
   const theme = writing?.theme;

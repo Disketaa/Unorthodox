@@ -32,6 +32,10 @@ export type GameAction =
    * not the state's. */
   | { type: 'START_WRITING'; topic: string; durationMs: number; startedAt: number }
   | { type: 'SUBMIT_ANSWER'; playerId: PlayerId; text: string }
+  /** A player writing over an answer they already sent, so their seat goes back to work in the
+   * room rather than only in their own browser. Takes no text, since an answer nobody has
+   * finished sending is not something the room is allowed to read. */
+  | { type: 'EDITING_ANSWER'; playerId: PlayerId; editing: boolean }
   | { type: 'START_REVIEWING'; startedAt: number; durationMs: number }
   | { type: 'REJECT_GROUP'; playerId: PlayerId; groupId: number }
   | { type: 'END_REVIEWING'; startedAt: number; durationMs: number }

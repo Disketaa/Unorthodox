@@ -54,7 +54,8 @@ function clockOf(view: GameSessionView): {
       view.clockOffsetMs,
       true,
       answeredAt,
-      view.paused
+      view.paused,
+      view.pausedAt
     ),
   };
 }

@@ -12,15 +12,7 @@ import {
   nextPhaseFrom,
   type FlowHost,
 } from './HostFlow';
-import {
-  addBot,
-  countBots,
-  kick,
-  nextTurn,
-  setOwnLook,
-  setPace,
-  type RosterHost,
-} from './HostRosterActions';
+import { addBot, countBots, kick, nextTurn, setOwnLook, setPace } from './HostRosterActions';
 import { departureOf } from './HostPresence';
 import { freshLobby } from './RoomStateStore';
 import { HostRoom } from './HostRoom';
@@ -86,11 +78,6 @@ export class HostSession {
     this.botsAdded = 0;
   }
 
-  /** What the roster moves read the host as: this class, handing itself over. */
-  private get seats(): RosterHost {
-    return this;
-  }
-
   /** What the phase flow reads and writes, so the flow needs no reference back to this class. */
   private get flow(): FlowHost {
     return {
@@ -110,6 +97,11 @@ export class HostSession {
     this.apply({ type: 'SUBMIT_ANSWER', playerId: HostPlayerId, text });
   }
 
+  /** The host writing over its own sent answer, under the reserved id. */
+  setOwnEditingAnswer(editing: boolean): void {
+    this.apply({ type: 'EDITING_ANSWER', playerId: HostPlayerId, editing });
+  }
+
   /** The host answering the bank from their own seat. Under the reserved id, like every other
    * move the host makes about itself, so it is refused when it is not their turn like anybody
    * else's. */
@@ -122,23 +114,23 @@ export class HostSession {
   }
 
   setOwnLook(look: PlayerLook): void {
-    setOwnLook(this.seats, look);
+    setOwnLook(this, look);
   }
 
   setPace(pace: Game.Pace): void {
-    setPace(this.seats, pace);
+    setPace(this, pace);
   }
 
   addBot(): void {
-    addBot(this.seats);
+    addBot(this);
   }
 
   kick(playerId: PlayerId): void {
-    kick(this.seats, playerId);
+    kick(this, playerId);
   }
 
   nextTurn(): void {
-    nextTurn(this.seats);
+    nextTurn(this);
   }
 
   finish(): void {

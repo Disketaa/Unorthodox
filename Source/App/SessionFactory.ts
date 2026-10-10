@@ -31,6 +31,7 @@ function createHostSession(roomCode: string, playerName: string, look: PlayerLoo
     setPace: (pace) => hostSession.setPace(pace),
     addBot: () => hostSession.addBot(),
     submitAnswer: (text) => hostSession.submitOwnAnswer(text.trim()),
+    setEditingAnswer: (editing) => hostSession.setOwnEditingAnswer(editing),
     rejectGroup: (groupId) => hostSession.rejectOwnGroup(groupId),
     nextTurn: () => hostSession.nextTurn(),
     startGame: () => hostSession.startGame(),
@@ -72,6 +73,7 @@ function createPlayerSession(roomCode: string, playerName: string, look: PlayerL
     // A client cannot put anybody in the room, least of all itself.
     addBot: () => {},
     submitAnswer: (text) => clientSession.submitAnswer(text.trim()),
+    setEditingAnswer: (editing) => clientSession.setEditingAnswer(editing),
     rejectGroup: (groupId) => clientSession.rejectGroup(groupId),
     nextTurn: () => {},
     startGame: () => {},

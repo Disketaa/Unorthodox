@@ -27,6 +27,7 @@ export interface GameActions {
   addBot: () => void;
   nextTurn: () => void;
   submitAnswer: (text: string) => void;
+  setEditingAnswer: (editing: boolean) => void;
   rejectGroup: (groupId: number) => void;
   playAgain: () => void;
 }
@@ -136,6 +137,7 @@ export function useGameActions(
       session.submitAnswer(text);
       onSubmitted();
     },
+    setEditingAnswer: (editing: boolean) => session.setEditingAnswer(editing),
     rejectGroup: (groupId: number) => {
       session.rejectGroup(groupId);
       onVoted(groupId);

@@ -8,6 +8,10 @@ export type ClientMessage =
   | { type: 'SetLook'; playerId: PlayerId; look: PlayerLook }
   | { type: 'ChooseTheme'; theme: ThemeId; playerId: PlayerId }
   | { type: 'SubmitAnswer'; text: string; playerId: PlayerId }
+  /** A player has started writing over an answer they already sent. Carries no text: the room is
+   * only told that the seat is at work again, which is what the bar draws, and an answer nobody
+   * has finished sending is nobody's business. */
+  | { type: 'EditingAnswer'; editing: boolean; playerId: PlayerId }
   | { type: 'RejectGroup'; groupId: number; playerId: PlayerId }
   | { type: 'Sync' };
 
@@ -65,6 +69,8 @@ export function isClientMessage(value: unknown): value is ClientMessage {
       return isThemeId(record.theme) && typeof record.playerId === 'string';
     case 'SubmitAnswer':
       return typeof record.text === 'string' && typeof record.playerId === 'string';
+    case 'EditingAnswer':
+      return typeof record.editing === 'boolean' && typeof record.playerId === 'string';
     case 'RejectGroup':
       return typeof record.groupId === 'number' && typeof record.playerId === 'string';
     case 'Sync':

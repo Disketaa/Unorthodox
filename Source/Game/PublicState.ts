@@ -36,6 +36,10 @@ export interface PublicRoom {
   /** Whether the host is holding the room. On the wire rather than held per client, since a
    * player who is not held is one still playing against a timer nobody stopped. */
   paused: boolean;
+  /** When the room was held, on the host's clock, or absent while it is running. On the wire
+   * because a client that joined or refreshed mid-hold has to draw the clock as it stood when
+   * the room stopped, rather than counting the hold away as if the phase had run through it. */
+  pausedAt?: number;
 }
 
 export type PublicLobbyState = PublicRoom & {
@@ -79,6 +83,10 @@ export type PublicWritingState = PublicRoom & {
   /** Who has sent an answer. The count cannot say whose, and the bar marks every seat still at
    * work. Only who, never what. Optional: an older host sends none, and is then read as all. */
   submittedIds?: PlayerId[];
+  /** Who among those has started writing over the answer they sent, so their seat goes back to
+   * work for the whole room rather than only for themselves. Optional like the list above: an
+   * older host sends neither, and a room that cannot say is read as nobody editing. */
+  editingIds?: PlayerId[];
   players: PublicPlayer[];
   theme?: ThemeId;
 };

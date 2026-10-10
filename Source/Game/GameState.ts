@@ -96,6 +96,10 @@ export type WritingState = RoomMembers & {
   durationMs: number;
   startedAt: number;
   answers: Map<PlayerId, string>;
+  /** Who among those who have answered is writing over the one they sent. Beside the answers
+   * rather than by dropping them from it, so a player who changes their mind and runs out of
+   * time still counts as having answered. Optional: a room saved before this reads as nobody. */
+  editing?: Set<PlayerId>;
   /** The theme this round is being played in, carried on from the choice rather than chosen
    * again: the bank stays on screen through the round, and it can only show one of its cards as
    * the chosen one. */

@@ -18,6 +18,10 @@ export interface SessionPhase {
    * screen. The countdown stops here rather than at the end of the duration, so a phase the
    * room has already answered is not shown counting down over an answer nobody can change. */
   answeredAt: number | undefined;
+  /** When the room was held, on this device's clock, or undefined while it is running. The
+   * moment every countdown freezes at, so a client that joins or refreshes mid-hold draws the
+   * clock as it stood when the room stopped rather than counting the hold away. */
+  pausedAt: number | undefined;
   /** Skew between the host's clock and this device's. */
   clockOffsetMs: number;
   playerNames: ReadonlyMap<PlayerId, string>;
@@ -30,6 +34,8 @@ export interface SessionPhase {
    * everywhere else, so a seat is never left marked at work by a round that has already moved
    * on. */
   submittedIds: ReadonlySet<PlayerId>;
+  /** Who among those is writing over the answer they sent, which puts them back at work. */
+  editingIds: ReadonlySet<PlayerId>;
   /** Whose turn it is in the room, or null before anyone has had one. Sent by every phase, so
    * this is the room's and not the round's. */
   turnPlayerId: PlayerId | null;
@@ -86,6 +92,10 @@ export function useSessionPhase(
       publicState?.phase === 'Choosing' && publicState.answeredAt !== undefined
         ? hostTimeToLocal(publicState.answeredAt, clockOffsetMs)
         : undefined,
+    pausedAt:
+      publicState?.pausedAt !== undefined
+        ? hostTimeToLocal(publicState.pausedAt, clockOffsetMs)
+        : undefined,
     clockOffsetMs,
     playerNames: roster.names,
     playerLooks: roster.looks,
@@ -95,6 +105,10 @@ export function useSessionPhase(
     submittedIds:
       publicState?.phase === 'Writing'
         ? new Set(publicState.submittedIds ?? [])
+        : new Set<PlayerId>(),
+    editingIds:
+      publicState?.phase === 'Writing'
+        ? new Set(publicState.editingIds ?? [])
         : new Set<PlayerId>(),
     turnPlayerId: publicState?.turnPlayerId ?? null,
   };

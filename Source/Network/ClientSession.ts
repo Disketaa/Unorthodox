@@ -129,6 +129,18 @@ export class ClientSession {
     return false;
   }
 
+  /** Telling the room this player is back at work on an answer they already sent. Carries no
+   * text: the room marks the seat and nothing else. */
+  setEditingAnswer(editing: boolean): void {
+    if (this.seated('write answer')) {
+      this.transport.sendToHost({
+        type: 'EditingAnswer',
+        editing,
+        playerId: this.inbox.playerId,
+      });
+    }
+  }
+
   submitAnswer(text: string): void {
     if (this.seated('submit answer')) {
       this.transport.sendToHost({

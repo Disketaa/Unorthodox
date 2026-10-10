@@ -22,6 +22,8 @@ function phaseOf(name: SessionPhaseName, startedAt = Date.now()): SessionPhase {
     phaseStartedAt: startedAt,
     clockOffsetMs: 0,
     answeredAt: undefined,
+    pausedAt: undefined,
+    editingIds: new Set(),
     playerNames: new Map(),
     playerLooks: new Map(),
     playerPresence: new Map(),

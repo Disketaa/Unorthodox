@@ -43,6 +43,9 @@ export interface Session {
    * nobody is told: a client asking for a player to appear is not a thing. */
   addBot(): void;
   submitAnswer(text: string): void;
+  /** Tell the room this player is writing over an answer they already sent, so their seat goes
+   * back to work in everybody's bar rather than only in their own. */
+  setEditingAnswer(editing: boolean): void;
   rejectGroup(groupId: number): void;
   /** Give the room's turn to the next player in join order. Only the host calls this. */
   nextTurn(): void;
