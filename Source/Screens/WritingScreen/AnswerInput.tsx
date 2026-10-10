@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { Stack, Text } from '@/Design/Primitives';
 import { Keyboard, TextField, ThemeLabel } from '@/Design/Components';
 import { pressKey } from './PressKey';
@@ -28,6 +28,9 @@ export interface AnswerInputProps {
   held: boolean;
   onValueChange: (value: string) => void;
   onSubmit: () => void;
+  /** Reports that a sent answer is being changed, which puts the player back at work in the bar
+   * above. Sent as a change rather than read, because the draft this turns on is local to here. */
+  onEditing?: (editing: boolean) => void;
 }
 
 /** What the round is asking: the theme it was drawn from, and the question itself, which goes
@@ -126,6 +129,9 @@ function useSentAnswer(
   const [touched, setTouched] = useState(false);
   return {
     clean: !touched && sent === value,
+    // Writing over an answer already sent: back at work on a round they had finished, which the
+    // room cannot see on its own.
+    editing: sent !== undefined && (touched || sent !== value),
     change: (next: string) => {
       setTouched(true);
       onValueChange(next);
@@ -153,12 +159,16 @@ export function AnswerInput({
   held,
   onValueChange,
   onSubmit,
+  onEditing,
 }: AnswerInputProps) {
   // A held room is not writing: the clock is stopped for everyone, so an answer written now would
   // be timed against a round that is not running. The keys close as well as the field, since they
   // are what writes it now.
   const closed = timeUp || held;
-  const { clean, change, send } = useSentAnswer(value, onValueChange, onSubmit);
+  const { clean, editing, change, send } = useSentAnswer(value, onValueChange, onSubmit);
+  useEffect(() => {
+    onEditing?.(editing);
+  }, [editing, onEditing]);
 
   return (
     <Stack gap="Sm">

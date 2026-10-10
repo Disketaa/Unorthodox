@@ -29,6 +29,11 @@ export interface GameSessionView extends SessionPhase {
    * the one screen in the room still playing. */
   paused: boolean;
   hasSubmitted: boolean;
+  /** Whether this player is writing over an answer they already sent, which puts them back at
+   * work in the bar. Local to this browser: the room is told the answer, not that it is being
+   * changed, and a change has to be sent again before the room could know of it. */
+  editing: boolean;
+  setEditing: (editing: boolean) => void;
   rejectedGroupIds: ReadonlySet<number>;
   hostLeft: boolean;
   /** Why this player is not in the room, if they are not. */
@@ -62,16 +67,6 @@ export interface GameSessionView extends SessionPhase {
   playAgain: () => void;
   /** Leave the room and go back to the entry screen. */
   exitRoom: () => void;
-}
-
-/** This player's own character, once the host has said which one it kept. Nothing before the
- * host has answered: a player with no id yet is not in the roster, so there is no character
- * that the rest of the room is seeing yet. */
-function ownLookFor(
-  playerId: PlayerId | null,
-  looks: ReadonlyMap<PlayerId, PlayerLook>
-): PlayerLook | undefined {
-  return playerId === null ? undefined : looks.get(playerId);
 }
 
 /** Keep the component rendering when the session has news. The session is a plain object with no
@@ -121,6 +116,22 @@ function useRoundMarks(
   return { marks, actions };
 }
 
+/** What this browser knows that the room has not been told: that the host walked away, and that
+ * a sent answer is being written over. The latter lives here because the bar drawing it is not
+ * a child of the writing screen. */
+function useLocalFlags(): {
+  hostLeft: boolean;
+  editing: boolean;
+  bump: () => void;
+  setHostLeft: (v: boolean) => void;
+  setEditing: (v: boolean) => void;
+} {
+  const [hostLeft, setHostLeft] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [, setVersion] = useState(0);
+  return { hostLeft, editing, bump: () => setVersion((v) => v + 1), setHostLeft, setEditing };
+}
+
 /** Join a room and expose one uniform view of the game for the screens. */
 export function useGameSession(
   roomCode: string,
@@ -130,20 +141,16 @@ export function useGameSession(
   onLook: (look: PlayerLook) => void
 ): GameSessionView {
   const [session] = useState<Session>(() => createSession(role, roomCode, playerName, look));
-  const [, setVersion] = useState(0);
-  const [hostLeft, setHostLeft] = useState(false);
-  useSessionUpdates(session, setVersion, setHostLeft);
-
+  const { hostLeft, editing, bump, setHostLeft, setEditing } = useLocalFlags();
+  useSessionUpdates(session, bump, setHostLeft);
   const publicState = session.getPublicState();
   const phase = useSessionPhase(publicState, session.getClockOffsetMs());
   const topic = readTopic(publicState);
   const { marks, actions } = useRoundMarks(session, publicState, roomCode, topic);
   useRoundClocks(session, role === 'Host', phase, actions);
-
   const playerId = session.getPlayerId();
-  const ownLook = ownLookFor(playerId, phase.playerLooks);
+  const ownLook = playerId === null ? undefined : phase.playerLooks.get(playerId);
   useRememberLook(ownLook, onLook);
-
   return {
     ...phase,
     ...actions,
@@ -155,7 +162,9 @@ export function useGameSession(
     paused: publicState?.paused === true,
     // Both marks only count while the phase still shows the round they were made in.
     hasSubmitted: hasSubmittedIn(marks, topic),
+    editing,
     rejectedGroupIds: rejectedIn(marks, topic),
+    setEditing,
     hostLeft,
     blocked: session.getBlocked(),
     connectionHint: session.getConnectionHint(),

@@ -30,6 +30,7 @@ export function WritingView({ view }: PhaseViewProps) {
       held={view.paused}
       onValueChange={setDraft}
       onSubmit={() => view.submitAnswer(draft)}
+      onEditing={view.setEditing}
     />
   );
 }

@@ -18,6 +18,9 @@ export interface WritingScreenProps {
   held: boolean;
   onValueChange: (value: string) => void;
   onSubmit: () => void;
+  /** Reports that a sent answer is being changed, so the bar above can put the seat back at
+   * work. */
+  onEditing?: (editing: boolean) => void;
 }
 
 /** Writing phase: the question, the answer field, and the keys that write it. What the room is
@@ -33,6 +36,7 @@ export function WritingScreen({
   held,
   onValueChange,
   onSubmit,
+  onEditing,
 }: WritingScreenProps) {
   const timeUp = remainingMs <= 0;
 
@@ -50,6 +54,7 @@ export function WritingScreen({
           held={held}
           onValueChange={onValueChange}
           onSubmit={onSubmit}
+          onEditing={onEditing}
         />
       </Card>
     </Screen>
