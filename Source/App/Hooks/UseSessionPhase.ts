@@ -26,6 +26,10 @@ export interface SessionPhase {
   playerPresence: ReadonlyMap<PlayerId, boolean>;
   playerCount: number;
   submittedCount: number;
+  /** Who has sent an answer in the phase in view, which is only ever the writing phase. Empty
+   * everywhere else, so a seat is never left marked at work by a round that has already moved
+   * on. */
+  submittedIds: ReadonlySet<PlayerId>;
   /** Whose turn it is in the room, or null before anyone has had one. Sent by every phase, so
    * this is the room's and not the round's. */
   turnPlayerId: PlayerId | null;
@@ -88,6 +92,10 @@ export function useSessionPhase(
     playerPresence: roster.presence,
     playerCount: roster.names.size,
     submittedCount: publicState?.phase === 'Writing' ? publicState.submittedCount : 0,
+    submittedIds:
+      publicState?.phase === 'Writing'
+        ? new Set(publicState.submittedIds ?? [])
+        : new Set<PlayerId>(),
     turnPlayerId: publicState?.turnPlayerId ?? null,
   };
 }

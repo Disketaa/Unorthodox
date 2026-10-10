@@ -152,6 +152,42 @@ describe('a player at work', () => {
   });
 });
 
+describe('a player still writing', () => {
+  it('shows the same mark a held turn shows, and takes the character out', () => {
+    // A player writing an answer is at work in the room's one sense of the word, so the seat says
+    // it the way the room already says it. A face left breathing quietly through a round would be
+    // indistinguishable from a player who had already finished.
+    const root = mounted(<PlayerBar players={[player({ isWorking: true })]} />);
+    expect(root.querySelector('[class*="Turning"]')).not.toBeNull();
+    expect(root.querySelector('[class*="Face"] svg')).toBeNull();
+    expect(root.querySelector('[class*="Waiting"]')).not.toBeNull();
+  });
+
+  it('marks every seat still at work, and only those', () => {
+    // The room says who has written, so the row fills up as the answers come in rather than one
+    // seat knowing about itself while the rest sit there looking idle.
+    const players = [
+      player({ id: 'p0', isWorking: true }),
+      player({ id: 'p1' }),
+      player({ id: 'p2', isWorking: true }),
+    ];
+    const root = mounted(<PlayerBar players={players} />);
+    expect(root.querySelectorAll('[class*="Turning"]')).toHaveLength(2);
+  });
+
+  it('draws the character back as soon as the answer is sent', () => {
+    const root = mounted(<PlayerBar players={[player()]} />);
+    expect(root.querySelector('[class*="Turning"]')).toBeNull();
+    expect(root.querySelector('[class*="Face"] svg')).not.toBeNull();
+  });
+
+  it('marks a seat exactly as a held turn marks it, so one wait reads as one wait', () => {
+    const working = mounted(<PlayerBar players={[player({ isWorking: true })]} />);
+    const turning = mounted(<PlayerBar players={[player({ isTurning: true })]} />);
+    expect(working.firstElementChild?.className).toBe(turning.firstElementChild?.className);
+  });
+});
+
 describe('a player the host has lost', () => {
   it('is held back rather than removed, because the seat is still theirs', () => {
     const root = mounted(<PlayerBar players={[player({ isOnline: false })]} />);

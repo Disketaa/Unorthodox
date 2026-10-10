@@ -18,9 +18,14 @@ export interface PlayerBarEntry {
   color: CharacterColor;
   /** Whether the host still has this player on the line. */
   isOnline?: boolean;
-  /** Whether this player holds the room's turn, which draws the loading mark in place of their
-   * character. Purely what the bar shows; the room moves the turn itself. */
+  /** Whether this player is still at work on the round — holding the turn, or writing an answer
+   * the room has not read yet — which draws the loading mark in place of their character.
+   * Purely what the bar shows; the room moves the turn and takes the answers itself. */
   isTurning?: boolean;
+  /** Whether this player is still writing, which is the same mark drawn for a different reason.
+   * Every seat still at work is marked, and not only this browser's own: the room says who has
+   * written, so the row fills up as the answers come in. */
+  isWorking?: boolean;
 }
 
 export interface PlayerBarProps {

@@ -94,6 +94,9 @@ export function toPublicWritingState(state: HostState): PublicWritingState {
     durationMs: state.durationMs,
     startedAt: state.startedAt,
     submittedCount: state.answers.size,
+    // The keys and not the values: who has written is what the bar of players draws, and the
+    // answers themselves are nobody's business until the review groups them.
+    submittedIds: [...state.answers.keys()],
     players: publicPlayers(state),
     ...themeOf(state),
   };

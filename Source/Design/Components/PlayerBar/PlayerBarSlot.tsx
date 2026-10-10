@@ -15,14 +15,17 @@ export interface PlayerBarSlotProps {
  * where a face alone asks them to remember who they picked. */
 export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
   const offline = entry.isOnline === false;
-  const turning = entry.isTurning === true;
+  // At work, whichever way the room is waiting on them: holding the turn to pick a theme, or
+  // writing an answer nobody has read yet. One mark for both, so a seat at work looks the same
+  // whoever it is that is doing the waiting.
+  const atWork = entry.isTurning === true || entry.isWorking === true;
   // The seat wears the player's own tint, the same class the character inside it wears. The seat
   // cannot read that off the character, since a custom property set on it stays down there.
   const classes = [
     styles.Seat,
     characterStyles[entry.color],
     isSelf ? styles.Self : '',
-    turning ? styles.Waiting : '',
+    atWork ? styles.Waiting : '',
     offline ? styles.Offline : '',
   ]
     .filter(Boolean)
@@ -32,7 +35,7 @@ export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
     <div class={classes}>
       <span class={styles.Slot}>
         <span class={styles.Face}>
-          {turning ? (
+          {atWork ? (
             <span class={styles.Turning} aria-hidden="true" />
           ) : (
             <Character

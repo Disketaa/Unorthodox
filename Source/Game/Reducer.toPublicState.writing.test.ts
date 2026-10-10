@@ -31,6 +31,9 @@ describe('toPublicState Writing state', () => {
       expect(publicState.topic).toBe('Test');
       expect(publicState.durationMs).toBe(60000);
       expect(publicState.submittedCount).toBe(2);
+      // Who has written, so the bar can mark every seat still at work. The answers themselves
+      // are not among them: they are nobody's business until the review groups them.
+      expect(publicState.submittedIds).toEqual(['p1', 'p2']);
     }
   });
 });

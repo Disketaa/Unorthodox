@@ -76,6 +76,9 @@ export type PublicWritingState = PublicRoom & {
   durationMs: number;
   startedAt: number;
   submittedCount: number;
+  /** Who has sent an answer. The count cannot say whose, and the bar marks every seat still at
+   * work. Only who, never what. Optional: an older host sends none, and is then read as all. */
+  submittedIds?: PlayerId[];
   players: PublicPlayer[];
   theme?: ThemeId;
 };

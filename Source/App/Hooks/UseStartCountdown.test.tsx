@@ -27,6 +27,7 @@ function phaseOf(name: SessionPhaseName, startedAt = Date.now()): SessionPhase {
     playerPresence: new Map(),
     playerCount: 2,
     submittedCount: 0,
+    submittedIds: new Set(),
     turnPlayerId: null,
   };
 }

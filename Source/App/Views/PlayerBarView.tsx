@@ -21,6 +21,11 @@ function readScores(view: PhaseViewProps['view']): ReadonlyMap<PlayerId, number>
  * the lobby: a seat that moves about between phases is a seat nobody can find themselves in. */
 export function PlayerBarView({ view }: PhaseViewProps) {
   const scores = readScores(view);
+  const choosing = view.publicState?.phase === 'Choosing' ? view.publicState : undefined;
+  // The turn outlives the round that used it, so the mark belongs only to where the room is
+  // actually waiting on it: an open bank. Once the bank is answered the phase is still Choosing,
+  // now while the room reads the question, and by then nobody has been asked for anything.
+  const waitingOnTurn = choosing !== undefined && choosing.theme === undefined;
   const players: PlayerBarEntry[] = [...view.playerNames].map(([id, name]) => {
     const look = lookFor(view.playerLooks, id);
     return {
@@ -30,7 +35,10 @@ export function PlayerBarView({ view }: PhaseViewProps) {
       character: look.character,
       color: look.color,
       isOnline: view.playerPresence.get(id) ?? true,
-      isTurning: id === view.turnPlayerId,
+      isTurning: waitingOnTurn && id === view.turnPlayerId,
+      // Every seat still at work breathes, and not only this browser's own: the room says who has
+      // written, so a row of seats shows the room filling up as the answers come in.
+      isWorking: view.phase === 'Writing' && !view.submittedIds.has(id),
     };
   });
 
