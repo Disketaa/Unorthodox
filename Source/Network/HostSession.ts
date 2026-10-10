@@ -13,6 +13,7 @@ import {
   type FlowHost,
 } from './HostFlow';
 import { addBot, countBots, kick, nextTurn, setOwnLook, setPace } from './HostRosterActions';
+import { answerBots } from './HostBots';
 import { departureOf } from './HostPresence';
 import { freshLobby } from './RoomStateStore';
 import { HostRoom } from './HostRoom';
@@ -83,13 +84,22 @@ export class HostSession {
     return {
       getState: () => this.room.getState(),
       expectedAnswers: () => this.room.roster.count,
-      commit: (state) => this.room.commit(state),
+      commit: (state) => this.write(state),
     };
   }
 
   apply(action: Game.GameAction): void {
     log('debug', 'reducing action', action.type);
     this.room.apply(action, Game.reducer);
+    answerBots(this);
+  }
+
+  /** Put a state the flow built, then let the bots answer the round it opened. Every write goes
+   * through here rather than straight to the room, since a round a bot never answers is a round
+   * the room waits out its whole clock for nothing. */
+  private write(state: Game.HostState): void {
+    this.room.commit(state);
+    answerBots(this);
   }
 
   /** Submit the host's own answer, so the host plays the same way as everyone else. */

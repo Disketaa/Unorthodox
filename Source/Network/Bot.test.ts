@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { botJoin } from './Bot';
+import { botAnswer, botAnswers, botJoin } from './Bot';
 import { createRandom } from '@/Core';
 import type { PlayerLook } from '@/Core';
-import { GameConfig } from '@/Game';
+import { GameConfig, reducer } from '@/Game';
 import type { HostState } from '@/Game';
 
 const look: PlayerLook = { character: 'Butterfly', color: 'Coral' };
@@ -75,5 +75,67 @@ describe('botJoin', () => {
       theme: undefined,
     };
     expect(botJoin(writing, 1, seeded())).toBeUndefined();
+  });
+});
+
+/** A round already open, holding these seats. */
+function writing(...seats: string[]): HostState {
+  const players = new Map();
+  seats.forEach((seat) => players.set(seat, { name: seat, look, isOnline: true }));
+  return {
+    phase: 'Writing',
+    topic: 'Тема',
+    durationMs: 60_000,
+    startedAt: 0,
+    answers: new Map(),
+    players,
+    cumulativeScores: new Map(),
+    turnPlayerId: null,
+    pace: 'Standard',
+    themeRounds: new Map(),
+
+    paused: false,
+
+    pausedAt: undefined,
+    theme: undefined,
+  };
+}
+
+describe('botAnswer', () => {
+  it('writes five words off the list', () => {
+    const text = botAnswer(seeded());
+    expect(text.split(' ')).toHaveLength(5);
+  });
+
+  it('fits the field a player types into', () => {
+    const text = botAnswer(createRandom(7));
+    expect(text.length).toBeLessThanOrEqual(GameConfig.limits.answerMaxLength);
+  });
+
+  it('repeats a word, so two bots can land on one answer', () => {
+    const answers = Array.from({ length: 60 }, (_, i) => botAnswer(createRandom(i)));
+    expect(answers.some((text) => new Set(text.split(' ')).size < 5)).toBe(true);
+  });
+});
+
+describe('botAnswers', () => {
+  it('answers for every bot the round is waiting on, and for nobody else', () => {
+    expect(botAnswers(writing('host', 'bot1', 'bot2', 'p1'), seeded())).toMatchObject([
+      { type: 'SUBMIT_ANSWER', playerId: 'bot1' },
+      { type: 'SUBMIT_ANSWER', playerId: 'bot2' },
+    ]);
+  });
+
+  it('leaves a bot that has already answered alone', () => {
+    const answered = reducer(writing('bot1'), {
+      type: 'SUBMIT_ANSWER',
+      playerId: 'bot1',
+      text: 'уже',
+    });
+    expect(botAnswers(answered, seeded())).toEqual([]);
+  });
+
+  it('answers nothing outside a round', () => {
+    expect(botAnswers(lobby('bot1'), seeded())).toEqual([]);
   });
 });

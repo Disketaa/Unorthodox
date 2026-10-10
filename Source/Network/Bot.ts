@@ -55,6 +55,14 @@ const names = [
 /** A bot's seat. Never `p<number>`, which is what the roster hands to real players. */
 const BotIdPrefix = 'bot';
 
+/** What a bot writes. Five words, every one three letters, so an answer always lands inside
+ * `answerMaxLength`. Few enough that two bots land on the same answer often, which is the
+ * duplicate group a round is scored by. */
+const answerWords = ['кот', 'сыр', 'дом', 'чай', 'нос'] as const;
+
+/** How many words make up one bot's answer, which is the whole list. */
+const AnswerWordCount = 5;
+
 interface Bot {
   playerId: PlayerId;
   name: string;
@@ -84,6 +92,30 @@ export function botNumber(playerId: PlayerId): number {
  * handed a taken seat would be two players wearing one name. */
 export function botsIn(state: HostState): number {
   return [...state.players.keys()].reduce((highest, id) => Math.max(highest, botNumber(id)), 0);
+}
+
+/** What one bot writes: five words off the list, joined the way a person would type them. Drawn
+ * with repetition rather than without, since the point of a bot is a round to play and two bots
+ * landing on one answer is a duplicate group the room scores like any other. */
+export function botAnswer(random: Random): string {
+  const words: string[] = [];
+  for (let i = 0; i < AnswerWordCount; i += 1) {
+    words.push(answerWords[Math.floor(random() * answerWords.length)] ?? '');
+  }
+  return words.join(' ');
+}
+
+/** The answer each bot in the room still owes, for a round that has just opened. A bot that has
+ * already answered is left out, so a host that answers late does not have its seat written over
+ * a second time by a move nobody pressed. */
+export function botAnswers(state: HostState, random: Random): ActionOf<'SUBMIT_ANSWER'>[] {
+  if (state.phase !== 'Writing') return [];
+  const actions: ActionOf<'SUBMIT_ANSWER'>[] = [];
+  for (const playerId of state.players.keys()) {
+    if (botNumber(playerId) === 0 || state.answers.has(playerId)) continue;
+    actions.push({ type: 'SUBMIT_ANSWER', playerId, text: botAnswer(random) });
+  }
+  return actions;
 }
 
 /** Roll one bot: a name, a character, a tint, and a seat nobody can be given. */
