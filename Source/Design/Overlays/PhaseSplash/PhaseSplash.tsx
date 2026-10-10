@@ -9,6 +9,11 @@ import styles from './PhaseSplash.module.css';
  * `Tests/PhaseSplash.test.ts` holds the two in step. Not a phase length — nothing waits on it. */
 export const PhaseSplashMs = 750;
 
+/** The stretch of the movement during which the yellow covers the whole window, as shares of
+ * `PhaseSplashMs`. The room swaps its screen inside it, so a change of phase happens behind
+ * solid colour. `Tests/PhaseSplash.test.ts` holds both against the stylesheet. */
+export const PhaseSplashCovered = { from: 0.16, to: 0.85 } as const;
+
 export interface PhaseSplashProps {
   /** What the mark says, for anyone who cannot see it. */
   label: string;

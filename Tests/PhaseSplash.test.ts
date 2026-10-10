@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { PhaseSplashMs } from '../Source/Design/Overlays';
+import { PhaseSplashCovered, PhaseSplashMs } from '../Source/Design/Overlays';
 import { GameConfig } from '../Source/Game';
 import { stylesheet, tokenReader } from './Stylesheet';
 
@@ -21,6 +21,29 @@ function step(name: string, at: string): string {
   if (found?.[1] === undefined) throw new Error(`no ${at}% step in ${name}`);
   return found[1].replace(/\s+/g, '');
 }
+
+describe('when the screen may be changed', () => {
+  it('is only while the yellow is solid across the whole window', () => {
+    // The room swaps its screen inside this window, so a change of phase happens behind flat
+    // colour. Outside it the room is partly visible, and a screen changed there would be caught
+    // halfway through changing.
+    const discFull = Number(
+      sheet.text.match(/@keyframes PhaseSplashDisc[\s\S]*?(\d+)% \{\s*scale: 1;/)?.[1]
+    );
+    const holeOpens = Number(
+      sheet.text.match(/@keyframes PhaseSplashHole[\s\S]*?(\d+)% \{\s*--Splash-Hole: 0%;/)?.[1]
+    );
+    expect(PhaseSplashCovered.from).toBe(discFull / 100);
+    expect(PhaseSplashCovered.to).toBe(holeOpens / 100);
+    expect(PhaseSplashCovered.from).toBeLessThan(PhaseSplashCovered.to);
+  });
+
+  it('leaves the room long enough on screen to be read', () => {
+    // The window is the only part of the splash the room spends looking at a mark it can read,
+    // so it has to be most of the movement rather than a sliver of it.
+    expect(PhaseSplashCovered.to - PhaseSplashCovered.from).toBeGreaterThan(0.5);
+  });
+});
 
 describe('the phase splash', () => {
   it('runs for the length the code takes the layer away at', () => {

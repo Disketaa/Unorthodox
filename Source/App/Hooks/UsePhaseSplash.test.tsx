@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { GameConfig } from '@/Game';
+import { PhaseSplashCovered, PhaseSplashMs } from '@/Design/Overlays';
 import { clearCountIn, markCountedIn } from '@/Network/CountIn';
 import { phaseOf } from './SessionPhaseHarness';
 import type { SessionPhase } from './UseSessionPhase';
@@ -19,8 +20,8 @@ const roomCode = 'SPLS';
 /** Both hooks wired the way the room wires them, so the ordering between them is the real one. */
 function Splash({ phase, room }: { phase: SessionPhase; room: string }) {
   const { endedAt } = useStartCountdown(phase, room);
-  const { splashing } = usePhaseSplash(phase, endedAt);
-  return <span>{splashing ? 'splash' : ''}</span>;
+  const { splashing, covered } = usePhaseSplash(phase, endedAt);
+  return <span>{`${splashing ? 'splash' : ''}${covered ? 'covered' : ''}`}</span>;
 }
 
 const { startVeilMs, startCountdownMs, uiTickMs } = GameConfig.timing;
@@ -99,6 +100,32 @@ describe('the splash behind the count-in', () => {
     expect(room.read()).toBe('splash');
     pass(GameConfig.timing.uiTickMs * 20);
     expect(room.read()).toBe('');
+  });
+});
+
+describe('when the screen under it may change', () => {
+  it('is covered from the moment the disc is full until the hole starts opening', () => {
+    // The room swaps its screen inside this window, so a change of phase happens behind flat
+    // colour. Outside it the room is partly visible and a swap would be caught halfway through.
+    const room = mount(phaseOf('Reviewing'));
+    pass(PhaseSplashMs * PhaseSplashCovered.from);
+    expect(room.read()).toBe('splashcovered');
+  });
+
+  it('is not covered while the disc is still growing over the room', () => {
+    // The first stretch of the splash is the yellow arriving, and the room is still visible
+    // around the edge of it: a screen changed there would be a screen caught changing.
+    const room = mount(phaseOf('Reviewing'));
+    pass(PhaseSplashMs * PhaseSplashCovered.from - uiTickMs);
+    expect(room.read()).toBe('splash');
+  });
+
+  it('is not covered once the hole has started letting the room back', () => {
+    // The exit is the room coming back through the middle, so from there the new screen is
+    // already being revealed and changing it again would be visible.
+    const room = mount(phaseOf('Reviewing'));
+    pass(PhaseSplashMs * PhaseSplashCovered.to);
+    expect(room.read()).toBe('splash');
   });
 });
 

@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { GameConfig, splashesOnArrival } from '@/Game';
-import { PhaseSplashMs } from '@/Design/Overlays';
+import { PhaseSplashCovered, PhaseSplashMs } from '@/Design/Overlays';
 import { playSound } from '@/Design/Sounds';
 import type { SessionPhase } from './UseSessionPhase';
 
 export interface PhaseSplashControl {
   /** True while the splash layer should be mounted. */
   splashing: boolean;
+  /** True while the yellow covers the whole window, which is the only moment the screen under it
+   * can be changed without anybody seeing the change. */
+  covered: boolean;
   /** Play it now, whatever the phase. The dock's own control, and the only way to see the
    * movement without waiting out a round to reach a phase that splashes. */
   replay: () => void;
@@ -27,6 +30,13 @@ export function usePhaseSplash(phase: SessionPhase, countInEndedAt = 0): PhaseSp
     startedAt > 0 &&
     elapsedMs >= 0 &&
     elapsedMs < PhaseSplashMs;
+  // The window in which the yellow is solid across the whole screen: the disc has finished
+  // growing and the hole has not started opening. Outside it the room is partly visible, so a
+  // screen changed there would be a screen caught halfway through changing.
+  const covered =
+    running &&
+    elapsedMs >= PhaseSplashMs * PhaseSplashCovered.from &&
+    elapsedMs < PhaseSplashMs * PhaseSplashCovered.to;
   // Ticked on the room's own interval rather than left to a timeout, since a timeout would hold
   // the layer up on a tab that had been busy.
   const [, setNow] = useState(() => Date.now());
@@ -49,5 +59,5 @@ export function usePhaseSplash(phase: SessionPhase, countInEndedAt = 0): PhaseSp
     const id = setInterval(() => setNow(Date.now()), GameConfig.timing.uiTickMs);
     return () => clearInterval(id);
   }, [running]);
-  return { splashing: running, replay: () => setReplayAt(Date.now()) };
+  return { splashing: running, covered, replay: () => setReplayAt(Date.now()) };
 }

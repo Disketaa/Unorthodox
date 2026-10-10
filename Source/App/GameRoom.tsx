@@ -132,13 +132,16 @@ interface CountedRoomProps {
  * press, so the count would be counting over a screen nobody has looked at yet. */
 function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
   const { veiling, count, endedAt } = useStartCountdown(view, roomCode);
-  const { splashing, replay } = usePhaseSplash(view, endedAt);
+  const { splashing, covered, replay } = usePhaseSplash(view, endedAt);
   const counting = veiling || count !== null;
   // The screen the count-in and the splash are played over: the phase the room is leaving, held
   // until the movement has covered it. A ref rather than state, because a view is a new object on
   // every render and holding one in state would re-render the room forever.
   const underRef = useRef<GameSessionView | null>(null);
-  if (!counting && !splashing) {
+  // Swapped while the yellow is solid rather than when the splash ends: the exit is a hole
+  // opening out of the middle, so a screen changed at the end would be revealed through it a
+  // piece at a time. Changed here, it happens behind a screen of flat colour and is not seen.
+  if (!counting && (!splashing || covered)) {
     underRef.current = view;
   }
 
