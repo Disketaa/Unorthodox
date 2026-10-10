@@ -15,21 +15,25 @@ export interface PhaseSplashControl {
   replay: () => void;
 }
 
-/** The splash, and when it plays. Counted from the host's phase start so every screen in the
- * room plays it at the same moment, or from `countInEndedAt` where the room was counted into
- * this phase: that phase has been announced once already. */
-export function usePhaseSplash(phase: SessionPhase, countInEndedAt = 0): PhaseSplashControl {
-  const [replayAt, setReplayAt] = useState(0);
-  const startedAt = replayAt > 0 ? replayAt : Math.max(phase.phaseStartedAt, countInEndedAt);
-  const elapsedMs = Date.now() - startedAt;
-  // Not before it starts as well as not after it ends. A count-in still running puts its own end
-  // in the future, and a moment in the future is "less than the length" as surely as a moment in
-  // the past is: without the lower bound the splash would play across the numbers it follows.
-  const running =
-    (replayAt > 0 || splashesOnArrival(phase.phase)) &&
-    startedAt > 0 &&
-    elapsedMs >= 0 &&
-    elapsedMs < PhaseSplashMs;
+/** The splash, and when it plays. Started when this device notices the room arrive at a phase
+ * that gets one, and held for `PhaseSplashMs` from that moment — timed the way the count-in is,
+ * and for the same reason: a host-clock length is one a late message loses rather than plays. */
+export function usePhaseSplash(phase: SessionPhase, counting: boolean): PhaseSplashControl {
+  const [replay, setReplay] = useState({ phase: phase.phase, at: 0 });
+  const now = Date.now();
+  // Set while rendering, because the splash has to be running on the first frame of the phase it
+  // belongs to: an effect runs after the paint, and that paint would be the new screen with
+  // nothing played over it.
+  const arrivedRef = useRef({ phase: phase.phase, at: 0 });
+  if (arrivedRef.current.phase !== phase.phase || (!counting && arrivedRef.current.at === 0)) {
+    arrivedRef.current = { phase: phase.phase, at: counting ? 0 : now };
+  }
+  // A replay belongs to the phase it was asked for, so asking for one and then moving on does not
+  // leave a stale moment behind to swallow the next phase's own splash.
+  const asked = replay.phase === phase.phase ? replay.at : 0;
+  const startedAt = asked > 0 ? asked : arrivedRef.current.at;
+  const elapsedMs = now - startedAt;
+  const running = startedAt > 0 && splashesOnArrival(phase.phase) && elapsedMs < PhaseSplashMs;
   // The window in which the yellow is solid across the whole screen: the disc has finished
   // growing and the hole has not started opening. Outside it the room is partly visible, so a
   // screen changed there would be a screen caught halfway through changing.
@@ -59,5 +63,9 @@ export function usePhaseSplash(phase: SessionPhase, countInEndedAt = 0): PhaseSp
     const id = setInterval(() => setNow(Date.now()), GameConfig.timing.uiTickMs);
     return () => clearInterval(id);
   }, [running]);
-  return { splashing: running, covered, replay: () => setReplayAt(Date.now()) };
+  return {
+    splashing: running,
+    covered,
+    replay: () => setReplay({ phase: phase.phase, at: Date.now() }),
+  };
 }

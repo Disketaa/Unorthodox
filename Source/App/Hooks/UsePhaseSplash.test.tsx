@@ -19,8 +19,9 @@ const roomCode = 'SPLS';
 
 /** Both hooks wired the way the room wires them, so the ordering between them is the real one. */
 function Splash({ phase, room }: { phase: SessionPhase; room: string }) {
-  const { endedAt } = useStartCountdown(phase, room);
-  const { splashing, covered } = usePhaseSplash(phase, endedAt);
+  const { veiling, count } = useStartCountdown(phase, room);
+  const counting = veiling || count !== null;
+  const { splashing, covered } = usePhaseSplash(phase, counting);
   return <span>{`${splashing ? 'splash' : ''}${covered ? 'covered' : ''}`}</span>;
 }
 
@@ -134,6 +135,23 @@ describe('the splash where there is no count-in', () => {
     // Reviewing is not counted into, so there is nothing to wait behind and the splash is
     // measured from the phase start like any other.
     expect(mount(phaseOf('Reviewing')).read()).toBe('splash');
+  });
+
+  it('plays even when this device heard about the phase late', () => {
+    // The failure this covers: the splash used to be measured off the host's phase start, so a
+    // message that arrived after the splash had already run — a slow phone, a busy tab — lost it
+    // altogether rather than playing it late. Timed off this device's own arrival instead, the
+    // news being late costs nothing but the delay.
+    vi.setSystemTime(1_000_000 + 60_000);
+    expect(mount(phaseOf('Reviewing', 1_000_000)).read()).toBe('splash');
+  });
+
+  it('plays even when the host clock is a millisecond ahead of this one', () => {
+    // The other half of the same failure: a phase start converted through a clock a millisecond
+    // out lands in the future, and a splash that has not started yet is a splash that never
+    // plays. Nothing here reads the host's clock at all.
+    vi.setSystemTime(1_000_000);
+    expect(mount(phaseOf('Reviewing', 1_000_000 + 5)).read()).toBe('splash');
   });
 
   it('plays straight away for a device that was never counted in', () => {

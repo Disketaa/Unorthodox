@@ -131,9 +131,9 @@ interface CountedRoomProps {
  * Start on: the theme cards would otherwise arrive under the numbers in the same frame as the
  * press, so the count would be counting over a screen nobody has looked at yet. */
 function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
-  const { veiling, count, endedAt } = useStartCountdown(view, roomCode);
-  const { splashing, covered, replay } = usePhaseSplash(view, endedAt);
+  const { veiling, count } = useStartCountdown(view, roomCode);
   const counting = veiling || count !== null;
+  const { splashing, covered, replay } = usePhaseSplash(view, counting);
   // The screen the count-in and the splash are played over: the phase the room is leaving, held
   // until the movement has covered it. A ref rather than state, because a view is a new object on
   // every render and holding one in state would re-render the room forever.
