@@ -104,7 +104,12 @@ export function handleSubmitAnswer(
   }
   const answers = new Map(state.answers);
   answers.set(action.playerId, action.text);
-  return { ...state, answers };
+  // An answer that has just been sent is not one being written over. Taken off here rather than
+  // only on the way out of editing, since the two travel as separate messages and a seat must not
+  // be left marked at work over an answer the room is already holding.
+  const editing = new Set(state.editing ?? []);
+  editing.delete(action.playerId);
+  return { ...state, answers, editing };
 }
 
 export function handleStartReviewing(

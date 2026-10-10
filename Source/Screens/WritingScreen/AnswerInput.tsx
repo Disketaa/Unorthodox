@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef } from 'preact/hooks';
 import { Stack, Text } from '@/Design/Primitives';
 import { Keyboard, TextField, ThemeLabel } from '@/Design/Components';
 import { pressKey } from './PressKey';
+import { useSentAnswer } from './UseSentAnswer';
 import { Strings } from '@/Content';
 import { GameConfig } from '@/Game';
-import { playSound } from '@/Design';
 
 export interface AnswerInputProps {
   /** The round's question, headed over the keys: the answer is typed into this box, so the
@@ -117,34 +117,6 @@ function AnswerField({
   );
 }
 
-/** What was last sent, and whether the field has been touched since. Kept rather than compared
- * with what is in the field, since typing past an answer and deleting back to it would look
- * sent again and turn words yellow that nobody sent. */
-function useSentAnswer(
-  value: string,
-  onValueChange: (value: string) => void,
-  onSubmit: () => void
-) {
-  const [sent, setSent] = useState<string | undefined>(undefined);
-  const [touched, setTouched] = useState(false);
-  return {
-    clean: !touched && sent === value,
-    // Writing over an answer already sent: back at work on a round they had finished, which the
-    // room cannot see on its own.
-    editing: sent !== undefined && (touched || sent !== value),
-    change: (next: string) => {
-      setTouched(true);
-      onValueChange(next);
-    },
-    send: () => {
-      setSent(value);
-      setTouched(false);
-      playSound('Submit');
-      onSubmit();
-    },
-  };
-}
-
 /** The writing phase: the question above, the words in the middle, the keys under. The words
  * stay once sent and stay editable: a player who has sent an answer can change their mind, and
  * the room takes the last one they send. */
@@ -166,9 +138,13 @@ export function AnswerInput({
   // are what writes it now.
   const closed = timeUp || held;
   const { clean, editing, change, send } = useSentAnswer(value, onValueChange, onSubmit);
+  // Held in a ref so the effect turns on the flag and not the callback's identity: a fresh
+  // callback each render would re-fire it every frame, and firing it tells the room.
+  const report = useRef(onEditing);
+  report.current = onEditing;
   useEffect(() => {
-    onEditing?.(editing);
-  }, [editing, onEditing]);
+    report.current?.(editing);
+  }, [editing]);
 
   return (
     <Stack gap="Sm">
