@@ -12,7 +12,9 @@ export type IconName =
   | 'Play'
   | 'Transition'
   | 'Fullscreen'
-  | 'Minimize';
+  | 'Minimize'
+  | 'VolumeOn'
+  | 'VolumeOff';
 export interface IconButtonProps {
   icon: IconName;
   /** What the button does, for anyone who cannot see the mark. */

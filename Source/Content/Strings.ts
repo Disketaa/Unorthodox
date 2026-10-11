@@ -62,6 +62,10 @@ export const Strings = {
       fullscreen: 'Во весь экран',
       /** Gives the window back. */
       minimize: 'Выйти из полного экрана',
+      /** Turns the room's sounds off, for anyone who cannot see the mark. */
+      mute: 'Выключить звук',
+      /** Turns them back on. */
+      unmute: 'Включить звук',
     },
   },
   /** Names for the character picker. The picker is in the design system and cannot read Strings

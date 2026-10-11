@@ -1,5 +1,5 @@
 import { Separator, Stack } from '@/Design/Primitives';
-import { Banner, Button, FullscreenButton } from '@/Design/Components';
+import { Banner, Button, FullscreenButton, VolumeButton } from '@/Design/Components';
 import { GameConfig, Pace } from '@/Game';
 import { Strings } from '@/Content';
 import { LobbyCategory } from './LobbyCategory';
@@ -37,7 +37,12 @@ export function LobbyPace({ pace, isHost, onPick }: LobbyPaceProps) {
   return (
     <LobbyCategory
       title={Strings.lobby.settings.title}
-      action={<FullscreenButton labels={Strings.lobby.settings} />}
+      action={
+        <Stack direction="Horizontal" gap="Sm">
+          <FullscreenButton labels={Strings.lobby.settings} />
+          <VolumeButton labels={Strings.lobby.settings} />
+        </Stack>
+      }
     >
       <Separator>{Strings.lobby.settings.params}</Separator>
       <Stack direction="Horizontal" gap="Sm" align="Stretch" fill="Even">

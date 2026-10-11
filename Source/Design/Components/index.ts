@@ -14,6 +14,7 @@ export * from './ColorSwatch';
 export * from './CharacterPicker';
 export * from './IconButton';
 export * from './FullscreenButton';
+export * from './VolumeButton';
 export * from './Wordmark';
 export * from './RoundMeter';
 export * from './ThemeCard';

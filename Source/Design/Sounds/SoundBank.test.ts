@@ -7,12 +7,23 @@ let fake: FakeAudio;
 
 beforeEach(() => {
   vi.resetModules();
+  // A fresh bank reads its starting quietness from storage, so one test's mute would otherwise
+  // greet the next.
+  localStorage.clear();
   fake = installFakeAudio();
 });
 
-/** A fresh module per test, so decoded clips are not carried over. */
-function freshBank() {
-  return import('./SoundBank');
+/** A fresh bank per test, so decoded clips are not carried over. The mute control comes along,
+ * since it is what owns the quietness these tests are about. */
+async function freshBank() {
+  const bank = await import('./SoundBank');
+  return { ...bank, ...(await import('./Mute')) };
+}
+
+/** happy-dom holds `document.hidden` as a getter, so the tab is posed by standing in for it. */
+function poseTab(hidden: boolean) {
+  Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden });
+  document.dispatchEvent(new Event('visibilitychange'));
 }
 
 describe('SoundBank preloading', () => {
@@ -172,6 +183,77 @@ describe('SoundBank in a hidden tab', () => {
     await preloadSounds();
     poseTab(true);
     poseTab(false);
+    expect(fake.levels[0].value).toBe(1);
+  });
+});
+
+describe('SoundBank muted', () => {
+  it('is on by default, since a room that has not been asked to be quiet is not', async () => {
+    const { isMuted } = await freshBank();
+    expect(isMuted()).toBe(false);
+  });
+
+  it('cuts the sounds to nothing', async () => {
+    const { preloadSounds, setMuted, isMuted } = await freshBank();
+    await preloadSounds();
+    const [bus] = fake.levels;
+    expect(bus.value).toBe(1);
+    setMuted(true);
+    expect(isMuted()).toBe(true);
+    expect(bus.value).toBe(0);
+  });
+
+  it('brings them back', async () => {
+    const { preloadSounds, setMuted } = await freshBank();
+    await preloadSounds();
+    const [bus] = fake.levels;
+    setMuted(true);
+    setMuted(false);
+    expect(bus.value).toBe(1);
+  });
+
+  it('remembers the choice until the bus exists', async () => {
+    // Muting before anything has asked for a voice keeps the first bus off, so a room that
+    // muted itself in the lobby is not heard the moment the first press lands.
+    const { setMuted, preloadSounds } = await freshBank();
+    setMuted(true);
+    await preloadSounds();
+    expect(fake.levels[0].value).toBe(0);
+  });
+
+  it('is quiet when muted and when hidden, and only one of the two needs to say so', async () => {
+    // Muted and hidden are the same silence, so neither one can be undone by the other: the
+    // pair walks on, hidden, muted and neither, and the bus is off for three of the four.
+    const { preloadSounds, setMuted } = await freshBank();
+    await preloadSounds();
+    const [bus] = fake.levels;
+    expect(bus.value).toBe(1);
+    setMuted(true);
+    expect(bus.value).toBe(0);
+    poseTab(true);
+    expect(bus.value).toBe(0);
+    setMuted(false);
+    expect(bus.value).toBe(0);
+    poseTab(false);
+    expect(bus.value).toBe(1);
+  });
+
+  it('comes back quiet after a reload, since a muted room is still muted next time', async () => {
+    const { setMuted } = await freshBank();
+    setMuted(true);
+    const reloaded = await freshBank();
+    expect(reloaded.isMuted()).toBe(true);
+    await reloaded.preloadSounds();
+    expect(fake.levels[0].value).toBe(0);
+  });
+
+  it('comes back heard after a reload when it was unmuted', async () => {
+    const { setMuted } = await freshBank();
+    setMuted(true);
+    setMuted(false);
+    const reloaded = await freshBank();
+    expect(reloaded.isMuted()).toBe(false);
+    await reloaded.preloadSounds();
     expect(fake.levels[0].value).toBe(1);
   });
 });

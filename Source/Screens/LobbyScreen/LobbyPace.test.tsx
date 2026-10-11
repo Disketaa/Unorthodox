@@ -88,12 +88,13 @@ describe('the pace card', () => {
     dead.forEach((button) => expect(button.disabled).toBe(true));
   });
 
-  it('leaves a client the window control, since the window is nobody else’s', () => {
-    // Fullscreen is a look at this device rather than a setting of the room, so it is the
-    // one control on the card a client may press.
+  it('leaves a client the local controls, since the window and the sounds are nobody else’s', () => {
+    // Fullscreen and the volume are looks at this device rather than settings of the room, so
+    // they are the two controls on the card a client may press.
     const live = buttons(mount(false)).filter((button) => !button.disabled);
-    expect(live).toHaveLength(1);
+    expect(live).toHaveLength(2);
     expect(live[0].getAttribute('aria-label')).toBe(Strings.lobby.settings.fullscreen);
+    expect(live[1].getAttribute('aria-label')).toBe(Strings.lobby.settings.mute);
   });
 
   it('does not let a client change the room by pressing a dead button', () => {
