@@ -1,5 +1,5 @@
 import { Separator, Stack } from '@/Design/Primitives';
-import { Banner, Button } from '@/Design/Components';
+import { Banner, Button, FullscreenButton } from '@/Design/Components';
 import { GameConfig, Pace } from '@/Game';
 import { Strings } from '@/Content';
 import { LobbyCategory } from './LobbyCategory';
@@ -35,7 +35,10 @@ function waits(pace: Pace) {
  * point. Drawn `disabled` for clients, never hidden. */
 export function LobbyPace({ pace, isHost, onPick }: LobbyPaceProps) {
   return (
-    <LobbyCategory title={Strings.lobby.settings.title}>
+    <LobbyCategory
+      title={Strings.lobby.settings.title}
+      action={<FullscreenButton labels={Strings.lobby.settings} />}
+    >
       <Separator>{Strings.lobby.settings.params}</Separator>
       <Stack direction="Horizontal" gap="Sm" align="Stretch" fill="Even">
         {paces.map((option) => (

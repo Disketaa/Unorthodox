@@ -41,6 +41,14 @@ function buttons(container: HTMLElement): HTMLButtonElement[] {
   return found;
 }
 
+/** The pace buttons, found by the word on them rather than by where they sit: the card's own
+ * control at the title's end carries its name in a label instead, and a client's copy of it is
+ * live. */
+function paceButtons(container: HTMLElement): HTMLButtonElement[] {
+  const paceWords: readonly string[] = Object.values(Strings.lobby.settings.paces);
+  return buttons(container).filter((button) => paceWords.includes(button.textContent ?? ''));
+}
+
 describe('the pace card', () => {
   it('shows the three waits of the pace the room is set to', () => {
     const container = mount(true);
@@ -54,14 +62,14 @@ describe('the pace card', () => {
 
   it('fills the room’s own pace and leaves the other one quiet', () => {
     const container = mount(true);
-    expect(buttons(container)[0].className).not.toBe(buttons(container)[1].className);
+    expect(paceButtons(container)[0].className).not.toBe(paceButtons(container)[1].className);
   });
 
   it('changes the room when the host presses a button', () => {
     const picked: Pace[] = [];
     const container = mount(true, picked);
     act(() => {
-      buttons(container)[1].click();
+      paceButtons(container)[1].click();
     });
     expect(picked).toEqual(['Fast']);
   });
@@ -72,12 +80,20 @@ describe('the pace card', () => {
   });
 
   it('draws a client’s buttons dead, so the setting is visibly not theirs', () => {
-    const dead = buttons(mount(false));
+    const dead = paceButtons(mount(false));
     expect(dead).toHaveLength(2);
     // `disabled` rather than a new variant: it is what puts the not-allowed cursor and
     // the half opacity on, and a control that ignores its press should say so to the
     // browser rather than only to the eye.
     dead.forEach((button) => expect(button.disabled).toBe(true));
+  });
+
+  it('leaves a client the window control, since the window is nobody else’s', () => {
+    // Fullscreen is a look at this device rather than a setting of the room, so it is the
+    // one control on the card a client may press.
+    const live = buttons(mount(false)).filter((button) => !button.disabled);
+    expect(live).toHaveLength(1);
+    expect(live[0].getAttribute('aria-label')).toBe(Strings.lobby.settings.fullscreen);
   });
 
   it('does not let a client change the room by pressing a dead button', () => {

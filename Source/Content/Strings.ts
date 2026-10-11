@@ -58,6 +58,10 @@ export const Strings = {
       category: 'Выбор темы',
       /** A wait in whole seconds, which is the only unit the buttons move in. */
       seconds: (seconds: number) => `${seconds}с`,
+      /** Fills the window with the room, for anyone who cannot see the mark. */
+      fullscreen: 'Во весь экран',
+      /** Gives the window back. */
+      minimize: 'Выйти из полного экрана',
     },
   },
   /** Names for the character picker. The picker is in the design system and cannot read Strings

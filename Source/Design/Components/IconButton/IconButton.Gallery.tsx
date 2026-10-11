@@ -8,6 +8,8 @@ export function IconButtonGallery() {
       <Stack direction="Horizontal" gap="Sm">
         <IconButton icon="Exit" label="Выйти" onClick={() => {}} />
         <IconButton icon="Kick" label="Исключить Ann" size="Small" onClick={() => {}} />
+        <IconButton icon="Fullscreen" label="Во весь экран" onClick={() => {}} />
+        <IconButton icon="Minimize" label="Выйти из полного экрана" onClick={() => {}} />
       </Stack>
     </Stack>
   );

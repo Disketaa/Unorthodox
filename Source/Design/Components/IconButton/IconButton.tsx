@@ -3,7 +3,16 @@ import styles from './IconButton.module.css';
 
 /** The marks that stand in for a button's own label. */
 export type IconName =
-  'Exit' | 'Kick' | 'Bot' | 'Skip' | 'Turn' | 'Pause' | 'Play' | 'Transition';
+  | 'Exit'
+  | 'Kick'
+  | 'Bot'
+  | 'Skip'
+  | 'Turn'
+  | 'Pause'
+  | 'Play'
+  | 'Transition'
+  | 'Fullscreen'
+  | 'Minimize';
 export interface IconButtonProps {
   icon: IconName;
   /** What the button does, for anyone who cannot see the mark. */

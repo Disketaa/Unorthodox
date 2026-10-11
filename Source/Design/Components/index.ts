@@ -13,6 +13,7 @@ export * from './Character';
 export * from './ColorSwatch';
 export * from './CharacterPicker';
 export * from './IconButton';
+export * from './FullscreenButton';
 export * from './Wordmark';
 export * from './RoundMeter';
 export * from './ThemeCard';
