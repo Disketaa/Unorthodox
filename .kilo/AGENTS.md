@@ -425,6 +425,48 @@ Work in stages. Stop at end of each stage and wait for "Next" command. Do not st
 4. "Waiting for 'Next'".
 Do not duplicate code in chat, it is already in files.
 
+# WEBAI: SECOND OPINION
+
+`C:\Projects\WebAI` automates a web AI chat UI (Playwright + Chrome). The `webai` command fires a
+one-shot query at Claude, DeepSeek, Gemini or Kimi. Use it to get a second opinion on a hard
+problem, never to write the code that goes into this repo.
+
+```
+webai [--claude|--deepseek|--gemini|--kimi] [--new|--same|--auto] [--project-info] "<task>" ["@path"]
+```
+
+**Invocation from an agent shell.** The shell tool runs PowerShell, where bare `.cmd` invocation can
+fail across the PS -> cmd -> PS chain. Use one of these instead:
+
+```
+# Pattern A (recommended): call the ps1 directly
+& "C:\Projects\WebAI\Commands\Webai.ps1" --gemini --new "task" "@Source\Game\Reducer.ts"
+
+# Pattern B: bypass the wrapper, call Main.py from the project root
+cd C:\Projects\WebAI; python Main.py webai "@C:\temp\prompt.txt" --chat-mode new
+
+# Pattern C
+cmd /c "webai --gemini --new \"task\" \"@file\""
+```
+
+- `"<task>"` — the question (required).
+- `"@path"` — attaches that file to the chat as an upload, not as pasted text. Resolved relative to
+  the current directory first, then by walking up through all ancestor directories; absolute paths
+  are used as-is. A missing file is flagged `(FILE NOT FOUND: ...)` instead of failing the run.
+- `--project-info` attaches this `.kilo\AGENTS.md` to the chat, so the web model reads the same
+  project context an agent here does. Combine it with normal `@file` attachments.
+- `--new` starts a fresh chat, `--same` continues the last one for that task, `--auto` (default)
+  reuses a known chat and starts a new one otherwise. Short forms `-n`, `-s`, `-a`.
+- File limits: Claude 10, Gemini 10, Kimi 10, DeepSeek 20. Exceeding the limit exits before the
+  browser opens, so count the `@file` references first.
+- Each model keeps its own saved chat link, so chats never cross models. `WEBCHAT_MODEL` sets a
+  default; an explicit flag overrides it.
+- The assembled prompt is written to `%TEMP%`, never to this project root, and deleted after.
+
+Attach the two or three files that actually decide the answer (the reducer, the protocol type, the
+failing suite) and state the constraints in the task text — pure `Game/`, no `Date.now`, 150-line
+cap, one comment dialect — because an answer written without them does not apply here.
+
 # DEFINITION OF DONE
 - `lint`, `tsc --noEmit`, `test`, `build` pass with no warnings.
 - Changing a value in `Tokens.css` changes appearance of whole app without editing components.
