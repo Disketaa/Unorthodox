@@ -31,8 +31,8 @@ const Sources: Record<SoundName, string> = {
 const Volumes: Record<SoundName, number> = {
   Pop: 0.3,
   Pling: 0.3,
-  Tick: 0.06,
-  Alarm: 0.22,
+  Tick: 0.03,
+  Alarm: 0.11,
   Submit: 0.3,
   Whoosh: 0.22,
 };
