@@ -6,8 +6,9 @@ import { HostState, membersOf } from './GameState';
 import type { PhaseName } from './PhaseFlow';
 import type { ActionOf } from './GameActions';
 
-/** The room put straight into a phase. Round data is started empty rather than carried, so a
- * jump into Reviewing shows an empty bank rather than answers nobody wrote. */
+/** The room put straight into a phase. Round data is started empty rather than carried, except
+ * from Writing into Reviewing: the dock steps the room one phase along there, and throwing the
+ * answers away would show a board of blanks for a round the room had already written. */
 export function handleGoToPhase(state: HostState, action: ActionOf<'GO_TO_PHASE'>): HostState {
   const base = {
     ...membersOf(state),
@@ -55,7 +56,9 @@ function phaseBody(
         phase,
         ...base,
         topic,
-        answers: new Map<PlayerId, string>(),
+        // The round's answers, when the dock stepped here from Writing. Empty from anywhere else,
+        // because there is nothing to carry and a jump is not a round anybody played.
+        answers: state.phase === 'Writing' ? state.answers : new Map<PlayerId, string>(),
         groupRejections: new Map(),
       };
     case 'Scores':

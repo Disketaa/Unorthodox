@@ -60,6 +60,22 @@ const timing = {
    * Short enough that the reveal and the hold together read as one beat rather than as a pause
    * of its own: the words are already in, and a long hold after them is dead air. */
   questionHoldMs: 3000,
+  /** How long after the round's answers start arriving, before the first of them is on screen.
+   * The pause is the point of the phase: a board the room can already read is a board nobody
+   * gets to watch being wrong about. */
+  revealLeadInMs: 1200,
+  /** How long one letter of an answer takes to arrive, and the floor and the ceiling on the
+   * whole of it. A rate rather than one length, because the two answers a room writes are three
+   * letters and twenty and neither should take the other's time. */
+  revealLetterMs: 55,
+  revealWriteMinMs: 280,
+  revealWriteMaxMs: 1600,
+  /** How long one answer takes to come in, and how many are left to come after the last one has
+   * opened, so a full board reads as a run rather than as twelve cards appearing at once. */
+  revealCardMs: 3500,
+  /** How long the room has to vote once the last answer is up. The reveal is shortened rather
+   * than this, so a full room is still a board everybody got to see before the phase ended. */
+  revealVoteMs: 20000,
 };
 
 export const GameConfig = {

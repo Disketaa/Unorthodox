@@ -1,43 +1,45 @@
-import { Stack, Screen, Text } from '@/Design/Primitives';
-import { Card, VoteButton } from '@/Design/Components';
-import { Strings } from '@/Content';
+import { Stack, Text } from '@/Design/Primitives';
+import { AnswerCards } from '@/Design/Components';
 
 export interface ReviewGroup {
   groupId: number;
   text: string;
   playerCount: number;
   voted: boolean;
+  /** Whether this is the card of a player who wrote nothing. Such a card is a record and not a
+   * control: there is no answer on it to vote out, and a vote that changed nothing would be a
+   * button the room pressed and saw nothing happen. */
+  isEmpty: boolean;
 }
 
 export interface ReviewScreenProps {
   topic: string;
   groups: readonly ReviewGroup[];
+  /** How many answers the room has got to. Left out the whole board is up, which is every screen
+   * but the one the round plays on. */
+  revealed?: number;
   onReject: (groupId: number) => void;
 }
 
-/** Reviewing phase: all answers at once, duplicates grouped, everyone can reject. */
-export function ReviewScreen({ topic, groups, onReject }: ReviewScreenProps) {
+/** Reviewing phase: all answers at once as a board of panels, duplicates grouped and carrying
+ * their count, everyone able to vote any of them out. A board rather than a column of rows
+ * because the round is read as one thing: how many answers, and which more than one wrote. */
+export function ReviewScreen({ topic, groups, revealed, onReject }: ReviewScreenProps) {
   return (
-    <Screen>
-      <Stack gap="Sm" align="Stretch">
-        <Text variant="Caption">{Strings.reviewing.topicLabel}</Text>
-        <Text variant="Title">{topic}</Text>
-        <Text variant="Caption">{Strings.reviewing.rejectHint}</Text>
-      </Stack>
-      {groups.map((group) => (
-        <Card key={group.groupId} variant="Outlined">
-          <Stack direction="Horizontal" gap="Md" align="Center" justify="Between">
-            <Stack gap="Xs">
-              <Text variant="Body">{group.text}</Text>
-              <Text variant="Caption">{Strings.reviewing.answersCount(group.playerCount)}</Text>
-              <Text variant="Caption">
-                {group.voted ? Strings.reviewing.voted : Strings.reviewing.notVoted}
-              </Text>
-            </Stack>
-            <VoteButton voted={group.voted} onVote={() => onReject(group.groupId)} />
-          </Stack>
-        </Card>
-      ))}
-    </Screen>
+    <Stack gap="Md" grow align="Stretch">
+      {/* The question over the board, centred, since every card on the board is centred. */}
+      <Text variant="Topic">{topic}</Text>
+      <AnswerCards
+        answers={groups.map((group) => ({
+          id: group.groupId,
+          text: group.text,
+          count: group.playerCount,
+          voted: group.voted,
+          blank: group.isEmpty,
+        }))}
+        revealed={revealed}
+        onReject={onReject}
+      />
+    </Stack>
   );
 }

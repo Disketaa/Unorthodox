@@ -97,7 +97,9 @@ export type PublicReviewingState = PublicRoom & {
   durationMs: number;
   startedAt: number;
   players: PublicPlayer[];
-  groups: { groupId: number; text: string; playerCount: number }[];
+  /** One answer group as the room is shown it. `isEmpty` marks the card of a player who wrote
+   * nothing, so the room can see who sat the round out rather than seeing somebody missing. */
+  groups: { groupId: number; text: string; playerCount: number; isEmpty: boolean }[];
   theme?: ThemeId;
 };
 

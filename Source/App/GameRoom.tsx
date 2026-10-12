@@ -19,7 +19,7 @@ import type { GameSessionView } from './Hooks/UseGameSession';
 import type { SessionPhaseName } from './Hooks/UseSessionPhase';
 import { SessionRole, BlockedReason } from './Session';
 import { LobbyView } from './Views/LobbyView';
-import { GameScene, WritingScene } from './Views/GameScene';
+import { GameScene, WritingScene, ReviewScene } from './Views/GameScene';
 
 export interface GameRoomProps {
   roomCode: string;
@@ -89,7 +89,7 @@ const PhaseScreens: Record<
   Lobby: LobbyView,
   Choosing: GameScene,
   Writing: WritingScene,
-  Reviewing: GameScene,
+  Reviewing: ReviewScene,
   Scores: GameScene,
   Final: GameScene,
 };

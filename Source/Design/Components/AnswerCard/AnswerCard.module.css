@@ -1,48 +1,189 @@
+/* One answer on a panel. The theme card's own construction, with the answer in the place its
+ * name goes: a filled surface with no frame, an oversized figure behind the writing, the grain
+ * over both, and every size a share of the card's width so a phone draws nine small cards
+ * rather than nine wide ones with less room in them. The frame is re-declared rather than a
+ * `Card` because the card has to be the thing the wash lands on, and `Card` paints its own
+ * surface opaquely. */
 .Root {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: var(--Space-AnswerCardPadding);
+  gap: var(--Space-Xs);
+  --AnswerCard-Surface: var(--Color-Surface-Hover);
+  background: var(--AnswerCard-Surface);
+  color: var(--Color-Text-Default);
+  border: none;
+  border-radius: var(--Radius-Card);
+  cursor: var(--Cursor-Pointer);
+  /* The card's own sizes, as shares of its width, resolved here rather than in the token file.
+   * A custom property's value is substituted where it is declared, not where it is used, so a
+   * chain at the root resolves against whatever the width token holds there, and it holds
+   * nothing, since the width is `100cqw` from inside the slot. */
+  --FontSize-AnswerCard: calc(var(--Size-AnswerCardWidth) * 0.22 * var(--AnswerCard-Fit, 1));
+  --FontSize-AnswerCardMark: calc(var(--Size-AnswerCardWidth) * 1.2);
+  --Space-AnswerCardPadding: calc(var(--Size-AnswerCardWidth) * 0.07);
+  --Space-AnswerCardInset: calc(var(--Size-AnswerCardWidth) * 0.035);
+  transition:
+    background var(--Transition-Standard),
+    color var(--Transition-Standard),
+    opacity var(--Transition-Standard),
+    scale var(--Transition-Reveal);
+}
+
+/* The hover, in the accent the player's own screen is wearing. A wash rather than a tint,
+ * because the answer is read off the card and a raw tint behind a sentence fails contrast in
+ * every accent the game offers. */
+.Root:hover:not(.Voted) {
+  --AnswerCard-Surface: var(--Accent-Wash);
+  background: var(--AnswerCard-Surface);
+  color: var(--Color-Accent-Ink);
+}
+
+/* The inner panel: the box the figure is printed in, set in from the card's edge. The figure is
+ * cropped by the panel rather than by the card, so the answer and its figure are not cropped
+ * together. A panel and not a ring: a ring is a second edge on a surface already one flat
+ * colour. */
+.Panel {
+  position: absolute;
+  inset: var(--Space-AnswerCardInset);
+  z-index: 0;
+  overflow: hidden;
+  background: var(--AnswerCard-Surface);
+  border-radius: calc(var(--Radius-Card) - var(--Space-AnswerCardInset));
+  pointer-events: none;
+}
+
+/* How many players wrote this answer, as a figure far larger than the card. Pushed past the
+ * bottom right corner rather than centred: a figure set to fill the panel and then clipped
+ * reads as something the card is showing rather than as a count that happens to fit on it. The
+ * offset is a share of the figure's own size, so it holds as the figure grows. */
+.Mark {
+  position: absolute;
   display: flex;
   align-items: center;
-  gap: var(--Space-Sm);
-  padding: var(--Space-Sm) var(--Space-Md);
-  background: var(--Color-Surface-Hover);
-  border-radius: var(--Radius-Card);
-}
-
-/* Whose answer this is, cut short rather than allowed to take the row. The name is whatever
- * someone typed and the answer is what the row is for, so the name is what gives way: cut with
- * an ellipsis on a narrow screen, and full width whenever there is room for it. `min-width: 0`
- * is what makes the cut happen, since a flex item defaults to refusing to shrink below its
- * contents and would push the answer and the reject control off the end instead. */
-.Player {
-  composes: Truncate from '../../Primitives/Truncate/Truncate.module.css';
-  font-weight: 600;
-  color: var(--Color-Text-Default);
-}
-
-/* The answer itself, which is what the row is for, so it wraps rather than being cut: a cut
- * answer is a hidden answer. The name beside it is what gives way instead, so a long name and a
- * long answer together still fit a narrow screen. */
-.Text {
-  flex: 1;
-  min-width: 0;
-  font-size: var(--FontSize-Body);
-  color: var(--Color-Text-Default);
-  overflow-wrap: break-word;
-}
-
-.Rejected {
-  opacity: 0.5;
-}
-
-.RejectButton {
-  background: transparent;
-  border: none;
-  color: var(--Color-Feedback-Error);
-  font-size: var(--FontSize-Lg);
-  cursor: var(--Cursor-Pointer);
-  padding: 0;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  top: 50%;
+  left: 50%;
+  translate: var(--Offset-AnswerCardMark) var(--Offset-AnswerCardMark);
+  overflow: hidden;
+  font-family: var(--FontFamily-Display);
+  font-size: var(--FontSize-AnswerCardMark);
+  font-weight: bold;
   line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  opacity: var(--Opacity-AnswerCardMark);
+  color: var(--Color-Text-Quiet);
 }
 
-.RejectButton:hover {
-  opacity: 0.8;
+/* The grain, laid over the card the way the paper is laid over the page, and the same tile at
+ * the same blend the theme cards use: a noise tile at any opacity below one is a grey wash
+ * unless it is blended, since the tile has grey in its light parts as well as its dark. Drawn
+ * at its own size rather than scaled, which would average it into flat grey before the browser
+ * blended anything. */
+.Noise {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-image: var(--Texture-ThemeCardNoise);
+  background-repeat: repeat;
+  mix-blend-mode: var(--Blend-ThemeCardNoise);
+  opacity: var(--Opacity-ThemeCardNoise);
+}
+
+/* The answer, which is the whole content of the card, in the display face rather than the body
+ * one: nine sentences at reading size read as a paragraph rather than as nine things to pick
+ * from. Wraps rather than being cut, since a cut answer is a hidden answer. Two tenths of the
+ * card's width, and the width is the smaller of its two axes, so a short row scales the writing
+ * down with it rather than cutting it. */
+.Answer {
+  composes: Truncate from '../../Primitives/Truncate/Truncate.module.css';
+  position: relative;
+  z-index: 1;
+  /* Filling the card rather than sized by its own text, so the answer can be measured against
+   * the room it has to fit in. A box as tall as the writing inside it can never overflow
+   * itself, which is the one thing this card needs to know: measured that way a long answer
+   * reports itself as fitting and is then cut off by the card's own edge instead of being
+   * written smaller. Centred here rather than by the card, since the card no longer has a row
+   * to centre. */
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  font-family: var(--FontFamily-Display);
+  font-size: var(--FontSize-AnswerCard);
+  line-height: 1.15;
+  text-align: center;
+  color: inherit;
+  /* The shared cut is composed in for its `min-width: 0`, and undone here: that cut is for a
+   * line that must stay one line, and this one is the whole card. Wrapping is the point, since
+   * a cut answer is a hidden answer. Clipped rather than allowed to run on, because the size is
+   * fitted to fit and a card that still cannot hold what was written on it has to stop at its
+   * own edge rather than print over the card beside it. */
+  white-space: normal;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  text-overflow: clip;
+}
+
+/* A card nobody may vote on: a record of a round rather than a control in it. No pointer, and
+ * no focus ring either, since there is nothing here to reach with a keyboard. */
+/* An answer the room has not got to yet. Held down and back rather than taken off the board:
+ * the cell is already there, and a grid that reflows as the room reads it moves the answers it
+ * has already voted on out from under its finger. Not a control yet either. */
+.Unturned {
+  opacity: 0;
+  scale: var(--Scale-AnswerCardUnturned);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .Unturned {
+    scale: 1;
+  }
+}
+.Record {
+  cursor: var(--Cursor-Default);
+}
+
+/* The card of a player who wrote nothing. Held to the same quietness as a theme card with no
+ * rounds left in it, and it is the same word: on offer or not. Deeper than a voted answer,
+ * since a vote is one player's judgement on this round while a blank is nobody having written
+ * at all. */
+.Blank {
+  opacity: var(--Opacity-ThemeCardSpentOut);
+}
+
+/* The answer this player has voted out. Held back rather than struck through or deleted, since
+ * a strike is a judgement on the answer and the vote is only this player's. */
+.Voted {
+  opacity: var(--Opacity-AnswerCardVoted);
+  cursor: var(--Cursor-Default);
+}
+
+/* The vote is in, so the card does not answer the pointer any more: there is nothing left on it
+ * to press. */
+.Voted:hover {
+  --AnswerCard-Surface: var(--Color-Surface-Hover);
+  background: var(--AnswerCard-Surface);
+  color: var(--Color-Text-Default);
+}
+
+/* The focus ring on the card itself, since there is no border left to recolour. Drawn outside
+ * the fill by an outline, which is what does that without taking any of the card's width: a
+ * focused card that grew a pixel would be a card out of line with the eight beside it. */
+.Root:focus-visible {
+  outline: var(--Border-Width-Default) solid var(--Color-Border-Focus);
+  outline-offset: var(--Border-Width-Default);
 }

@@ -6,7 +6,7 @@ export * from './PlayerBar';
 export * from './RoomCodeBadge';
 export * from './Timer';
 export * from './AnswerCard';
-export * from './VoteButton';
+export * from './AnswerCards';
 export * from './ScoreRow';
 export * from './Banner';
 export * from './Character';

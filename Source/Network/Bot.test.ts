@@ -102,9 +102,11 @@ function writing(...seats: string[]): HostState {
 }
 
 describe('botAnswer', () => {
-  it('writes five words off the list', () => {
+  it('writes one word off the list', () => {
+    // A bot that filled its length with words would match nobody, and the round is scored on
+    // duplicates. One word out of fifteen is how a bot lands in the same group as another bot.
     const text = botAnswer(seeded());
-    expect(text.split(' ')).toHaveLength(5);
+    expect(text.split(' ')).toHaveLength(1);
   });
 
   it('fits the field a player types into', () => {
@@ -112,9 +114,32 @@ describe('botAnswer', () => {
     expect(text.length).toBeLessThanOrEqual(GameConfig.limits.answerMaxLength);
   });
 
-  it('repeats a word, so two bots can land on one answer', () => {
-    const answers = Array.from({ length: 60 }, (_, i) => botAnswer(createRandom(i)));
-    expect(answers.some((text) => new Set(text.split(' ')).size < 5)).toBe(true);
+  it('writes a word short enough to always fit, whatever it drew', () => {
+    // The field is the whole constraint on the list: every word on it has to land inside the
+    // answer length whatever the bot happened to write, and a word too long would be cut in half
+    // by the field rather than by the room.
+    for (let draw = 0; draw < 200; draw += 1) {
+      expect(botAnswer(createRandom(draw)).length).toBeLessThanOrEqual(
+        GameConfig.limits.answerMaxLength
+      );
+    }
+  });
+
+  it('writes words of the length the list claims they are', () => {
+    // Three letters is what keeps a bot's answer short enough to land inside the field and the
+    // same size on every card, which is what a bot is for. A four-letter word on the list would
+    // still fit the field but would not be the thing the list says it is.
+    for (let draw = 0; draw < 200; draw += 1) {
+      expect(botAnswer(createRandom(draw))).toHaveLength(3);
+    }
+  });
+
+  it('lands on the same word as another bot often enough to make a duplicate group', () => {
+    // Fifteen words and a full room of eleven bots: the room is scored on duplicates, so the list
+    // is only wide enough if two of them land on the same one. Sampled rather than argued, since
+    // what has to hold is that it happens, not how often.
+    const answers = Array.from({ length: 11 }, (_, i) => botAnswer(createRandom(i)));
+    expect(new Set(answers).size).toBeLessThan(answers.length);
   });
 });
 

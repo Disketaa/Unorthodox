@@ -1,0 +1,99 @@
+/* The room's answers on a board, filling the room it is given in both directions. `1fr` on both
+ * axes, so a card is the width and the height that is actually there rather than one predicted
+ * from the window before the board was laid out. The rows are floored so a card never becomes a
+ * strip too short to read, and the board scrolls when the floor and the room disagree. */
+.Root {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: minmax(var(--Size-AnswerCardHeightMin), 1fr);
+  justify-content: center;
+  gap: var(--Space-AnswerCardsGap);
+  /* Three cards and the two gaps, so a fourth never starts a row of its own beside three, which
+   * would read as a row of four and a pair rather than as one board. */
+  max-width: var(--Layout-AnswerCardsMaxWidth);
+  margin: 0 auto;
+  /* The parent's whole width, because a row of `1fr` tracks cannot size itself: the tracks are
+   * fractions of the row and the row is as wide as the tracks. Measured from its contents there
+   * is nothing to divide and the board collapses. */
+  width: 100%;
+  /* The height its parent has left rather than the height its cards ask for. `min-height: 0` is
+   * what allows that, since a flex item's floor is its own contents. The cap is the whole of
+   * "the board fits the screen": `#root` is a `min-height`, so nothing above can hand the board
+   * a height to divide and a row of `1fr` in that chain resolves to its contents, which is four
+   * rows of cards and taller than the screen it exists to fit. */
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: var(--Layout-AnswerCardsMaxHeight);
+  /* Scrolling the board, for the one case the cap cannot cover: four rows at the floor plus
+   * their gaps is more than a small screen has under the player bar, and squeezing them to fit
+   * leaves cards of twenty pixels with a word cut across. A card nobody can read is worse than
+   * a card that has to be scrolled to, so the board scrolls and keeps its rows. It scrolls here
+   * rather than on the page because the stage above already clips, and a page that scrolled
+   * would take the player bar and the countdown off the screen with it. */
+  overflow-y: auto;
+  /* No scrollbar of its own. Each card arrives through a squash that starts it over-tall, and a
+   * scaled box extends the scrollable area, so for as long as an arrival runs the board really
+   * does overflow and a bar appears over the answers and then goes again a second later. The
+   * board is an inner region scrolled by gesture rather than dragged, which is the reason the
+   * page hides its own bar on a device with no pointer. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* The same bar in the browsers that reach for the pseudo-element, which ignore
+ * `scrollbar-width` outright unless a `selector()` support query says otherwise. */
+.Root::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* The count is a choice between widths rather than a consequence of one, so it is stated: one
+ * class per count the board can be drawn at, written by the component and nowhere else. It is
+ * decided in render rather than in a query, because the board also draws the empty cells a
+ * part-filled row needs, and a query would change the columns without changing them. */
+.Columns1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.Columns2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.Columns3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* An empty cell, holding the place of one the last row is short by. Nothing to see and nothing
+ * to press, and `min-height: 0` so a row the room cannot afford is cut on the answers rather
+ * than on the space beside them. */
+.Filler {
+  min-height: 0;
+  pointer-events: none;
+}
+
+/* One card's slot, and the box its size is decided on. The slot rather than the card, so
+ * `AnswerCard` stays a closed component that knows nothing about the size it is drawn at.
+ * `size` rather than `inline-size`, because a board of cards is short: a card sized on width
+ * alone puts a long answer onto a panel a third of that height, which overflows it and scrolls
+ * the page. Containment takes the contents out of the sizing, so the slot measures nothing and
+ * is given both of its axes instead. */
+.Slot {
+  container-type: size;
+  /* Full height of the row, which is what keeps the rows touching: a card shorter than its row
+   * and centred in it leaves the slack as a band between one row and the next. `min-height: 0`
+   * is what lets it be shorter than its contents, so a row the room cannot afford is cut rather
+   * than pushing the row above it out of the board. */
+  height: 100%;
+  min-height: 0;
+}
+
+/* The card's width, and the token every size on a card is a share of: the answer, the padding,
+ * the count behind it. The smaller of the two axes, the second term being the width a card this
+ * tall needs to keep its shape. On the card and not on the slot, since container units are
+ * substituted against the container of the element declaring them and the slot's own is absent,
+ * which falls back to a constant window width. */
+.Slot > * {
+  --Size-AnswerCardWidth: min(100cqw, 100cqh * 4 / 3);
+  height: 100%;
+  width: 100%;
+}

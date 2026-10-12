@@ -6,6 +6,7 @@ import { HostState, membersOf } from './GameState';
 import { roundsAfter } from './ThemeRounds';
 import { scoreRound } from './RoundScoring';
 import { nextPlayerInTurn, turnOrder } from './Turns';
+import { toggleRejection } from './RejectionVotes';
 import type { ActionOf } from './GameActions';
 
 export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>): HostState {
@@ -135,11 +136,8 @@ export function handleRejectGroup(
   if (state.phase !== 'Reviewing') {
     return state;
   }
-  const rejections = new Map(state.groupRejections);
-  const rejected = rejections.get(action.groupId) ?? new Set<PlayerId>();
-  rejected.add(action.playerId);
-  rejections.set(action.groupId, rejected);
-  return { ...state, groupRejections: rejections };
+  const votes = toggleRejection(state.groupRejections, action.groupId, action.playerId);
+  return { ...state, groupRejections: votes };
 }
 
 export function handleEndReviewing(

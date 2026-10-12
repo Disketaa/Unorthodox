@@ -55,13 +55,31 @@ const names = [
 /** A bot's seat. Never `p<number>`, which is what the roster hands to real players. */
 const BotIdPrefix = 'bot';
 
-/** What a bot writes. Five words, every one three letters, so an answer always lands inside
- * `answerMaxLength`. Few enough that two bots land on the same answer often, which is the
- * duplicate group a round is scored by. */
-const answerWords = ['кот', 'сыр', 'дом', 'чай', 'нос'] as const;
+/** What a bot writes. Fifteen words to choose from, every one three letters, so an answer always
+ * lands inside `answerMaxLength` and two bots landing on the same one is a common enough draw
+ * to be the duplicate group a round is scored by. */
+const answerWords = [
+  'кот',
+  'сыр',
+  'дом',
+  'чай',
+  'нос',
+  'зуб',
+  'рот',
+  'ухо',
+  'мед',
+  'сок',
+  'дым',
+  'кит',
+  'лук',
+  'суп',
+  'шум',
+] as const;
 
-/** How many words make up one bot's answer, which is the whole list. */
-const AnswerWordCount = 5;
+/** How many words make up one bot's answer: one. A bot that filled its length with words would
+ * never match anybody, and the round is scored on duplicates, so one word out of the fifteen is
+ * the only thing a bot is here to produce. */
+const AnswerWordCount = 1;
 
 interface Bot {
   playerId: PlayerId;
@@ -94,9 +112,8 @@ export function botsIn(state: HostState): number {
   return [...state.players.keys()].reduce((highest, id) => Math.max(highest, botNumber(id)), 0);
 }
 
-/** What one bot writes: five words off the list, joined the way a person would type them. Drawn
- * with repetition rather than without, since the point of a bot is a round to play and two bots
- * landing on one answer is a duplicate group the room scores like any other. */
+/** What one bot writes: one word off the list, drawn with repetition rather than without, since
+ * two bots landing on the same word is the duplicate group the room scores like any other. */
 export function botAnswer(random: Random): string {
   const words: string[] = [];
   for (let i = 0; i < AnswerWordCount; i += 1) {

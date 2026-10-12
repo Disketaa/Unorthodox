@@ -36,19 +36,20 @@
   min-width: 0;
 }
 
-/* The round's question. Wrapped rather than cut, unlike `Title`, because a question is read and
- * a name is scanned: cutting it with an ellipsis drops the part that says what is being asked,
- * and a question is the one piece of text a player must not lose the end of. At the body's size
- * rather than a display one, and sitting on one line beside the theme it was drawn from: a long
- * question wraps to a second line and the theme beside it grows to match rather than being left
- * beside the first line alone. */
+/* The round's question, over a board of answers. Wrapped rather than cut, unlike `Title`, since
+ * a question is read and a name is scanned: cutting it with an ellipsis drops the part that
+ * says what is being asked. Clamped to the window, as `Display` is. */
 .VariantTopic {
-  font-family: var(--FontFamily-Body);
-  font-size: var(--FontSize-Body);
-  font-weight: 700;
-  line-height: 1.25;
+  font-family: var(--FontFamily-Display);
+  font-size: clamp(var(--FontSize-Xl), 4.4vw, var(--FontSize-H1));
+  line-height: 1.15;
+  text-align: center;
+  color: var(--Color-Text-Title);
   overflow-wrap: break-word;
+  /* Break at a syllable rather than mid-word, which needs lang="ru" on <html>. */
   hyphens: auto;
+  /* A flex item defaults to min-width:auto, which stops a long word from shrinking and pushes
+   * the whole layout wider than the screen. */
   min-width: 0;
 }
 

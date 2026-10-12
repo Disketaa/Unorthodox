@@ -114,6 +114,9 @@ export const Strings = {
   reviewing: {
     topicLabel: 'Тема',
     rejectHint: 'Нажмите, если ответ не подходит',
+    /** On a card for a player who wrote nothing, so the room can see who sat the round out
+     * rather than seeing that somebody is missing. */
+    blank: 'Пусто',
     answersCount: (count: number) => (count > 1 ? `${count} одинаковых` : 'уникальный ответ'),
     notVoted: 'Ответ не подходит',
     voted: 'Голос учтён',

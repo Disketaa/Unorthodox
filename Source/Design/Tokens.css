@@ -604,6 +604,55 @@ body.PageFade {
     3 * var(--Size-ThemeCardWidthMax) + 2 * var(--Space-ThemeCardsGap)
   );
 
+  /* The board of answers, in the same terms as the bank it sits under. Wider than a theme card
+   * because what a card holds here is a sentence rather than one or two words, and the same
+   * `clamp` for the gap because the same reasoning applies: the gap is what the card's width is
+   * measured from, so it cannot be a share of the card. */
+  --Size-AnswerCardWidthMax: 460px;
+  /* How tall the board may be: the window less what is above it. The note and the player bar
+   * sit over the board rather than beside it, so this is the one measurement on the board that
+   * has to subtract the game's own chrome. Everything else on it is read off the room it is
+   * given. */
+  --Layout-AnswerCardsMaxHeight: calc(
+    100dvh - 2 * var(--Layout-ScreenPaddingVertical) - var(--Size-PlayerBarSeatMax) -
+      var(--FontSize-H1) - var(--FontSize-Caption) - var(--Space-Lg)
+  );
+  /* The shortest a row of cards may be, and past it the board stops trying to fit. Twelve
+   * answers are four rows, and four rows of this plus their gaps is more than a small screen
+   * has under a player bar. Below the floor a card is a strip of twenty pixels with a word cut
+   * across it, which is not a card anybody can read, so the board keeps its rows and scrolls
+   * instead. */
+  --Size-AnswerCardHeightMin: 60px;
+  --Space-AnswerCardsGap: clamp(6px, 3vw, 16px);
+  --Layout-AnswerCardsMaxWidth: calc(
+    3 * var(--Size-AnswerCardWidthMax) + 2 * var(--Space-AnswerCardsGap)
+  );
+  /* How far the count behind an answer is pushed past the card's centre towards its bottom
+   * right corner. In `em` of the figure's own size rather than a share of the card, for the
+   * reason the theme card's own mark is: a card narrows on a phone and a fixed inset would put
+   * the figure back inside it there. */
+  --Offset-AnswerCardMark: -0.25em;
+  /* How far the count is held back. Fainter than a theme card's number and never under the
+   * pointer, since here the figure is not the card saying which thing this is: the answer is,
+   * and a count that lifted under the cursor would compete with the sentence in front of it
+   * rather than say anything about it. */
+  --Opacity-AnswerCardMark: 0.09;
+  /* How far an answer this player has voted out is held back. Well clear of the waiting step a
+   * theme card uses for the same word, because this vote is final for this round: the card is
+   * not going to come back on its own, and a card being held back for a moment is quiet while a
+   * card that has been dealt with is out of it. */
+  --Opacity-AnswerCardVoted: 0.45;
+  /* An answer the room has not got to yet, held down and back on its own cell. Short of
+   * nothing, since a card that reaches zero while still visible is a card being switched off
+   * rather than one put away, and the cell itself is what tells the room how many answers are
+   * still to come. */
+  --Scale-AnswerCardUnturned: 0.92;
+  /* How long an answer takes to come over, and how it moves as it does. Slower than the hover
+   * and slower than the pop on purpose: this is the beat the round is read on, and a card that
+   * snapped in would leave the room no moment to react to what it said. */
+  --Duration-AnswerCardTurn: 700ms;
+  --Transition-AnswerCardTurn: var(--Duration-AnswerCardTurn) var(--Easing-Decelerate);
+
   /* Layout, and how wide one container of a screen may be, and how many may sit side by side.
    * The width is what a card's text is measured against, so it is the readable line length
    * rather than a share of the screen: a card is never wider because the window is. The count

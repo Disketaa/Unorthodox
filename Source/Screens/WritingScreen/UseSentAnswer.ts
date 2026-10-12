@@ -24,7 +24,7 @@ export function useSentAnswer(
     send: () => {
       setSent(value);
       setTouched(false);
-      playSound('Submit');
+      playSound('Card');
       onSubmit();
     },
   };

@@ -1,6 +1,7 @@
 export * from './GameConfig';
 export * from './PhaseFlow';
 export * from './Question';
+export * from './Reveal';
 export * from './ThemeDeck';
 export * from './Normalization';
 export * from './Grouping';

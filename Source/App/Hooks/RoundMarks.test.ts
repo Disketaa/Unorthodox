@@ -51,6 +51,32 @@ describe('Round marks', () => {
     const next = markRejected(marks, roundTwo, 1);
     expect([...rejectedIn(next, roundTwo)]).toEqual([1]);
   });
+
+  it('takes a vote back when the same answer is pressed again', () => {
+    // A player who changed their mind mid-round has to be able to say so, and a vote nobody may
+    // take back is a sentence rather than a vote. The host counts the same press the same way.
+    let marks = markRejected(emptyMarks(), roundOne, 1);
+    expect([...rejectedIn(marks, roundOne)]).toEqual([1]);
+    marks = markRejected(marks, roundOne, 1);
+    expect([...rejectedIn(marks, roundOne)]).toEqual([]);
+  });
+
+  it('leaves the other answers alone when one is taken back', () => {
+    let marks = markRejected(emptyMarks(), roundOne, 0);
+    marks = markRejected(marks, roundOne, 1);
+    marks = markRejected(marks, roundOne, 0);
+    expect([...rejectedIn(marks, roundOne)]).toEqual([1]);
+  });
+
+  it('starts the next round with no vote on it at all', () => {
+    // Group ids are per round, so the same id in the next round is a different answer and must
+    // not arrive already voted for.
+    let marks = markRejected(emptyMarks(), roundOne, 2);
+    marks = markRejected(marks, roundTwo, 2);
+    expect([...rejectedIn(marks, roundTwo)]).toEqual([2]);
+    marks = markRejected(marks, roundTwo, 2);
+    expect([...rejectedIn(marks, roundTwo)]).toEqual([]);
+  });
 });
 
 describe('Round mark isolation', () => {

@@ -6,6 +6,7 @@ import { PhaseInfoView } from './PhaseInfoView';
 import { PlayerBarView } from './PlayerBarView';
 import { QuestionOverlay } from './QuestionOverlay';
 import { ThemeCardsView } from './ThemeCardsView';
+import { ReviewView } from './ReviewView';
 import { WritingView } from './WritingView';
 import type { PhaseViewProps } from './LobbyView';
 
@@ -20,8 +21,11 @@ export function GameScene({
   // The bank leaves once the question is on screen. It was never going to be answered then, and it
   // takes the whole window, which is the one place the question has to be read.
   const bankOpen = view.phase === 'Choosing' && choosing?.question === undefined;
+  // Stretch rather than centre, so a phase may lay itself out across the whole stage: the note
+  // and the bar above centre their own contents, and a centred flex item is sized to what is in
+  // it, which for a row of cards is cards measuring themselves against the cards beside them.
   return (
-    <Stack align="Center" gap="Md" grow clip>
+    <Stack align="Stretch" gap="Md" grow clip>
       <Stack gap="Md" align="Center">
         <PhaseInfoView view={view} />
         <PlayerBarView view={view} />
@@ -50,6 +54,16 @@ export function WritingScene({ view }: PhaseViewProps) {
   return (
     <GameScene view={view}>
       <WritingView view={view} />
+    </GameScene>
+  );
+}
+
+/** Reviewing: the stage with the board of answers under it, taking the room the stage leaves so
+ * nine of them fill it rather than scroll half the round below the fold. */
+export function ReviewScene({ view }: PhaseViewProps) {
+  return (
+    <GameScene view={view}>
+      <ReviewView view={view} />
     </GameScene>
   );
 }

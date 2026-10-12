@@ -1,5 +1,5 @@
 import { PlayerId, ThemeId } from '@/Core';
-import { HostState } from './GameState';
+import { HostState, ReviewingState } from './GameState';
 import { groupAnswers } from './Grouping';
 import type {
   PublicFinalState,
@@ -104,15 +104,30 @@ export function toPublicWritingState(state: HostState): PublicWritingState {
   };
 }
 
+/** The cards the board is drawn from: the answers as written, plus one card per player who wrote
+ * nothing, counted off the roster rather than the answers since a player who sat out is in
+ * neither, and placed last so a blank never splits a pair that belongs together. */
+function reviewGroups(state: ReviewingState): PublicReviewingState['groups'] {
+  const groups = groupAnswers([...state.answers.values()]).map((group) => ({
+    groupId: group.groupId,
+    text: group.answers[0] ?? '',
+    playerCount: group.answers.length,
+    isEmpty: false,
+  }));
+  let nextId = groups.length;
+  for (const playerId of state.players.keys()) {
+    if (state.answers.has(playerId)) continue;
+    groups.push({ groupId: nextId, text: '', playerCount: 1, isEmpty: true });
+    nextId += 1;
+  }
+  return groups;
+}
+
 export function toPublicReviewingState(state: HostState): PublicReviewingState {
   if (state.phase !== 'Reviewing') {
     throw new Error('Invalid state for Reviewing');
   }
-  const groups = groupAnswers([...state.answers.values()]).map((group) => ({
-    groupId: group.groupId,
-    text: group.answers[0],
-    playerCount: group.answers.length,
-  }));
+  const groups = reviewGroups(state);
   return {
     ...room(state),
     phase: 'Reviewing',

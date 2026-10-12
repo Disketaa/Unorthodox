@@ -2,18 +2,18 @@ import plingUrl from './Pling.ogg';
 import popUrl from './Pop.ogg';
 import tickUrl from './Tick.ogg';
 import alarmUrl from './Alarm.ogg';
-import submitUrl from './Submit.ogg';
+import cardUrl from './Card.ogg';
 import whooshUrl from './Whoosh.ogg';
 import { muteBus } from './Mute';
 
-export type SoundName = 'Pop' | 'Pling' | 'Tick' | 'Alarm' | 'Submit' | 'Whoosh';
+export type SoundName = 'Pop' | 'Pling' | 'Tick' | 'Alarm' | 'Card' | 'Whoosh';
 
 export const SoundNames: readonly SoundName[] = [
   'Pop',
   'Pling',
   'Tick',
   'Alarm',
-  'Submit',
+  'Card',
   'Whoosh',
 ];
 
@@ -22,7 +22,7 @@ const Sources: Record<SoundName, string> = {
   Pling: plingUrl,
   Tick: tickUrl,
   Alarm: alarmUrl,
-  Submit: submitUrl,
+  Card: cardUrl,
   Whoosh: whooshUrl,
 };
 
@@ -33,7 +33,7 @@ const Volumes: Record<SoundName, number> = {
   Pling: 0.3,
   Tick: 0.03,
   Alarm: 0.11,
-  Submit: 0.3,
+  Card: 0.3,
   Whoosh: 0.22,
 };
 
@@ -46,15 +46,15 @@ const PressPitchSpread = 2.5;
  * wanders by a quarter tone every second is a wobble rather than a beat. */
 const TickPitchSpread = 1;
 
-/** Neither the alarm, the submit nor the whoosh has one — each happens once, and there is
- * nothing to vary it against. A send that wandered in pitch would be a second send waiting to
- * be heard. The whoosh sits with them because it is the one sound played rather than pressed. */
+/** Neither the alarm, the card nor the whoosh has one — each happens once, and there is nothing
+ * to vary it against. A card that wandered in pitch would be a second card waiting to be seen.
+ * The whoosh sits with them because it is the one sound played rather than pressed. */
 const PitchSpreads: Record<SoundName, number> = {
   Pop: PressPitchSpread,
   Pling: PressPitchSpread,
   Tick: TickPitchSpread,
   Alarm: 0,
-  Submit: 0,
+  Card: 0,
   Whoosh: 0,
 };
 
