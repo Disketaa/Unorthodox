@@ -2,18 +2,27 @@ import type { RefObject } from 'preact';
 import { useEffect } from 'preact/hooks';
 import { useViewportMeasure } from '@/Design/Primitives';
 
-/** How much of the size a step takes off, and how many steps before it gives up. A dozen is a
- * little under a third of the size: an answer needing more is not being read at a glance. */
-const FitStep = 0.92;
-const FitSteps = 12;
+/** How much of the writing a card may give up before it is drawn too small to read at all. A
+ * floor on the size rather than on the search, since the search measures what is left over. */
+const MinScale = 0.2;
+
+/** How many times the writing may be measured and shrunk before it is accepted as is. Every pass
+ * is a forced layout, so the count is kept low, and it is a bound rather than a way out: a card
+ * that cannot hold its answer within them was asked to hold something it was never going to. */
+const Passes = 6;
+
+/** How many lines of itself an answer may take up before the writing is made smaller. The cards
+ * are taller than they are wide and most of that height goes unused, so a long answer is two
+ * lines of full-size writing long before it is small writing on one line. */
+const MaxLines = 2;
 
 /** The scale the writing on a card is held at, as a custom property rather than a size, so the
  * size stays a share of the card's width and only the reading of it is fitted. */
 const FitProperty = '--AnswerCard-Fit';
 
-/** Shrinks the writing on a card until the whole of it fits, rather than cutting the end off. A
- * font size that fits its box is not expressible in CSS, so a card holding a word wider than
- * itself has three answers: wrap it, cut it, or measure it. This is the third one. */
+/** Shrinks the writing on a card until the answer is as tall as the card can give it, rather
+ * than cutting the end off. A font size that fits its box is not expressible in CSS, so this is
+ * the measure-it answer, and the only one where a player reads the whole of it. */
 export function useFittedText(node: RefObject<HTMLElement | null>, text: string): void {
   useEffect(fit(node), [node, text]);
   // The box changes under the writing whenever the card is laid out, the window moves, or its
@@ -30,17 +39,75 @@ function fit(node: RefObject<HTMLElement | null>): () => void {
     const element = node.current;
     // A box with no layout cannot be fitted to. Reporting that and stopping is what the observer
     // is for: it will call back once there is a box to measure.
-    if (element === null || element.clientHeight === 0) {
+    if (element === null || roomOf(element).clientHeight === 0) {
       return;
     }
     element.style.setProperty(FitProperty, '1');
-    for (let step = 0; step < FitSteps; step += 1) {
-      if (element.scrollHeight <= element.clientHeight + 1) {
-        return;
-      }
-      element.style.setProperty(FitProperty, String(FitStep ** (step + 1)));
-    }
+    scaleTo(element);
   };
+}
+
+/** How much of its full size the answer is drawn at. Each pass multiplies the size by what is
+ * measured to be left over, rather than dividing by a ratio taken once at the larger size. */
+function scaleTo(element: HTMLElement): void {
+  let scale = 1;
+  for (let pass = 0; pass < Passes; pass += 1) {
+    element.style.setProperty(FitProperty, String(scale));
+    if (fits(element)) {
+      return;
+    }
+    scale = Math.max(MinScale, scale * shortfall(element));
+  }
+  element.style.setProperty(FitProperty, String(scale));
+}
+
+/** How much smaller the writing must be drawn to fit, as a share of what it measures right now,
+ * rather than a share of full size: the line count moves in whole lines, so asking against full
+ * size answers the same question at every size and the same number comes back every time. */
+function shortfall(element: HTMLElement): number {
+  const height = textHeight(element);
+  const lines = linesIn(element);
+  const byHeight = height > 0 ? roomOf(element).clientHeight / height : 1;
+  const byLines = lines > 0 ? MaxLines / lines : 1;
+  return Math.min(1, byHeight, byLines);
+}
+
+/** Whether the answer is within the card: as tall as the room gives it, and no longer than the
+ * lines it is allowed. Both at once, and measured against the room rather than the answer,
+ * which is the box it is centred in and so as tall as the writing already is. */
+function fits(element: HTMLElement): boolean {
+  return (
+    textHeight(element) <= roomOf(element).clientHeight + 1 && linesIn(element) <= MaxLines
+  );
+}
+
+/** The card's inner room, which is the space the answer has to be written into. Its parent by
+ * construction: the answer is the only thing in the room, and the room fills the card. */
+function roomOf(element: HTMLElement): HTMLElement {
+  return element.parentElement ?? element;
+}
+
+/** How tall the writing itself is, rather than how tall the box around it is. The answer is
+ * centred in its box, and a centred line that overflows spills above the box's own top edge,
+ * which reading `scrollHeight` never reports. */
+function textHeight(element: HTMLElement): number {
+  const range = element.ownerDocument.createRange();
+  range.selectNodeContents(element);
+  const height = range.getBoundingClientRect().height;
+  range.detach();
+  return height;
+}
+
+/** How many lines of itself the answer is at the size it is currently drawn, against its own
+ * line height rather than a count of boxes: the line height is what the writing occupies, and
+ * it moves with the size being fitted. */
+function linesIn(element: HTMLElement): number {
+  const lineHeight = Number.parseFloat(getComputedStyle(element).lineHeight);
+  const height = textHeight(element);
+  if (!Number.isFinite(lineHeight) || lineHeight <= 0) {
+    return height;
+  }
+  return height / lineHeight;
 }
 
 /** Call back whenever the element's own box changes size, which is the writing being re-fitted

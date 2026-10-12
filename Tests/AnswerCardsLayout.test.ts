@@ -21,6 +21,7 @@ const Bar = /\.Root::-webkit-scrollbar[^{]*\{([^}]*)\}/;
 const SlotCard = /\.Slot > \*[^{]*\{([^}]*)\}/;
 const CardRoot = /\.Root[^{]*\{([^}]*)\}/;
 const Answer = /\.Answer[^{]*\{([^}]*)\}/;
+const Room = /\.Room[^{]*\{([^}]*)\}/;
 const Mark = /\.Mark[^{]*\{([^}]*)\}/;
 const Noise = /\.Noise[^{]*\{([^}]*)\}/;
 
@@ -34,13 +35,6 @@ function widthShare(name: string): number {
   );
   if (match?.[1] === undefined) throw new Error(`no width share found for ${name}`);
   return Number(match[1]);
-}
-
-/** The value of a custom property the card declares for itself, whitespace gone. */
-function cardToken(name: string): string {
-  const match = card.text.match(new RegExp(`${name}:\\s*([^;]+);`, 'i'));
-  if (match?.[1] === undefined) throw new Error(`no ${name} on the card`);
-  return match[1].replace(/\s+/g, '');
 }
 
 describe('the board of answers', () => {
@@ -150,8 +144,10 @@ describe('an answer card', () => {
     // declared and the root holds no width to resolve against.
     expect(tokens).not.toContain('--FontSize-AnswerCard:');
     // The share is of the card's width, multiplied by whatever the card has fitted itself to: the
-    // size stays a property of the box, and only the reading of it is fitted to the words.
-    expect(cardToken('--FontSize-AnswerCard')).toBe(
+    // size stays a property of the box, and only the reading of it is fitted to the words. Read on
+    // the answer rather than declared as a token on the card, since a custom property substitutes
+    // where it is declared: a fit written on the answer cannot reach a size the card resolved.
+    expect(card.declaration(Answer, 'font-size')).toBe(
       'calc(var(--Size-AnswerCardWidth)*0.22*var(--AnswerCard-Fit,1))',
     );
     expect(widthShare('--Space-AnswerCardPadding')).toBeGreaterThan(0);
@@ -165,15 +161,12 @@ describe('an answer card', () => {
     // scale is a property rather than a size, so a fitted answer is still a share of the card.
     expect(card.text).toContain('--AnswerCard-Fit');
     expect(card.declaration(Answer, 'overflow')).toBe('hidden');
-    // Filling the card rather than sized by its own writing, which is what makes the measurement
+    // Filling the card rather than sized by its own text, which is what makes the measurement
     // possible at all: a box as tall as the text inside it can never overflow itself, so a long
     // answer would report itself as fitting and then be cut by the card's own edge.
-    expect(card.declaration(Answer, 'flex')).toBe('11auto');
-    expect(card.declaration(Answer, 'min-height')).toBe('0');
-    // Centred here rather than by the card, since the card no longer has a row of its own to
-    // centre and a shrunk answer would otherwise sit against the top of the panel.
-    expect(card.declaration(Answer, 'display')).toBe('flex');
-    expect(card.declaration(Answer, 'align-items')).toBe('center');
+    expect(card.declaration(Room, 'flex')).toBe('11auto');
+    expect(card.declaration(Room, 'min-height')).toBe('0');
+    expect(card.declaration(Room, 'height')).toBe('100%');
   });
 
   it('has no frame, and is one step off the page rather than white on it', () => {
@@ -192,9 +185,9 @@ describe('an answer card', () => {
     // No track of its own: it is painted over the panel it is printed in and under the answer,
     // so the count is a figure behind a sentence rather than a third layer in the stack.
     expect(card.declares(Mark, 'z-index')).toBe(false);
-    expect(card.declaration(Answer, 'z-index')).toBe('1');
+    expect(card.declaration(Room, 'z-index')).toBe('1');
     expect(Number(card.declaration(Noise, 'z-index'))).toBeGreaterThan(
-      Number(card.declaration(Answer, 'z-index')),
+      Number(card.declaration(Room, 'z-index')),
     );
   });
 
@@ -208,16 +201,28 @@ describe('an answer card', () => {
   });
 
   it('wraps an answer rather than cutting it, and clips it at the card rather than over it', () => {
-    // The shared cut is composed in for its `min-width: 0`, and undone on this element, which is
-    // the one place a sentence is allowed onto two lines: a board where one answer is on two lines
-    // and the eight beside it are on one has its middle in the wrong place. Clipped rather than
-    // left to run on, because a card that cannot hold what was written on it has to stop at its
-    // own edge instead of printing over the card beside it.
-    expect(card.text).toContain('Truncate from');
+    // Wrapping is the point: a cut answer is a hidden answer, and this is the one place a
+    // sentence is allowed onto two lines. `Truncate` is deliberately not composed in, since it
+    // carries `white-space: nowrap` and a composed class lands after this one in the built
+    // stylesheet, which is how an answer came to be unable to wrap at all.
+    expect(card.text).not.toContain('Truncate from');
+    expect(card.declaration(Answer, 'min-width')).toBe('0');
     expect(card.declaration(Answer, 'white-space')).toBe('normal');
     expect(card.declaration(Answer, 'overflow')).toBe('hidden');
-    expect(card.declaration(Answer, 'text-overflow')).toBe('clip');
     expect(card.declaration(Answer, 'overflow-wrap')).toBe('break-word');
+    // Clipped rather than left to run on, because a card that cannot hold what was written on it
+    // has to stop at its own edge instead of printing over the card beside it.
+    expect(card.declaration(CardRoot, 'overflow')).toBe('hidden');
+  });
+
+  it('gives the answer its own width inside the room that centres it', () => {
+    // The writing is centred by a flex box and nothing else is. Left as bare text in that box it
+    // becomes an anonymous flex item sized to its longest line, and a word wider than the card
+    // can never wrap: there is nothing telling it how wide it is.
+    expect(card.declaration(Room, 'display')).toBe('flex');
+    expect(card.declaration(Room, 'align-items')).toBe('center');
+    expect(card.declaration(Answer, 'width')).toBe('100%');
+    expect(card.declaration(Answer, 'display')).toBe('block');
   });
 
   it('lays the same grain over the card the theme cards are printed on', () => {
@@ -229,7 +234,7 @@ describe('an answer card', () => {
     expect(card.declaration(Noise, 'mix-blend-mode')).toBe('var(--Blend-ThemeCardNoise)');
     expect(card.declares(Noise, 'background-size')).toBe(false);
     expect(Number(card.declaration(Noise, 'z-index'))).toBeGreaterThan(
-      Number(card.declaration(Answer, 'z-index')),
+      Number(card.declaration(Room, 'z-index')),
     );
   });
 

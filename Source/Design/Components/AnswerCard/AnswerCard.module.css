@@ -25,7 +25,6 @@
    * A custom property's value is substituted where it is declared, not where it is used, so a
    * chain at the root resolves against whatever the width token holds there, and it holds
    * nothing, since the width is `100cqw` from inside the slot. */
-  --FontSize-AnswerCard: calc(var(--Size-AnswerCardWidth) * 0.22 * var(--AnswerCard-Fit, 1));
   --FontSize-AnswerCardMark: calc(var(--Size-AnswerCardWidth) * 1.2);
   --Space-AnswerCardPadding: calc(var(--Size-AnswerCardWidth) * 0.07);
   --Space-AnswerCardInset: calc(var(--Size-AnswerCardWidth) * 0.035);
@@ -105,40 +104,40 @@
  * from. Wraps rather than being cut, since a cut answer is a hidden answer. Two tenths of the
  * card's width, and the width is the smaller of its two axes, so a short row scales the writing
  * down with it rather than cutting it. */
-.Answer {
-  composes: Truncate from '../../Primitives/Truncate/Truncate.module.css';
+/* The card's inner room, holding the answer and centring it. Filling the card rather than sized
+ * by its own text, so the answer is measured against the space it has rather than a box that
+ * grew to hold it. It draws no type of its own: the size the answer is fitted to is read on the
+ * answer, and a size declared here could not have been reached by a fit set on the answer. */
+.Room {
   position: relative;
   z-index: 1;
-  /* Filling the card rather than sized by its own text, so the answer can be measured against
-   * the room it has to fit in. A box as tall as the writing inside it can never overflow
-   * itself, which is the one thing this card needs to know: measured that way a long answer
-   * reports itself as fitting and is then cut off by the card's own edge instead of being
-   * written smaller. Centred here rather than by the card, since the card no longer has a row
-   * to centre. */
   flex: 1 1 auto;
   min-height: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
-  max-width: 100%;
+}
+
+/* The answer, and the only thing given a width of its own: centred by the flex box above with
+ * nothing around it, the writing would be an anonymous flex item sized to its longest line, and
+ * a word wider than the card could never wrap. Wrapping is the point, since a cut answer is a
+ * hidden one. `min-width: 0` is declared rather than composed in from `Truncate`, which carries
+ * `white-space: nowrap` and lands after this rule in the built sheet. */
+.Answer {
+  display: block;
+  width: 100%;
+  min-width: 0;
   font-family: var(--FontFamily-Display);
-  font-size: var(--FontSize-AnswerCard);
+  font-size: calc(var(--Size-AnswerCardWidth) * 0.22 * var(--AnswerCard-Fit, 1));
   line-height: 1.15;
-  text-align: center;
   color: inherit;
-  /* The shared cut is composed in for its `min-width: 0`, and undone here: that cut is for a
-   * line that must stay one line, and this one is the whole card. Wrapping is the point, since
-   * a cut answer is a hidden answer. Clipped rather than allowed to run on, because the size is
-   * fitted to fit and a card that still cannot hold what was written on it has to stop at its
-   * own edge rather than print over the card beside it. */
+  text-align: center;
   white-space: normal;
   overflow: hidden;
   overflow-wrap: break-word;
-  text-overflow: clip;
 }
 
-/* A card nobody may vote on: a record of a round rather than a control in it. No pointer, and
- * no focus ring either, since there is nothing here to reach with a keyboard. */
 /* An answer the room has not got to yet. Held down and back rather than taken off the board:
  * the cell is already there, and a grid that reflows as the room reads it moves the answers it
  * has already voted on out from under its finger. Not a control yet either. */
@@ -153,6 +152,9 @@
     scale: 1;
   }
 }
+
+/* A card nobody may vote on: a record of a round rather than a control in it. No pointer, and
+ * no focus ring either, since there is nothing here to reach with a keyboard. */
 .Record {
   cursor: var(--Cursor-Default);
 }
