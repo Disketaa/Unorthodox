@@ -66,6 +66,12 @@ export const Strings = {
       mute: 'Выключить звук',
       /** Turns them back on. */
       unmute: 'Включить звук',
+      /** Turns the music off. A word of its own rather than a second reading of the sound
+       * switch: the two govern different things, and the room's presses can go quiet while the
+       * track stays. */
+      musicOff: 'Выключить музыку',
+      /** Turns it back on. */
+      musicOn: 'Включить музыку',
     },
   },
   /** Names for the character picker. The picker is in the design system and cannot read Strings

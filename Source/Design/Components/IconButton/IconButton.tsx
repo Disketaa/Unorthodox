@@ -13,7 +13,9 @@ export type IconName =
   | 'Fullscreen'
   | 'Minimize'
   | 'VolumeOn'
-  | 'VolumeOff';
+  | 'VolumeOff'
+  | 'MusicOn'
+  | 'MusicOff';
 export interface IconButtonProps {
   icon: IconName;
   /** What the button does, for anyone who cannot see the mark. */

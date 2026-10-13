@@ -1,40 +1,20 @@
-import { loadMuted, saveMuted } from './MutedStorage';
+import { makeChannel, type Channel } from '../Audio/Channel';
+import { soundsStorage } from './MutedStorage';
 
-/** Whether the room's sounds are on. Read from storage, so a reload comes back as quiet as the
- * player left it. */
-let muted = loadMuted();
-/** The one bus every note goes out through, once the bank has made one. */
-let bus: GainNode | undefined;
-let watching = false;
+/** The room's sounds, as one channel: the bank plays out through whatever node it adopts here. */
+export const soundsChannel: Channel = makeChannel(soundsStorage);
 
-/** Whether the room's sounds are on. The flag is the source of truth; the bus gain follows it. */
+/** Whether the room's sounds are on. */
 export function isMuted(): boolean {
-  return muted;
+  return !soundsChannel.enabled();
 }
 
-/** Turns the room's sounds on or off, and tells the bus to follow. Where there is no bus yet the
- * choice is remembered, since the bus is made on the first ask. */
+/** Turns the room's sounds on or off. */
 export function setMuted(next: boolean): void {
-  muted = next;
-  saveMuted(next);
-  if (bus) bus.gain.value = gainFor();
+  soundsChannel.setEnabled(!next);
 }
 
-/** Hands the bank's bus to this control, at the volume the mute and the tab's visibility ask
- * for. Cut on the bus rather than by refusing to play: notes already sounding have to be cut
- * too, and a hidden tab's beat has to be cut as well, since nobody is there to hear it. */
+/** Hands the bank's bus to this control, which then governs it. */
 export function muteBus(under: GainNode): void {
-  bus = under;
-  under.gain.value = gainFor();
-  if (watching || typeof document === 'undefined') return;
-  watching = true;
-  document.addEventListener('visibilitychange', () => {
-    if (bus) bus.gain.value = gainFor();
-  });
-}
-
-/** The bus gain: off where the tab is hidden or the room is muted, one otherwise. One place
- * decides, so a hidden tab cannot drag the sounds back on after the room mutes them. */
-function gainFor(): number {
-  return muted || document.hidden ? 0 : 1;
+  soundsChannel.adopt(under);
 }

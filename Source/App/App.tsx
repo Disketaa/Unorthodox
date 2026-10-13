@@ -6,6 +6,7 @@ import { JoinScreen } from '@/Screens';
 import type { JoinScreenProps } from '@/Screens';
 import { AccentProvider } from '@/Design/Accent';
 import { GlyphField, PaperBackground } from '@/Design/Overlays';
+import { useMusic, useQuietMusic } from '@/Design/Music';
 import { DiagnosticsPanel } from './Views/DiagnosticsPanel';
 import { useAccent } from './Hooks/UseAccent';
 import { hostsRoom, rememberHosting } from '@/Network/RoomOwnership';
@@ -74,8 +75,11 @@ function Room(props: GameRoomProps) {
   );
 }
 
-/** The entry screen, over the background. */
+/** The entry screen, over the background. The menu's track is asked for here rather than by the
+ * app, so taking this screen down takes the music with it and the room is free to ask for its
+ * own without the two arguing over the one bus. */
 function Entry(props: JoinScreenProps) {
+  useMusic('Menu');
   return (
     <WithBackground>
       <JoinScreen {...props} diagnostics={<DiagnosticsPanel />} />
@@ -111,6 +115,25 @@ function useEntryScreen(roomCodeFromLink?: string) {
   };
 }
 
+/** The props for the room this route names, or undefined where there is no room to enter: a
+ * player with no name yet is on the entry screen whatever the link said. The role is what this
+ * browser may do with the room, not what the link claims. */
+function roomPropsFor(
+  route: Route,
+  entry: ReturnType<typeof useEntryScreen>,
+  look: PlayerLook,
+  onLook: (look: PlayerLook) => void
+): GameRoomProps | undefined {
+  if (route.kind !== 'Room' || entry.name.trim().length === 0) return undefined;
+  return {
+    roomCode: route.roomCode,
+    role: hostsRoom(route.roomCode) ? 'Host' : 'Player',
+    name: entry.name.trim(),
+    look,
+    onLook,
+  };
+}
+
 export function App() {
   const route = useHashRoute();
   const entry = useEntryScreen(route.kind === 'Room' ? route.roomCode : undefined);
@@ -121,6 +144,9 @@ export function App() {
   // than with the join: by the time a name and a code are typed, the burst that introduces this
   // peer to a room lands on sockets that are already open.
   useEffect(warmRelays, []);
+  // The gallery is the one place that asks for no music in as many words; every
+  // other screen shares its track with the last one or hands over to another.
+  useQuietMusic(route.kind === 'Gallery');
   const onLook = (next: PlayerLook) => {
     onAccentLook(next);
     setLook(next);
@@ -134,16 +160,8 @@ export function App() {
       </>
     );
   }
-  if (route.kind === 'Room' && entry.name.trim().length > 0) {
-    const room: GameRoomProps = {
-      roomCode: route.roomCode,
-      // What this browser may do with this room, rather than what the link claims: the
-      // code is all a link carries, so the role is remembered, not read.
-      role: hostsRoom(route.roomCode) ? 'Host' : 'Player',
-      name: entry.name.trim(),
-      look,
-      onLook,
-    };
+  const room = roomPropsFor(route, entry, look, onLook);
+  if (room !== undefined) {
     return (
       <>
         <AccentProvider color={accent} />

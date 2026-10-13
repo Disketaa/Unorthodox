@@ -4,6 +4,7 @@ import tickUrl from './Tick.ogg';
 import alarmUrl from './Alarm.ogg';
 import cardUrl from './Card.ogg';
 import whooshUrl from './Whoosh.ogg';
+import { audioContext, resumeAudio } from '../Audio/Context';
 import { muteBus } from './Mute';
 
 export type SoundName = 'Pop' | 'Pling' | 'Tick' | 'Alarm' | 'Card' | 'Whoosh';
@@ -64,31 +65,15 @@ interface Voice {
 }
 
 let voice: Voice | undefined;
-let armed = false;
 const buffers = new Map<SoundName, AudioBuffer>();
 const loading = new Map<SoundName, Promise<void>>();
 
-/** Wakes the context on the first gesture anywhere, not on the first press. The browser spends
- * its first moments after a gesture bringing up an audio thread, so a press paying for that was
- * audibly late: the button moved and the pop arrived afterwards. */
-function wakeOnFirstGesture(context: AudioContext): void {
-  if (armed || typeof window === 'undefined') return;
-  armed = true;
-  const wake = () => {
-    if (context.state === 'suspended') void context.resume();
-    window.removeEventListener('pointerdown', wake);
-    window.removeEventListener('keydown', wake);
-  };
-  window.addEventListener('pointerdown', wake);
-  window.addEventListener('keydown', wake);
-}
-
-/** The context and the bus every note goes out through, created on the first ask. A suspended
- * context is legal before any gesture, and it is what lets the clips decode at load time. */
+/** The bus every note goes out through, made on the first ask and then the same bus for the rest
+ * of the page. The context behind it is shared with the music, so one gesture wakes both. */
 function voiceFor(): Voice | undefined {
   if (voice) return voice;
-  if (typeof AudioContext === 'undefined') return undefined;
-  const context = new AudioContext();
+  const context = audioContext();
+  if (!context) return undefined;
   const bus = context.createGain();
   bus.connect(context.destination);
   voice = { context, bus };
@@ -153,9 +138,8 @@ function speak(
  * at start-up rather than on the first press, so the buffer is already in memory by the time
  * anyone presses anything. Sounds already held are left alone, so this is safe to repeat. */
 export function preloadSounds(names: readonly SoundName[] = SoundNames): Promise<void[]> {
-  const context = voiceFor()?.context;
+  const context = audioContext();
   if (!context) return Promise.resolve([]);
-  wakeOnFirstGesture(context);
   return Promise.all(
     names.map((name) => {
       if (buffers.has(name)) return Promise.resolve();
@@ -176,7 +160,7 @@ export function playSound(name: SoundName, semitones?: number): void {
   const { context, bus } = played;
   // A press is a gesture too, so this is the fallback for a page that was
   // pressed without the preload having armed anything.
-  if (context.state === 'suspended') void context.resume();
+  resumeAudio();
   if (buffers.has(name)) {
     speak(context, bus, name, semitones);
     return;

@@ -106,6 +106,18 @@
   mask-size: 100%;
 }
 
+/* The music's own pair, and the same idea in two states: the track is heard, or it is not. Both
+ * files are drawn to the same size, so neither is drawn oversize. */
+.IconMusicOn .Icon {
+  mask-image: url('../../Icons/MusicOn.svg');
+  mask-size: 100%;
+}
+
+.IconMusicOff .Icon {
+  mask-image: url('../../Icons/MusicOff.svg');
+  mask-size: 100%;
+}
+
 /* The dock's own marks, sized as those files are drawn. Pause and Play are a filled pair rather
  * than two drawings of one idea, so the button changes its face rather than its meaning: the
  * room is running, or it is not. */

@@ -1,5 +1,6 @@
-import { IconButton } from '../IconButton';
-import { useVolumeToggle } from './UseVolume';
+import { useChannelToggle } from '../../Audio/UseChannelToggle';
+import { soundsChannel } from '../../Sounds';
+import { IconToggle } from '../IconToggle';
 
 export interface VolumeButtonProps {
   /** What the control says it does in each of its two states, for anyone who cannot see the
@@ -7,15 +8,16 @@ export interface VolumeButtonProps {
   labels: { mute: string; unmute: string };
 }
 
-/** Turns the room's sounds on and off. One control with two faces rather than two controls,
- * since only one of them is ever the thing to press. */
+/** Turns the room's sounds on and off — the presses, the beats and the alarms, and not the
+ * music, which has its own switch beside this one. */
 export function VolumeButton({ labels }: VolumeButtonProps) {
-  const { muted, onToggleVolume } = useVolumeToggle();
+  const { on, onToggle } = useChannelToggle(soundsChannel);
   return (
-    <IconButton
-      icon={muted ? 'VolumeOff' : 'VolumeOn'}
-      label={muted ? labels.unmute : labels.mute}
-      onClick={onToggleVolume}
+    <IconToggle
+      on={on}
+      icons={{ on: 'VolumeOn', off: 'VolumeOff' }}
+      labels={{ turnOn: labels.unmute, turnOff: labels.mute }}
+      onToggle={onToggle}
     />
   );
 }

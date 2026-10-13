@@ -9,7 +9,14 @@ import {
 } from '@/Screens';
 import { Strings } from '@/Content';
 import { PlayerLook, assertNever } from '@/Core';
-import { DebugDock, PausedRoom, PhaseSplash, StartCountdown } from '@/Design/Overlays';
+import {
+  DebugDock,
+  PausedRoom,
+  PhaseSplash,
+  PhaseSplashMs,
+  StartCountdown,
+} from '@/Design/Overlays';
+import { useMusic, type MusicName } from '@/Design/Music';
 import { useGameSession } from './Hooks/UseGameSession';
 import { useDebugToggle } from './Hooks/UseDebugToggle';
 import { usePhaseSplash } from './Hooks/UsePhaseSplash';
@@ -112,6 +119,15 @@ function PhaseScreen({ view }: { view: GameSessionView }) {
   return <Screen view={view} />;
 }
 
+/** Which track a phase is played under. The lobby and the connecting screen stay on the menu's,
+ * since a room that has not started is still a room being joined. Reviewing and the scores are
+ * one stretch from the room's side, the board still being counted, so they share a track. */
+function musicFor(phase: SessionPhaseName): MusicName {
+  if (phase === 'Lobby' || phase === 'Connecting') return 'Menu';
+  if (phase === 'Reviewing' || phase === 'Scores') return 'Voting';
+  return 'Game';
+}
+
 /** The room, and the host's dock under it. The dock is mounted here rather than by any screen,
  * because it outlives them: the "" that opens it belongs to the host rather than to a phase. */
 export function GameRoom({ roomCode, role, name, look, onLook }: GameRoomProps) {
@@ -133,6 +149,11 @@ function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
   const { veiling, count } = useStartCountdown(view, roomCode);
   const counting = veiling || count !== null;
   const { splashing, covered } = usePhaseSplash(view, counting);
+  // Asked for by the room's own phase, not by the screen under the count-in: a screen is swapped
+  // for the length of a fade, and a swap would restart the track playing. The count-in is still
+  // the lobby, so Start changes nothing here; the handover belongs to the transition after it.
+  const musicPhase = counting ? 'Lobby' : view.phase;
+  useMusic(musicFor(musicPhase), splashing ? PhaseSplashMs / 1000 : undefined);
   // The screen the count-in and the splash are played over: the phase the room is leaving, held
   // until the movement has covered it. A ref rather than state, because a view is a new object on
   // every render and holding one in state would re-render the room forever.

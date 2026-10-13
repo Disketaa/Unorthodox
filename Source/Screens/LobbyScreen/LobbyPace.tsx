@@ -1,5 +1,11 @@
 import { Separator, Stack } from '@/Design/Primitives';
-import { Banner, Button, FullscreenButton, VolumeButton } from '@/Design/Components';
+import {
+  Banner,
+  Button,
+  FullscreenButton,
+  MusicButton,
+  VolumeButton,
+} from '@/Design/Components';
 import { GameConfig, Pace } from '@/Game';
 import { Strings } from '@/Content';
 import { LobbyCategory } from './LobbyCategory';
@@ -41,6 +47,7 @@ export function LobbyPace({ pace, isHost, onPick }: LobbyPaceProps) {
         <Stack direction="Horizontal" gap="Sm">
           <FullscreenButton labels={Strings.lobby.settings} />
           <VolumeButton labels={Strings.lobby.settings} />
+          <MusicButton labels={Strings.lobby.settings} />
         </Stack>
       }
     >

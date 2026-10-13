@@ -4,6 +4,7 @@ import { setLogLevel } from '@/Core';
 import { isDebugEnabled } from '@/Network/Diagnostics';
 import { syncClockFromServer } from '@/Network/Clock';
 import { preloadSounds } from '@/Design/Sounds';
+import { preloadMusic } from '@/Design/Music';
 import { pruneStrayPath } from './Routes';
 import '@/Design/Tokens.css';
 import '@/Design/Reset.css';
@@ -20,6 +21,10 @@ void syncClockFromServer();
 /** Decoded before anyone presses anything, so the first click is not waiting on a fetch. The
  * context opens suspended, which is why this can run here at all. */
 void preloadSounds();
+
+/** The same bargain for the tracks: three megabytes of music is worth having in memory before
+ * anyone reaches a room, and nothing plays until a gesture wakes the context anyway. */
+void preloadMusic();
 
 /** Debug logging is opt-in via ?debug, so the noisy connection tracing stays out of the way
  * during normal play. The flag is read from the query string, from the hash and from
