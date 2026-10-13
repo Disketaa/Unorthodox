@@ -76,6 +76,21 @@ export function normalizeForGrouping(answer: string): string {
   return processedWords.join(' ');
 }
 
+/** Whether two answers are the same answer, by the rule the board groups them with. The one
+ * comparison both sides of a card have to make: the host decides who wrote a group and a
+ * browser decides which cards are its own. */
+export function sameAnswer(a: string, b: string): boolean {
+  return sameKey(normalizeForGrouping(a), normalizeForGrouping(b));
+}
+
+/** The same comparison between two strings already normalized, which is what the grouping walks. */
+function sameKey(a: string, b: string): boolean {
+  if (a === b) {
+    return true;
+  }
+  return a.length >= 5 && b.length >= 5 && levenshteinDistance(a, b) <= 1;
+}
+
 /** Group answers on exact normalized equality, or a Levenshtein distance of 1 once both strings
  * are at least five long. Greedy: each answer joins the first group it matches. */
 export function groupAnswers(answers: string[]): { groupId: number; answers: string[] }[] {
@@ -89,18 +104,10 @@ export function groupAnswers(answers: string[]): { groupId: number; answers: str
 
     for (let i = 0; i < groups.length; i++) {
       const groupKey = groupKeys[i];
-      if (groupKey === key) {
+      if (groupKey !== undefined && sameKey(groupKey, key)) {
         groups[i].answers.push(answer);
         placed = true;
         break;
-      }
-      if (key.length >= 5 && groupKey.length >= 5) {
-        const dist = levenshteinDistance(groupKey, key);
-        if (dist <= 1) {
-          groups[i].answers.push(answer);
-          placed = true;
-          break;
-        }
       }
     }
 

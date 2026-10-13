@@ -1,4 +1,4 @@
-import { normalizeAnswer } from '@/Game';
+import { sameAnswer } from '@/Game';
 
 /** Per-round UI state for the local player. Submission and likes belong to one round, so they
  * are stored against the topic they happened in and a new topic starts a clean slate. Muting is
@@ -66,13 +66,13 @@ export function hasSubmittedIn(marks: RoundMarks, topic: string | null): boolean
 }
 
 /** Whether the player wrote the answer on this card, the one thing the host knows and this
- * browser cannot be told. Compared as the board compares answers rather than by equality, so
- * "Кот." and "кот" are the same word and the card is recognised as this player's own. */
+ * browser cannot be told. Compared by the board's own rule, since the host decides who wrote a
+ * group and a looser rule here would leave a player holding a like on their own card. */
 export function wroteAnswerIn(marks: RoundMarks, topic: string | null, text: string): boolean {
   if (topic === null || marks.submittedTopic !== topic || marks.submittedText === '') {
     return false;
   }
-  return normalizeAnswer(marks.submittedText) === normalizeAnswer(text);
+  return sameAnswer(marks.submittedText, text);
 }
 
 /** Answers this player liked in the round now on screen, or none if the likes are another

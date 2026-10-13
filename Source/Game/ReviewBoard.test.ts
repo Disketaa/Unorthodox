@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { handleGoToPhase } from './PhaseJumps';
+import { reducer } from './Reducer';
 import { toPublicReviewingState } from './PublicPhases';
 import type { HostState, ReviewingState } from './GameState';
 import type { PlayerLook } from '@/Core';
@@ -144,9 +145,43 @@ describe('the order the cards are dealt in', () => {
     ['p8', 'рот'],
   ];
 
-  // The deal as the wire carries it: the card ids in the order they go out, which is the only part of it a client sees.
+  // The deal as the wire carries it: the card ids in the order they go out.
   function dealt(state: ReviewingState): number[] {
     return toPublicReviewingState(state).groups.map((group) => group.groupId);
+  }
+
+  // A pool of words no two of which the board would fold together, and four letters or fewer so
+  // that only exact matches group at all. Eight of these per round, walking the pool, so
+  // consecutive rounds really are different rounds rather than the same answers renamed.
+  const pool =
+    'кот дом чай нос мед сок ухо рот сыр лук суп дым кит зуб окно море соль небо река гора ветер снег лето поле ок да ах ух рыба ключ стол стул свет тень край зной дуб ель пень'.split(
+      ' '
+    );
+
+  function withRound(round: number): ReviewingState {
+    const written = eight.map(([playerId], seat): [string, string] => [
+      playerId,
+      pool[(round * 5 + seat) % pool.length] ?? '',
+    ]);
+    return reviewing(8, written);
+  }
+
+  // The same thing with two players sitting the round out, so there are blanks among the cards
+  // for the deal to put last.
+  function withBlanks(round: number): ReviewingState {
+    const written = threeAnswers.map(([playerId], seat): [string, string] => [
+      playerId,
+      pool[(round * 7 + seat) % pool.length] ?? '',
+    ]);
+    return reviewing(5, written);
+  }
+
+  // A room held and then let go, which is the one thing that used to move the deal.
+  function heldThen(state: ReviewingState, heldAt: number, resumedAt: number): ReviewingState {
+    const held = reducer(state, { type: 'PAUSE', at: heldAt });
+    const resumed = reducer(held, { type: 'RESUME', at: resumedAt });
+    if (resumed.phase !== 'Reviewing') throw new Error('left reviewing');
+    return resumed;
   }
 
   it('is the same deal to everyone in the room', () => {
@@ -172,35 +207,51 @@ describe('the order the cards are dealt in', () => {
     // Counted over enough rounds that a blank landing first by chance would not pass as a rule
     // being held. This is the one order the deal does not touch.
     const rounds = Array.from({ length: 40 }, (_, round) =>
-      toPublicReviewingState({ ...reviewing(5, threeAnswers), startedAt: round }).groups.map(
-        (group) => group.isEmpty
-      )
+      toPublicReviewingState(withBlanks(round)).groups.map((group) => group.isEmpty)
     );
     const firstIsBlank = rounds.filter((order) => order[0] === true);
     expect(firstIsBlank).toHaveLength(0);
     expect(rounds.every((order) => order.indexOf(true) >= 2)).toBe(true);
   });
 
+  it('holds its deal across a hold on the room', () => {
+    // The bug this is here for: the deal was seeded off `startedAt`, and letting a held room go
+    // shifts that clock by the hold. Every pause and resume therefore re-dealt the board under a
+    // room that was in the middle of reading it. The clock is not what the deal is seeded from
+    // now, so holding changes nothing.
+    const before = dealt(reviewing(8, eight));
+    const held = heldThen(reviewing(8, eight), 1000, 9000);
+    expect(dealt(held)).toEqual(before);
+  });
+
+  it('holds its deal across two holds, which is where it went wrong', () => {
+    // Pausing once and letting go once left the clock where the deal expected it, so a single
+    // hold passed. Pausing and letting go twice moved it twice, and the board came back in a new
+    // order. This is the case that was reported.
+    const before = dealt(reviewing(8, eight));
+    let state: HostState = reviewing(8, eight);
+    for (const at of [1000, 2000, 3000, 4000]) {
+      state = reducer(state, { type: 'PAUSE', at });
+      state = reducer(state, { type: 'RESUME', at: at + 5000 });
+    }
+    if (state.phase !== 'Reviewing') throw new Error('left reviewing');
+    expect(dealt(state)).toEqual(before);
+  });
+
   it('is not the order the answers arrived in', () => {
     // The roster order is a real order and an obvious one: it hands out seats and says who wrote
     // what, so a board dealt from it says who sat next to whom and when. Counted over enough
     // rounds that a few coincidences would not clear it.
-    const rounds = Array.from({ length: 30 }, (_, round) =>
-      dealt({ ...reviewing(8, eight), startedAt: round })
-    );
-    const inRosterOrder = rounds.filter(
-      (order) => order.join() === [0, 1, 2, 3, 4, 5, 6, 7].join()
-    );
-    expect(inRosterOrder).toHaveLength(0);
+    const roster = [0, 1, 2, 3, 4, 5, 6, 7].join();
+    const deals = Array.from({ length: 30 }, (_, round) => dealt(withRound(round)).join());
+    expect(deals.filter((order) => order === roster)).toHaveLength(0);
   });
 
   it('is a different deal next round', () => {
     // Otherwise the shuffle is a fixture rather than a deal: a room that remembers the last
     // round's order learns who wrote what before the cards are turned over.
     const deals = new Set(
-      Array.from({ length: 24 }, (_, round) =>
-        dealt({ ...reviewing(8, eight), startedAt: round }).join()
-      )
+      Array.from({ length: 24 }, (_, round) => dealt(withRound(round)).join())
     );
     expect(deals.size).toBeGreaterThan(12);
   });
