@@ -138,8 +138,16 @@
   width: var(--Size-LikeBadge);
   height: var(--Size-LikeBadge);
   line-height: 0;
-  --Size-LikeBadge: calc(var(--Size-AnswerCardWidth, 100px) * 0.273);
-  --Space-LikeMarkInset: calc(var(--Size-AnswerCardWidth, 100px) * 0.0156);
+  --Size-LikeBadge: calc(var(--Size-AnswerCardWidth, 100px) * 0.182);
+  --Space-LikeMarkInset: calc(var(--Size-AnswerCardWidth, 100px) * 0.0104);
+}
+
+/* The corner of a badge nobody may press: the player's own answer. Held back here rather than
+ * on the badge, so the figure, the mark and the outline round it all fade together. Dimming the
+ * badge alone would leave the box it sits in at full strength, and the thing being held back
+ * would be the writing rather than the whole corner of the card. */
+.CornerSpent {
+  opacity: var(--Opacity-LikeBadgeQuiet);
 }
 
 .Room {

@@ -46,7 +46,7 @@ export function ReviewView({ view }: PhaseViewProps) {
       groups={groups}
       revealed={reveal.upTo}
       onReject={view.isHost ? view.rejectGroup : undefined}
-      onLike={view.likeGroup}
+      onLike={view.paused ? undefined : view.likeGroup}
     />
   );
 }

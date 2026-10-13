@@ -88,24 +88,28 @@ function FittedAnswer({ text }: { text: string }) {
   );
 }
 
-/** The like badge in the corner, or nothing at all on a blank. A blank is nobody having written,
- * so there is no answer on it to like and no count that could ever move: a badge reading zero
- * on the card of a player who sat out says a thing about them rather than about the round. */
+/** The like badge in the corner, or nothing at all on a blank or a card the host has muted. A
+ * blank is nobody having written and a muted card is out of the round, so neither has anything
+ * a like could be. */
 function LikeCorner({
   blank,
+  voted,
   likes,
   liked,
   likeLabel,
   onLike,
-}: Pick<AnswerCardProps, 'blank' | 'likes' | 'liked' | 'likeLabel' | 'onLike'>) {
+}: Pick<AnswerCardProps, 'blank' | 'voted' | 'likes' | 'liked' | 'likeLabel' | 'onLike'>) {
   // A press counter rather than the liked flag, so the pop runs on the press and not on the state
   // arriving: the flag only flips once the host has answered, a beat after the finger.
   const [pressed, setPressed] = useState(0);
-  if (blank) {
+  if (blank || voted) {
     return null;
   }
+  // The corner rather than the badge is held back, so the figure, the mark and the outline round
+  // it all fade as one thing. Only the cursor lives on the badge, which has to say it in place.
+  const spent = onLike === undefined;
   return (
-    <span class={styles.Corner}>
+    <span class={spent ? `${styles.Corner} ${styles.CornerSpent}` : styles.Corner}>
       {/* Keyed on the count of presses, so a new one is a new element and the pop runs from
        * the start. Composed rather than written: the sway underneath is also a CSS animation,
        * and the pop uses individual scale and rotate so the two do not overwrite one another. */}
@@ -162,6 +166,7 @@ export function AnswerCard({
       )}
       <LikeCorner
         blank={blank}
+        voted={voted}
         likes={likes}
         liked={liked}
         likeLabel={likeLabel}

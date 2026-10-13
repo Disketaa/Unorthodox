@@ -87,9 +87,11 @@ describe('liking an answer', () => {
     expect(onTheWire(state)).toEqual({ 0: 1 });
   });
 
-  it('carries a mute and a like on one card at once', () => {
-    // They are different fields because they are different things: a mute takes the answer off the
-    // board and a like only counts, and the room is shown a card that is both.
+  it('drops the likes of a card the host has muted', () => {
+    // A mute takes the answer off the board, and a like only ever counted, so there is nothing on
+    // a muted card for a like to be. The room cannot take the mute back, so a count left there
+    // would be a number nobody can change, read as the room's opinion of an answer that is not
+    // in the round. The mute itself still travels, or the card would not know to be struck out.
     const muted = reducer(reviewing(), {
       type: 'REJECT_GROUP',
       playerId: 'host',
@@ -98,7 +100,32 @@ describe('liking an answer', () => {
     if (muted.phase !== 'Reviewing') throw new Error('left reviewing');
     const publicState = toPublicReviewingState(liked(muted, 'p1', 0));
     expect(publicState.mutedGroupIds).toEqual([0]);
-    expect(publicState.likeCounts).toEqual([{ groupId: 0, count: 1 }]);
+    expect(publicState.likeCounts).toBeUndefined();
+  });
+
+  it('brings the likes back when the mute is taken off again', () => {
+    // The mute hides a card's likes from the room rather than spending them. The host is the
+    // only one who can take a mute back, and a host who mutes by mistake and undoes it should
+    // find the card as the room left it, count and all, rather than having to re-ask for it.
+    const likedFirst = liked(reviewing(), 'p1', 0);
+    const muted = reducer(likedFirst, { type: 'REJECT_GROUP', playerId: 'host', groupId: 0 });
+    if (muted.phase !== 'Reviewing') throw new Error('left reviewing');
+    const unmuted = reducer(muted, { type: 'REJECT_GROUP', playerId: 'host', groupId: 0 });
+    if (unmuted.phase !== 'Reviewing') throw new Error('left reviewing');
+    expect(toPublicReviewingState(unmuted).likeCounts).toEqual([{ groupId: 0, count: 1 }]);
+  });
+
+  it('refuses a like cast at a muted card', () => {
+    // A press can be in flight when the host mutes, and the card draws no badge to press after,
+    // but the message may already be on the wire. Refusing it here keeps the stored vote saying
+    // what the round counted rather than what somebody asked for.
+    const muted = reducer(reviewing(), {
+      type: 'REJECT_GROUP',
+      playerId: 'host',
+      groupId: 0,
+    });
+    if (muted.phase !== 'Reviewing') throw new Error('left reviewing');
+    expect(onTheWire(liked(muted, 'p1', 0))).toEqual({});
   });
 });
 
