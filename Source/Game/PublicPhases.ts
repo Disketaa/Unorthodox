@@ -104,23 +104,24 @@ export function toPublicWritingState(state: HostState): PublicWritingState {
   };
 }
 
-/** The board's cards: the answers as written, plus one per player who wrote nothing, in an order
- * nobody can read off who wrote what. Shuffled on the host, so one order is the room's, and
- * seeded from the round since this is projected on every broadcast. */
+/** The board's cards: the answers as written, in an order nobody can read off who wrote what,
+ * plus one card per player who wrote nothing. Shuffled on the host and seeded from the round,
+ * since this is projected on every broadcast. The blanks go after the deal, not into it. */
 function reviewGroups(state: ReviewingState): PublicReviewingState['groups'] {
-  const groups = groupAnswers([...state.answers.values()]).map((group) => ({
+  const answers = groupAnswers([...state.answers.values()]).map((group) => ({
     groupId: group.groupId,
     text: group.answers[0] ?? '',
     playerCount: group.answers.length,
     isEmpty: false,
   }));
+  const groups = shuffle(answers, randomFor(`${state.startedAt}:${state.topic}`));
   let nextId = groups.length;
   for (const playerId of state.players.keys()) {
     if (state.answers.has(playerId)) continue;
     groups.push({ groupId: nextId, text: '', playerCount: 1, isEmpty: true });
     nextId += 1;
   }
-  return shuffle(groups, randomFor(`${state.startedAt}:${state.topic}`));
+  return groups;
 }
 
 export function toPublicReviewingState(state: HostState): PublicReviewingState {

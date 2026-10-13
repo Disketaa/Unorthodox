@@ -67,13 +67,12 @@ describe('the board of answers', () => {
     expect(groups.filter((group) => group.isEmpty)).toHaveLength(3);
   });
 
-  it('deals the blanks in among the answers rather than setting them aside', () => {
-    // The board is dealt, so a player who wrote nothing is dealt a seat like anybody else rather
-    // than being parked at the end of the row where everyone can see who sat out. What used to
-    // hold them back was the order the answers came in; it no longer decides anything.
+  it('deals the answers and puts the blank cards after them', () => {
+    // The answers are dealt, so their order says nothing about who wrote what. The blanks are not
+    // dealt into that order: a blank is nobody having written rather than an answer to judge, and
+    // the room reads the cards it can judge before the cards it can only count.
     const groups = toPublicReviewingState(reviewing(4, threeAnswers)).groups;
-    expect(groups).toHaveLength(3);
-    expect(groups.filter((group) => group.isEmpty)).toHaveLength(1);
+    expect(groups.map((group) => group.isEmpty)).toEqual([false, false, true]);
   });
 
   it('shows no blank at all in a round everybody answered', () => {
@@ -166,6 +165,19 @@ describe('the order the cards are dealt in', () => {
     for (let broadcast = 0; broadcast < 8; broadcast += 1) {
       expect(dealt(state)).toEqual(first);
     }
+  });
+
+  it('keeps the blanks last however the answers come out', () => {
+    // Counted over enough rounds that a blank landing first by chance would not pass as a rule
+    // being held. This is the one order the deal does not touch.
+    const rounds = Array.from({ length: 40 }, (_, round) =>
+      toPublicReviewingState({ ...reviewing(5, threeAnswers), startedAt: round }).groups.map(
+        (group) => group.isEmpty
+      )
+    );
+    const firstIsBlank = rounds.filter((order) => order[0] === true);
+    expect(firstIsBlank).toHaveLength(0);
+    expect(rounds.every((order) => order.indexOf(true) >= 2)).toBe(true);
   });
 
   it('is not the order the answers arrived in', () => {
