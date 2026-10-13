@@ -14,16 +14,16 @@
   border: none;
   border-radius: var(--Radius-Button);
   background: var(--AnswerBadge-Surface);
-  color: var(--Color-Text-Inverse);
+  color: var(--Color-Text-Default);
   font-family: var(--FontFamily-Display);
   font-size: calc(var(--Size-AnswerCardWidth, 100px) * 0.13);
   line-height: 1;
-  /* The pill, and the colour the count is cut out against, are one value. Declared here on the
-   * badge itself rather than inherited from further up: a custom property substitutes where it
-   * is declared, so a surface set on a parent could not have been reached by a state set on
-   * this. That is also what lets a state move both halves at once — the pill and its outline
-   * together. */
-  --AnswerBadge-Surface: var(--Color-Surface-Inverse);
+  /* Two colours that move apart rather than together: the count stays dark in both states and
+   * it is the mark under it that takes the yellow. Kept as separate properties because they are
+   * separate decisions — a figure that changed colour with the shape behind it would be a
+   * figure the room had to re-read every time somebody liked something. */
+  --AnswerBadge-Surface: var(--Color-Surface-Hover);
+  --Color-LikeMark: var(--Color-Text-Default);
   --Size-Stroke: calc(var(--Size-AnswerCardWidth, 100px) * 0.012);
   --Color-Stroke: var(--AnswerBadge-Surface);
 }
@@ -35,13 +35,11 @@
   opacity: var(--Opacity-LikeBadgeQuiet);
 }
 
-/* Pressed: this player is one of the people who liked it. The pill goes to the room's yellow
- * and the count comes with it to black, since a white figure on yellow is a figure nobody can
- * read. What it says is a fact about the answer, so it wears the room's yellow and not the
- * reader's tint. */
+/* Pressed: this player is one of the people who liked it, so the mark takes the room's yellow
+ * and the count stays the dark figure it always was. What it says is a fact about the answer,
+ * so it wears the room's yellow and not the reader's own tint. */
 .Liked {
-  --AnswerBadge-Surface: var(--Color-Room-Yellow);
-  color: var(--Color-Text-Default);
+  --Color-LikeMark: var(--Color-Room-Yellow);
   opacity: 1;
 }
 
@@ -56,13 +54,6 @@ button.Badge {
   cursor: var(--Cursor-Pointer);
 }
 
-/* Hover previews the press: the same yellow pill the badge takes when it is liked, so the
- * pointer shows what pressing will do rather than only lighting the control up. */
-button.Badge:hover {
-  --AnswerBadge-Surface: var(--Color-Room-Yellow);
-  color: var(--Color-Text-Default);
-}
-
 /* The mark, behind the number: absolute so it does not take a row of its own and the two are
  * one mark rather than a figure and an icon. Painted through a mask like every other icon on
  * disk — the files are solid black silhouettes, and a mask is what lets one be drawn in any
@@ -71,7 +62,7 @@ button.Badge:hover {
 .Icon {
   position: absolute;
   inset: 0.12em;
-  background-color: currentColor;
+  background-color: var(--Color-LikeMark);
   mask-image: url('../../Icons/Like.svg');
   mask-repeat: no-repeat;
   mask-position: center;
