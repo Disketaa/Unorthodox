@@ -17,7 +17,7 @@ beforeEach(() => {
  * since it is what owns the loudness these tests are about. */
 async function freshBank() {
   const bank = await import('./MusicBank');
-  return { ...bank, ...(await import('./MusicToggle')) };
+  return { ...bank, ...(await import('./MusicBus')), ...(await import('./MusicToggle')) };
 }
 
 /** happy-dom holds `document.hidden` as a getter, so the tab is posed by standing in for it. */
@@ -106,8 +106,8 @@ describe('Music changing track', () => {
     const { preloadMusic, playMusic } = await freshBank();
     await preloadMusic();
     playMusic('Menu');
-    // The bus, then the track's own fader.
-    const [, menu] = fake.levels;
+    // The bus, then the hold, then the track's fader, then its duck.
+    const [, , menu] = fake.levels;
     expect(menu.value).toBe(0);
     expect(menu.ramps).toEqual([{ from: 0, to: expect.any(Number), at: 1.5 }]);
   });
@@ -117,7 +117,7 @@ describe('Music changing track', () => {
     await preloadMusic();
     playMusic('Menu');
     playMusic('Game');
-    const [, menu, game] = fake.levels;
+    const [, , menu, , game] = fake.levels;
     expect(game.ramps[0].to).not.toBe(menu.ramps[0].to);
   });
 
@@ -128,7 +128,7 @@ describe('Music changing track', () => {
     playMusic('Game');
     // The old fader was on its way up when the room asked for another track,
     // so what matters is where it was sent last.
-    const menuFader = fake.levels[1];
+    const menuFader = fake.levels[2];
     const last = menuFader.ramps[menuFader.ramps.length - 1];
     expect(last).toEqual({ from: 0, to: 0, at: 1.5 });
   });
@@ -162,7 +162,7 @@ describe('Music changing track', () => {
     playMusic('Menu');
     playMusic('Game', 0.75);
     expect(fake.sounded[0].stoppedAt).toEqual([0.75]);
-    const incoming = fake.levels[2];
+    const incoming = fake.levels[4];
     expect(incoming.ramps[incoming.ramps.length - 1].at).toBe(0.75);
   });
 
@@ -171,7 +171,7 @@ describe('Music changing track', () => {
     await preloadMusic();
     playMusic('Menu');
     stopMusic();
-    expect(fake.levels[1].ramps[1]).toEqual({ from: 0, to: 0, at: 1.5 });
+    expect(fake.levels[2].ramps[1]).toEqual({ from: 0, to: 0, at: 1.5 });
     expect(fake.sounded[0].stoppedAt).toEqual([1.5]);
   });
 
@@ -183,6 +183,120 @@ describe('Music changing track', () => {
     playMusic('Game');
     expect(fake.sounded.length).toBe(2);
     expect(fake.sounded[1].stoppedAt).toEqual([]);
+  });
+});
+
+describe('Music ducked for the count-in', () => {
+  it('goes quiet for the count rather than stopping, since the lobby is still the room', async () => {
+    const { preloadMusic, playMusic, duckMusic } = await freshBank();
+    await preloadMusic();
+    playMusic('Menu');
+    duckMusic(true);
+    const duck = fake.levels[3];
+    expect(duck.ramps[duck.ramps.length - 1]).toEqual({ from: 1, to: 0, at: 0.4 });
+    expect(fake.sounded[0].stoppedAt).toEqual([]);
+  });
+
+  it('comes back forward once the count is over', async () => {
+    const { preloadMusic, playMusic, duckMusic } = await freshBank();
+    await preloadMusic();
+    playMusic('Menu');
+    duckMusic(true);
+    duckMusic(false);
+    const duck = fake.levels[3];
+    expect(duck.ramps[duck.ramps.length - 1].to).toBe(1);
+  });
+
+  it('brings a track in already open, since the handover is what brings it in', async () => {
+    // A track made quiet and then opened again would fade up twice over, and
+    // the crossfade it is arriving under would not be the fade anybody heard.
+    const { preloadMusic, playMusic, duckMusic } = await freshBank();
+    await preloadMusic();
+    duckMusic(true);
+    playMusic('Menu');
+    expect(fake.levels[3].value).toBe(1);
+  });
+
+  it('does not swell the lobby track when the room hands over, since the duck is per track', async () => {
+    // The duck is let go as the track changes. On a shared gain that would bring
+    // the lobby track back up under its own crossfade out, which is the lobby
+    // music returning just as the room leaves it.
+    const { preloadMusic, playMusic, duckMusic } = await freshBank();
+    await preloadMusic();
+    playMusic('Menu');
+    duckMusic(true);
+    playMusic('Game');
+    duckMusic(false);
+    const leaving = fake.levels[3];
+    const arriving = fake.levels[5];
+    expect(leaving.ramps[leaving.ramps.length - 1].to).toBe(0);
+    expect(arriving.value).toBe(1);
+  });
+
+  it('leaves a held room silent, since the two are separate facts about one bus', async () => {
+    // Two writers on one gain would fight: letting go of a held room mid-count
+    // would bring the track back forward at the same moment it steps back.
+    const { preloadMusic, playMusic, duckMusic, holdMusic } = await freshBank();
+    await preloadMusic();
+    playMusic('Menu');
+    duckMusic(true);
+    holdMusic(true);
+    expect(fake.levels[3].ramps[fake.levels[3].ramps.length - 1].to).toBe(0);
+    expect(fake.levels[1].ramps[fake.levels[1].ramps.length - 1].to).toBe(0);
+  });
+});
+
+describe('Music held', () => {
+  it('takes the music out of hearing, without stopping the track', async () => {
+    // A track stopped and started again comes back at its first second, so a
+    // held room would hear the same bar twice when it was let go.
+    const { preloadMusic, playMusic, holdMusic } = await freshBank();
+    await preloadMusic();
+    playMusic('Menu');
+    holdMusic(true);
+    expect(fake.levels[1].ramps[fake.levels[1].ramps.length - 1]).toEqual({
+      from: 1,
+      to: 0,
+      at: 0.3,
+    });
+    expect(fake.sounded[0].stoppedAt).toEqual([]);
+  });
+
+  it('puts it back where it was when the room is let go', async () => {
+    const { preloadMusic, playMusic, holdMusic } = await freshBank();
+    await preloadMusic();
+    playMusic('Menu');
+    holdMusic(true);
+    holdMusic(false);
+    // Where it started from is the ramp's own business: the fake clock never
+    // moves, so what is checked is where the hold was sent and when.
+    expect(fake.levels[1].ramps[fake.levels[1].ramps.length - 1].to).toBe(1);
+  });
+
+  it('leaves the one track alone through the whole hold, so nothing has to be caught up', async () => {
+    const { preloadMusic, playMusic, holdMusic } = await freshBank();
+    await preloadMusic();
+    playMusic('Menu');
+    holdMusic(true);
+    holdMusic(false);
+    expect(fake.sounded.length).toBe(1);
+    expect(fake.sounded[0].stoppedAt).toEqual([]);
+  });
+
+  it('starts a track asked for under a hold silently rather than after it', async () => {
+    // Held first, playing second: a track made at full level and faded down
+    // afterwards is heard arriving and then leaving, which is not a hold.
+    const { preloadMusic, playMusic, holdMusic } = await freshBank();
+    await preloadMusic();
+    holdMusic(true);
+    playMusic('Menu');
+    expect(fake.levels[1].value).toBe(0);
+  });
+
+  it('does nothing at all where no track has been asked for yet', async () => {
+    const { holdMusic } = await freshBank();
+    expect(() => holdMusic(true)).not.toThrow();
+    expect(fake.levels.length).toBe(0);
   });
 });
 

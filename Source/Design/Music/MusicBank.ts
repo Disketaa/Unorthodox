@@ -2,7 +2,7 @@ import menuUrl from './Jumpin June - The Soundlings.ogg';
 import gameUrl from "./The Plan's Working - Cooper Cannell.ogg";
 import votingUrl from './Hopeful - Nat Keefe.ogg';
 import { audioContext, resumeAudio } from '../Audio/Context';
-import { musicChannel } from './MusicToggle';
+import { fade, musicBusFor } from './MusicBus';
 
 /** The three places the game can be in, rather than one per screen: the entry and the lobby
  * share a track, the round has its own, and the voting has a third, since that is the one phase
@@ -30,28 +30,25 @@ const Levels: Record<MusicName, number> = {
  * change of track. Long enough to hear as one piece becoming another. */
 const CrossfadeSeconds = 1.5;
 
+/** How fast a track goes quiet for something said over it, and how long that takes. All the way
+ * down, since the count-in is the pling of each number and a track audible under it is a track
+ * played over the one thing in the game everybody is waiting to hear. */
+const DuckFadeSeconds = 0.4;
+
 interface Track {
   name: MusicName;
   source: AudioBufferSourceNode;
   /** The fader for this track alone, since two tracks are audible at once during a fade. */
   fader: GainNode;
+  /** This track's own duck, behind its fader. One per track rather than one on the bus, since a
+   * duck is about the track being talked over: a duck let go on the bus at the moment the lobby
+   * hands over to the round would swell the very track that is on its way out. */
+  duck: GainNode;
 }
 
-let bus: GainNode | undefined;
 let current: Track | undefined;
 const buffers = new Map<MusicName, AudioBuffer>();
 const loading = new Map<MusicName, Promise<void>>();
-
-/** The bus every track plays out through, made on the first ask and handed to the music's own
- * channel, so the switch beside the volume switch governs this and not the room's clips. */
-function busFor(context: AudioContext): GainNode {
-  if (bus) return bus;
-  const made = context.createGain();
-  made.connect(context.destination);
-  bus = made;
-  musicChannel.adopt(made);
-  return made;
-}
 
 /** Decodes one track, at most once, however many callers ask at the same time. */
 function loadMusic(name: MusicName): Promise<void> {
@@ -81,25 +78,30 @@ function startTrack(context: AudioContext, name: MusicName): Track | undefined {
   const buffer = buffers.get(name);
   if (!buffer) return undefined;
   // The bus is asked for before the fader, so the gains come out in the order a test reads them:
-  // the bus every track goes through, then the fader for this one.
-  const destination = busFor(context);
+  // the bus, then the hold, then this track's fader, then its duck.
+  const destination = musicBusFor(context);
   const source = context.createBufferSource();
   source.buffer = buffer;
   source.loop = true;
   const fader = context.createGain();
   fader.gain.value = 0;
+  const duck = context.createGain();
+  duck.gain.value = 1;
   source.connect(fader);
-  fader.connect(destination);
+  fader.connect(duck);
+  duck.connect(destination);
   source.start();
-  return { name, source, fader };
+  return { name, source, fader, duck };
 }
 
-/** Moves a fader to a level over the crossfade, from wherever it happens to be now. Written as a
- * ramp rather than a jump because the whole point is not to be a jump. */
-function fade(context: AudioContext, fader: GainNode, level: number, seconds: number): void {
-  const now = context.currentTime;
-  fader.gain.setValueAtTime(fader.gain.value, now);
-  fader.gain.linearRampToValueAtTime(level, now + seconds);
+/** Takes the music out of hearing while something is said over it, and brings the same track
+ * back when the saying stops. The track is not stopped, so the room is the same room
+ * afterwards. Which track is ducked is settled by which is playing when this arrives. */
+export function duckMusic(next: boolean): void {
+  const context = audioContext();
+  const made = current?.duck;
+  if (!context || !made) return;
+  fade(context, made, next ? 0 : 1, DuckFadeSeconds);
 }
 
 /** Hands the room to one track, fading the one under it out as the new one comes up. Asking for

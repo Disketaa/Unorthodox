@@ -16,7 +16,7 @@ import {
   PhaseSplashMs,
   StartCountdown,
 } from '@/Design/Overlays';
-import { useMusic, type MusicName } from '@/Design/Music';
+import { useDuckedMusic, useHeldMusic, useMusic, type MusicName } from '@/Design/Music';
 import { useGameSession } from './Hooks/UseGameSession';
 import { useDebugToggle } from './Hooks/UseDebugToggle';
 import { usePhaseSplash } from './Hooks/UsePhaseSplash';
@@ -154,6 +154,13 @@ function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
   // the lobby, so Start changes nothing here; the handover belongs to the transition after it.
   const musicPhase = counting ? 'Lobby' : view.phase;
   useMusic(musicFor(musicPhase), splashing ? PhaseSplashMs / 1000 : undefined);
+  // A held room is a room that has stopped, and a track still playing under a game nobody is
+  // playing reads as the game still going. The track keeps its place while it is held.
+  useHeldMusic(view.paused);
+  // The count-in is spoken over the pling of each number, so the music steps back for it rather
+  // than stopping: a track at lobby level sits on top of the count, and silence here would be the
+  // room's own music going away the instant Start was pressed.
+  useDuckedMusic(counting);
   // The screen the count-in and the splash are played over: the phase the room is leaving, held
   // until the movement has covered it. A ref rather than state, because a view is a new object on
   // every render and holding one in state would re-render the room forever.

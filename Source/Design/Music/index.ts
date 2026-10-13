@@ -1,3 +1,11 @@
-export { playMusic, preloadMusic, stopMusic, MusicNames, type MusicName } from './MusicBank';
+export {
+  playMusic,
+  preloadMusic,
+  stopMusic,
+  duckMusic,
+  MusicNames,
+  type MusicName,
+} from './MusicBank';
+export { holdMusic } from './MusicBus';
 export { isMusicOff, setMusicOff, musicChannel } from './MusicToggle';
-export { useMusic, useQuietMusic } from './UseMusic';
+export { useMusic, useDuckedMusic, useHeldMusic, useQuietMusic } from './UseMusic';
