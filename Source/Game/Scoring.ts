@@ -34,18 +34,24 @@ export function calculateRoundScores(
   return scores;
 }
 
-/** Who the round gave nothing to, as the room is shown it: a player whose card is blank, and a
- * player whose card the host muted. Both are the round scoring them zero — a blank is nobody
- * having written, and a muted card is out of the round — and the bar of players breaks a hexagon
- * for each of them rather than making the room work it out off the board. A group three people
- * wrote is not one of them: that answer was right, it was simply not rare. */
+/** Who the round gave nothing to, as the room is shown it: a player whose card is blank, a
+ * player whose card the host muted, and a player whose answer three or more wrote — that one is
+ * the round scoring them zero, which is what `pointsForGroupSize` says for a group of three or
+ * more. Read off the same function the round scores with, so a broken seat and a running total
+ * cannot drift. A pair is not one of them: two people writing the same thing is the round
+ * working, and it scores. */
 export function zeroScorers(
   groups: readonly { groupId: number; playerIds: readonly PlayerId[]; isEmpty: boolean }[],
-  muted: ReadonlySet<number>
+  muted: ReadonlySet<number>,
+  config: typeof GameConfig = GameConfig
 ): ReadonlySet<PlayerId> {
   const zero = new Set<PlayerId>();
   for (const group of groups) {
-    if (group.isEmpty || muted.has(group.groupId)) {
+    if (
+      group.isEmpty ||
+      muted.has(group.groupId) ||
+      pointsForGroupSize(group.playerIds.length, config) === 0
+    ) {
       for (const playerId of group.playerIds) {
         zero.add(playerId);
       }

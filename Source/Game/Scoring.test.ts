@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { pointsForGroupSize, calculateRoundScores } from './Scoring';
+import { pointsForGroupSize, calculateRoundScores, zeroScorers } from './Scoring';
 import { GameConfig } from './GameConfig';
 
 describe('pointsForGroupSize', () => {
@@ -44,5 +44,40 @@ describe('calculateRoundScores', () => {
   test('returns empty map for empty groups', () => {
     const scores = calculateRoundScores([], GameConfig);
     expect(scores.size).toBe(0);
+  });
+});
+
+describe('zeroScorers', () => {
+  test('names nobody when every answer was rare', () => {
+    const groups = [{ groupId: 0, playerIds: ['p1'], isEmpty: false }];
+    expect(zeroScorers(groups, new Set(), GameConfig).size).toBe(0);
+  });
+
+  test('names the blank card', () => {
+    const groups = [{ groupId: 0, playerIds: ['p1'], isEmpty: true }];
+    expect([...zeroScorers(groups, new Set(), GameConfig)]).toEqual(['p1']);
+  });
+
+  test('names the muted card', () => {
+    const groups = [{ groupId: 3, playerIds: ['p1'], isEmpty: false }];
+    expect([...zeroScorers(groups, new Set([3]), GameConfig)]).toEqual(['p1']);
+  });
+
+  test('names a pair the host muted, and not a pair that was left alone', () => {
+    const groups = [
+      { groupId: 0, playerIds: ['p1', 'p2'], isEmpty: false },
+      { groupId: 1, playerIds: ['p3', 'p4'], isEmpty: false },
+    ];
+    expect([...zeroScorers(groups, new Set([0]), GameConfig)]).toEqual(['p1', 'p2']);
+  });
+
+  test('names a group three or more wrote, since it scores nothing', () => {
+    const groups = [{ groupId: 0, playerIds: ['p1', 'p2', 'p3'], isEmpty: false }];
+    expect([...zeroScorers(groups, new Set(), GameConfig)]).toEqual(['p1', 'p2', 'p3']);
+  });
+
+  test('does not name a pair, which the round scores', () => {
+    const groups = [{ groupId: 0, playerIds: ['p1', 'p2'], isEmpty: false }];
+    expect(zeroScorers(groups, new Set(), GameConfig).size).toBe(0);
   });
 });

@@ -1,5 +1,4 @@
 import { Character } from '../Character';
-import { Pop } from '@/Design/Primitives';
 import characterStyles from '../Character/Character.module.css';
 import type { PlayerBarEntry } from './PlayerBar';
 import styles from './PlayerBar.module.css';
@@ -20,6 +19,9 @@ export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
   // writing an answer nobody has read yet. One mark for both, so a seat at work looks the same
   // whoever it is that is doing the waiting.
   const atWork = entry.isTurning === true || entry.isWorking === true;
+  // The round gave this player nothing, so their hexagon is the shattered one. A seat the round
+  // scored nothing is still a seat in the room, which is why it is broken rather than taken away.
+  const scoredNothing = entry.scoredNothing === true;
   // The seat wears the player's own tint, the same class the character inside it wears. The seat
   // cannot read that off the character, since a custom property set on it stays down there.
   const classes = [
@@ -28,6 +30,7 @@ export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
     isSelf ? styles.Self : '',
     atWork ? styles.Waiting : '',
     offline ? styles.Offline : '',
+    scoredNothing ? styles.Destroyed : '',
   ]
     .filter(Boolean)
     .join(' ');

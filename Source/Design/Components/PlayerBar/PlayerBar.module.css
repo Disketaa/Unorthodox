@@ -124,6 +124,25 @@
   mask: url('../../Icons/Hexagon.svg') center / 100% 100% no-repeat;
 }
 
+/* The hexagon's fill is not drawn on a card corner: the card is the background, and a filled
+ * hexagon behind a face is a second shape wearing the first one's place. The face stays, and the
+ * seat's own fill and the destroyed wash still paint over this, so a self or a broken seat on a
+ * card keeps its colour. */
+.Inline .Slot {
+  background: transparent;
+}
+
+/* The seat of a player the round gave nothing to, cut as the shattered hexagon instead of the
+ * whole one: the same fill shows through the shards, so a broken seat is the same seat with
+ * holes in it rather than a second colour. The face inside is cut by the same mask, which is the
+ * point — the round broke the card, and the character drawn on it goes with it. The wash is the
+ * same muted pink the board uses for a card the host has taken, so a broken seat and a muted card
+ * are the one pink the room learns. */
+.Destroyed .Slot {
+  background: var(--Color-Feedback-Muted-Wash);
+  mask: url('../../Icons/HexagonDestroyed.svg') center / 100% 100% no-repeat;
+}
+
 /* The character inside the hexagon. Held well in from the sloped edges, since the top of the
  * drawing is narrow and a face drawn to it spills past them — one inset for every seat, so no
  * face is measured differently from another's. */
@@ -278,6 +297,15 @@
   transform: scale(1.08);
 }
 
+/* A card corner has no pointer to find and no room to grow: the yellow wash and the lift are the
+ * bar's note about where the eye is, and on a card the eye is on the answer, not on a face in its
+ * corner. The fill and the destroyed wash still paint over this, so a self or a broken seat on a
+ * card keeps its colour when the room hovers it. */
+.Inline .Seat:hover .Slot {
+  background: transparent;
+  transform: none;
+}
+
 /* The swap itself, on the seat rather than the label: the pointer belongs to the whole seat,
  * and hovering the name alone would flicker as the name is replaced under the cursor. */
 .Seat:hover .Name {
@@ -311,6 +339,18 @@
  * quiet, face and all, so there is nothing left to keep in step. */
 .Offline {
   opacity: 0.5;
+}
+
+/* The same seats, drawn inside something else — an answer card naming who wrote it — at whatever
+ * size that thing says rather than at the screen's: the bar's own formula divides a viewport by a
+ * room's worth of seats, and a card corner has no viewport to divide, so both ends of the clamp
+ * are pinned to the one size it was given. The label follows the seat rather than staying at the
+ * bar's own width, or a name wider than its hexagon runs over the neighbour's. */
+.Inline {
+  width: auto;
+  --Size-PlayerBarSeatMin: var(--Size-PlayerBarInlineSeat);
+  --Size-PlayerBarSeatMax: var(--Size-PlayerBarInlineSeat);
+  --Size-PlayerBarNameMax: calc(var(--Size-PlayerBarInlineSeat) * 1.2);
 }
 
 /* The same seats, drawn inside something else — an answer card naming who wrote it — at whatever
