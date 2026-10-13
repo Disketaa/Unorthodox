@@ -5,8 +5,7 @@ import { createSession } from '../SessionFactory';
 import { navigate } from '../Routes';
 import { Session, SessionRole, BlockedReason, ConnectionHint } from '../Session';
 import { useSessionPhase, SessionPhase } from './UseSessionPhase';
-import { useGameActions } from './UseGameActions';
-import type { GameActions } from './UseGameActions';
+import { useGameActions, type GameActions } from './UseGameActions';
 import { useRoundClocks } from './UseHostPhaseTimer';
 import { useRememberLook } from './UseRememberLook';
 import {
@@ -17,6 +16,7 @@ import {
   type RoundMarks,
 } from './RoundMarks';
 import { boardMarks, type BoardMarks } from './BoardMarks';
+import { loadMarks, saveMarks } from './MarksStorage';
 
 /** Everything a screen is drawn from: the phase in view, the moves it can make, and what a board
  * of answers is showing — the host's mutes, the room's like counts, which of those were this
@@ -108,7 +108,10 @@ function useRoundMarks(
   roomCode: string,
   topic: string | null
 ): { marks: RoundMarks; actions: GameActions } {
-  const [marks, setMarks] = useState<RoundMarks>(emptyMarks);
+  // Seeded from the room's storage, since the count survives a refresh on its own and this is
+  // the half only this browser knows: which of those likes were its own.
+  const [marks, setMarks] = useState<RoundMarks>(() => loadMarks(roomCode) ?? emptyMarks());
+  useEffect(() => saveMarks(roomCode, marks), [roomCode, marks]);
   const actions = useGameActions(
     session,
     publicState,
@@ -172,7 +175,6 @@ export function useGameSession(
   const topic = readTopic(publicState);
   const { marks, actions } = useRoundMarks(session, publicState, roomCode, topic);
   useRoundClocks(session, role === 'Host', phase, actions);
-  const playerId = session.getPlayerId();
   const ownLook = useOwnLook(session, phase.playerLooks, onLook);
   return {
     ...phase,
@@ -180,7 +182,7 @@ export function useGameSession(
     role,
     isHost: role === 'Host',
     roomCode,
-    playerId,
+    playerId: session.getPlayerId(),
     publicState,
     paused: publicState?.paused === true,
     // Both marks only count while the phase still shows the round they were made in.
