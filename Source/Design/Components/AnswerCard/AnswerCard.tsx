@@ -1,5 +1,6 @@
 import { ComponentChildren } from 'preact';
-import { useRef } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
+import { Pop } from '@/Design/Primitives';
 import { useFittedText } from './UseFittedText';
 import { playSound } from '../../Sounds';
 import { LikeBadge } from '../LikeBadge';
@@ -26,12 +27,12 @@ export interface AnswerCardProps {
   liked?: boolean;
   /** What the like badge says out loud, in the room's own language. */
   likeLabel?: string;
+  /** Liking the answer, and taking the like back. Left out on the player's own answer and on a
+   * blank, being a record rather than an answer: a badge drawn but not pressable is a figure. */
+  onLike?: () => void;
   /** What the mute says out loud. One name for both states, since `aria-pressed` is what says
    * which one it is in — the same name in both would read as one control that is on or off. */
   muteLabel?: string;
-  /** Liking the answer, and taking the like back. Left out on the player's own answer, which
-   * they may not like: the badge is still drawn there, showing what the room thought of it. */
-  onLike?: () => void;
   /** Whether the room has got to this answer yet. A card the room has not read is not on the
    * board: the room is shown one answer at a time, and a board already drawn is a board nobody
    * watched being wrong about. On by default, which is every use but the round's own. */
@@ -87,6 +88,46 @@ function FittedAnswer({ text }: { text: string }) {
   );
 }
 
+/** The like badge in the corner, or nothing at all on a blank. A blank is nobody having written,
+ * so there is no answer on it to like and no count that could ever move: a badge reading zero
+ * on the card of a player who sat out says a thing about them rather than about the round. */
+function LikeCorner({
+  blank,
+  likes,
+  liked,
+  likeLabel,
+  onLike,
+}: Pick<AnswerCardProps, 'blank' | 'likes' | 'liked' | 'likeLabel' | 'onLike'>) {
+  // A press counter rather than the liked flag, so the pop runs on the press and not on the state
+  // arriving: the flag only flips once the host has answered, a beat after the finger.
+  const [pressed, setPressed] = useState(0);
+  if (blank) {
+    return null;
+  }
+  return (
+    <span class={styles.Corner}>
+      {/* Keyed on the count of presses, so a new one is a new element and the pop runs from
+       * the start. Composed rather than written: the sway underneath is also a CSS animation,
+       * and the pop uses individual scale and rotate so the two do not overwrite one another. */}
+      <Pop trigger={pressed}>
+        <LikeBadge
+          count={likes ?? 0}
+          liked={liked ?? false}
+          label={likeLabel ?? ''}
+          onToggle={
+            onLike === undefined
+              ? undefined
+              : () => {
+                  setPressed((count) => count + 1);
+                  onLike();
+                }
+          }
+        />
+      </Pop>
+    </span>
+  );
+}
+
 /** One answer on a panel: the answer as the substance, how many wrote it behind it, and the
  * grain the theme cards are printed on. A div rather than a button, since it now carries two
  * controls and a button inside a button is not one. */
@@ -96,8 +137,8 @@ export function AnswerCard({
   voted = false,
   blank = false,
   turned = true,
-  likes = 0,
-  liked = false,
+  likes,
+  liked,
   likeLabel,
   muteLabel,
   onReject,
@@ -119,9 +160,13 @@ export function AnswerCard({
           }}
         />
       )}
-      <span class={styles.Corner}>
-        <LikeBadge count={likes} liked={liked} label={likeLabel ?? ''} onToggle={onLike} />
-      </span>
+      <LikeCorner
+        blank={blank}
+        likes={likes}
+        liked={liked}
+        likeLabel={likeLabel}
+        onLike={onLike}
+      />
     </div>
   );
 }

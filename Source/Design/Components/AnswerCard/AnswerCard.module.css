@@ -126,13 +126,20 @@
 
 /* The corner the like badge sits in, above the mute rather than beside it: a badge under a
  * full-bleed button would be a badge nobody can reach. Inset by the card's own padding so it
- * sits on the panel's edge rather than over the card's. */
+ * sits on the panel's edge rather than over the card's. Measured here and not on the badge,
+ * because the badge is wrapped in the pop that plays when it is pressed and that wrapper fills
+ * its parent: a badge sized for its own contents would collapse to nothing inside a box with
+ * nothing to size against. The two are one box at two levels. */
 .Corner {
   position: absolute;
   right: var(--Space-AnswerCardPadding);
   bottom: var(--Space-AnswerCardPadding);
   z-index: 2;
+  width: var(--Size-LikeBadge);
+  height: var(--Size-LikeBadge);
   line-height: 0;
+  --Size-LikeBadge: calc(var(--Size-AnswerCardWidth, 100px) * 0.273);
+  --Space-LikeMarkInset: calc(var(--Size-AnswerCardWidth, 100px) * 0.0156);
 }
 
 .Room {

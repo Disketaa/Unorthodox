@@ -1,4 +1,5 @@
 import { playSound } from '../../Sounds';
+import { useSwayMotion } from '@/Design/Primitives';
 import styles from './LikeBadge.module.css';
 
 export interface LikeBadgeProps {
@@ -17,43 +18,52 @@ export interface LikeBadgeProps {
 }
 
 /** How high the like sits above the clip it was recorded at. An octave, so it reads as the same
- * note taken up rather than as another sound: the clip is already the bright one in the bank,
- * and a like that wandered in pitch would be a second thing to notice rather than the press. */
+ * note taken up rather than as another sound: the clip is already the bright one in the bank. */
 const LikePitchSemitones = 12;
 
-/** How many liked an answer, over the mark of the like itself, in the corner of the card it sits
- * in. A button where the player may press it and a plain figure where they may not, so a player
- * who cannot like their own answer is shown the count and offered no control that does nothing. */
+/** How many liked an answer, over the mark of the like itself. A button where it may be pressed
+ * and a plain figure where it may not, so a player who cannot like their own answer is shown
+ * the count and offered no control that does nothing. */
 export function LikeBadge({ count, liked, label, onToggle }: LikeBadgeProps) {
-  const classes = [
+  if (onToggle === undefined) {
+    return <Figure count={count} liked={liked} label={label} />;
+  }
+  return <Pressable count={count} liked={liked} label={label} onToggle={onToggle} />;
+}
+
+/** The classes a badge is drawn as, so both of the elements above ask the same question the same
+ * way rather than each keeping its own answer to it. */
+function badgeClasses(count: number, liked: boolean, pressable: boolean): string {
+  return [
     styles.Badge,
+    styles.Swaying,
     count === 0 ? styles.Quiet : '',
     liked ? styles.Liked : '',
-    onToggle === undefined ? styles.Spent : '',
+    pressable ? '' : styles.Spent,
   ]
     .filter(Boolean)
     .join(' ');
-  // The mark first in the markup and the count last, because the count is the figure and the
-  // mark is the ground it stands on. Absolute, so order only decides the paint: the count is
-  // raised above it either way, and a screen reader reads the number before the shape.
-  const figure = (
-    <>
-      <span class={styles.Icon} aria-hidden="true" />
-      <span class={styles.Count}>{count}</span>
-    </>
-  );
+}
 
-  if (onToggle === undefined) {
-    return (
-      <span class={classes} aria-label={label}>
-        {figure}
-      </span>
-    );
-  }
+/** The mark behind the number. Ordered before the count because the count is the figure and this
+ * is the ground it stands on; absolute, so that only decides the paint. */
+function Mark() {
+  return <span class={styles.Icon} aria-hidden="true" />;
+}
+
+/** The badge where the player may press it. */
+function Pressable({
+  count,
+  liked,
+  label,
+  onToggle,
+}: LikeBadgeProps & { onToggle: () => void }) {
+  const motion = useSwayMotion<HTMLButtonElement>();
   return (
     <button
       type="button"
-      class={classes}
+      class={badgeClasses(count, liked, true)}
+      ref={motion}
       aria-pressed={liked}
       aria-label={label}
       onClick={() => {
@@ -61,7 +71,19 @@ export function LikeBadge({ count, liked, label, onToggle }: LikeBadgeProps) {
         onToggle();
       }}
     >
-      {figure}
+      <Mark />
+      <span class={styles.Count}>{count}</span>
     </button>
+  );
+}
+
+/** The badge where they may not: the player's own answer, still showing what the room thought. */
+function Figure({ count, liked, label }: LikeBadgeProps) {
+  const motion = useSwayMotion<HTMLSpanElement>();
+  return (
+    <span class={badgeClasses(count, liked, false)} ref={motion} aria-label={label}>
+      <Mark />
+      <span class={styles.Count}>{count}</span>
+    </span>
   );
 }

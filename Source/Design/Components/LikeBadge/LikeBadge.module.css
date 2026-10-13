@@ -3,29 +3,38 @@
  * absolutely positioned layer filling the badge, with the number centred over it. Cut out of
  * that mark by the stroke composed in above, which is what keeps a digit readable on a thumb
  * rather than a number with a shape lost behind it. */
+/* The idle sway, composed from the one the characters and the wordmark wear, so a badge rocks
+ * the way the rest of the room does rather than as a thing of its own invention. Named here
+ * rather than in the sway itself because the sway ships as a variable and this is where the one
+ * `animation` list is written. */
+.Swaying {
+  composes: Moving from '../../Primitives/Sway/Sway.module.css';
+  animation: var(--Sway-Animation);
+}
+
 .Badge {
-  composes: Stroke from '../../Primitives/Stroke/Stroke.module.css';
   position: relative;
   display: grid;
   place-items: center;
-  width: 2.1em;
-  height: 2.1em;
+  width: 100%;
+  height: 100%;
   padding: 0;
   border: none;
   border-radius: var(--Radius-Button);
-  background: var(--AnswerBadge-Surface);
+  /* Transparent, and said rather than left out: a button with no background is not a
+   * transparent button, it is a button wearing the platform's own `buttonface`, which is the
+   * one pale box that does not follow the card when the card washes. */
+  background: transparent;
   color: var(--Color-Text-Default);
   font-family: var(--FontFamily-Display);
-  font-size: calc(var(--Size-AnswerCardWidth, 100px) * 0.13);
+  font-size: calc(var(--Size-AnswerCardWidth, 100px) * 0.12);
   line-height: 1;
-  /* Two colours that move apart rather than together: the count stays dark in both states and
-   * it is the mark under it that takes the yellow. Kept as separate properties because they are
-   * separate decisions — a figure that changed colour with the shape behind it would be a
-   * figure the room had to re-read every time somebody liked something. */
-  --AnswerBadge-Surface: var(--Color-Surface-Hover);
+  /* Three sizes that are all shares of the card and none of them derived from each other. The
+   * badge is not in `em` on purpose: in `em` it is a multiple of the count, so making the count
+   * bigger or smaller would have taken the badge and the mark inside it up or down with it, and
+   * only the count was meant to move. The badge's own box is set by its corner and filled here;
+   * these two are the mark's size and the gap round it. */
   --Color-LikeMark: var(--Color-Text-Default);
-  --Size-Stroke: calc(var(--Size-AnswerCardWidth, 100px) * 0.012);
-  --Color-Stroke: var(--AnswerBadge-Surface);
 }
 
 /* Nothing has liked it, so the badge is held back rather than removed: a card with no likes is
@@ -61,7 +70,7 @@ button.Badge {
  * its file keeps. */
 .Icon {
   position: absolute;
-  inset: 0.12em;
+  inset: var(--Space-LikeMarkInset);
   background-color: var(--Color-LikeMark);
   mask-image: url('../../Icons/Like.svg');
   mask-repeat: no-repeat;
@@ -69,10 +78,16 @@ button.Badge {
   mask-size: contain;
 }
 
-/* The count, centred on the mark and above it. Above rather than level because it is the figure
- * and the mark is the ground: level, one of the two would sit under the other. */
+/* The count, centred on the mark and above it, and cut out of it in the card's own colour, so
+ * the gap reads as the card showing through between the figure and the mark — and stays the
+ * card's colour when the card washes under the pointer. Written out rather than composed from
+ * the shared stroke primitive: that composes silently fails to arrive on an element, and the
+ * figure then reads as unstroked with nothing in the stylesheet to say why. */
 .Count {
   position: relative;
   z-index: 1;
   font-weight: 700;
+  -webkit-text-stroke: calc(var(--Size-AnswerCardWidth, 100px) * 0.05)
+    var(--AnswerCard-Surface, var(--Color-Surface-Hover));
+  paint-order: stroke fill;
 }
