@@ -15,6 +15,7 @@ describe('reducer REJECT_GROUP action', () => {
         ['p2', 'Ans1'],
       ]),
       groupRejections: new Map(),
+      groupLikes: new Map(),
       players: new Map(),
       cumulativeScores: new Map(),
       turnPlayerId: null,

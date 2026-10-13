@@ -1,4 +1,5 @@
 import { PlayerId, randomFor, shuffle, ThemeId } from '@/Core';
+import { marksForRoom } from './PublicMarks';
 import { HostState, ReviewingState } from './GameState';
 import { groupAnswers } from './Grouping';
 import type {
@@ -137,19 +138,9 @@ export function toPublicReviewingState(state: HostState): PublicReviewingState {
     startedAt: state.startedAt,
     players: publicPlayers(state),
     groups,
-    ...mutedBy(state),
+    ...marksForRoom(state),
     ...themeOf(state),
   };
-}
-
-/** Which cards the host has taken off the board, by the ids the client draws them against.
- * Carried beside the groups rather than inside them, so the shape of a card does not change
- * when one is muted, and omitted when nothing is. */
-function mutedBy(state: ReviewingState): { mutedGroupIds?: number[] } {
-  if (state.groupRejections.size === 0) {
-    return {};
-  }
-  return { mutedGroupIds: [...state.groupRejections.keys()] };
 }
 
 export function toPublicScoresState(state: HostState): PublicScoresState {

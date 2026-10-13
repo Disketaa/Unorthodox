@@ -1,39 +1,58 @@
 import { Stack } from '@/Design/Primitives';
 import { AnswerCards, type AnswerCardsEntry } from './AnswerCards';
 
-/** A board of answers as the review phase draws it: one group per line, only the duplicated one
- * carrying a count, and one of them already voted out so both states are on the same board. */
+/** A board as the review phase draws it: only the duplicated card carrying a count, one already
+ * muted, and the like counts running 0, 3 and 1 so a badge nobody pressed, one the room pressed
+ * and one this player pressed are all on the same board. */
 function board(count: number): AnswerCardsEntry[] {
   return Array.from({ length: count }, (_, index) => ({
     id: index,
     text: index === 1 ? 'the same answer twice' : `answer number ${index + 1}`,
     count: index === 1 ? 3 : 1,
     voted: index === 2,
+    likes: index,
+    liked: index === 1,
+    own: index === 3,
+    likeLabel: `${index} likes`,
   }));
 }
 
-/** The same board again with the room being shown the round rather than asked about it, which is
- * the one case where the cards stop being controls. */
+/** The same board with the room being shown the round rather than asked about it, which is the
+ * one case where the cards stop being controls. */
 function record(count: number): AnswerCardsEntry[] {
   return board(count).map((answer) => ({ ...answer, voted: false }));
+}
+
+/** The same board with its controls on, said once so the six cases below stay a line each. */
+function playable(count: number, revealed?: number) {
+  const noop = () => {};
+  return (
+    <AnswerCards
+      answers={board(count)}
+      revealed={revealed}
+      onReject={noop}
+      onLike={noop}
+      muteLabel="Mute answer"
+    />
+  );
 }
 
 export function AnswerCardsGallery() {
   return (
     <Stack gap="Lg">
       {/* Two answers side by side rather than as one column with a gap beside it. */}
-      <AnswerCards answers={board(2)} onReject={() => {}} />
+      {playable(2)}
       {/* Nine answers, which is a board three by three. */}
-      <AnswerCards answers={board(9)} onReject={() => {}} />
+      {playable(9)}
       {/* Twelve answers, which is the same three columns and one row deeper. */}
-      <AnswerCards answers={board(12)} onReject={() => {}} />
+      {playable(12)}
       {/* Four answers, the case a grid cannot centre on its own: the row is part filled, and the
        * empty cells are what put the last card in the middle of it rather than against the edge. */}
-      <AnswerCards answers={board(4)} onReject={() => {}} />
+      {playable(4)}
       {/* And the round being read back rather than answered. */}
       <AnswerCards answers={record(5)} />
       {/* The board half turned over, which is how the room sees it for the first few seconds. */}
-      <AnswerCards answers={board(6)} revealed={2} onReject={() => {}} />
+      {playable(6, 2)}
     </Stack>
   );
 }

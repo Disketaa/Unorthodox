@@ -9,9 +9,19 @@ import { useGameActions } from './UseGameActions';
 import type { GameActions } from './UseGameActions';
 import { useRoundClocks } from './UseHostPhaseTimer';
 import { useRememberLook } from './UseRememberLook';
-import { emptyMarks, hasSubmittedIn, markSubmitted, type RoundMarks } from './RoundMarks';
+import {
+  emptyMarks,
+  hasSubmittedIn,
+  markLiked,
+  markSubmitted,
+  type RoundMarks,
+} from './RoundMarks';
+import { boardMarks, type BoardMarks } from './BoardMarks';
 
-export interface GameSessionView extends SessionPhase {
+/** Everything a screen is drawn from: the phase in view, the moves it can make, and what a board
+ * of answers is showing — the host's mutes, the room's like counts, which of those were this
+ * player's own presses, and whether they wrote an answer at all. */
+export interface GameSessionView extends SessionPhase, BoardMarks {
   role: SessionRole;
   isHost: boolean;
   roomCode: string;
@@ -27,7 +37,6 @@ export interface GameSessionView extends SessionPhase {
    * trip. */
   editing: boolean;
   setEditing: (editing: boolean) => void;
-  rejectedGroupIds: ReadonlySet<number>;
   hostLeft: boolean;
   /** Why this player is not in the room, if they are not. */
   blocked: BlockedReason | undefined;
@@ -56,6 +65,7 @@ export interface GameSessionView extends SessionPhase {
   nextPhase: () => void;
   submitAnswer: (text: string) => void;
   rejectGroup: (groupId: number) => void;
+  likeGroup: (groupId: number) => void;
   nextRound: () => void;
   playAgain: () => void;
   /** Leave the room and go back to the entry screen. */
@@ -99,17 +109,14 @@ function useRoundMarks(
   topic: string | null
 ): { marks: RoundMarks; actions: GameActions } {
   const [marks, setMarks] = useState<RoundMarks>(emptyMarks);
-  const actions = useGameActions(session, publicState, roomCode, () =>
-    setMarks((current) => markSubmitted(current, topic))
+  const actions = useGameActions(
+    session,
+    publicState,
+    roomCode,
+    (text) => setMarks((current) => markSubmitted(current, topic, text)),
+    (groupId) => setMarks((current) => markLiked(current, topic, groupId))
   );
   return { marks, actions };
-}
-
-/** The cards the host has muted, as the room is shown them, rather than as a mark this browser
- * kept: a card one screen can mute alone is a card the room cannot see muted together. */
-function mutedBy(publicState: PublicState | undefined): ReadonlySet<number> {
-  const ids = publicState?.phase === 'Reviewing' ? publicState.mutedGroupIds : undefined;
-  return new Set(ids ?? []);
 }
 
 /** What this browser knows that the room has not been told: that the host walked away, and that
@@ -179,7 +186,7 @@ export function useGameSession(
     // Both marks only count while the phase still shows the round they were made in.
     hasSubmitted: hasSubmittedIn(marks, topic),
     editing,
-    rejectedGroupIds: mutedBy(publicState),
+    ...boardMarks(publicState, marks, topic),
     setEditing: reportEditing(markEditing, actions.setEditingAnswer),
     hostLeft,
     blocked: session.getBlocked(),

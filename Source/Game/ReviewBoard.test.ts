@@ -30,6 +30,7 @@ function reviewing(count: number, answered: readonly [string, string][]): Review
     startedAt: 0,
     answers: new Map(answered),
     groupRejections: new Map(),
+    groupLikes: new Map(),
     theme: undefined,
   };
 }

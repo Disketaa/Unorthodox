@@ -151,13 +151,24 @@ export class ClientSession {
     }
   }
 
+  /** Muting an answer. The host refuses this from anybody but itself, so it is sent and not
+   * guaranteed. */
   rejectGroup(groupId: number): void {
-    if (this.seated('reject group')) {
-      this.transport.sendToHost({
-        type: 'RejectGroup',
-        groupId,
-        playerId: this.inbox.playerId,
-      });
+    this.sendMark('RejectGroup', groupId, 'reject group');
+  }
+
+  /** Liking an answer, which every player may do unlike a mute: a like is a reaction to what
+   * somebody said and not a move in the round. The host still refuses one cast on an answer its
+   * sender wrote, since a client cannot be told its own authorship. */
+  likeGroup(groupId: number): void {
+    this.sendMark('LikeGroup', groupId, 'like an answer');
+  }
+
+  /** One mark on one card, sent under this player's own seat. The two are the same message with
+   * a different name, so they are sent the same way rather than written out twice. */
+  private sendMark(type: 'RejectGroup' | 'LikeGroup', groupId: number, action: string): void {
+    if (this.seated(action)) {
+      this.transport.sendToHost({ type, groupId, playerId: this.inbox.playerId });
     }
   }
 

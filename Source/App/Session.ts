@@ -47,6 +47,8 @@ export interface Session {
    * back to work in everybody's bar rather than only in their own. */
   setEditingAnswer(editing: boolean): void;
   rejectGroup(groupId: number): void;
+  /** Liking an answer, or taking the like back. Every player sends one, unlike a mute. */
+  likeGroup(groupId: number): void;
   /** Give the room's turn to the next player in join order. Only the host calls this. */
   nextTurn(): void;
   /** Start the game - transitions from Lobby to Choosing. */

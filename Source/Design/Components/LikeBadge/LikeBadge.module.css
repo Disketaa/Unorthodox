@@ -1,0 +1,72 @@
+/* How many liked an answer, and the mark of liking one. Shared figure rather than a per-card
+ * drawing: a score and a like count are the same number in the same language, so the stroke
+ * that cuts it out of the card behind it is composed in from one place rather than written
+ * twice. */
+.Badge {
+  composes: Stroke from '../../Primitives/Stroke/Stroke.module.css';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  padding: 0.3em 0.5em;
+  border: none;
+  border-radius: var(--Radius-Button);
+  background: var(--AnswerCardSurface, var(--Color-Surface-Hover));
+  color: var(--Color-Text-Default);
+  font-family: var(--FontFamily-Display);
+  font-size: calc(var(--Size-AnswerCardWidth, 100px) * 0.13);
+  line-height: 1;
+  --Size-Stroke: calc(var(--Size-AnswerCardWidth, 100px) * 0.012);
+  --Color-Stroke: var(--Color-AnswerCardSurface);
+}
+
+/* Nothing has liked it, so the badge is held back rather than removed: a card with no likes is
+ * the ordinary case for most of a round, and a mark that vanishes is a mark the room stops
+ * looking for. Full as soon as there is one, since one like is already somebody having said so. */
+.Quiet {
+  opacity: var(--Opacity-LikeBadgeQuiet);
+}
+
+/* Pressed: this player is one of the people who liked it. The room's yellow rather than the
+ * reader's tint, like the score beside it: what it says is a fact about the answer and not
+ * about who is reading. */
+.Liked {
+  color: var(--Color-Action-Primary-Background);
+  --Color-Stroke: var(--Color-AnswerCardSurface);
+  opacity: 1;
+}
+
+/* The player's own answer, where there is nothing to press. The refused cursor rather than the
+ * pointing one: the badge is still there and still shows what the room thought of it, and the
+ * cursor is what says the number is not theirs to change. */
+.Spent {
+  cursor: var(--Cursor-NotAllowed);
+}
+
+button.Badge {
+  cursor: var(--Cursor-Pointer);
+}
+
+button.Badge:hover {
+  color: var(--Color-Room-Yellow);
+}
+
+/* The mark of a like, painted through a mask like every other icon on disk: the files are solid
+ * black silhouettes, and a mask is what lets one file be drawn in any colour. Drawn oversize
+ * and centred so it fills its box rather than sitting inside the margin its own file keeps. */
+.Icon {
+  display: block;
+  width: 1.1em;
+  height: 1.1em;
+  flex: none;
+  background-color: currentColor;
+  mask-image: url('../../Icons/Like.svg');
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: 112%;
+}
+
+/* The count itself, cut out of the badge behind it by the stroke composed in above. */
+.Count {
+  font-weight: 700;
+}

@@ -3,7 +3,20 @@
  * one of them changes when a phase gains a field. */
 import type { HostState, RandomPick, RoomMembers } from '@/Game';
 import { isThemeId } from '@/Core';
-import { toRejections } from './RoomRejections';
+import { toGroupVotes } from './RoomGroupVotes';
+
+/** The marks a board of answers carries when a room is restored mid-round: which cards were
+ * muted and which were liked. Both read the same way and under different names, since they are
+ * stored separately and a room restored from an older save has neither. */
+function reviewMarks(fields: Map<string, unknown>): {
+  groupRejections: Map<number, Set<string>>;
+  groupLikes: Map<number, Set<string>>;
+} {
+  return {
+    groupRejections: toGroupVotes(fields, 'rejections'),
+    groupLikes: toGroupVotes(fields, 'likes'),
+  };
+}
 import {
   clockOf,
   fieldsOf,
@@ -120,7 +133,7 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
     case 'Writing':
       return { phase: 'Writing', ...common, theme };
     case 'Reviewing':
-      return { phase: 'Reviewing', ...common, groupRejections: toRejections(fields), theme };
+      return { phase: 'Reviewing', ...common, ...reviewMarks(fields), theme };
     case 'Scores':
       return {
         phase: 'Scores',

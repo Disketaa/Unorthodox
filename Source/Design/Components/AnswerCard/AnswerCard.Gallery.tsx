@@ -1,23 +1,48 @@
 import { Stack } from '@/Design/Primitives';
-import { AnswerCard } from './AnswerCard';
+import { AnswerCard, type AnswerCardProps } from './AnswerCard';
 
-/** The four states a card is drawn in, each in a slot of the shape the board hands it, since the
- * size of a card is decided by the cell it is in rather than by the card. */
+/** A card with its badge and mute named, said once so the states below stay a card each. The
+ * like counts run 0, 3 and 2 so a badge nobody pressed, one the room pressed and one pressed on
+ * an answer this player wrote are all on the row. */
+function card(over: Partial<AnswerCardProps> & Pick<AnswerCardProps, 'text'>) {
+  const noop = () => {};
+  return (
+    <AnswerCard
+      count={1}
+      likes={0}
+      likeLabel="0 likes"
+      muteLabel="Mute answer"
+      onReject={noop}
+      onLike={noop}
+      {...over}
+    />
+  );
+}
+
 export function AnswerCardGallery() {
   return (
     <Stack direction="Horizontal" gap="Md" align="Stretch">
-      <AnswerCard text="one player wrote this" count={1} onReject={() => {}} />
+      {card({ text: 'one player wrote this' })}
       {/* The count behind the answer is the whole of a duplicated answer. */}
-      <AnswerCard text="three players wrote this" count={3} onReject={() => {}} />
-      {/* Voted out by this player, so it is held back and no longer answers the pointer. */}
-      <AnswerCard text="voted out" count={2} voted onReject={() => {}} />
-      {/* And a card the room is being shown rather than asked about. */}
-      <AnswerCard text="nobody may vote" count={1} />
-      {/* A player who wrote nothing, which is held back and never takes a vote. */}
-      <AnswerCard text="Пусто" count={1} blank />
+      {card({
+        text: 'three players wrote this',
+        count: 3,
+        likes: 3,
+        liked: true,
+        likeLabel: '3 likes',
+      })}
+      {/* Muted by the host: held back, struck through, and no longer answering the pointer. */}
+      {card({ text: 'muted', count: 2, voted: true, likes: 2, likeLabel: '2 likes' })}
+      {/* This player's own answer. The badge is still drawn with what the room thought of it and
+       * only the press is taken away, which is what `onLike` left out says. */}
+      {card({ text: 'you wrote this', likes: 2, likeLabel: '2 likes', onLike: undefined })}
+      {/* A card the room is being shown rather than asked about. */}
+      {card({ text: 'nobody may vote', onReject: undefined, onLike: undefined })}
+      {/* A player who wrote nothing, which is held back and takes neither a mute nor a like. */}
+      {card({ text: 'Пусто', blank: true, onReject: undefined, onLike: undefined })}
       {/* And the same card before the room has got to it, which is every card for the first
        * second of the round. */}
-      <AnswerCard text="not read yet" count={1} turned={false} />
+      {card({ text: 'not read yet', turned: false })}
     </Stack>
   );
 }

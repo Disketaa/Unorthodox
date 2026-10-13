@@ -11,6 +11,7 @@ function answers(count: number): AnswerCardsEntry[] {
     text: `answer ${id}`,
     count: 1,
     voted: false,
+    likeLabel: '0 likes',
   }));
 }
 

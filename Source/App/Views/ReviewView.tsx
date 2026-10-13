@@ -24,12 +24,19 @@ export function ReviewView({ view }: PhaseViewProps) {
       // word already sitting there while its neighbours were typed at would be the one card
       // nobody watched turn over.
       const text = group.isEmpty ? Strings.reviewing.blank : group.text;
+      // Read off the answer as it was sent rather than as it is being written out: a half-written
+      // card matches no answer at all, so a player mid-reveal would be offered a like on their
+      // own. A blank is nobody's own and nobody may like it, being a record of an empty seat.
+      const own = !group.isEmpty && view.wroteAnswer(group.text);
       return {
         groupId: group.groupId,
         text: typedOut(text, reveal.shownAt(index, text.length)),
         playerCount: group.playerCount,
         voted: view.rejectedGroupIds.has(group.groupId),
         isEmpty: group.isEmpty,
+        likes: view.likedGroupIds.get(group.groupId) ?? 0,
+        liked: view.myLikedGroupIds.has(group.groupId),
+        own,
       };
     }) ?? [];
 
@@ -39,6 +46,7 @@ export function ReviewView({ view }: PhaseViewProps) {
       groups={groups}
       revealed={reveal.upTo}
       onReject={view.isHost ? view.rejectGroup : undefined}
+      onLike={view.likeGroup}
     />
   );
 }

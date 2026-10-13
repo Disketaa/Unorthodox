@@ -1,13 +1,13 @@
 import { HostState, freshLobbyState } from './GameState';
 import { assertNever } from '@/Core';
 import type { GameAction } from './GameActions';
+import { handleLikeGroup, handleRejectGroup } from './GroupActions';
 import {
   handleStartGame,
   handleChooseTheme,
   handleStartWriting,
   handleSubmitAnswer,
   handleStartReviewing,
-  handleRejectGroup,
   handleEndReviewing,
   handleNextRound,
   handleFinal,
@@ -23,7 +23,21 @@ import { handleHold, isRefusedWhileHeld } from './Pause';
 export function reducer(currentState: HostState | undefined, action: GameAction): HostState {
   const state: HostState = currentState ?? freshLobbyState();
   if (isRefusedWhileHeld(state, action)) return state;
+  if (isMarkAction(action)) {
+    return action.type === 'REJECT_GROUP'
+      ? handleRejectGroup(state, action)
+      : handleLikeGroup(state, action);
+  }
   return dispatch(state, action);
+}
+
+/** The two marks a card on the board can carry: a mute, which the host alone casts and which
+ * takes the answer off the board, and a like, which everybody casts and which only counts. A
+ * card can carry both at once, which is why they are two fields and not one. */
+type MarkAction = Extract<GameAction, { type: 'REJECT_GROUP' | 'LIKE_GROUP' }>;
+
+function isMarkAction(action: GameAction): action is MarkAction {
+  return action.type === 'REJECT_GROUP' || action.type === 'LIKE_GROUP';
 }
 
 /** The moves that are the room's own rather than the flow's: who is in it, and whether it is
@@ -50,7 +64,7 @@ function isRoomAction(action: GameAction): action is RoomAction {
 
 /** Which handler owns each action, grouped by the handler rather than by the action: two actions
  * from one hand are one rule, and listing them together is what says so. */
-function dispatch(state: HostState, action: GameAction): HostState {
+function dispatch(state: HostState, action: Exclude<GameAction, MarkAction>): HostState {
   if (isRoomAction(action)) {
     return action.type === 'PAUSE' || action.type === 'RESUME'
       ? handleHold(state, action)
@@ -74,8 +88,6 @@ function dispatch(state: HostState, action: GameAction): HostState {
       return handleEditingAnswer(state, action);
     case 'START_REVIEWING':
       return handleStartReviewing(state, action);
-    case 'REJECT_GROUP':
-      return handleRejectGroup(state, action);
     case 'END_REVIEWING':
       return handleEndReviewing(state, action);
     case 'NEXT_ROUND':

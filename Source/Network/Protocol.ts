@@ -13,6 +13,10 @@ export type ClientMessage =
    * has finished sending is nobody's business. */
   | { type: 'EditingAnswer'; editing: boolean; playerId: PlayerId }
   | { type: 'RejectGroup'; groupId: number; playerId: PlayerId }
+  /** A player has liked an answer, or taken the like back. Every player may send one: a like is
+   * a reaction rather than a move in the round. The host still refuses one on an answer its
+   * sender wrote, which nobody can be told about without telling the room. */
+  | { type: 'LikeGroup'; groupId: number; playerId: PlayerId }
   | { type: 'Sync' };
 
 export type HostMessage =
@@ -72,6 +76,8 @@ export function isClientMessage(value: unknown): value is ClientMessage {
     case 'EditingAnswer':
       return typeof record.editing === 'boolean' && typeof record.playerId === 'string';
     case 'RejectGroup':
+      return typeof record.groupId === 'number' && typeof record.playerId === 'string';
+    case 'LikeGroup':
       return typeof record.groupId === 'number' && typeof record.playerId === 'string';
     case 'Sync':
       // A returning client asks the host to resend the current state.

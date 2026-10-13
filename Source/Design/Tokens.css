@@ -642,6 +642,13 @@ body.PageFade {
    * going to come back on its own, and a card being held back for a moment is quiet while a
    * card that has been dealt with is out of it. */
   --Opacity-AnswerCardVoted: 0.45;
+  /* The fill a badge sits on, which the stroke around its count is cut against. The card's own
+   * surface rather than a fixed one, so the figure keeps its outline over the wash the card
+   * takes under the pointer. */
+  --Color-AnswerCardSurface: var(--Color-Text-Default);
+  /* How far a like badge is held back while nothing has liked the answer. Held back rather than
+   * removed, so a card nobody liked still carries somewhere to press. */
+  --Opacity-LikeBadgeQuiet: 0.5;
   /* The thickness of the line through a muted answer. In `em`, so it is a share of the writing
    * it strikes and thickens with it as the answer is fitted to its card, rather than a hairline
    * that vanishes on a small card and a slab on a large one. */

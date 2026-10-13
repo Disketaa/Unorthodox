@@ -114,6 +114,10 @@ export type ReviewingState = RoomMembers & {
   answers: Map<PlayerId, string>;
   /** groupId -> the playerIds who voted that group not suitable */
   groupRejections: Map<number, Set<PlayerId>>;
+  /** groupId -> the playerIds who liked that group's answer, held per round like the rejections
+   * beside it. The playerIds rather than a count, so a like can be taken back and the host can
+   * tell a like on somebody's own answer from one on anybody else's. */
+  groupLikes: Map<number, Set<PlayerId>>;
   /** As in Writing: the round's theme, so the bank on screen still shows what is being played. */
   theme: ThemeId | undefined;
 };

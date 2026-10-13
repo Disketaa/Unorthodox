@@ -1,0 +1,9 @@
+/* A number cut out of whatever is behind it, by stroking the glyphs rather than the box. Shared
+ * because it is always these declarations for the same reason, and a score and a like count are
+ * the same figure in the same language. Width and colour come from custom properties, so each
+ * caller sets the two that are its own. `paint-order` is what makes it work: without it the
+ * stroke is drawn over the fill and eats the glyph rather than sitting behind it. */
+.Stroked {
+  -webkit-text-stroke: var(--Size-Stroke, 0) var(--Color-Stroke, currentColor);
+  paint-order: stroke fill;
+}

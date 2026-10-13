@@ -256,12 +256,13 @@
  * the two rather than a quieter replacement. Its stroke is inherited from the seat, so a number
  * is always cut against the fill behind it. */
 .Score {
+  composes: Stroke from '../../Primitives/Stroke/Stroke.module.css';
   opacity: 0;
   font-weight: 700;
   text-align: center;
   color: var(--Color-Action-Primary-Background);
-  -webkit-text-stroke: var(--Size-PlayerBarNameStroke) var(--Color-PlayerBarNameStroke);
-  paint-order: stroke fill;
+  --Size-Stroke: var(--Size-PlayerBarNameStroke);
+  --Color-Stroke: var(--Color-PlayerBarNameStroke);
 }
 
 /* The seat under the pointer, in the room's yellow wash. The same note the local player's own

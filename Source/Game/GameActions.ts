@@ -38,6 +38,7 @@ export type GameAction =
   | { type: 'EDITING_ANSWER'; playerId: PlayerId; editing: boolean }
   | { type: 'START_REVIEWING'; startedAt: number; durationMs: number }
   | { type: 'REJECT_GROUP'; playerId: PlayerId; groupId: number }
+  | { type: 'LIKE_GROUP'; playerId: PlayerId; groupId: number }
   | { type: 'END_REVIEWING'; startedAt: number; durationMs: number }
   /** The end of one round into the next one's theme choice. */
   | { type: 'NEXT_ROUND'; durationMs: number; startedAt: number }

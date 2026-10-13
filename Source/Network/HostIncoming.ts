@@ -93,6 +93,8 @@ export function toAction(context: IncomingContext): GameAction | undefined {
         return undefined;
       }
       return { type: 'REJECT_GROUP', playerId: message.playerId, groupId: message.groupId };
+    case 'LikeGroup':
+      return { type: 'LIKE_GROUP', playerId: message.playerId, groupId: message.groupId };
     default:
       return undefined;
   }

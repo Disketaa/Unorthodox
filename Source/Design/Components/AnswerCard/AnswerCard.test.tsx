@@ -12,43 +12,42 @@ beforeEach(() => {
   playSound.mockClear();
 });
 
-/** A card on a root of its own, and the element it drew as. The answer and its count are the
+/** A card on a root of its own, and the root it drew into. The answer and its count are the
  * card's own two required props, so a test that is not about them does not have to pass them. */
-function renderCard(props: Partial<Parameters<typeof AnswerCard>[0]> = {}): HTMLElement {
+function renderCard(props: Partial<Parameters<typeof AnswerCard>[0]> = {}) {
   const root = document.createElement('div');
   document.body.appendChild(root);
   render(<AnswerCard text="кот" count={1} {...props} />, root);
-  const card = root.firstElementChild;
-  if (!(card instanceof HTMLElement)) throw new Error('no card rendered');
-  return card;
+  return root;
 }
 
 describe('an answer card', () => {
-  it('pops when it is pressed, as a theme card does', () => {
-    // The same note a press on the bank makes, since this is the same kind of press: the host
-    // deciding something about a card. A board that answers silently and a bank that does not is
-    // two controls doing one job.
-    renderCard({ onReject: vi.fn() }).click();
+  it('is a container rather than a button, since it now carries two controls', () => {
+    // A button inside a button is not a button, and a mute laid over the whole card with a like in
+    // its corner is two controls. The card is the box they both sit in.
+    const root = renderCard({ onReject: () => {}, onLike: () => {} });
+    expect(root.firstElementChild?.tagName).toBe('DIV');
+    expect(root.querySelectorAll('button').length).toBe(2);
+  });
+
+  it('pops when the mute is pressed, as a theme card does', () => {
+    // The same note a press on the bank makes, since this is the same kind of press. A board that
+    // answers silently and a bank that does not is two controls doing one job.
+    const mute = renderCard({ onReject: () => {} }).querySelector('button');
+    mute?.click();
     expect(playSound).toHaveBeenCalledWith('Pop');
   });
 
   it('pops once per press, taking a mute back included', () => {
     const onReject = vi.fn();
-    const card = renderCard({ onReject });
-    card.click();
-    card.click();
+    const mute = renderCard({ onReject }).querySelector('button');
+    mute?.click();
+    mute?.click();
     expect(playSound).toHaveBeenCalledTimes(2);
     expect(onReject).toHaveBeenCalledTimes(2);
   });
 
-  it('stays quiet where there is nothing to press', () => {
-    // Every screen but the host's draws the board as a record, and a card that cannot be muted
-    // must not sound as though it could be.
-    renderCard({}).click();
-    expect(playSound).not.toHaveBeenCalled();
-  });
-
-  it('plays the sound before it runs the click', () => {
+  it('plays the sound before it runs the mute', () => {
     // The sound belongs to the press rather than to the mute having landed: it has to be heard
     // with the finger going down, not once the room has been told.
     const order: string[] = [];
@@ -58,7 +57,25 @@ describe('an answer card', () => {
     const onReject = vi.fn(() => {
       order.push('click');
     });
-    renderCard({ onReject }).click();
+    renderCard({ onReject }).querySelector('button')?.click();
     expect(order).toEqual(['sound', 'click']);
+  });
+
+  it('draws a badge but no controls where there is nothing to press', () => {
+    // Every screen but the host's draws the board as a record, and a player is shown the count on
+    // their own answer without being offered anything to do about it.
+    const root = renderCard({ onReject: undefined });
+    expect(root.querySelectorAll('button').length).toBe(0);
+    expect(root.textContent).toContain('0');
+  });
+
+  it('draws the badge in the corner of the card rather than in the flow of the answer', () => {
+    // In the flow it would push the answer about as the count grows, and a card whose text moves
+    // when somebody likes it is a card nobody can read while they are being read to.
+    const corner = renderCard({ onReject: () => {}, onLike: () => {} }).querySelector(
+      'button + span'
+    );
+    expect(corner?.tagName).toBe('SPAN');
+    expect(corner?.textContent).toBe('0');
   });
 });

@@ -32,6 +32,7 @@ function reviewing(): ReviewingState {
       ['p2', 'кот'],
     ]),
     groupRejections: new Map(),
+    groupLikes: new Map(),
     theme: undefined,
   };
 }

@@ -3,18 +3,22 @@ import { GameConfig, toPublicState } from '@/Game';
 import { PlayerLook } from '@/Core';
 import { Session, SessionRole } from './Session';
 
+/** The room as the host's own screens are shown it: the same projection every client is sent,
+ * since the host is in the room and reads the same board they do. */
+function publicStateOf(hostSession: HostSession) {
+  return () => {
+    const state = hostSession.getState();
+    return state === undefined ? undefined : toPublicState(state);
+  };
+}
+
 function createHostSession(roomCode: string, playerName: string, look: PlayerLook): Session {
   const hostSession = new HostSession(new TrysteroTransport());
   hostSession.start(roomCode, playerName, look);
 
-  const getPublicState = () => {
-    const state = hostSession.getState();
-    return state === undefined ? undefined : toPublicState(state);
-  };
-
   return {
     role: 'Host',
-    getPublicState,
+    getPublicState: publicStateOf(hostSession),
     getPlayerId: () => HostPlayerId,
     // The host is the clock source, so it has no skew to correct for.
     getClockOffsetMs: () => 0,
@@ -33,6 +37,7 @@ function createHostSession(roomCode: string, playerName: string, look: PlayerLoo
     submitAnswer: (text) => hostSession.submitOwnAnswer(text.trim()),
     setEditingAnswer: (editing) => hostSession.setOwnEditingAnswer(editing),
     rejectGroup: (groupId) => hostSession.rejectOwnGroup(groupId),
+    likeGroup: (groupId) => hostSession.likeOwnGroup(groupId),
     nextTurn: () => hostSession.nextTurn(),
     startGame: () => hostSession.startGame(),
     startWriting: (topic) => hostSession.startWriting(topic),
@@ -75,6 +80,7 @@ function createPlayerSession(roomCode: string, playerName: string, look: PlayerL
     submitAnswer: (text) => clientSession.submitAnswer(text.trim()),
     setEditingAnswer: (editing) => clientSession.setEditingAnswer(editing),
     rejectGroup: (groupId) => clientSession.rejectGroup(groupId),
+    likeGroup: (groupId) => clientSession.likeGroup(groupId),
     nextTurn: () => {},
     startGame: () => {},
     // A client asking for a phase change would be every player steering the room, so none of the

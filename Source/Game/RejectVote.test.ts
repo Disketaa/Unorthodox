@@ -24,6 +24,7 @@ function reviewing(): ReviewingState {
     startedAt: 0,
     answers: new Map([['p1', 'нос']]),
     groupRejections: new Map(),
+    groupLikes: new Map(),
     theme: undefined,
   };
 }

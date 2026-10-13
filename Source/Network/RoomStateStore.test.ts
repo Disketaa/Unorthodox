@@ -43,6 +43,7 @@ const reviewingPhase: HostState = {
   startedAt: 5000,
   answers: new Map([['host', 'раз']]),
   groupRejections: new Map([[1, new Set(['host', 'p1'])]]),
+  groupLikes: new Map([[0, new Set(['p1', 'p2'])]]),
   players: new Map(),
   cumulativeScores: new Map([['host', 7]]),
   turnPlayerId: null,

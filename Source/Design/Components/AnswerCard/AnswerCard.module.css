@@ -20,7 +20,7 @@
   color: var(--Color-Text-Default);
   border: none;
   border-radius: var(--Radius-Card);
-  cursor: var(--Cursor-Pointer);
+  cursor: var(--Cursor-Default);
   /* The card's own sizes, as shares of its width, resolved here rather than in the token file.
    * A custom property's value is substituted where it is declared, not where it is used, so a
    * chain at the root resolves against whatever the width token holds there, and it holds
@@ -108,6 +108,33 @@
  * by its own text, so the answer is measured against the space it has rather than a box that
  * grew to hold it. It draws no type of its own: the size the answer is fitted to is read on the
  * answer, and a size declared here could not have been reached by a fit set on the answer. */
+/* The mute, laid over the whole card. It was the card once, and still is as far as the pointer
+ * is concerned: a control the size of a card is the one thing that can be pressed in a room
+ * where people are standing up. Taken out of the card's own markup because a badge now sits
+ * inside it, and a button inside a button is not a button. Transparent rather than absent, so
+ * the card's own wash and hover carry the surface and this draws nothing of its own. */
+.Mute {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 0;
+  border: none;
+  border-radius: var(--Radius-Card);
+  background: transparent;
+  cursor: var(--Cursor-Pointer);
+}
+
+/* The corner the like badge sits in, above the mute rather than beside it: a badge under a
+ * full-bleed button would be a badge nobody can reach. Inset by the card's own padding so it
+ * sits on the panel's edge rather than over the card's. */
+.Corner {
+  position: absolute;
+  right: var(--Space-AnswerCardPadding);
+  bottom: var(--Space-AnswerCardPadding);
+  z-index: 2;
+  line-height: 0;
+}
+
 .Room {
   position: relative;
   z-index: 1;
@@ -196,7 +223,8 @@
 /* The focus ring on the card itself, since there is no border left to recolour. Drawn outside
  * the fill by an outline, which is what does that without taking any of the card's width: a
  * focused card that grew a pixel would be a card out of line with the eight beside it. */
-.Root:focus-visible {
+.Root:focus-visible,
+.Mute:focus-visible {
   outline: var(--Border-Width-Default) solid var(--Color-Border-Focus);
   outline-offset: var(--Border-Width-Default);
 }

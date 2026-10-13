@@ -166,10 +166,12 @@ describe('the bar of hexes', () => {
     // against the hexagon the way a name does.
     expect(declaration('Score', 'color')).toBe('var(--Color-Action-Primary-Background)');
     expect(declaration('Score', 'font-weight')).toBe('700');
-    expect(declaration('Score', '-webkit-text-stroke')).toContain(
-      'var(--Size-PlayerBarNameStroke)',
-    );
-    expect(declaration('Score', 'paint-order')).toBe('strokefill');
+    // The stroke itself is composed in from one primitive shared with the like count, since a
+    // score and a like are the same figure in the same language. What this sheet owes it is the
+    // two values that are the bar's own: the width it strokes at and the colour it is cut against.
+    expect(declaration('Score', '--Size-Stroke')).toBe('var(--Size-PlayerBarNameStroke)');
+    expect(declaration('Score', '--Color-Stroke')).toBe('var(--Color-PlayerBarNameStroke)');
+    expect(declaration('Score', 'composes')).toContain('Stroke');
   });
 
   it('washes the seat under the pointer in the room\'s yellow, matching the score\'s stroke', () => {

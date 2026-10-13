@@ -2,6 +2,7 @@ import { ComponentChildren } from 'preact';
 import { useRef } from 'preact/hooks';
 import { useFittedText } from './UseFittedText';
 import { playSound } from '../../Sounds';
+import { LikeBadge } from '../LikeBadge';
 import styles from './AnswerCard.module.css';
 
 export interface AnswerCardProps {
@@ -19,6 +20,18 @@ export interface AnswerCardProps {
   /** Muting the answer, and taking the mute back. Only the host is given one, so on every other
    * screen the card is a record of the round rather than a control in it. */
   onReject?: () => void;
+  /** How many liked this answer, as the room counted it. */
+  likes?: number;
+  /** Whether this player is one of the people who liked it. */
+  liked?: boolean;
+  /** What the like badge says out loud, in the room's own language. */
+  likeLabel?: string;
+  /** What the mute says out loud. One name for both states, since `aria-pressed` is what says
+   * which one it is in — the same name in both would read as one control that is on or off. */
+  muteLabel?: string;
+  /** Liking the answer, and taking the like back. Left out on the player's own answer, which
+   * they may not like: the badge is still drawn there, showing what the room thought of it. */
+  onLike?: () => void;
   /** Whether the room has got to this answer yet. A card the room has not read is not on the
    * board: the room is shown one answer at a time, and a board already drawn is a board nobody
    * watched being wrong about. On by default, which is every use but the round's own. */
@@ -75,35 +88,40 @@ function FittedAnswer({ text }: { text: string }) {
 }
 
 /** One answer on a panel: the answer as the substance, how many wrote it behind it, and the
- * grain the theme cards are printed on. A button where there is something to press, a plain
- * element where there is not. */
+ * grain the theme cards are printed on. A div rather than a button, since it now carries two
+ * controls and a button inside a button is not one. */
 export function AnswerCard({
   text,
   count,
   voted = false,
   blank = false,
   turned = true,
+  likes = 0,
+  liked = false,
+  likeLabel,
+  muteLabel,
   onReject,
+  onLike,
 }: AnswerCardProps) {
   const classes = cardClasses(voted, onReject !== undefined, blank, turned);
-  if (onReject === undefined) {
-    return (
-      <div class={classes}>
-        <Face text={text} count={count} />
-      </div>
-    );
-  }
   return (
-    <button
-      type="button"
-      class={classes}
-      aria-pressed={voted}
-      onClick={() => {
-        playSound('Pop');
-        onReject();
-      }}
-    >
+    <div class={classes}>
       <Face text={text} count={count} />
-    </button>
+      {onReject !== undefined && (
+        <button
+          type="button"
+          class={styles.Mute}
+          aria-pressed={voted}
+          aria-label={muteLabel}
+          onClick={() => {
+            playSound('Pop');
+            onReject();
+          }}
+        />
+      )}
+      <span class={styles.Corner}>
+        <LikeBadge count={likes} liked={liked} label={likeLabel ?? ''} onToggle={onLike} />
+      </span>
+    </div>
   );
 }

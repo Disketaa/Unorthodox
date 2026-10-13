@@ -3,7 +3,7 @@
  * fiddly half. */
 import type { HostState, Pace, Player, RandomPick } from '@/Game';
 import type { PlayerId, ThemeId } from '@/Core';
-import { rejectionsOut } from './RoomRejections';
+import { groupVotesOut } from './RoomGroupVotes';
 
 /** The phases that carry a clock, which is every phase but Lobby and Final. */
 type TimedHostState = Extract<HostState, { durationMs: number }>;
@@ -102,7 +102,8 @@ export function encodeRoomState(state: HostState): Record<string, unknown> {
       ...clock,
       phase: state.phase,
       ...topicOf(state),
-      rejections: rejectionsOut(state.groupRejections),
+      rejections: groupVotesOut(state.groupRejections),
+      likes: groupVotesOut(state.groupLikes),
       ...themeOf(state),
     };
   }

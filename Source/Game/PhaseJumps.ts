@@ -60,6 +60,7 @@ function phaseBody(
         // because there is nothing to carry and a jump is not a round anybody played.
         answers: state.phase === 'Writing' ? state.answers : new Map<PlayerId, string>(),
         groupRejections: new Map(),
+        groupLikes: new Map(),
       };
     case 'Scores':
       return { phase, ...base, scores: new Map<PlayerId, number>() };

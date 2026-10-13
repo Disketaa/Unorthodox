@@ -104,6 +104,10 @@ export type PublicReviewingState = PublicRoom & {
    * struck out and another cannot is a card the room cannot talk about. Optional, so a host
    * that sends none reads as nothing muted rather than as every card muted. */
   mutedGroupIds?: number[];
+  /** How many players liked each answer, and nothing else. A card that said who liked it would
+   * be saying who read it, on a board played by people who cannot see who wrote what. Optional
+   * like the list above, so a round nobody liked anything in carries no field. */
+  likeCounts?: { groupId: number; count: number }[];
   theme?: ThemeId;
 };
 

@@ -120,6 +120,13 @@ export const Strings = {
     answersCount: (count: number) => (count > 1 ? `${count} одинаковых` : 'уникальный ответ'),
     notVoted: 'Ответ не подходит',
     voted: 'Голос учтён',
+    /** What a card says to a screen reader when the host may take it off the board. Named
+     * without the answer on it: the card is written out letter by letter as it is read, and a
+     * label quoting it would spell a half-word. */
+    mute: 'Заглушить ответ',
+    unmute: 'Вернуть ответ',
+    /** The like badge, read out. The count and the word, since the mark alone says nothing. */
+    likes: (count: number) => (count === 1 ? '1 лайк' : `${count} лайков`),
   },
   scores: {
     headline: 'Очки за раунд',

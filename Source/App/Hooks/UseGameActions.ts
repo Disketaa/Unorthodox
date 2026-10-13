@@ -29,6 +29,7 @@ export interface GameActions {
   submitAnswer: (text: string) => void;
   setEditingAnswer: (editing: boolean) => void;
   rejectGroup: (groupId: number) => void;
+  likeGroup: (groupId: number) => void;
   playAgain: () => void;
 }
 
@@ -123,7 +124,8 @@ export function useGameActions(
   session: Session,
   publicState: PublicState | undefined,
   roomCode: string,
-  onSubmitted: () => void
+  onSubmitted: (text: string) => void,
+  onLiked: (groupId: number) => void
 ): GameActions {
   return {
     ...useRoundFlow(session, publicState, roomCode),
@@ -134,10 +136,16 @@ export function useGameActions(
     nextTurn: () => session.nextTurn(),
     submitAnswer: (text: string) => {
       session.submitAnswer(text);
-      onSubmitted();
+      onSubmitted(text);
     },
     setEditingAnswer: (editing: boolean) => session.setEditingAnswer(editing),
     rejectGroup: (groupId: number) => session.rejectGroup(groupId),
+    // Marked here as well as sent: the room is told the count, not who cast it, so this browser
+    // keeps which presses were its own and the badge can read as pressed the instant it is.
+    likeGroup: (groupId: number) => {
+      session.likeGroup(groupId);
+      onLiked(groupId);
+    },
     playAgain: () => {
       navigate('');
     },

@@ -16,6 +16,17 @@ export interface AnswerCardsEntry {
   /** Whether this is the card of a player who wrote nothing. Drawn like any other answer and not
    * votable, since there is no answer on it to vote out. */
   blank?: boolean;
+  /** How many liked this answer, as the room counted it. Drawn on every card including a blank,
+   * since a player who sat a round out is still shown what the room thought of their seat. */
+  likes?: number;
+  /** Whether this player is one of the people who liked it. */
+  liked?: boolean;
+  /** Whether this player wrote it, and so may not like their own answer. The badge is drawn
+   * either way: they are shown what the room thought of it, and only the press is taken away. */
+  own?: boolean;
+  /** What this card's like badge says out loud, already in the room's language. Per card rather
+   * than per board because it quotes the count, and the count differs from card to card. */
+  likeLabel: string;
 }
 
 export type AnswerCardsColumns = 1 | 2 | 3;
@@ -25,6 +36,11 @@ export interface AnswerCardsProps {
   /** Voting an answer out. Left out where the room is being shown the round rather than asked
    * about it, and the cards are then records rather than controls. */
   onReject?: (id: number) => void;
+  /** Liking an answer. Left out on the player's own answer, which they may not like, and on any
+   * screen where the round is being shown rather than played. */
+  onLike?: (id: number) => void;
+  /** What the mute says out loud, the same on every card, so it is named once for the board. */
+  muteLabel?: string;
   /** How many of the answers have been turned over. The rest are not on the board yet, which is
    * the point of the round: a board the room can already read is a board nobody watched being
    * wrong about. Left out the whole board is up, which is every use but the one it exists for. */
@@ -74,17 +90,24 @@ function fillersFor(count: number, columns: AnswerCardsColumns): number {
 /** One answer's slot in the board: its cell in the grid and the card in it. A function rather
  * than more markup in the map, since the slot is where the card's shape is decided and the card
  * is a closed component that knows nothing about it. */
-type SlotProps = Pick<AnswerCardsProps, 'onReject'> & {
+type SlotProps = Pick<AnswerCardsProps, 'onReject' | 'onLike' | 'muteLabel'> & {
   answer: AnswerCardsEntry;
   index: number;
   open: boolean;
 };
 
-function AnswerSlot({ answer, index, onReject, open }: SlotProps) {
+function AnswerSlot({ answer, index, onReject, onLike, muteLabel, open }: SlotProps) {
   // No vote out of a blank card: there is no answer on it, so a vote would move nothing the room
   // can see and the press would read as a control that does not work.
   const reject =
     onReject === undefined || answer.blank === true ? undefined : () => onReject(answer.id);
+  // Nor a like, for the same reason: there is no answer on the card to have liked, and nor is it
+  // this player's to like. The count is drawn either way, the room being shown the same figure on
+  // every card whether or not that card is one anybody may press.
+  const like =
+    onLike === undefined || answer.blank === true || answer.own === true
+      ? undefined
+      : () => onLike(answer.id);
   // The same note the round's question lands a word on, on the same kind of moment: this card is
   // up. Pitch zero rather than the card's place in the run, since a board played as a rising scale
   // would be a tune rather than a room reading what it wrote.
@@ -104,6 +127,11 @@ function AnswerSlot({ answer, index, onReject, open }: SlotProps) {
           blank={answer.blank}
           turned={open}
           onReject={reject}
+          likes={answer.likes}
+          liked={answer.liked}
+          likeLabel={answer.likeLabel}
+          muteLabel={muteLabel}
+          onLike={like}
         />
       </Pop>
     </div>
@@ -113,7 +141,13 @@ function AnswerSlot({ answer, index, onReject, open }: SlotProps) {
 /** The room's answers, as a board of panels that fills the room it is given in both directions.
  * Nine answers are three by three and twelve are three by four, because the count of columns is
  * the count of answers capped at three and the rows are whatever is left over. */
-export function AnswerCards({ answers, onReject, revealed }: AnswerCardsProps) {
+export function AnswerCards({
+  answers,
+  onReject,
+  onLike,
+  muteLabel,
+  revealed,
+}: AnswerCardsProps) {
   const board = useRef<HTMLDivElement>(null);
   const [columns, setColumns] = useState<AnswerCardsColumns>(() =>
     columnsFor(answers.length, 0)
@@ -122,11 +156,6 @@ export function AnswerCards({ answers, onReject, revealed }: AnswerCardsProps) {
     setColumns(columnsFor(answers.length, board.current?.clientWidth ?? 0));
   }, [answers.length]);
   useViewportMeasure(board, measure);
-
-  const fillers = Array.from(
-    { length: fillersFor(answers.length, columns) },
-    (_, index) => index
-  );
 
   // The board is drawn whole and its answers are turned over on it, so every card holds its cell
   // from the first frame rather than arriving into a grid that reflows as the room reads it.
@@ -141,11 +170,13 @@ export function AnswerCards({ answers, onReject, revealed }: AnswerCardsProps) {
           index={index}
           open={index < upTo}
           onReject={onReject}
+          onLike={onLike}
+          muteLabel={muteLabel}
         />
       ))}
       {/* The cells the last row is short by, so a part-filled row sits in the middle of the board
        * rather than against its left edge. */}
-      {fillers.map((index) => (
+      {Array.from({ length: fillersFor(answers.length, columns) }, (_, index) => (
         <div class={styles.Filler} key={`filler-${index}`} />
       ))}
     </div>

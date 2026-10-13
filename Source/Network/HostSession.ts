@@ -123,6 +123,12 @@ export class HostSession {
     this.apply({ type: 'REJECT_GROUP', playerId: HostPlayerId, groupId });
   }
 
+  /** The host liking an answer, under the reserved id like every other move they make about
+   * themselves, so the host cannot like their own answer either. */
+  likeOwnGroup(groupId: number): void {
+    this.apply({ type: 'LIKE_GROUP', playerId: HostPlayerId, groupId });
+  }
+
   setOwnLook(look: PlayerLook): void {
     setOwnLook(this, look);
   }
