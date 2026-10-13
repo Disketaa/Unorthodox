@@ -10,7 +10,6 @@ export type IconName =
   | 'Turn'
   | 'Pause'
   | 'Play'
-  | 'Transition'
   | 'Fullscreen'
   | 'Minimize'
   | 'VolumeOn'

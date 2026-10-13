@@ -10,16 +10,12 @@ export interface PhaseSplashControl {
   /** True while the yellow covers the whole window, which is the only moment the screen under it
    * can be changed without anybody seeing the change. */
   covered: boolean;
-  /** Play it now, whatever the phase. The dock's own control, and the only way to see the
-   * movement without waiting out a round to reach a phase that splashes. */
-  replay: () => void;
 }
 
 /** The splash, and when it plays. Started when this device notices the room arrive at a phase
  * that gets one, and held for `PhaseSplashMs` from that moment — timed the way the count-in is,
  * and for the same reason: a host-clock length is one a late message loses rather than plays. */
 export function usePhaseSplash(phase: SessionPhase, counting: boolean): PhaseSplashControl {
-  const [replay, setReplay] = useState({ phase: phase.phase, at: 0 });
   const now = Date.now();
   // Set while rendering, because the splash has to be running on the first frame of the phase it
   // belongs to: an effect runs after the paint, and that paint would be the new screen with
@@ -28,10 +24,7 @@ export function usePhaseSplash(phase: SessionPhase, counting: boolean): PhaseSpl
   if (arrivedRef.current.phase !== phase.phase || (!counting && arrivedRef.current.at === 0)) {
     arrivedRef.current = { phase: phase.phase, at: counting ? 0 : now };
   }
-  // A replay belongs to the phase it was asked for, so asking for one and then moving on does not
-  // leave a stale moment behind to swallow the next phase's own splash.
-  const asked = replay.phase === phase.phase ? replay.at : 0;
-  const startedAt = asked > 0 ? asked : arrivedRef.current.at;
+  const startedAt = arrivedRef.current.at;
   const elapsedMs = now - startedAt;
   const running = startedAt > 0 && splashesOnArrival(phase.phase) && elapsedMs < PhaseSplashMs;
   // The window in which the yellow is solid across the whole screen: the disc has finished
@@ -63,9 +56,5 @@ export function usePhaseSplash(phase: SessionPhase, counting: boolean): PhaseSpl
     const id = setInterval(() => setNow(Date.now()), GameConfig.timing.uiTickMs);
     return () => clearInterval(id);
   }, [running]);
-  return {
-    splashing: running,
-    covered,
-    replay: () => setReplay({ phase: phase.phase, at: Date.now() }),
-  };
+  return { splashing: running, covered };
 }

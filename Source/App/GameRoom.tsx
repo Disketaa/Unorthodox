@@ -5,7 +5,6 @@ import {
   LobbyDebugTools,
   PauseDebugTools,
   PhaseDebugTools,
-  TransitionDebugTools,
   TurnDebugTools,
 } from '@/Screens';
 import { Strings } from '@/Content';
@@ -133,7 +132,7 @@ interface CountedRoomProps {
 function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
   const { veiling, count } = useStartCountdown(view, roomCode);
   const counting = veiling || count !== null;
-  const { splashing, covered, replay } = usePhaseSplash(view, counting);
+  const { splashing, covered } = usePhaseSplash(view, counting);
   // The screen the count-in and the splash are played over: the phase the room is leaving, held
   // until the movement has covered it. A ref rather than state, because a view is a new object on
   // every render and holding one in state would re-render the room forever.
@@ -156,7 +155,6 @@ function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
           {view.isHost && (
             <>
               <LobbyDebugTools publicState={view.publicState} onAddBot={view.addBot} />
-              <TransitionDebugTools onReplay={replay} />
               <TurnDebugTools publicState={view.publicState} onNextTurn={view.nextTurn} />
               <PauseDebugTools paused={view.paused} onSetPaused={view.setPaused} />
               <PhaseDebugTools publicState={view.publicState} onNextPhase={view.nextPhase} />

@@ -137,9 +137,6 @@ export const Strings = {
    * in words, since the splash is the one moment in the game with no sentence on it at all. */
   phaseSplash: {
     label: 'Фаза сменилась',
-    /** Plays the splash on this device, so it can be looked at without waiting out a round to
-     * reach the phase it belongs to. */
-    replay: 'Переход между фазами',
   },
   /** The room's own turn, said from the console rather than drawn as a game rule. */
   turn: {
