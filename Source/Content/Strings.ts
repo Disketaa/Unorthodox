@@ -116,7 +116,7 @@ export const Strings = {
     rejectHint: 'Нажмите, если ответ не подходит',
     /** On a card for a player who wrote nothing, so the room can see who sat the round out
      * rather than seeing that somebody is missing. */
-    blank: 'Пусто',
+    blank: '[ ]',
     answersCount: (count: number) => (count > 1 ? `${count} одинаковых` : 'уникальный ответ'),
     notVoted: 'Ответ не подходит',
     voted: 'Голос учтён',
@@ -160,7 +160,7 @@ export const Strings = {
      * open and the question is what the room is reading. */
     readingQuestion: 'Читаем вопрос…',
     writing: 'Все пишут ответы…',
-    reviewing: 'Голосуем за ответы…',
+    reviewing: 'Смотрим ответы…',
     scores: 'Считаем очки…',
     final: 'Игра закончена',
     connecting: 'Подключаемся…',
