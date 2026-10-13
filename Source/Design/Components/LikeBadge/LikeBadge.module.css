@@ -1,23 +1,31 @@
-/* How many liked an answer, and the mark of liking one. Shared figure rather than a per-card
- * drawing: a score and a like count are the same number in the same language, so the stroke
- * that cuts it out of the card behind it is composed in from one place rather than written
- * twice. */
+/* How many liked an answer, drawn on top of the mark of liking one rather than beside it. The
+ * count is the figure and the mark is the ground it stands on, so the mark goes down first: an
+ * absolutely positioned layer filling the badge, with the number centred over it. Cut out of
+ * that mark by the stroke composed in above, which is what keeps a digit readable on a thumb
+ * rather than a number with a shape lost behind it. */
 .Badge {
   composes: Stroke from '../../Primitives/Stroke/Stroke.module.css';
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3em;
-  padding: 0.3em 0.5em;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.1em;
+  height: 2.1em;
+  padding: 0;
   border: none;
   border-radius: var(--Radius-Button);
-  background: var(--AnswerCardSurface, var(--Color-Surface-Hover));
-  color: var(--Color-Text-Default);
+  background: var(--AnswerBadge-Surface);
+  color: var(--Color-Text-Inverse);
   font-family: var(--FontFamily-Display);
   font-size: calc(var(--Size-AnswerCardWidth, 100px) * 0.13);
   line-height: 1;
+  /* The pill, and the colour the count is cut out against, are one value. Declared here on the
+   * badge itself rather than inherited from further up: a custom property substitutes where it
+   * is declared, so a surface set on a parent could not have been reached by a state set on
+   * this. That is also what lets a state move both halves at once — the pill and its outline
+   * together. */
+  --AnswerBadge-Surface: var(--Color-Surface-Inverse);
   --Size-Stroke: calc(var(--Size-AnswerCardWidth, 100px) * 0.012);
-  --Color-Stroke: var(--Color-AnswerCardSurface);
+  --Color-Stroke: var(--AnswerBadge-Surface);
 }
 
 /* Nothing has liked it, so the badge is held back rather than removed: a card with no likes is
@@ -27,12 +35,13 @@
   opacity: var(--Opacity-LikeBadgeQuiet);
 }
 
-/* Pressed: this player is one of the people who liked it. The room's yellow rather than the
- * reader's tint, like the score beside it: what it says is a fact about the answer and not
- * about who is reading. */
+/* Pressed: this player is one of the people who liked it. The pill goes to the room's yellow
+ * and the count comes with it to black, since a white figure on yellow is a figure nobody can
+ * read. What it says is a fact about the answer, so it wears the room's yellow and not the
+ * reader's tint. */
 .Liked {
-  color: var(--Color-Action-Primary-Background);
-  --Color-Stroke: var(--Color-AnswerCardSurface);
+  --AnswerBadge-Surface: var(--Color-Room-Yellow);
+  color: var(--Color-Text-Default);
   opacity: 1;
 }
 
@@ -47,26 +56,32 @@ button.Badge {
   cursor: var(--Cursor-Pointer);
 }
 
+/* Hover previews the press: the same yellow pill the badge takes when it is liked, so the
+ * pointer shows what pressing will do rather than only lighting the control up. */
 button.Badge:hover {
-  color: var(--Color-Room-Yellow);
+  --AnswerBadge-Surface: var(--Color-Room-Yellow);
+  color: var(--Color-Text-Default);
 }
 
-/* The mark of a like, painted through a mask like every other icon on disk: the files are solid
- * black silhouettes, and a mask is what lets one file be drawn in any colour. Drawn oversize
- * and centred so it fills its box rather than sitting inside the margin its own file keeps. */
+/* The mark, behind the number: absolute so it does not take a row of its own and the two are
+ * one mark rather than a figure and an icon. Painted through a mask like every other icon on
+ * disk — the files are solid black silhouettes, and a mask is what lets one be drawn in any
+ * colour. Drawn oversize and centred so it fills the badge rather than sitting in the margin
+ * its file keeps. */
 .Icon {
-  display: block;
-  width: 1.1em;
-  height: 1.1em;
-  flex: none;
+  position: absolute;
+  inset: 0.12em;
   background-color: currentColor;
   mask-image: url('../../Icons/Like.svg');
   mask-repeat: no-repeat;
   mask-position: center;
-  mask-size: 112%;
+  mask-size: contain;
 }
 
-/* The count itself, cut out of the badge behind it by the stroke composed in above. */
+/* The count, centred on the mark and above it. Above rather than level because it is the figure
+ * and the mark is the ground: level, one of the two would sit under the other. */
 .Count {
+  position: relative;
+  z-index: 1;
   font-weight: 700;
 }

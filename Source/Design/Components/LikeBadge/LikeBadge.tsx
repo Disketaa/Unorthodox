@@ -33,6 +33,9 @@ export function LikeBadge({ count, liked, label, onToggle }: LikeBadgeProps) {
   ]
     .filter(Boolean)
     .join(' ');
+  // The mark first in the markup and the count last, because the count is the figure and the
+  // mark is the ground it stands on. Absolute, so order only decides the paint: the count is
+  // raised above it either way, and a screen reader reads the number before the shape.
   const figure = (
     <>
       <span class={styles.Icon} aria-hidden="true" />

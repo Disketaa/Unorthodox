@@ -23,12 +23,16 @@ function renderBadge(props: Partial<Parameters<typeof LikeBadge>[0]> = {}) {
 }
 
 describe('a like badge', () => {
-  it('puts the mark and the count inside the button, not beside it', () => {
-    // A count drawn next to the badge is a number the room reads without pressing anything, and a
-    // badge whose number is outside it is two things where the room is shown one.
+  it('draws the count on top of the mark rather than beside it', () => {
+    // The count is the figure and the thumb is the ground it stands on: one mark with a number on
+    // it, not a number sitting next to a shape. Both are inside the button, and the mark is
+    // positioned out of the flow so the two cannot end up as a row.
     const button = renderBadge({ count: 3 }).querySelector('button');
     expect(button?.textContent).toBe('3');
-    expect(button?.querySelectorAll('span').length).toBe(2);
+    expect(button?.querySelectorAll('span')).toHaveLength(2);
+    const [icon, count] = [...(button?.children ?? [])];
+    expect(count?.className).toContain('Count');
+    expect(icon?.className).toContain('Icon');
   });
 
   it('is a button where the player may press it', () => {
@@ -67,6 +71,17 @@ describe('a like badge', () => {
       renderBadge({ liked: true }).querySelector('button')?.getAttribute('aria-pressed')
     ).toBe('true');
     expect(renderBadge().querySelector('button')?.getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('carries the two states a count can be in, and they are not the same', () => {
+    // White on the dark pill at rest, black on the yellow one when pressed, so a count of two is
+    // readable against a mark of the same colour in both. The outline is what keeps them apart;
+    // without it the number vanishes into the thumb it stands on.
+    const rest = renderBadge({ count: 2 }).querySelector('button')?.className ?? '';
+    const pressed =
+      renderBadge({ count: 2, liked: true }).querySelector('button')?.className ?? '';
+    expect(rest).not.toContain('Liked');
+    expect(pressed).toContain('Liked');
   });
 
   it('is held back at nothing and not held back once there is one', () => {
