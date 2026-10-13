@@ -1,6 +1,8 @@
 /** A player the host invents, for trying a room out with nobody else in it. Debug only, behind
  * the `*` that turns the console on: a bot that got into a real room would be a player nobody
  * asked for. It joins like anyone else but never answers and nothing waits on it. */
+import { answerWords } from './BotWords';
+
 import { PlayerId, PlayerLook, createLogger, randomLook } from '@/Core';
 import type { Random } from '@/Core';
 import { GameConfig } from '@/Game';
@@ -55,31 +57,10 @@ const names = [
 /** A bot's seat. Never `p<number>`, which is what the roster hands to real players. */
 const BotIdPrefix = 'bot';
 
-/** What a bot writes. Fifteen words to choose from, every one three letters, so an answer always
- * lands inside `answerMaxLength` and two bots landing on the same one is a common enough draw
- * to be the duplicate group a round is scored by. */
-const answerWords = [
-  'кот',
-  'сыр',
-  'дом',
-  'чай',
-  'нос',
-  'зуб',
-  'рот',
-  'ухо',
-  'мед',
-  'сок',
-  'дым',
-  'кит',
-  'лук',
-  'суп',
-  'шум',
-] as const;
-
-/** How many words make up one bot's answer: one. A bot that filled its length with words would
- * never match anybody, and the round is scored on duplicates, so one word out of the fifteen is
- * the only thing a bot is here to produce. */
-const AnswerWordCount = 1;
+/** How many draws out of three add a second word. Mostly one, since the round is scored on
+ * duplicates and a room full of bots writing phrases leaves nothing to score. Some of the time
+ * two, because one short word on every card is a board that looks like a test. */
+const SecondWordOdds = 3;
 
 interface Bot {
   playerId: PlayerId;
@@ -112,14 +93,26 @@ export function botsIn(state: HostState): number {
   return [...state.players.keys()].reduce((highest, id) => Math.max(highest, botNumber(id)), 0);
 }
 
-/** What one bot writes: one word off the list, drawn with repetition rather than without, since
- * two bots landing on the same word is the duplicate group the room scores like any other. */
+/** What one bot writes: one word off the list, or now and then two, drawn with repetition since
+ * two bots landing on the same word is the duplicate group the room scores like any other. The
+ * second word is dropped rather than truncated when the pair will not fit the field. */
 export function botAnswer(random: Random): string {
-  const words: string[] = [];
-  for (let i = 0; i < AnswerWordCount; i += 1) {
-    words.push(answerWords[Math.floor(random() * answerWords.length)] ?? '');
-  }
-  return words.join(' ');
+  const first = word(random);
+  if (Math.floor(random() * SecondWordOdds) !== 0) return first;
+  const second = word(random);
+  return `${first} ${second}`.length <= GameConfig.limits.answerMaxLength
+    ? `${first} ${second}`
+    : first;
+}
+
+/** One word off the list. The index is taken off the end rather than trusted to land inside it:
+ * a generator that reaches exactly one would write `undefined` into the list's place and the
+ * bot would submit an empty answer, which is what a bot sitting out the round looks like. */
+function word(random: Random): string {
+  return (
+    answerWords[Math.min(Math.floor(random() * answerWords.length), answerWords.length - 1)] ??
+    ''
+  );
 }
 
 /** The answer each bot in the room still owes, for a round that has just opened. A bot that has

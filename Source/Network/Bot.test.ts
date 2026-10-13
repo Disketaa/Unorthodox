@@ -102,11 +102,13 @@ function writing(...seats: string[]): HostState {
 }
 
 describe('botAnswer', () => {
-  it('writes one word off the list', () => {
-    // A bot that filled its length with words would match nobody, and the round is scored on
-    // duplicates. One word out of fifteen is how a bot lands in the same group as another bot.
-    const text = botAnswer(seeded());
-    expect(text.split(' ')).toHaveLength(1);
+  it('writes one or two words off the list', () => {
+    // Mostly one, since a bot is furniture and the round is scored on duplicates, but not always
+    // one: a board where every card is a single short word is a board that looks like a test.
+    const lengths = new Set(
+      Array.from({ length: 200 }, (_, draw) => botAnswer(createRandom(draw)).split(' ').length)
+    );
+    expect([...lengths].sort()).toEqual([1, 2]);
   });
 
   it('fits the field a player types into', () => {
@@ -125,21 +127,25 @@ describe('botAnswer', () => {
     }
   });
 
-  it('writes words of the length the list claims they are', () => {
-    // Three letters is what keeps a bot's answer short enough to land inside the field and the
-    // same size on every card, which is what a bot is for. A four-letter word on the list would
-    // still fit the field but would not be the thing the list says it is.
-    for (let draw = 0; draw < 200; draw += 1) {
-      expect(botAnswer(createRandom(draw))).toHaveLength(3);
-    }
+  it('writes words of the lengths the list claims they are', () => {
+    // Two letters to ten, in two languages, and nothing either side of that: a word past ten runs
+    // the second word out of the field, and a bot whose answer is always one size is not a bot
+    // in a room. The spread is what puts the fitting on a card to work.
+    const drawn = Array.from({ length: 400 }, (_, draw) =>
+      botAnswer(createRandom(draw))
+    ).flatMap((answer) => answer.split(' '));
+    expect(Math.min(...drawn.map((word) => word.length))).toBeGreaterThanOrEqual(2);
+    expect(Math.max(...drawn.map((word) => word.length))).toBeLessThanOrEqual(10);
   });
 
   it('lands on the same word as another bot often enough to make a duplicate group', () => {
-    // Fifteen words and a full room of eleven bots: the room is scored on duplicates, so the list
-    // is only wide enough if two of them land on the same one. Sampled rather than argued, since
-    // what has to hold is that it happens, not how often.
-    const answers = Array.from({ length: 11 }, (_, i) => botAnswer(createRandom(i)));
-    expect(new Set(answers).size).toBeLessThan(answers.length);
+    // The room is scored on duplicates, so what has to hold is that a room of bots lands on one
+    // another somewhere: no single room of eleven has to, since some of them write two words.
+    // Sampled over rooms rather than argued, since what has to hold is that it happens.
+    const rooms = Array.from({ length: 20 }, (_, room) =>
+      Array.from({ length: 11 }, (_, seat) => botAnswer(createRandom(room * 11 + seat)))
+    );
+    expect(rooms.some((answers) => new Set(answers).size < answers.length)).toBe(true);
   });
 });
 
