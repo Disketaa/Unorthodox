@@ -11,6 +11,7 @@ import {
   type KeyboardLang,
 } from './KeyboardLayouts';
 import { keyNamer } from './KeyNamer';
+import { chosenLayout, saveChosenLayout } from './KeyboardChoice';
 import { RowKeys } from './KeyboardRow';
 import { playSound } from '@/Design';
 
@@ -65,10 +66,11 @@ function useLabels(
 type Presses = Readonly<Record<string, number>>;
 
 /** Open on the letters the player's keyboard is set to, where the browser will say. Settles on
- * it without moving the language key: the game noticing a board is not the player switching,
- * and the keyboard is rebuilt every round, so a pop here would report a change on every one. */
+ * it without moving the language key: the game noticing a board is not the player switching. A
+ * layout the player chose by hand outranks what the browser reports. */
 function useDetectedLayout(setLang: (lang: KeyboardLang) => void): void {
   useEffect(() => {
+    if (chosenLayout() !== undefined) return;
     let mounted = true;
     void detectLayout().then((found) => {
       if (mounted && found !== undefined) setLang(found);
@@ -84,7 +86,7 @@ function useDetectedLayout(setLang: (lang: KeyboardLang) => void): void {
 function usePress(
   rows: readonly (readonly string[])[],
   lang: KeyboardLang,
-  setLang: (lang: KeyboardLang) => void,
+  chooseLang: (lang: KeyboardLang) => void,
   setPresses: (next: (current: Presses) => Presses) => void,
   onKeyPress: ((key: KeyboardKey) => void) | undefined
 ): (key: KeyboardKey) => void {
@@ -112,13 +114,28 @@ function usePress(
         setPresses((current) => ({ ...current, [slot]: (current[slot] ?? 0) + 1 }));
       }
       if (key === Lang.key) {
-        setLang(otherLang(lang));
+        chooseLang(otherLang(lang));
         return;
       }
       onKeyPress?.(key);
     },
-    [rows, lang, setLang, onKeyPress, setPresses]
+    [rows, lang, chooseLang, onKeyPress, setPresses]
   );
+}
+
+/** The letter set the keys are drawn in, and the one thing that turns them over. Opening on what
+ * the player chose last time, then on what the browser says, then on the game's own language.
+ * Kept rather than remembered: the keyboard is built again for every round. */
+function useLayout(): [KeyboardLang, (lang: KeyboardLang) => void] {
+  const [lang, setLang] = useState<KeyboardLang>(
+    () => chosenLayout() ?? knownLayout() ?? DefaultLang
+  );
+  const choose = useCallback((next: KeyboardLang) => {
+    saveChosenLayout(next);
+    setLang(next);
+  }, []);
+  useDetectedLayout(setLang);
+  return [lang, choose];
 }
 
 /** The on-screen letter keys of the writing phase, in Russian or English. The language is held
@@ -133,16 +150,15 @@ export function Keyboard({
   enterLabel,
   langLabel,
 }: KeyboardProps) {
-  const [lang, setLang] = useState<KeyboardLang>(() => knownLayout() ?? DefaultLang);
+  const [lang, chooseLang] = useLayout();
   const [presses, setPresses] = useState<Readonly<Record<string, number>>>({});
   const rows = Layouts[lang];
   const columns = columnsOf(rows);
   const classes = [styles.Root, styles[`Columns${columns}`]].join(' ');
   const name = useMemo(() => keyNamer(rows), [lang]);
-  const press = usePress(rows, lang, setLang, setPresses, onKeyPress);
+  const press = usePress(rows, lang, chooseLang, setPresses, onKeyPress);
   const switchLang = useCallback(() => press(Lang.key), [press]);
   useHardwareTyping(!disabled, name, press, switchLang);
-  useDetectedLayout(setLang);
   const labels = useLabels(backspaceLabel, spaceLabel, enterLabel, langLabel);
 
   return (
