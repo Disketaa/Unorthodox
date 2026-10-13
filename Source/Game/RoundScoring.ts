@@ -10,17 +10,14 @@ export interface ScoredGroup {
   isRejected: boolean;
 }
 
-/** Mark a group rejected when a strict majority of its own authors rejected it. The bar is the
- * group's own authors rather than the whole room, so a group of two cannot be killed by one
- * voter out of ten. */
+/** Mark a group rejected when the host has muted it. One press is the whole of it: this used to
+ * ask whether a majority of a group's own authors rejected it, which was a vote among players
+ * and is not what muting is. */
 export function toScoredGroups(state: ReviewingState): ScoredGroup[] {
-  return groupAnswersWithPlayers(state.answers).map((group) => {
-    const rejectionSet = state.groupRejections.get(group.groupId) ?? new Set<PlayerId>();
-    return {
-      playerIds: group.playerIds,
-      isRejected: rejectionSet.size > group.playerIds.length / 2,
-    };
-  });
+  return groupAnswersWithPlayers(state.answers).map((group) => ({
+    playerIds: group.playerIds,
+    isRejected: state.groupRejections.has(group.groupId),
+  }));
 }
 
 /** Points for this round, with the running totals carried forward. Returns both, so the caller

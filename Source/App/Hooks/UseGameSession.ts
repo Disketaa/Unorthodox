@@ -9,14 +9,7 @@ import { useGameActions } from './UseGameActions';
 import type { GameActions } from './UseGameActions';
 import { useRoundClocks } from './UseHostPhaseTimer';
 import { useRememberLook } from './UseRememberLook';
-import {
-  emptyMarks,
-  hasSubmittedIn,
-  markRejected,
-  markSubmitted,
-  rejectedIn,
-  type RoundMarks,
-} from './RoundMarks';
+import { emptyMarks, hasSubmittedIn, markSubmitted, type RoundMarks } from './RoundMarks';
 
 export interface GameSessionView extends SessionPhase {
   role: SessionRole;
@@ -106,14 +99,17 @@ function useRoundMarks(
   topic: string | null
 ): { marks: RoundMarks; actions: GameActions } {
   const [marks, setMarks] = useState<RoundMarks>(emptyMarks);
-  const actions = useGameActions(
-    session,
-    publicState,
-    roomCode,
-    () => setMarks((current) => markSubmitted(current, topic)),
-    (groupId) => setMarks((current) => markRejected(current, topic, groupId))
+  const actions = useGameActions(session, publicState, roomCode, () =>
+    setMarks((current) => markSubmitted(current, topic))
   );
   return { marks, actions };
+}
+
+/** The cards the host has muted, as the room is shown them, rather than as a mark this browser
+ * kept: a card one screen can mute alone is a card the room cannot see muted together. */
+function mutedBy(publicState: PublicState | undefined): ReadonlySet<number> {
+  const ids = publicState?.phase === 'Reviewing' ? publicState.mutedGroupIds : undefined;
+  return new Set(ids ?? []);
 }
 
 /** What this browser knows that the room has not been told: that the host walked away, and that
@@ -183,7 +179,7 @@ export function useGameSession(
     // Both marks only count while the phase still shows the round they were made in.
     hasSubmitted: hasSubmittedIn(marks, topic),
     editing,
-    rejectedGroupIds: rejectedIn(marks, topic),
+    rejectedGroupIds: mutedBy(publicState),
     setEditing: reportEditing(markEditing, actions.setEditingAnswer),
     hostLeft,
     blocked: session.getBlocked(),

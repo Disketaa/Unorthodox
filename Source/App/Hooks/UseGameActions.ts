@@ -123,8 +123,7 @@ export function useGameActions(
   session: Session,
   publicState: PublicState | undefined,
   roomCode: string,
-  onSubmitted: () => void,
-  onVoted: (groupId: number) => void
+  onSubmitted: () => void
 ): GameActions {
   return {
     ...useRoundFlow(session, publicState, roomCode),
@@ -138,10 +137,7 @@ export function useGameActions(
       onSubmitted();
     },
     setEditingAnswer: (editing: boolean) => session.setEditingAnswer(editing),
-    rejectGroup: (groupId: number) => {
-      session.rejectGroup(groupId);
-      onVoted(groupId);
-    },
+    rejectGroup: (groupId: number) => session.rejectGroup(groupId),
     playAgain: () => {
       navigate('');
     },

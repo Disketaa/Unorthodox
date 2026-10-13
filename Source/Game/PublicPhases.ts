@@ -1,4 +1,4 @@
-import { PlayerId, ThemeId } from '@/Core';
+import { PlayerId, randomFor, shuffle, ThemeId } from '@/Core';
 import { HostState, ReviewingState } from './GameState';
 import { groupAnswers } from './Grouping';
 import type {
@@ -104,9 +104,9 @@ export function toPublicWritingState(state: HostState): PublicWritingState {
   };
 }
 
-/** The cards the board is drawn from: the answers as written, plus one card per player who wrote
- * nothing, counted off the roster rather than the answers since a player who sat out is in
- * neither, and placed last so a blank never splits a pair that belongs together. */
+/** The board's cards: the answers as written, plus one per player who wrote nothing, in an order
+ * nobody can read off who wrote what. Shuffled on the host, so one order is the room's, and
+ * seeded from the round since this is projected on every broadcast. */
 function reviewGroups(state: ReviewingState): PublicReviewingState['groups'] {
   const groups = groupAnswers([...state.answers.values()]).map((group) => ({
     groupId: group.groupId,
@@ -120,7 +120,7 @@ function reviewGroups(state: ReviewingState): PublicReviewingState['groups'] {
     groups.push({ groupId: nextId, text: '', playerCount: 1, isEmpty: true });
     nextId += 1;
   }
-  return groups;
+  return shuffle(groups, randomFor(`${state.startedAt}:${state.topic}`));
 }
 
 export function toPublicReviewingState(state: HostState): PublicReviewingState {
@@ -136,8 +136,19 @@ export function toPublicReviewingState(state: HostState): PublicReviewingState {
     startedAt: state.startedAt,
     players: publicPlayers(state),
     groups,
+    ...mutedBy(state),
     ...themeOf(state),
   };
+}
+
+/** Which cards the host has taken off the board, by the ids the client draws them against.
+ * Carried beside the groups rather than inside them, so the shape of a card does not change
+ * when one is muted, and omitted when nothing is. */
+function mutedBy(state: ReviewingState): { mutedGroupIds?: number[] } {
+  if (state.groupRejections.size === 0) {
+    return {};
+  }
+  return { mutedGroupIds: [...state.groupRejections.keys()] };
 }
 
 export function toPublicScoresState(state: HostState): PublicScoresState {

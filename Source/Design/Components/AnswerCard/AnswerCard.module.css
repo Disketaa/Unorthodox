@@ -153,32 +153,32 @@
   }
 }
 
-/* A card nobody may vote on: a record of a round rather than a control in it. No pointer, and
- * no focus ring either, since there is nothing here to reach with a keyboard. */
+/* A card nobody may mute: on every screen but the host's, a record of the round rather than a
+ * control in it. No pointer, and no focus ring either, since there is nothing here to reach
+ * with a keyboard: the card is drawn as a plain element and so cannot be tabbed to at all. */
 .Record {
   cursor: var(--Cursor-Default);
 }
 
 /* The card of a player who wrote nothing. Held to the same quietness as a theme card with no
- * rounds left in it, and it is the same word: on offer or not. Deeper than a voted answer,
- * since a vote is one player's judgement on this round while a blank is nobody having written
- * at all. */
+ * rounds left in it, and it is the same word: on offer or not. As deep as a muted answer, since
+ * both are the room being shown that an answer is not counted. */
 .Blank {
   opacity: var(--Opacity-ThemeCardSpentOut);
 }
 
-/* The answer this player has voted out. Held back rather than struck through or deleted, since
- * a strike is a judgement on the answer and the vote is only this player's. */
+/* An answer the host has muted. Held back rather than struck through or deleted, so the room
+ * can still read what was said and see why it was not counted. */
 .Voted {
   opacity: var(--Opacity-AnswerCardVoted);
-  cursor: var(--Cursor-Default);
 }
 
-/* The vote is in, so the card does not answer the pointer any more: there is nothing left on it
- * to press. */
+/* A muted card takes the pointer back from its hover: it is muted everywhere, so it should not
+ * light up under the host's mouse while its neighbours still do. The press is left working,
+ * since pressing it again is how a mute is taken back. */
 .Voted:hover {
   --AnswerCard-Surface: var(--Color-Surface-Hover);
-  background: var(--AnswerCard-Surface);
+  background: var(--Color-Surface-Hover);
   color: var(--Color-Text-Default);
 }
 

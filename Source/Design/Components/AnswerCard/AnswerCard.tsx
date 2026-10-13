@@ -10,13 +10,13 @@ export interface AnswerCardProps {
    * entirely when it is one, since a single writer is the common case and a figure of one
    * behind every unique answer is a number that says nothing. */
   count: number;
-  /** Whether this player has voted that the answer does not fit. */
+  /** Whether the host has muted this answer, which the whole room is shown. */
   voted?: boolean;
   /** Whether the player wrote nothing at all, so this card stands for a round they sat out. Held
    * back to the same quietness as a theme card with no rounds left in it. */
   blank?: boolean;
-  /** Voting the answer out. Left out where there is nothing to vote about, and the card is then
-   * a record rather than a control. */
+  /** Muting the answer, and taking the mute back. Only the host is given one, so on every other
+   * screen the card is a record of the round rather than a control in it. */
   onReject?: () => void;
   /** Whether the room has got to this answer yet. A card the room has not read is not on the
    * board: the room is shown one answer at a time, and a board already drawn is a board nobody
@@ -73,9 +73,9 @@ function FittedAnswer({ text }: { text: string }) {
   );
 }
 
-/** One answer on a panel: the answer as the substance, how many players wrote it behind it, and
- * the grain the theme cards are printed on. A button where there is a vote, and a plain element
- * where there is not, so a card the room cannot act on is not a control it can focus and press. */
+/** One answer on a panel: the answer as the substance, how many wrote it behind it, and the
+ * grain the theme cards are printed on. A button where there is something to press, a plain
+ * element where there is not. */
 export function AnswerCard({
   text,
   count,

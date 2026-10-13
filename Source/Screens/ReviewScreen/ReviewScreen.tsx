@@ -18,11 +18,14 @@ export interface ReviewScreenProps {
   /** How many answers the room has got to. Left out the whole board is up, which is every screen
    * but the one the round plays on. */
   revealed?: number;
-  onReject: (groupId: number) => void;
+  /** Mute an answer, or take the mute back. Only the host is given one, and it is left out
+   * entirely on every other screen rather than passed and ignored, so a card that cannot be
+   * pressed is not pressable at all. */
+  onReject?: (groupId: number) => void;
 }
 
 /** Reviewing phase: all answers at once as a board of panels, duplicates grouped and carrying
- * their count, everyone able to vote any of them out. A board rather than a column of rows
+ * their count, and the host able to mute any of them. A board rather than a column of rows
  * because the round is read as one thing: how many answers, and which more than one wrote. */
 export function ReviewScreen({ topic, groups, revealed, onReject }: ReviewScreenProps) {
   return (

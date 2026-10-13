@@ -100,6 +100,10 @@ export type PublicReviewingState = PublicRoom & {
   /** One answer group as the room is shown it. `isEmpty` marks the card of a player who wrote
    * nothing, so the room can see who sat the round out rather than seeing somebody missing. */
   groups: { groupId: number; text: string; playerCount: number; isEmpty: boolean }[];
+  /** The groups the host has muted, which the whole room is shown. A card one player can see
+   * struck out and another cannot is a card the room cannot talk about. Optional, so a host
+   * that sends none reads as nothing muted rather than as every card muted. */
+  mutedGroupIds?: number[];
   theme?: ThemeId;
 };
 

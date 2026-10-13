@@ -1,11 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  emptyMarks,
-  hasSubmittedIn,
-  markRejected,
-  markSubmitted,
-  rejectedIn,
-} from './RoundMarks';
+import { emptyMarks, hasSubmittedIn, markSubmitted } from './RoundMarks';
 
 const roundOne = 'First topic';
 const roundTwo = 'Second topic';
@@ -34,57 +28,11 @@ describe('Round marks', () => {
     expect(hasSubmittedIn(marks, null)).toBe(false);
   });
 
-  it('keeps rejections inside the round they were cast in', () => {
-    const marks = markRejected(emptyMarks(), roundOne, 0);
-    expect([...rejectedIn(marks, roundOne)]).toEqual([0]);
-    expect([...rejectedIn(marks, roundTwo)]).toEqual([]);
-  });
-
-  it('collects several rejections in one round', () => {
-    let marks = markRejected(emptyMarks(), roundOne, 0);
-    marks = markRejected(marks, roundOne, 2);
-    expect([...rejectedIn(marks, roundOne)]).toEqual([0, 2]);
-  });
-
-  it('does not let a stale rejection block voting in the next round', () => {
-    const marks = markRejected(emptyMarks(), roundOne, 0);
-    const next = markRejected(marks, roundTwo, 1);
-    expect([...rejectedIn(next, roundTwo)]).toEqual([1]);
-  });
-
-  it('takes a vote back when the same answer is pressed again', () => {
-    // A player who changed their mind mid-round has to be able to say so, and a vote nobody may
-    // take back is a sentence rather than a vote. The host counts the same press the same way.
-    let marks = markRejected(emptyMarks(), roundOne, 1);
-    expect([...rejectedIn(marks, roundOne)]).toEqual([1]);
-    marks = markRejected(marks, roundOne, 1);
-    expect([...rejectedIn(marks, roundOne)]).toEqual([]);
-  });
-
-  it('leaves the other answers alone when one is taken back', () => {
-    let marks = markRejected(emptyMarks(), roundOne, 0);
-    marks = markRejected(marks, roundOne, 1);
-    marks = markRejected(marks, roundOne, 0);
-    expect([...rejectedIn(marks, roundOne)]).toEqual([1]);
-  });
-
-  it('starts the next round with no vote on it at all', () => {
-    // Group ids are per round, so the same id in the next round is a different answer and must
-    // not arrive already voted for.
-    let marks = markRejected(emptyMarks(), roundOne, 2);
-    marks = markRejected(marks, roundTwo, 2);
-    expect([...rejectedIn(marks, roundTwo)]).toEqual([2]);
-    marks = markRejected(marks, roundTwo, 2);
-    expect([...rejectedIn(marks, roundTwo)]).toEqual([]);
-  });
-});
-
-describe('Round mark isolation', () => {
-  it('starts empty and does not share its set between rounds', () => {
-    const first = emptyMarks();
-    const second = emptyMarks();
-    const marked = markRejected(first, roundOne, 0);
-    expect(marked.rejectedGroupIds).not.toBe(second.rejectedGroupIds);
-    expect(hasSubmittedIn(second, roundOne)).toBe(false);
+  it('starts with nothing submitted and nothing muted', () => {
+    // Muting is not a local mark: it is the host's judgement and comes down with the room's state,
+    // so a mark kept in this browser could only ever disagree with the board the room is shown.
+    const marks = emptyMarks();
+    expect(hasSubmittedIn(marks, roundOne)).toBe(false);
+    expect(Object.keys(marks)).toEqual(['submittedTopic']);
   });
 });

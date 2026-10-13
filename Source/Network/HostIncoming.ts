@@ -4,6 +4,7 @@ import { HostRoster, resolveLook } from './HostRoster';
 import { GameAction, HostState } from '@/Game';
 import { GameConfig } from '@/Game';
 import { createLogger } from '@/Core';
+import { HostPlayerId } from './HostSession';
 
 const log = createLogger('HostIncoming');
 
@@ -84,6 +85,13 @@ export function toAction(context: IncomingContext): GameAction | undefined {
     case 'EditingAnswer':
       return { type: 'EDITING_ANSWER', playerId: message.playerId, editing: message.editing };
     case 'RejectGroup':
+      // Muting is the host's call and the host's alone: it takes an answer off the board for
+      // everybody, so a client sending one is refused here rather than trusted at the screen. A
+      // playerId on the wire is only as good as the seat it names, and this is not a seat.
+      if (message.playerId !== HostPlayerId) {
+        log('info', 'refusing a mute from anybody but the host', message.playerId);
+        return undefined;
+      }
       return { type: 'REJECT_GROUP', playerId: message.playerId, groupId: message.groupId };
     default:
       return undefined;
