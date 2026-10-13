@@ -637,11 +637,16 @@ body.PageFade {
    * and a count that lifted under the cursor would compete with the sentence in front of it
    * rather than say anything about it. */
   --Opacity-AnswerCardMark: 0.09;
-  /* How far an answer this player has voted out is held back. Well clear of the waiting step a
-   * theme card uses for the same word, because this vote is final for this round: the card is
-   * not going to come back on its own, and a card being held back for a moment is quiet while a
+  /* How far an answer the host has muted is held back. Well clear of the waiting step a theme
+   * card uses for the same word, because the mute is final for this round: the card is not
+   * going to come back on its own, and a card being held back for a moment is quiet while a
    * card that has been dealt with is out of it. */
   --Opacity-AnswerCardVoted: 0.45;
+  /* The thickness of the line through a muted answer. In `em`, so it is a share of the writing
+   * it strikes and thickens with it as the answer is fitted to its card, rather than a hairline
+   * that vanishes on a small card and a slab on a large one. */
+  --Border-Width-AnswerCardMuted: 0.06em;
+
   /* An answer the room has not got to yet, held down and back on its own cell. Short of
    * nothing, since a card that reaches zero while still visible is a card being switched off
    * rather than one put away, and the cell itself is what tells the room how many answers are

@@ -1,6 +1,7 @@
 import { ComponentChildren } from 'preact';
 import { useRef } from 'preact/hooks';
 import { useFittedText } from './UseFittedText';
+import { playSound } from '../../Sounds';
 import styles from './AnswerCard.module.css';
 
 export interface AnswerCardProps {
@@ -93,7 +94,15 @@ export function AnswerCard({
     );
   }
   return (
-    <button type="button" class={classes} aria-pressed={voted} onClick={onReject}>
+    <button
+      type="button"
+      class={classes}
+      aria-pressed={voted}
+      onClick={() => {
+        playSound('Pop');
+        onReject();
+      }}
+    >
       <Face text={text} count={count} />
     </button>
   );

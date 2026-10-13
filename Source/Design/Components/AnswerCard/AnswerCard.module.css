@@ -167,10 +167,21 @@
   opacity: var(--Opacity-ThemeCardSpentOut);
 }
 
-/* An answer the host has muted. Held back rather than struck through or deleted, so the room
- * can still read what was said and see why it was not counted. */
+/* An answer the host has muted. Held back rather than deleted, so the room can still read what
+ * was said and see why it was not counted, and struck through rather than only dimmed, since a
+ * mute the room has to notice is a mute that does not count. */
 .Voted {
   opacity: var(--Opacity-AnswerCardVoted);
+}
+
+/* The strike itself, on the writing rather than on the card, so it crosses the words and not
+ * the panel: `text-decoration` is drawn by the element that owns the glyphs and one placed on
+ * the card would sit outside the answer entirely. Carried by the card class rather than a class
+ * of its own, since it is the card's own state and nothing else draws a strike. */
+.Voted .Answer {
+  text-decoration-line: line-through;
+  text-decoration-thickness: var(--Border-Width-AnswerCardMuted);
+  text-decoration-color: currentColor;
 }
 
 /* A muted card takes the pointer back from its hover: it is muted everywhere, so it should not

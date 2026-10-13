@@ -238,10 +238,19 @@ describe('an answer card', () => {
     );
   });
 
-  it('holds a voted answer back rather than striking it out', () => {
-    // A strike is a judgement on the answer, and a vote is one player's; deleting it would take
-    // the answer off the board while the round is still being read.
+  it('strikes out a muted answer rather than only holding it back', () => {
+    // Held back and struck, since the mute is the host's judgement and the room is shown it
+    // rather than left to work out why a card is quiet. This held the other way round while
+    // muting was one player's vote, where a strike would have said more than the vote was worth.
     expect(card.declaration(/\.Voted\s*\{([^}]*)\}/, 'opacity')).toBe('var(--Opacity-AnswerCardVoted)');
-    expect(card.flat).not.toContain('line-through');
+    expect(card.ruleBody(/\.Voted \.Answer\s*\{([^}]*)\}/)).toContain('line-through');
+  });
+
+  it('strikes the writing and not the card', () => {
+    // `text-decoration` is drawn by the element that owns the glyphs, so on the card it would sit
+    // outside the answer altogether. It is also the only decoration here that changes how the
+    // writing looks, and a muted card has to keep its own text readable underneath it.
+    expect(card.ruleBody(/\.Answer\s*\{([^}]*)\}/)).not.toContain('line-through');
+    expect(card.ruleBody(/\.Root\s*\{([^}]*)\}/)).not.toContain('line-through');
   });
 });
