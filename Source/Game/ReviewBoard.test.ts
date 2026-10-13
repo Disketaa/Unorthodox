@@ -67,11 +67,13 @@ describe('the board of answers', () => {
     expect(groups.filter((group) => group.isEmpty)).toHaveLength(3);
   });
 
-  it('puts the blank cards last, so they never split a pair of answers', () => {
-    // Two answers that matched are one card, and a blank wedged between them would break the row
-    // into two cards of the same answer with an empty card between them.
+  it('deals the blanks in among the answers rather than setting them aside', () => {
+    // The board is dealt, so a player who wrote nothing is dealt a seat like anybody else rather
+    // than being parked at the end of the row where everyone can see who sat out. What used to
+    // hold them back was the order the answers came in; it no longer decides anything.
     const groups = toPublicReviewingState(reviewing(4, threeAnswers)).groups;
-    expect(groups.map((group) => group.isEmpty)).toEqual([false, false, true]);
+    expect(groups).toHaveLength(3);
+    expect(groups.filter((group) => group.isEmpty)).toHaveLength(1);
   });
 
   it('shows no blank at all in a round everybody answered', () => {
@@ -101,8 +103,20 @@ describe('the board of answers', () => {
     ];
     const groups = toPublicReviewingState(reviewing(3, same)).groups;
     expect(groups).toHaveLength(2);
-    expect(groups[0]).toMatchObject({ text: 'кот', playerCount: 2 });
-    expect(groups[1]).toMatchObject({ text: 'дом', playerCount: 1 });
+    // Matched on the count and the word rather than on position: the deal decides which of the
+    // two comes first, and what the board is scored on is that they are paired, not which is first.
+    expect(groups).toContainEqual({
+      groupId: expect.any(Number),
+      text: 'кот',
+      playerCount: 2,
+      isEmpty: false,
+    });
+    expect(groups).toContainEqual({
+      groupId: expect.any(Number),
+      text: 'дом',
+      playerCount: 1,
+      isEmpty: false,
+    });
   });
 
   it('folds an answer onto one already on the board, ignoring how it was written', () => {
@@ -115,6 +129,97 @@ describe('the board of answers', () => {
     const groups = toPublicReviewingState(reviewing(2, same)).groups;
     expect(groups).toHaveLength(1);
     expect(groups[0]?.playerCount).toBe(2);
+  });
+});
+
+describe('the order the cards are dealt in', () => {
+  const eight: readonly [string, string][] = [
+    ['p1', 'кот'],
+    ['p2', 'дом'],
+    ['p3', 'чай'],
+    ['p4', 'нос'],
+    ['p5', 'мед'],
+    ['p6', 'сок'],
+    ['p7', 'ухо'],
+    ['p8', 'рот'],
+  ];
+
+  // The deal as the wire carries it: the card ids in the order they go out, which is the only part of it a client sees.
+  function dealt(state: ReviewingState): number[] {
+    return toPublicReviewingState(state).groups.map((group) => group.groupId);
+  }
+
+  it('is the same deal to everyone in the room', () => {
+    // Every client is handed the same array, so there is nothing to agree on and nothing that
+    // can drift: the host projects it and they all draw it. Counted as ids, since two cards with
+    // the same word are still two different cards.
+    const state = reviewing(8, eight);
+    expect(dealt(state)).toEqual(dealt(reviewing(8, eight)));
+  });
+
+  it('holds still while the round is being shown', () => {
+    // The state is projected again on every broadcast, and the board is drawn again from it each
+    // time. A deal that moved would slide a card out from under a player who had already voted
+    // on it, and vote on the same card across two broadcasts.
+    const state = reviewing(8, eight);
+    const first = dealt(state);
+    for (let broadcast = 0; broadcast < 8; broadcast += 1) {
+      expect(dealt(state)).toEqual(first);
+    }
+  });
+
+  it('is not the order the answers arrived in', () => {
+    // The roster order is a real order and an obvious one: it hands out seats and says who wrote
+    // what, so a board dealt from it says who sat next to whom and when. Counted over enough
+    // rounds that a few coincidences would not clear it.
+    const rounds = Array.from({ length: 30 }, (_, round) =>
+      dealt({ ...reviewing(8, eight), startedAt: round })
+    );
+    const inRosterOrder = rounds.filter(
+      (order) => order.join() === [0, 1, 2, 3, 4, 5, 6, 7].join()
+    );
+    expect(inRosterOrder).toHaveLength(0);
+  });
+
+  it('is a different deal next round', () => {
+    // Otherwise the shuffle is a fixture rather than a deal: a room that remembers the last
+    // round's order learns who wrote what before the cards are turned over.
+    const deals = new Set(
+      Array.from({ length: 24 }, (_, round) =>
+        dealt({ ...reviewing(8, eight), startedAt: round }).join()
+      )
+    );
+    expect(deals.size).toBeGreaterThan(12);
+  });
+
+  it('keeps a card with its own id, so a vote lands where it was cast', () => {
+    // The deal moves the cards and nothing else: the id travels with the answer, which is what a
+    // rejection vote is held against. An id reassigned by position would score one player's vote
+    // for another player's answer.
+    const state = reviewing(8, eight);
+    const dealtIds = dealt(state);
+    expect(new Set(dealtIds).size).toBe(dealtIds.length);
+    expect(toPublicReviewingState(state).groups.every((group) => group.playerCount > 0)).toBe(
+      true
+    );
+    expect([...dealtIds].sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+  });
+
+  it('deals a board of two the same way, and a board of one as itself', () => {
+    // Short boards have to come out too, and a board of one card cannot be dealt at all.
+    const two = reviewing(2, [
+      ['p1', 'кот'],
+      ['p2', 'дом'],
+    ]);
+    expect(dealt(two)).toEqual(
+      dealt(
+        reviewing(2, [
+          ['p1', 'кот'],
+          ['p2', 'дом'],
+        ])
+      )
+    );
+    expect(dealt(reviewing(1, [['p1', 'кот']]))).toEqual([0]);
   });
 });
 

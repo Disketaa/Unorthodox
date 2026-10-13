@@ -27,3 +27,18 @@ export function randomFor(text: string): Random {
   }
   return createRandom(hash);
 }
+
+/** Put things in an order no one can predict from what they were, keeping all of them. A copy,
+ * since the caller's own array is in roster order and is read again for the next deal. */
+export function shuffle<T>(items: readonly T[], random: Random): T[] {
+  const pool = [...items];
+  for (let i = pool.length - 1; i > 0; i -= 1) {
+    const swapWith = Math.floor(random() * (i + 1));
+    const held = pool[i];
+    const drawn = pool[swapWith];
+    if (held === undefined || drawn === undefined) return pool;
+    pool[i] = drawn;
+    pool[swapWith] = held;
+  }
+  return pool;
+}
