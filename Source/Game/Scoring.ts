@@ -1,4 +1,5 @@
 import { GameConfig } from './GameConfig';
+import type { PlayerId } from '@/Core';
 
 /** Points awarded to each player in a group of the given size. */
 export function pointsForGroupSize(size: number, config: typeof GameConfig): number {
@@ -31,4 +32,24 @@ export function calculateRoundScores(
   }
 
   return scores;
+}
+
+/** Who the round gave nothing to, as the room is shown it: a player whose card is blank, and a
+ * player whose card the host muted. Both are the round scoring them zero — a blank is nobody
+ * having written, and a muted card is out of the round — and the bar of players breaks a hexagon
+ * for each of them rather than making the room work it out off the board. A group three people
+ * wrote is not one of them: that answer was right, it was simply not rare. */
+export function zeroScorers(
+  groups: readonly { groupId: number; playerIds: readonly PlayerId[]; isEmpty: boolean }[],
+  muted: ReadonlySet<number>
+): ReadonlySet<PlayerId> {
+  const zero = new Set<PlayerId>();
+  for (const group of groups) {
+    if (group.isEmpty || muted.has(group.groupId)) {
+      for (const playerId of group.playerIds) {
+        zero.add(playerId);
+      }
+    }
+  }
+  return zero;
 }

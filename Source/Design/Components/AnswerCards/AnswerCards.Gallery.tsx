@@ -14,6 +14,14 @@ function board(count: number): AnswerCardsEntry[] {
     liked: index === 1,
     own: index === 3,
     likeLabel: `${index} likes`,
+    authors:
+      index === 1
+        ? [
+            { id: 'p1', name: 'Ghost Player', character: 'Ghost', color: 'Sky' },
+            { id: 'p2', name: 'Star Player', character: 'Star', color: 'Rose' },
+            { id: 'p3', name: 'Daisy Player', character: 'Daisy', color: 'Mint' },
+          ]
+        : [{ id: `p${index}`, name: `Player ${index + 1}`, character: 'Ghost', color: 'Sky' }],
   }));
 }
 

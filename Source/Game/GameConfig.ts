@@ -76,6 +76,10 @@ const timing = {
   /** How long the room has to vote once the last answer is up. The reveal is shortened rather
    * than this, so a full room is still a board everybody got to see before the phase ended. */
   revealVoteMs: 20000,
+  /** How long after a card comes up before the room is told who wrote it. Held well past the
+   * writing, so the answer lands on its own first: who agreed with whom is the round's best joke
+   * and it is worth the room reading the sentence before it finds out. */
+  revealAuthorsMs: 1600,
 };
 
 export const GameConfig = {
@@ -96,6 +100,19 @@ export const GameConfig = {
     uniquePoints: 3,
     pairPoints: 1,
     commonPoints: 0,
+  },
+  /** How two answers are decided to be the same: the edits a word may be apart by its length, the
+   * shortest word an ending is stripped from, how long a run of one letter is squeezed, and how
+   * many single letters in a row are a word somebody spelled out. */
+  grouping: {
+    noEdits: 0,
+    fuzzyMinLength: 5,
+    fuzzyMaxEdits: 1,
+    fuzzyLongMinLength: 9,
+    fuzzyLongMaxEdits: 2,
+    endingMinLength: 5,
+    runSqueezeMin: 2,
+    strayRunMin: 3,
   },
   rounds: {
     count: 5,

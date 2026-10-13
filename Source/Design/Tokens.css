@@ -469,6 +469,15 @@ body.PageFade {
   --Color-Feedback-Error: #e91e63;
   --Color-Feedback-Info: #00bcd4;
 
+  /* The wash a thing the room is told does not count is painted in: the feedback red mixed down
+   * onto the surface a card already wears, so a muted answer card and a seat the round scored
+   * nothing are the same pink rather than two reds a room has to learn. */
+  --Color-Feedback-Muted-Wash: color-mix(
+    in srgb,
+    var(--Color-Feedback-Error) 14%,
+    var(--Color-Surface-Hover)
+  );
+
   --Radius-Card: var(--Radius-Md);
   --Radius-Button: var(--Radius-Sm);
   --Radius-Input: var(--Radius-Sm);
@@ -706,6 +715,13 @@ body.PageFade {
   --Size-PlayerBarSeatMin: 40px;
   --Size-PlayerBarSeatLimit: 16px;
   --Size-PlayerBarSeatMax: 64px;
+
+  /* How wide one hexagon is where it is drawn inside something else — an answer card naming who
+   * wrote it — and that thing says nothing about size. The bar's own floor, since a card corner
+   * has no screen to divide and the smallest seat the bar draws is the one that always fits.
+   * Whatever holds the seats is meant to set this: a card sizes its own corner from its own
+   * width, the way it sizes everything else on it. */
+  --Size-PlayerBarInlineSeat: 40px;
 
   /* What one hexagon is worth to a straight row: itself plus the seam it keeps from its
    * neighbour. The row's width divided by this is the seat that leaves the row exactly filling

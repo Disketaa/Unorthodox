@@ -1,124 +1,53 @@
-import { normalizeAnswer } from './Normalization';
 import { PlayerId } from '@/Core';
+import { normalizeAnswer } from './Normalization';
+import { answerWords } from './AnswerWords';
+import { sameWords } from './WordMatch';
+import { stripRussianEndings } from './WordForms';
 
-/** Typical Russian endings to strip, in the order they must be tried: the first match wins, so a
- * two-letter plural ending is never shadowed by the single letter that starts it. Words of four
- * characters or fewer are left alone, which keeps a short stem intact. */
-const russianEndings = [
-  'ам',
-  'ям',
-  'ом',
-  'ем',
-  'им',
-  'ым',
-  'а',
-  'я',
-  'ы',
-  'ь',
-  'й',
-  'у',
-  'ю',
-  'е',
-  'и',
-];
-
-/** Strip typical Russian endings from a word. Returns the word with the longest matching ending
- * removed, if any. We only strip if the word length is greater than 4 to avoid stripping too
- * short words. */
-function stripRussianEndings(word: string): string {
-  if (word.length <= 4) {
-    return word;
-  }
-  for (const ending of russianEndings) {
-    if (word.endsWith(ending)) {
-      return word.slice(0, -ending.length);
-    }
-  }
-  return word;
-}
-
-/** Compute the Levenshtein distance between two strings. Returns the number of single-character
- * edits (insertions, deletions, substitutions) required to change one string into the other. */
-function levenshteinDistance(a: string, b: string): number {
-  if (a.length === 0) return b.length;
-  if (b.length === 0) return a.length;
-
-  const matrix: number[][] = [];
-
-  for (let i = 0; i <= b.length; i++) {
-    matrix[i] = [i];
-  }
-  for (let j = 0; j <= a.length; j++) {
-    matrix[0][j] = j;
-  }
-
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      const cost = a[j - 1] === b[i - 1] ? 0 : 1;
-      // The three Levenshtein moves: delete from a, insert from b, or substitute.
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + cost
-      );
-    }
-  }
-
-  return matrix[b.length][a.length];
-}
-
-/** Normalize an answer for grouping purposes. This includes the basic normalization plus
- * stripping Russian endings from each word. */
+/** Normalize an answer to the string form of it: the basic normalization plus Russian endings
+ * stripped from each word. No longer the key the grouping compares — that is `answerWords`, which
+ * also folds a Latin keyboard and glues a spaced-out word back together. */
 export function normalizeForGrouping(answer: string): string {
-  const normalized = normalizeAnswer(answer);
-  const words = normalized.split(' ');
-  const processedWords = words.map((word) => stripRussianEndings(word));
-  return processedWords.join(' ');
+  return normalizeAnswer(answer)
+    .split(' ')
+    .map((word) => stripRussianEndings(word))
+    .join(' ');
 }
 
 /** Whether two answers are the same answer, by the rule the board groups them with. The one
- * comparison both sides of a card have to make: the host decides who wrote a group and a
- * browser decides which cards are its own. */
+ * comparison both sides of a card have to make: the host decides who wrote a group and a browser
+ * decides which cards are its own, and the two have to agree or a player is offered a like on
+ * their own answer. */
 export function sameAnswer(a: string, b: string): boolean {
-  return sameKey(normalizeForGrouping(a), normalizeForGrouping(b));
+  return sameWords(answerWords(a), answerWords(b));
 }
 
-/** The same comparison between two strings already normalized, which is what the grouping walks. */
-function sameKey(a: string, b: string): boolean {
-  if (a === b) {
-    return true;
-  }
-  return a.length >= 5 && b.length >= 5 && levenshteinDistance(a, b) <= 1;
-}
-
-/** Group answers on exact normalized equality, or a Levenshtein distance of 1 once both strings
- * are at least five long. Greedy: each answer joins the first group it matches. */
-export function groupAnswers(answers: string[]): { groupId: number; answers: string[] }[] {
-  const groups: { groupId: number; answers: string[] }[] = [];
-  // The normalized string that represents each group, so a later answer can be matched to it.
-  const groupKeys: string[] = [];
-
-  for (const answer of answers) {
-    const key = normalizeForGrouping(answer);
-    let placed = false;
-
-    for (let i = 0; i < groups.length; i++) {
-      const groupKey = groupKeys[i];
-      if (groupKey !== undefined && sameKey(groupKey, key)) {
-        groups[i].answers.push(answer);
-        placed = true;
-        break;
-      }
+/** Group answers on the rule the board shows them with. Greedy: each answer joins the first group
+ * whose key it matches, and a group's key is its first member — fuzzy matching is not transitive,
+ * so a group is whatever its first answer is rather than whatever its members agree on, and a
+ * browser asking "is this mine" has to ask about that first answer. */
+function cluster<T>(items: readonly T[], textOf: (item: T) => string): T[][] {
+  const keys: string[][] = [];
+  const groups: T[][] = [];
+  for (const item of items) {
+    const words = answerWords(textOf(item));
+    const hit = keys.findIndex((key) => sameWords(key, words));
+    if (hit === -1) {
+      keys.push(words);
+      groups.push([item]);
+      continue;
     }
-
-    if (!placed) {
-      const newGroupId = groups.length;
-      groups.push({ groupId: newGroupId, answers: [answer] });
-      groupKeys.push(key);
-    }
+    groups[hit].push(item);
   }
-
   return groups;
+}
+
+/** Group answers, each group carrying the answers that went into it. */
+export function groupAnswers(answers: string[]): { groupId: number; answers: string[] }[] {
+  return cluster(answers, (answer) => answer).map((group, groupId) => ({
+    groupId,
+    answers: group,
+  }));
 }
 
 /** The same grouping, carrying the player each answer came from. */
@@ -127,35 +56,10 @@ export function groupAnswersWithPlayers(answers: Map<PlayerId, string>): {
   answers: string[];
   playerIds: PlayerId[];
 }[] {
-  const groups: { groupId: number; answers: string[]; playerIds: PlayerId[] }[] = [];
-  const groupKeys: string[] = [];
-  const keyToGroupIndex = new Map<string, number>();
-
-  for (const [playerId, answer] of answers) {
-    const key = normalizeForGrouping(answer);
-    let groupIndex = keyToGroupIndex.get(key);
-    if (groupIndex === undefined) {
-      for (const [existingKey, existingIndex] of keyToGroupIndex) {
-        if (
-          key.length >= 5 &&
-          existingKey.length >= 5 &&
-          levenshteinDistance(key, existingKey) <= 1
-        ) {
-          groupIndex = existingIndex;
-          break;
-        }
-      }
-    }
-    if (groupIndex === undefined) {
-      groupIndex = groups.length;
-      groups.push({ groupId: groupIndex, answers: [], playerIds: [] });
-      groupKeys.push(key);
-      keyToGroupIndex.set(key, groupIndex);
-    }
-    const group = groups[groupIndex];
-    group.answers.push(answer);
-    group.playerIds.push(playerId);
-  }
-
-  return groups;
+  const entries = [...answers].map(([playerId, answer]) => ({ playerId, answer }));
+  return cluster(entries, (entry) => entry.answer).map((group, groupId) => ({
+    groupId,
+    answers: group.map((entry) => entry.answer),
+    playerIds: group.map((entry) => entry.playerId),
+  }));
 }

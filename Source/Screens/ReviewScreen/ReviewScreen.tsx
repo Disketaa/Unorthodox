@@ -1,6 +1,7 @@
 import { Stack, Text } from '@/Design/Primitives';
-import { AnswerCards } from '@/Design/Components';
+import { AnswerCards, type AnswerAuthor } from '@/Design/Components';
 import { Strings } from '@/Content';
+import type { PlayerId } from '@/Core';
 
 export interface ReviewGroup {
   groupId: number;
@@ -18,6 +19,13 @@ export interface ReviewGroup {
   /** Whether this player wrote it, and so may not like their own answer. The badge is drawn
    * either way: they are shown what the room thought of it, and only the press is taken away. */
   own: boolean;
+  /** Who wrote it, drawn as faces in the card's corner a beat after the card comes up. */
+  authors: readonly AnswerAuthor[];
+  /** Which of them is this player, so their own chip is marked the way the bar at the top of the
+   * game marks it. */
+  ownPlayerId?: PlayerId | null;
+  /** Whether the room has been told who wrote it yet. */
+  authorsShown: boolean;
 }
 
 export interface ReviewScreenProps {
@@ -55,6 +63,9 @@ export function ReviewScreen({ topic, groups, revealed, onReject, onLike }: Revi
           liked: group.liked,
           own: group.own,
           likeLabel: Strings.reviewing.likes(group.likes),
+          authors: group.authors,
+          authorsShown: group.authorsShown,
+          ownPlayerId: group.ownPlayerId,
         }))}
         revealed={revealed}
         onReject={onReject}

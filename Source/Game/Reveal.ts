@@ -55,3 +55,10 @@ export function revealedLetterCount(
 export function typedOut(text: string, shown: number): string {
   return text.slice(0, Math.min(text.length, Math.max(0, shown)));
 }
+
+/** Whether the room has been told who wrote this answer yet. Off for the first stretch of the
+ * card's own beat and on for the rest of it, so a card says what it says before it says who
+ * agreed with it. */
+export function authorsArrived(elapsedMs: number): boolean {
+  return elapsedMs >= GameConfig.timing.revealAuthorsMs;
+}

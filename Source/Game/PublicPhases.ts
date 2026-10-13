@@ -1,7 +1,7 @@
 import { PlayerId, randomFor, shuffle, ThemeId } from '@/Core';
 import { marksForRoom } from './PublicMarks';
 import { HostState, ReviewingState } from './GameState';
-import { groupAnswers } from './Grouping';
+import { groupAnswersWithPlayers } from './Grouping';
 import type {
   PublicFinalState,
   PublicLobbyState,
@@ -107,20 +107,30 @@ export function toPublicWritingState(state: HostState): PublicWritingState {
 
 /** The board's cards: the answers as written, in an order nobody can read off who wrote what,
  * plus one card per player who wrote nothing, the blanks after the deal rather than in it.
- * Seeded from the round and not the clock, since letting a held room go shifts the clock. */
+ * Seeded from the round and not the clock, since letting a held room go shifts the clock.
+ *
+ * Grouped by the same walk the scorer uses, so a card and the points it is worth are about the
+ * same set of people: two groupings over the same answers is two answers to the question. */
 function reviewGroups(state: ReviewingState): PublicReviewingState['groups'] {
   const written = [...state.answers.values()];
-  const answers = groupAnswers(written).map((group) => ({
+  const answers = groupAnswersWithPlayers(state.answers).map((group) => ({
     groupId: group.groupId,
     text: group.answers[0] ?? '',
     playerCount: group.answers.length,
+    playerIds: group.playerIds,
     isEmpty: false,
   }));
   const groups = shuffle(answers, randomFor(`${state.topic}:${written.join('|')}`));
   let nextId = groups.length;
   for (const playerId of state.players.keys()) {
     if (state.answers.has(playerId)) continue;
-    groups.push({ groupId: nextId, text: '', playerCount: 1, isEmpty: true });
+    groups.push({
+      groupId: nextId,
+      text: '',
+      playerCount: 1,
+      playerIds: [playerId],
+      isEmpty: true,
+    });
     nextId += 1;
   }
   return groups;

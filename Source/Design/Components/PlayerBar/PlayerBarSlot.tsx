@@ -1,4 +1,5 @@
 import { Character } from '../Character';
+import { Pop } from '@/Design/Primitives';
 import characterStyles from '../Character/Character.module.css';
 import type { PlayerBarEntry } from './PlayerBar';
 import styles from './PlayerBar.module.css';

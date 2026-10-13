@@ -1,5 +1,6 @@
 import plingUrl from './Pling.ogg';
 import popUrl from './Pop.ogg';
+import revealUrl from './Reveal.ogg';
 import tickUrl from './Tick.ogg';
 import alarmUrl from './Alarm.ogg';
 import cardUrl from './Card.ogg';
@@ -7,7 +8,7 @@ import whooshUrl from './Whoosh.ogg';
 import { audioContext, resumeAudio } from '../Audio/Context';
 import { muteBus } from './Mute';
 
-export type SoundName = 'Pop' | 'Pling' | 'Tick' | 'Alarm' | 'Card' | 'Whoosh';
+export type SoundName = 'Pop' | 'Pling' | 'Tick' | 'Alarm' | 'Card' | 'Whoosh' | 'Reveal';
 
 export const SoundNames: readonly SoundName[] = [
   'Pop',
@@ -16,6 +17,7 @@ export const SoundNames: readonly SoundName[] = [
   'Alarm',
   'Card',
   'Whoosh',
+  'Reveal',
 ];
 
 const Sources: Record<SoundName, string> = {
@@ -25,6 +27,7 @@ const Sources: Record<SoundName, string> = {
   Alarm: alarmUrl,
   Card: cardUrl,
   Whoosh: whooshUrl,
+  Reveal: revealUrl,
 };
 
 /** Per clip, since the countdown's beat sits under the words rather than beside them: a tick at
@@ -36,6 +39,7 @@ const Volumes: Record<SoundName, number> = {
   Alarm: 0.11,
   Card: 0.3,
   Whoosh: 0.22,
+  Reveal: 0.22,
 };
 
 /** How far either side of the recorded pitch a press may land, in semitones. Wide enough that
@@ -47,9 +51,9 @@ const PressPitchSpread = 2.5;
  * wanders by a quarter tone every second is a wobble rather than a beat. */
 const TickPitchSpread = 1;
 
-/** Neither the alarm, the card nor the whoosh has one — each happens once, and there is nothing
- * to vary it against. A card that wandered in pitch would be a second card waiting to be seen.
- * The whoosh sits with them because it is the one sound played rather than pressed. */
+/** The alarm, the card and the whoosh have none — each happens once, and there is nothing to vary
+ * it against. A card that wandered in pitch would be a second card waiting to be seen. The reveal
+ * has one: a board deals up to twelve of them, and twelve of one note is a printed loop. */
 const PitchSpreads: Record<SoundName, number> = {
   Pop: PressPitchSpread,
   Pling: PressPitchSpread,
@@ -57,6 +61,7 @@ const PitchSpreads: Record<SoundName, number> = {
   Alarm: 0,
   Card: 0,
   Whoosh: 0,
+  Reveal: PressPitchSpread,
 };
 
 interface Voice {

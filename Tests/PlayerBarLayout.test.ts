@@ -236,6 +236,14 @@ describe('the bar of hexes', () => {
     expect(sheet.flat).toContain('.Name');
     expect(sheet.flat).toContain('.Score');
   });
+
+  it('carries the name in bold for the local player, wherever the seat is drawn', () => {
+    // One rule for the whole game: bold is what says "this one is you", and an answer card naming
+    // who wrote it is told who the local player is rather than given a weight of its own. A second
+    // rule here made every name on every card bold, which said nothing about any of them.
+    expect(declaration('Self .Name', 'font-weight')).toBe('700');
+    expect(sheet.text).not.toContain('.Inline .Name');
+  });
 });
 
 describe('the tokens behind it', () => {

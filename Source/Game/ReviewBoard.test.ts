@@ -110,14 +110,40 @@ describe('the board of answers', () => {
       groupId: expect.any(Number),
       text: 'кот',
       playerCount: 2,
+      playerIds: ['p1', 'p2'],
       isEmpty: false,
     });
     expect(groups).toContainEqual({
       groupId: expect.any(Number),
       text: 'дом',
       playerCount: 1,
+      playerIds: ['p3'],
       isEmpty: false,
     });
+  });
+
+  it('says who wrote a card, so the room can be shown their faces', () => {
+    // The board already told the room how many agreed on an answer, which is a fact about people
+    // with no faces attached. This is the same fact with names on it, and it is what the corner of
+    // the card draws once the room has read the sentence.
+    const same: readonly [string, string][] = [
+      ['p2', 'дом'],
+      ['p1', 'кот'],
+      ['p3', 'кот'],
+    ];
+    const groups = toPublicReviewingState(reviewing(3, same)).groups;
+    for (const group of groups.filter((card) => !card.isEmpty)) {
+      expect(group.playerIds).toHaveLength(group.playerCount);
+    }
+    expect(groups.find((card) => card.text === 'кот')?.playerIds).toEqual(['p1', 'p3']);
+  });
+
+  it('gives a blank the one player it stands for', () => {
+    // A blank says somebody sat the round out, and a face beside it says which of them.
+    const groups = toPublicReviewingState(reviewing(4, threeAnswers)).groups;
+    const blank = groups.find((group) => group.isEmpty);
+    expect(blank?.playerIds).toHaveLength(1);
+    expect(blank?.playerCount).toBe(1);
   });
 
   it('folds an answer onto one already on the board, ignoring how it was written', () => {

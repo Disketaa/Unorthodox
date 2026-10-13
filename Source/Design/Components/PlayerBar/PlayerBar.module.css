@@ -312,3 +312,15 @@
 .Offline {
   opacity: 0.5;
 }
+
+/* The same seats, drawn inside something else — an answer card naming who wrote it — at whatever
+ * size that thing says rather than at the screen's: the bar's own formula divides a viewport by a
+ * room's worth of seats, and a card corner has no viewport to divide, so both ends of the clamp
+ * are pinned to the one size it was given. The label follows the seat rather than staying at the
+ * bar's own width, or a name wider than its hexagon runs over the neighbour's. */
+.Inline {
+  width: auto;
+  --Size-PlayerBarSeatMin: var(--Size-PlayerBarInlineSeat);
+  --Size-PlayerBarSeatMax: var(--Size-PlayerBarInlineSeat);
+  --Size-PlayerBarNameMax: calc(var(--Size-PlayerBarInlineSeat) * 1.2);
+}

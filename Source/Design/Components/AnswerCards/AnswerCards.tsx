@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { Pop, useViewportMeasure } from '@/Design/Primitives';
 import { playSound } from '../../Sounds';
-import { AnswerCard } from '../AnswerCard';
+import { AnswerCard, type AnswerAuthor } from '../AnswerCard';
+import type { PlayerId } from '@/Core';
 import styles from './AnswerCards.module.css';
 
 /** One answer the room is being shown, as the bank draws it. Its own shape rather than the
@@ -27,6 +28,15 @@ export interface AnswerCardsEntry {
   /** What this card's like badge says out loud, already in the room's language. Per card rather
    * than per board because it quotes the count, and the count differs from card to card. */
   likeLabel: string;
+  /** Who wrote this answer, drawn as faces in the card's corner once the room has had a moment
+   * with the sentence. */
+  authors?: readonly AnswerAuthor[];
+  /** Whether the room has been told who wrote this answer yet. Off for the first stretch of the
+   * card's beat, so an answer lands on its own before the room finds out who agreed with it. */
+  authorsShown?: boolean;
+  /** Which of the writers is this player, so their own chip is marked the way the bar at the top
+   * of the game marks it. Left out, no chip is the local player's. */
+  ownPlayerId?: PlayerId | null;
 }
 
 export type AnswerCardsColumns = 1 | 2 | 3;
@@ -96,6 +106,16 @@ type SlotProps = Pick<AnswerCardsProps, 'onReject' | 'onLike' | 'muteLabel'> & {
   open: boolean;
 };
 
+/** What a card's arrival is keyed on, so the squash replays rather than playing once: the card
+ * pops as it is turned over, again as the room is told who wrote it, and again as the host mutes
+ * it or takes the mute back. A card whose writers are named the moment it is up has only the one
+ * beat, and pops once. */
+function popTrigger(answer: AnswerCardsEntry, open: boolean): string {
+  if (!open) return 'turned';
+  const beat = answer.authorsShown === false ? `open-${answer.id}` : `named-${answer.id}`;
+  return answer.voted ? `${beat}-muted` : beat;
+}
+
 function AnswerSlot({ answer, index, onReject, onLike, muteLabel, open }: SlotProps) {
   // No vote out of a blank card: there is no answer on it, so a vote would move nothing the room
   // can see and the press would read as a control that does not work.
@@ -114,18 +134,29 @@ function AnswerSlot({ answer, index, onReject, onLike, muteLabel, open }: SlotPr
   useEffect(() => {
     if (open) playSound('Card', 0);
   }, [open]);
+  // The beat the room finds out who wrote it and the card takes their colour: one note, at a random
+  // pitch, so a board of them is a board rather than one note repeated. Off the writers rather than
+  // off the flag, since a card with nobody named on it has nothing to reveal. Lives here rather
+  // than on the card because the card is remounted by every pop, and a remount is not a reveal.
+  const named = open && answer.authorsShown !== false && (answer.authors?.length ?? 0) > 0;
+  useEffect(() => {
+    if (named) playSound('Reveal');
+  }, [named]);
   return (
     <div class={styles.Slot}>
-      {/* The arrival, keyed on whether the card has been turned over rather than on the answer, so
-       * the squash plays at the moment the room gets to see this answer and not at the moment the
-       * board was drawn. */}
-      <Pop trigger={open ? answer.id : 'turned'} index={index} stagger={SlotStagger}>
+      {/* The arrival, keyed on the beat rather than on the answer, so the squash plays at the
+       * moment the room gets to see this answer and not at the moment the board was drawn — and
+       * plays again on the beat the room is told who wrote it. */}
+      <Pop trigger={popTrigger(answer, open)} index={index} stagger={SlotStagger}>
         <AnswerCard
           text={answer.text}
           count={answer.count}
           voted={answer.voted}
           blank={answer.blank}
           turned={open}
+          authors={answer.authors}
+          authorsShown={answer.authorsShown ?? open}
+          ownPlayerId={answer.ownPlayerId}
           onReject={reject}
           likes={answer.likes}
           liked={answer.liked}

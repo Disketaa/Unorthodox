@@ -23,7 +23,7 @@ export interface LikeBadgeProps {
 
 /** How high the like sits above the clip it was recorded at. An octave, so it reads as the same
  * note taken up rather than as another sound: the clip is already the bright one in the bank. */
-const LikePitchSemitones = 12;
+export const LikePitchSemitones = 12;
 
 /** How many liked an answer, over the mark of the like itself. A button where it may be pressed
  * and a plain figure where it may not, so a player who cannot like their own answer is shown

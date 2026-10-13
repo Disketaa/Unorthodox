@@ -1,10 +1,59 @@
 import { ComponentChildren } from 'preact';
-import { useRef, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { CharacterColor, CharacterId, PlayerId, createLogger } from '@/Core';
 import { Pop } from '@/Design/Primitives';
 import { useFittedText } from './UseFittedText';
 import { playSound } from '../../Sounds';
-import { LikeBadge } from '../LikeBadge';
+import { LikeBadge, LikePitchSemitones } from '../LikeBadge';
+import { PlayerBar } from '../PlayerBar';
 import styles from './AnswerCard.module.css';
+
+/** One of the players an answer was written by, as the card draws them: the same face and the
+ * same name the roster chip at the top of the screen is made of. Handed over whole rather than as
+ * an id, since a card has no roster of its own to look anybody up in. */
+export interface AnswerAuthor {
+  id: PlayerId;
+  name: string;
+  character: CharacterId;
+  color: CharacterColor;
+}
+
+/** How many writers a card names at the roomiest, before the seats start giving up their size.
+ * A card is not wide enough for a room, and the room has to be able to read the answer on it. */
+const RoomyAuthors = 4;
+
+/** How many writers before the seats are at their smallest. Past here every seat is a face and
+ * nothing more, which is still a face per player rather than a figure nobody can find. */
+const CrowdedAuthors = 8;
+
+/** How long the room waits between the first writer of an answer and the second. Long on purpose:
+ * two people writing the same thing is the moment the round is about, and the beat before the
+ * second face lands is what makes it one rather than a fact. */
+const SecondWriterBeat = '700ms';
+
+/** How long each writer after the second takes. The same short beat for the third and the tenth,
+ * since a room should not sit through eight pauses to be told the same thing again. */
+const FurtherWriterBeat = '110ms';
+
+/** When one writer's chip lands, as a finished length from the moment the room is told who wrote
+ * this. The first is immediate, the second waits the dramatic beat, and every one after it takes a
+ * short one — so a card ten people wrote still finishes inside a couple of seconds. */
+function writerDelay(index: number): string | undefined {
+  if (index <= 0) return undefined;
+  if (index === 1) return SecondWriterBeat;
+  return `calc(${SecondWriterBeat} + ${index - 1} * ${FurtherWriterBeat})`;
+}
+
+/** How roomy the writers are drawn, from how many of them there are: the more there are, the
+ * smaller each seat and the less air between them, so a card ten people wrote still names ten
+ * people rather than running out of corner and counting the rest. */
+function authorsClass(count: number): string {
+  if (count >= CrowdedAuthors) return styles.AuthorsTight;
+  if (count > RoomyAuthors) return styles.AuthorsCrowd;
+  return '';
+}
+
+const log = createLogger('AnswerCard');
 
 export interface AnswerCardProps {
   /** The answer, as everybody who wrote this wrote it. */
@@ -37,6 +86,15 @@ export interface AnswerCardProps {
    * board: the room is shown one answer at a time, and a board already drawn is a board nobody
    * watched being wrong about. On by default, which is every use but the round's own. */
   turned?: boolean;
+  /** Who wrote it, drawn as the roster's own chips in the corner. */
+  authors?: readonly AnswerAuthor[];
+  /** Which of them is this player, so their own chip is marked the way the bar at the top of the
+   * game marks it. Left out, no chip is the local player's. */
+  ownPlayerId?: PlayerId | null;
+  /** Whether the room has been told who wrote it yet, which is a beat after the card comes up so
+   * the sentence lands before the room finds out who agreed with it. On by default, which is
+   * every use but the round's own. */
+  authorsShown?: boolean;
 }
 
 /** The classes a card is drawn as, so the one place that answers "what state is it in" is one
@@ -132,6 +190,50 @@ function LikeCorner({
   );
 }
 
+/** Who wrote this answer, in the corner, once the room has had its moment with the sentence
+ * itself: one seat per writer, each landing on its own beat. Drawn on a blank card too, and there
+ * it is the whole point of the card: a seat nobody wrote for is the one the room is shown. */
+function Authors({
+  authors,
+  shown,
+  ownPlayerId,
+}: {
+  authors: readonly AnswerAuthor[] | undefined;
+  shown: boolean;
+  ownPlayerId: PlayerId | null | undefined;
+}) {
+  const all = authors ?? [];
+  // Temporary: what the card was handed and what it decided, so a missing face can be told apart
+  // from a face that was never offered.
+  useEffect(() => {
+    log('info', `authors=${all.length} shown=${shown}`);
+  }, [all.length, shown]);
+  if (!shown || all.length === 0) {
+    return null;
+  }
+  return (
+    <div class={`${styles.Authors} ${authorsClass(all.length)}`}>
+      {all.map((author, index) => (
+        <Pop key={author.id} trigger={author.id} delay={writerDelay(index)}>
+          <PlayerBar
+            inline
+            players={[
+              {
+                id: author.id,
+                name: author.name,
+                score: 0,
+                character: author.character,
+                color: author.color,
+              },
+            ]}
+            ownPlayerId={ownPlayerId}
+          />
+        </Pop>
+      ))}
+    </div>
+  );
+}
+
 /** One answer on a panel: the answer as the substance, how many wrote it behind it, and the
  * grain the theme cards are printed on. A div rather than a button, since it now carries two
  * controls and a button inside a button is not one. */
@@ -141,6 +243,9 @@ export function AnswerCard({
   voted = false,
   blank = false,
   turned = true,
+  authors,
+  authorsShown = true,
+  ownPlayerId,
   likes,
   liked,
   likeLabel,
@@ -155,7 +260,7 @@ export function AnswerCard({
       {onReject !== undefined && (
         <button
           type="button"
-          class={styles.Mute}
+          class={styles.Whole}
           aria-pressed={voted}
           aria-label={muteLabel}
           onClick={() => {
@@ -164,6 +269,27 @@ export function AnswerCard({
           }}
         />
       )}
+      {/* Everybody else likes with the card itself: a control the size of a card is the one thing
+        that can be pressed in a room where people are standing up. Pointer only — the badge stays
+        the labelled control, and a second tab stop for one action is one more than a card needs. */}
+      {onReject === undefined && onLike !== undefined && (
+        <button
+          type="button"
+          class={styles.Whole}
+          aria-label={likeLabel}
+          aria-hidden="true"
+          tabindex="-1"
+          onClick={() => {
+            playSound('Pling', LikePitchSemitones);
+            onLike();
+          }}
+        />
+      )}
+      <Authors
+        authors={authors}
+        shown={authorsShown}
+        ownPlayerId={ownPlayerId}
+      />
       <LikeCorner
         blank={blank}
         voted={voted}

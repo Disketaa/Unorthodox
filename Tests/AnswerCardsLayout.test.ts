@@ -169,6 +169,16 @@ describe('an answer card', () => {
     expect(card.declaration(Room, 'height')).toBe('100%');
   });
 
+  it('breaks an answer at its spaces and nowhere else', () => {
+    // A word sawn in half is a word nobody reads: "Радуга" came out as "Раду" over "га", because
+    // the answer was allowed to break inside a word rather than shrink until the word held. The
+    // fit measures the width now, so the shrink is what answers a long word and the line breaker
+    // only ever has a space to work with.
+    expect(card.declaration(Answer, 'overflow-wrap')).toBe('normal');
+    expect(card.declaration(Answer, 'hyphens')).toBe('none');
+    expect(card.text).not.toContain('break-word');
+  });
+
   it('has no frame, and is one step off the page rather than white on it', () => {
     // The border and an off-white both lift a card off the page and a card this size does not
     // need both: with the frame gone the rounded corner and the fill are the whole edge.
@@ -204,12 +214,13 @@ describe('an answer card', () => {
     // Wrapping is the point: a cut answer is a hidden answer, and this is the one place a
     // sentence is allowed onto two lines. `Truncate` is deliberately not composed in, since it
     // carries `white-space: nowrap` and a composed class lands after this one in the built
-    // stylesheet, which is how an answer came to be unable to wrap at all.
+    // stylesheet, which is how an answer came to be unable to wrap at all. The wrap is at the
+    // spaces and nowhere else, which the case below holds the rest of.
     expect(card.text).not.toContain('Truncate from');
     expect(card.declaration(Answer, 'min-width')).toBe('0');
     expect(card.declaration(Answer, 'white-space')).toBe('normal');
     expect(card.declaration(Answer, 'overflow')).toBe('hidden');
-    expect(card.declaration(Answer, 'overflow-wrap')).toBe('break-word');
+    expect(card.declaration(Answer, 'overflow-wrap')).toBe('normal');
     // Clipped rather than left to run on, because a card that cannot hold what was written on it
     // has to stop at its own edge instead of printing over the card beside it.
     expect(card.declaration(CardRoot, 'overflow')).toBe('hidden');
@@ -244,6 +255,42 @@ describe('an answer card', () => {
     // muting was one player's vote, where a strike would have said more than the vote was worth.
     expect(card.declaration(/\.Voted\s*\{([^}]*)\}/, 'opacity')).toBe('var(--Opacity-AnswerCardVoted)');
     expect(card.ruleBody(/\.Voted \.Answer\s*\{([^}]*)\}/)).toContain('line-through');
+  });
+
+  it('answers the pointer in the palette\'s own next step, muted or not', () => {
+    // The board is read as one thing, so a card wears nobody's accent: the hover is the palette's
+    // next step down, and the figure behind the answer takes the muted grey with it, since a
+    // surface alone moving one step is a change nobody sees. A muted card used to be left out of
+    // the hover and then overridden by a rule further down the sheet, which put the writing back
+    // to black under the host's pointer.
+    const hover = /\.Root:hover[^{]*\{([^}]*)\}/;
+    expect(card.declaration(hover, '--AnswerCard-Surface')).toBe('var(--Color-Surface-Active)');
+    expect(card.declaration(/\.Root:hover\s+\.Mark[^{]*\{([^}]*)\}/, 'color')).toBe(
+      'var(--Color-Text-Muted)',
+    );
+    expect(card.text).not.toContain(':not(.Voted)');
+    expect(card.text).not.toContain('.Voted:hover{--AnswerCard-Surface:var(--Color-Surface-Hover)');
+  });
+
+  it('washes a muted answer in the feedback red, writing and all', () => {
+    // The board is otherwise black and white, so the one card on it that is not counted is the one
+    // card on it with a colour — and a host sweeping the board for the card they want back is
+    // looking for red, not for a card that is merely dimmer than its neighbours. No outline: the
+    // wash and the writing say it, and a second edge on a card with no frame is a card with a frame.
+    const voted = /\.Voted\s*\{([^}]*)\}/;
+    // The wash is one token, shared with the bar of players the round scored nothing, so a muted
+    // card and a broken seat are the same pink rather than two reds a room has to learn.
+    expect(card.declaration(voted, '--AnswerCard-Surface')).toBe(
+      'var(--Color-Feedback-Muted-Wash)',
+    );
+    expect(card.declaration(voted, 'color')).toBe('var(--Color-Feedback-Error)');
+    expect(card.declares(voted, 'border')).toBe(false);
+    expect(card.declares(voted, 'outline')).toBe(false);
+    // The muted card answers the pointer as well, or the host gets no answer from the cards they
+    // are actually looking at.
+    expect(card.declaration(/\.Voted:hover\s*\{([^}]*)\}/, '--AnswerCard-Surface')).toContain(
+      'color-mix(insrgb',
+    );
   });
 
   it('strikes the writing and not the card', () => {

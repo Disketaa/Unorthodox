@@ -18,6 +18,9 @@ export interface PlayerBarEntry {
   color: CharacterColor;
   /** Whether the host still has this player on the line. */
   isOnline?: boolean;
+  /** Whether the round gave this player nothing — their card is blank, or the host muted it —
+   * which draws their hexagon shattered. Left out, the seat is whole. */
+  scoredNothing?: boolean;
   /** Whether this player is still at work on the round — holding the turn, or writing an answer
    * the room has not read yet — which draws the loading mark in place of their character.
    * Purely what the bar shows; the room moves the turn and takes the answers itself. */
@@ -33,6 +36,10 @@ export interface PlayerBarProps {
   players: readonly PlayerBarEntry[];
   /** This browser's own player, filled in the accent so a full bar is still findable. */
   ownPlayerId?: PlayerId | null;
+  /** The same seats at the same sizes, drawn inside something else — an answer card naming who
+   * wrote it — with nothing under the pointer and no viewport to measure. A card corner has no
+   * screen to ask, and a board of cards would put a dozen listeners on one window. */
+  inline?: boolean;
 }
 
 /** Whether a straight row of `seats` hexagons, none of them below the floor, fits the screen.
@@ -48,24 +55,27 @@ function fitsLine(seats: number): boolean {
 
 /** Every player in the room along the top of the game, one hexagon each. The same bar for every
  * phase, so a seat does not move between writing and the scores. */
-export function PlayerBar({ players, ownPlayerId = null }: PlayerBarProps) {
+export function PlayerBar({ players, ownPlayerId = null, inline = false }: PlayerBarProps) {
   const slots = slotsFor(players, ownPlayerId, slotLimit());
   const [compact, setCompact] = useState(false);
 
   // Which of the two arrangements the row takes is a fact about the viewport and the count alone.
   // Nothing reads the rendered row back, which is what would let the two states chase each other
-  // and strobe while a window is being dragged.
+  // and strobe while a window is being dragged. An inline bar never tiles, so it asks nothing.
   useEffect(() => {
+    if (inline) return;
     const decide = () => setCompact(!fitsLine(slots.length));
     decide();
     window.addEventListener('resize', decide);
     return () => window.removeEventListener('resize', decide);
-  }, [slots.length]);
+  }, [inline, slots.length]);
 
   // The count is the one thing the stylesheet cannot work out for itself; it divides the screen's
   // width by it to size a seat, and reads it again to size a seat for the tiling.
   const sizing = `--Layout-PlayerBarSeats: ${slots.length}`;
-  const classes = [styles.Root, compact ? styles.Compact : ''].filter(Boolean).join(' ');
+  const classes = [styles.Root, compact ? styles.Compact : '', inline ? styles.Inline : '']
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div class={classes} style={sizing}>

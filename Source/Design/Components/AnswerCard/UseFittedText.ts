@@ -63,21 +63,24 @@ function scaleTo(element: HTMLElement): void {
 
 /** How much smaller the writing must be drawn to fit, as a share of what it measures right now,
  * rather than a share of full size: the line count moves in whole lines, so asking against full
- * size answers the same question at every size and the same number comes back every time. */
+ * size answers the same question at every size. The width is asked the same way. */
 function shortfall(element: HTMLElement): number {
   const height = textHeight(element);
   const lines = linesIn(element);
   const byHeight = height > 0 ? roomOf(element).clientHeight / height : 1;
   const byLines = lines > 0 ? MaxLines / lines : 1;
-  return Math.min(1, byHeight, byLines);
+  const byWidth = element.clientWidth > 0 ? element.clientWidth / element.scrollWidth : 1;
+  return Math.min(1, byHeight, byLines, byWidth);
 }
 
-/** Whether the answer is within the card: as tall as the room gives it, and no longer than the
- * lines it is allowed. Both at once, and measured against the room rather than the answer,
- * which is the box it is centred in and so as tall as the writing already is. */
+/** Whether the answer is within the card: as tall as the room gives it, no longer than the lines
+ * it is allowed, and no wider than the card. The width is what keeps a word whole — a word that
+ * does not fit is shrunk until it does rather than sawn in half by the line breaker. */
 function fits(element: HTMLElement): boolean {
   return (
-    textHeight(element) <= roomOf(element).clientHeight + 1 && linesIn(element) <= MaxLines
+    textHeight(element) <= roomOf(element).clientHeight + 1 &&
+    linesIn(element) <= MaxLines &&
+    element.scrollWidth <= element.clientWidth + 1
   );
 }
 

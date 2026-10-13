@@ -1,5 +1,6 @@
 import { PlayerBar, type PlayerBarEntry } from '@/Design/Components';
 import { lookFor } from '@/Screens';
+import { zeroScorers } from '@/Game';
 import type { PlayerId } from '@/Core';
 import type { PhaseViewProps } from './LobbyView';
 
@@ -26,6 +27,14 @@ export function PlayerBarView({ view }: PhaseViewProps) {
   // actually waiting on it: an open bank. Once the bank is answered the phase is still Choosing,
   // now while the room reads the question, and by then nobody has been asked for anything.
   const waitingOnTurn = choosing !== undefined && choosing.theme === undefined;
+  // Who the round gave nothing to, read off the board the room is already being shown rather than
+  // off a second copy of the marks: the muted cards are the ones this browser was already told
+  // about, and the blanks are the cards themselves. One rule, in the game, for both.
+  const reviewing = view.publicState?.phase === 'Reviewing' ? view.publicState : undefined;
+  const scoredNothing =
+    reviewing === undefined
+      ? new Set<PlayerId>()
+      : zeroScorers(reviewing.groups, view.rejectedGroupIds);
   const players: PlayerBarEntry[] = [...view.playerNames].map(([id, name]) => {
     const look = lookFor(view.playerLooks, id);
     return {
@@ -36,6 +45,7 @@ export function PlayerBarView({ view }: PhaseViewProps) {
       color: look.color,
       isOnline: view.playerPresence.get(id) ?? true,
       isTurning: waitingOnTurn && id === view.turnPlayerId,
+      scoredNothing: scoredNothing.has(id),
       // Every seat still at work, and not only this browser's own: the room says who has written,
       // so a row of seats fills up as the answers come in. Writing over an answer already sent
       // counts as work again, and the room is told that too, so it holds for everybody's bar.

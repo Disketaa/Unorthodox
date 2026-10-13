@@ -3,6 +3,7 @@ import {
   GameConfig,
   answerRevealBeat,
   answerWriteMs,
+  authorsArrived,
   revealedCount,
   revealedLetterCount,
 } from '@/Game';
@@ -15,6 +16,8 @@ export interface RevealState {
   upTo: number;
   /** How much of the answer at this place is written out, in letters. */
   shownAt: (index: number, length: number) => number;
+  /** Whether the room has been told who wrote the answer at this place yet. */
+  authorsAt: (index: number) => boolean;
 }
 
 /** The board's count of answers turned over, and of the letters of the one being written.
@@ -47,5 +50,8 @@ export function useReveal(
     upTo: active ? revealedCount(count, durationMs, startedAt, moment) : count,
     shownAt: (index, length) =>
       revealedLetterCount(length, moment - first - index * beat, answerWriteMs(length)),
+    // Off the same moment the writing is, since a card that named its writers while the sentence
+    // was still arriving would be answering a question the room had not finished being asked.
+    authorsAt: (index) => authorsArrived(moment - first - index * beat),
   };
 }

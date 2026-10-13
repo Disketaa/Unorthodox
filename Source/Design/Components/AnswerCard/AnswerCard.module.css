@@ -30,18 +30,17 @@
   --Space-AnswerCardInset: calc(var(--Size-AnswerCardWidth) * 0.035);
   transition:
     background var(--Transition-Standard),
-    color var(--Transition-Standard),
     opacity var(--Transition-Standard),
     scale var(--Transition-Reveal);
 }
 
-/* The hover, in the accent the player's own screen is wearing. A wash rather than a tint,
- * because the answer is read off the card and a raw tint behind a sentence fails contrast in
- * every accent the game offers. */
-.Root:hover:not(.Voted) {
-  --AnswerCard-Surface: var(--Accent-Wash);
+/* The hover, in the palette's own next step down rather than in the reader's accent: the board is
+ * read as one thing, and a card that wore whoever was looking at it would be a card that changed
+ * whose it was. The figure behind the answer takes the muted grey with it, since a surface alone
+ * moving one step is a change nobody sees. */
+.Root:hover {
+  --AnswerCard-Surface: var(--Color-Surface-Active);
   background: var(--AnswerCard-Surface);
-  color: var(--Color-Accent-Ink);
 }
 
 /* The inner panel: the box the figure is printed in, set in from the card's edge. The figure is
@@ -83,6 +82,10 @@
   color: var(--Color-Text-Quiet);
 }
 
+.Root:hover .Mark {
+  color: var(--Color-Text-Muted);
+}
+
 /* The grain, laid over the card the way the paper is laid over the page, and the same tile at
  * the same blend the theme cards use: a noise tile at any opacity below one is a grey wash
  * unless it is blended, since the tile has grey in its light parts as well as its dark. Drawn
@@ -108,12 +111,13 @@
  * by its own text, so the answer is measured against the space it has rather than a box that
  * grew to hold it. It draws no type of its own: the size the answer is fitted to is read on the
  * answer, and a size declared here could not have been reached by a fit set on the answer. */
-/* The mute, laid over the whole card. It was the card once, and still is as far as the pointer
- * is concerned: a control the size of a card is the one thing that can be pressed in a room
- * where people are standing up. Taken out of the card's own markup because a badge now sits
- * inside it, and a button inside a button is not a button. Transparent rather than absent, so
- * the card's own wash and hover carry the surface and this draws nothing of its own. */
-.Mute {
+/* The control laid over the whole card, which is still the card as far as the pointer is
+ * concerned: a control the size of a card is the one thing that can be pressed in a room where
+ * people are standing up. A sibling of the answer rather than the card itself, because a badge
+ * now sits inside the card and a button inside a button is not a button. Transparent rather than
+ * absent, so the card's own wash and hover carry the surface. The host mutes with it; everybody
+ * else likes with it, the badge in the corner staying the labelled control. */
+.Whole {
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -124,9 +128,9 @@
   cursor: var(--Cursor-Pointer);
 }
 
-/* The corner the like badge sits in, above the mute rather than beside it: a badge under a
- * full-bleed button would be a badge nobody can reach. Inset by the card's own padding so it
- * sits on the panel's edge rather than over the card's. Measured here and not on the badge,
+/* The corner the like badge sits in, above the whole-card control rather than beside it: a badge
+ * under a full-bleed button would be a badge nobody can reach. Inset by the card's own padding so
+ * it sits on the panel's edge rather than over the card's. Measured here and not on the badge,
  * because the badge is wrapped in the pop that plays when it is pressed and that wrapper fills
  * its parent: a badge sized for its own contents would collapse to nothing inside a box with
  * nothing to size against. The two are one box at two levels. */
@@ -150,6 +154,63 @@
   opacity: var(--Opacity-LikeBadgeQuiet);
 }
 
+/* Who wrote this answer, in the corner opposite the like badge: the seats out of the bar at the
+ * top of the game, over the panel rather than inside the card's padding box, so they do not push
+ * the answer about as the round reveals them. Wrapping rather than one line, and every seat sized
+ * from the card rather than from the screen: a room of ten is a room of ten, and the seats give up
+ * their size before the writers give up their faces. */
+.Authors {
+  position: absolute;
+  top: var(--Space-AnswerCardPadding);
+  right: var(--Space-AnswerCardPadding);
+  z-index: 2;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: var(--Space-Sm);
+  max-width: calc(100% - var(--Space-AnswerCardPadding) * 2);
+  pointer-events: none;
+  --Size-PlayerBarInlineSeat: clamp(
+    var(--Size-PlayerBarSeatLimit),
+    calc(var(--Size-AnswerCardWidth) * 0.16),
+    var(--Size-PlayerBarSeatMax)
+  );
+}
+
+/* More writers than a card has corner for at the roomiest size: the seats shrink and the air
+ * between them goes with them, so the row still says everybody rather than the first few. */
+.AuthorsCrowd {
+  gap: var(--Space-Xs);
+  --Size-PlayerBarInlineSeat: clamp(
+    var(--Size-PlayerBarSeatLimit),
+    calc(var(--Size-AnswerCardWidth) * 0.11),
+    var(--Size-PlayerBarSeatMax)
+  );
+}
+
+/* A whole room on one card, which is the board the round is about. The seats are at their
+ * smallest and the gap is gone: what is left is a face per writer, which is the one thing a
+ * count behind the answer could never say. */
+.AuthorsTight {
+  gap: calc(var(--Space-Xs) / 2);
+  --Size-PlayerBarInlineSeat: clamp(
+    var(--Size-PlayerBarSeatLimit),
+    calc(var(--Size-AnswerCardWidth) * 0.085),
+    var(--Size-PlayerBarSeatMax)
+  );
+}
+
+/* The pop each seat arrives in is a block the width of whatever holds it, which as a flex item is
+ * the whole row: one seat per line, and a corner of ten seats is a column running off the card. An
+ * auto width on a flex item is the item's own, so the seats sit beside each other and wrap only
+ * when the card runs out of row. Matched on the pop's own `--Pop-Index` rather than `*`, since a
+ * single class beats a universal selector and the pop's own `width: 100%` would otherwise stand. */
+.Authors > [style*="--Pop-Index"] {
+  width: auto;
+}
+
 .Room {
   position: relative;
   z-index: 1;
@@ -163,9 +224,10 @@
 
 /* The answer, and the only thing given a width of its own: centred by the flex box above with
  * nothing around it, the writing would be an anonymous flex item sized to its longest line, and
- * a word wider than the card could never wrap. Wrapping is the point, since a cut answer is a
- * hidden one. `min-width: 0` is declared rather than composed in from `Truncate`, which carries
- * `white-space: nowrap` and lands after this rule in the built sheet. */
+ * a word wider than the card could never wrap — and a cut answer is a hidden one. `min-width: 0`
+ * is declared rather than composed in from `Truncate`, which carries `white-space: nowrap` and
+ * lands after this rule in the built sheet. A word is never cut in half: the fit below shrinks
+ * the writing until the longest word holds, so every break is at a space. */
 .Answer {
   display: block;
   width: 100%;
@@ -177,7 +239,8 @@
   text-align: center;
   white-space: normal;
   overflow: hidden;
-  overflow-wrap: break-word;
+  overflow-wrap: normal;
+  hyphens: none;
 }
 
 /* An answer the room has not got to yet. Held down and back rather than taken off the board:
@@ -211,9 +274,25 @@
 
 /* An answer the host has muted. Held back rather than deleted, so the room can still read what
  * was said and see why it was not counted, and struck through rather than only dimmed, since a
- * mute the room has to notice is a mute that does not count. */
+ * mute the room has to notice is a mute that does not count. Washed in the feedback red with the
+ * writing in it too, and the strike follows the writing: the board is otherwise black and white,
+ * so the one card on it that is not counted is the one card on it with a colour. */
 .Voted {
   opacity: var(--Opacity-AnswerCardVoted);
+  --AnswerCard-Surface: var(--Color-Feedback-Muted-Wash);
+  background: var(--AnswerCard-Surface);
+  color: var(--Color-Feedback-Error);
+}
+
+/* The muted card answers the pointer too, or a host sweeping the board for the one they want back
+ * gets no answer from the cards they are actually looking at. The wash deepens rather than steps
+ * anywhere else, since red is already the only colour the card has. */
+.Voted:hover {
+  --AnswerCard-Surface: color-mix(
+    in srgb,
+    var(--Color-Feedback-Error) 22%,
+    var(--Color-Surface-Hover)
+  );
 }
 
 /* The strike itself, on the writing rather than on the card, so it crosses the words and not
@@ -226,20 +305,11 @@
   text-decoration-color: currentColor;
 }
 
-/* A muted card takes the pointer back from its hover: it is muted everywhere, so it should not
- * light up under the host's mouse while its neighbours still do. The press is left working,
- * since pressing it again is how a mute is taken back. */
-.Voted:hover {
-  --AnswerCard-Surface: var(--Color-Surface-Hover);
-  background: var(--Color-Surface-Hover);
-  color: var(--Color-Text-Default);
-}
-
 /* The focus ring on the card itself, since there is no border left to recolour. Drawn outside
  * the fill by an outline, which is what does that without taking any of the card's width: a
  * focused card that grew a pixel would be a card out of line with the eight beside it. */
 .Root:focus-visible,
-.Mute:focus-visible {
+.Whole:focus-visible {
   outline: var(--Border-Width-Default) solid var(--Color-Border-Focus);
   outline-offset: var(--Border-Width-Default);
 }
