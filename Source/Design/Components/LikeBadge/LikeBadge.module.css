@@ -27,14 +27,13 @@
   background: transparent;
   color: var(--Color-Text-Default);
   font-family: var(--FontFamily-Display);
-  font-size: calc(var(--Size-AnswerCardWidth, 100px) * 0.12);
+  font-size: calc(var(--Size-AnswerCardWidth, 100px) * 0.08);
   line-height: 1;
-  /* Three sizes that are all shares of the card and none of them derived from each other. The
-   * badge is not in `em` on purpose: in `em` it is a multiple of the count, so making the count
-   * bigger or smaller would have taken the badge and the mark inside it up or down with it, and
-   * only the count was meant to move. The badge's own box is set by its corner and filled here;
-   * these two are the mark's size and the gap round it. */
-  --Color-LikeMark: var(--Color-Text-Default);
+  /* The mark's colour, apart from when it has been liked. A quiet grey rather than the ink the
+   * count is drawn in, because the two are on the same badge saying different things: the grey
+   * is the invitation, and the room's yellow is that somebody took it up. */
+  --Color-LikeMark: var(--Color-Text-Quiet);
+  --Color-LikeMark: var(--Color-Text-Quiet);
 }
 
 /* Nothing has liked it, so the badge is held back rather than removed: a card with no likes is
@@ -52,9 +51,9 @@
   opacity: 1;
 }
 
-/* The player's own answer, where there is nothing to press. The refused cursor rather than the
- * pointing one: the badge is still there and still shows what the room thought of it, and the
- * cursor is what says the number is not theirs to change. */
+/* The player's own answer, where there is nothing to press. Only the cursor lives here: the
+ * holding-back is on the corner the badge sits in, so the figure, the mark and the outline all
+ * fade as one thing rather than the badge dimming inside a corner that has not. */
 .Spent {
   cursor: var(--Cursor-NotAllowed);
 }
@@ -87,7 +86,7 @@ button.Badge {
   position: relative;
   z-index: 1;
   font-weight: 700;
-  -webkit-text-stroke: calc(var(--Size-AnswerCardWidth, 100px) * 0.05)
+  -webkit-text-stroke: calc(var(--Size-AnswerCardWidth, 100px) * 0.033)
     var(--AnswerCard-Surface, var(--Color-Surface-Hover));
   paint-order: stroke fill;
 }

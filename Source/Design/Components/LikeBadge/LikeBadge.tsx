@@ -1,6 +1,10 @@
 import { playSound } from '../../Sounds';
+import { createLogger } from '@/Core';
 import { useSwayMotion } from '@/Design/Primitives';
 import styles from './LikeBadge.module.css';
+import { useEffect } from 'preact/hooks';
+
+const log = createLogger('LikeBadge');
 
 export interface LikeBadgeProps {
   /** How many players liked this answer. Shown whether or not the badge can be pressed: the
@@ -51,6 +55,13 @@ function Mark() {
   return <span class={styles.Icon} aria-hidden="true" />;
 }
 
+/** The count, or nothing at all while there is none. A zero is a number nobody asked for and it
+ * would sit on every card for most of a round; the mark alone says a card can be liked, and the
+ * figure says how many have. */
+function TheCount({ count }: { count: number }) {
+  return count > 0 ? <span class={styles.Count}>{count}</span> : null;
+}
+
 /** The badge where the player may press it. */
 function Pressable({
   count,
@@ -59,6 +70,7 @@ function Pressable({
   onToggle,
 }: LikeBadgeProps & { onToggle: () => void }) {
   const motion = useSwayMotion<HTMLButtonElement>();
+  useEffect(() => report(motion.current, count, liked, 'button'), [count, liked]);
   return (
     <button
       type="button"
@@ -72,7 +84,7 @@ function Pressable({
       }}
     >
       <Mark />
-      <span class={styles.Count}>{count}</span>
+      <TheCount count={count} />
     </button>
   );
 }
@@ -80,10 +92,26 @@ function Pressable({
 /** The badge where they may not: the player's own answer, still showing what the room thought. */
 function Figure({ count, liked, label }: LikeBadgeProps) {
   const motion = useSwayMotion<HTMLSpanElement>();
+  useEffect(() => report(motion.current, count, liked, 'figure'), [count, liked]);
   return (
     <span class={badgeClasses(count, liked, false)} ref={motion} aria-label={label}>
       <Mark />
-      <span class={styles.Count}>{count}</span>
+      <TheCount count={count} />
     </span>
+  );
+}
+
+/** The state the badge is actually drawing, which is otherwise three things that can each be
+ * mistaken for one of the others. Read off the element, so what is logged is what was drawn. */
+function report(
+  element: HTMLElement | null,
+  count: number,
+  liked: boolean,
+  kind: 'button' | 'figure'
+): void {
+  if (element === null) return;
+  log(
+    'info',
+    `${kind} likes=${count} liked=${liked} opacity=${element.style.opacity} class=${element.className}`
   );
 }
