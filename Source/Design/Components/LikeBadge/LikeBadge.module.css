@@ -31,8 +31,7 @@
   line-height: 1;
   /* The mark's colour, apart from when it has been liked. A quiet grey rather than the ink the
    * count is drawn in, because the two are on the same badge saying different things: the grey
-   * is the invitation, and the room's yellow is that somebody took it up. */
-  --Color-LikeMark: var(--Color-Text-Quiet);
+   * is the invitation, and the accent below is that this player took it up. */
   --Color-LikeMark: var(--Color-Text-Quiet);
 }
 
@@ -43,11 +42,16 @@
   opacity: var(--Opacity-LikeBadgeQuiet);
 }
 
-/* Pressed: this player is one of the people who liked it, so the mark takes the room's yellow
- * and the count stays the dark figure it always was. What it says is a fact about the answer,
- * so it wears the room's yellow and not the reader's own tint. */
+/* Pressed: this player is one of the people who liked it, so the mark takes the reading player's
+ * own accent and the count stays the dark figure it always was. The accent is already a custom
+ * property on the page, written by whoever chose it for this browser, so the badge wears the
+ * reader's colour without being told what it is — which is what every other accent-borne mark in
+ * the game does, and why none of them take a prop for it.
+ *
+ * Deliberately not the board's own pink: pink is what the board strikes a declined answer in, and
+ * a like mark wearing it would say the opposite of what it means. */
 .Liked {
-  --Color-LikeMark: var(--Color-Room-Yellow);
+  --Color-LikeMark: var(--Accent-Tint);
   opacity: 1;
 }
 

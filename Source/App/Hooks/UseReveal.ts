@@ -4,6 +4,8 @@ import {
   answerRevealBeat,
   answerWriteMs,
   authorsArrived,
+  landedWriters,
+  likesOffered,
   revealedCount,
   revealedLetterCount,
 } from '@/Game';
@@ -18,6 +20,10 @@ export interface RevealState {
   shownAt: (index: number, length: number) => number;
   /** Whether the room has been told who wrote the answer at this place yet. */
   authorsAt: (index: number) => boolean;
+  /** How many of the writers on the card at this place have landed, out of `total`. */
+  landedAt: (index: number, total: number) => number;
+  /** Whether the room is yet offered a like on the card at this place. */
+  likesAt: (index: number, total: number) => boolean;
 }
 
 /** The board's count of answers turned over, and of the letters of the one being written.
@@ -52,6 +58,26 @@ export function useReveal(
       revealedLetterCount(length, moment - first - index * beat, answerWriteMs(length)),
     // Off the same moment the writing is, since a card that named its writers while the sentence
     // was still arriving would be answering a question the room had not finished being asked.
-    authorsAt: (index) => authorsArrived(moment - first - index * beat),
+    authorsAt: (index) => authorsArrived(elapsedAt(moment, first, beat, index)),
+    // Measured from the moment the writers start arriving rather than from the card's own beat,
+    // since the delay between the first writer and the second is a wait that begins when the room
+    // is told, not one that has been running since the card came up. Read from the phase start, the
+    // whole wave is already over by the time the card is allowed to show any of it.
+    landedAt: (index, total) =>
+      landedWriters(
+        elapsedAt(moment, first, beat, index) - GameConfig.timing.revealAuthorsMs,
+        total
+      ),
+    likesAt: (index, total) =>
+      likesOffered(
+        elapsedAt(moment, first, beat, index) - GameConfig.timing.revealAuthorsMs,
+        total
+      ),
   };
+}
+
+/** How far into this card's own beat the room is, in milliseconds. Negative before the card has
+ * come up at all, which is how the first reader of the room knows it is early. */
+function elapsedAt(moment: number, first: number, beat: number, index: number): number {
+  return moment - first - index * beat;
 }

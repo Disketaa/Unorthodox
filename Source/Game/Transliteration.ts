@@ -15,5 +15,8 @@ const latinPattern = new RegExp(
  * symmetric: both sides of a comparison run it, so neither can end up in a script the other is
  * not in. */
 export function transliterateLatin(text: string): string {
-  return text.replace(latinPattern, (match) => latinDigraphs[match] ?? latinLetters[match] ?? match);
+  return text.replace(
+    latinPattern,
+    (match) => latinDigraphs[match] ?? latinLetters[match] ?? match
+  );
 }

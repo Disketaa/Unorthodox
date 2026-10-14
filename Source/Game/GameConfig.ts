@@ -80,6 +80,11 @@ const timing = {
    * writing, so the answer lands on its own first: who agreed with whom is the round's best joke
    * and it is worth the room reading the sentence before it finds out. */
   revealAuthorsMs: 1600,
+  /** How long after a card has said everything the room is offered a like on it. A beat of its
+   * own, past the last face landing, because a like badge appearing on the same frame as the thing
+   * it is about is a control arriving rather than an invitation — and on a card the round has
+   * turned down it never arrives at all, which is what the gap is for. */
+  revealLikeMs: 700,
 };
 
 export const GameConfig = {

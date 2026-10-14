@@ -29,6 +29,12 @@ export interface PlayerBarEntry {
    * Every seat still at work is marked, and not only this browser's own: the room says who has
    * written, so the row fills up as the answers come in. */
   isWorking?: boolean;
+  /** How many times this seat should react, so a change makes its character pop again. A count
+   * rather than a flag, so two reveals in a row are two reactions rather than one. Rises when the
+   * room is told this player wrote something, which is the one moment the bar has something to
+   * say that the board does not say better: the board names them in a corner, the bar names them
+   * in the same place it has named everybody all game. */
+  pulse?: number;
 }
 
 export interface PlayerBarProps {

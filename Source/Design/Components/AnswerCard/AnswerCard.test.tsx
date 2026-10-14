@@ -41,12 +41,13 @@ describe('an answer card', () => {
     expect(root.querySelectorAll('button').length).toBe(2);
   });
 
-  it('pops when the mute is pressed, as a theme card does', () => {
-    // The same note a press on the bank makes, since this is the same kind of press. A board that
-    // answers silently and a bank that does not is two controls doing one job.
+  it('breaks when the mute is pressed, as a card going off the board does', () => {
+    // The press that strikes the card is the one sound the host hears from their own finger, so it
+    // sounds on the press rather than when the board catches up. Taking the mute back is undoing
+    // something, and gets the ordinary pop rather than a second break.
     const mute = renderCard({ onReject: () => {} }).querySelector('button');
     mute?.click();
-    expect(playSound).toHaveBeenCalledWith('Pop');
+    expect(playSound).toHaveBeenCalledWith('Break');
   });
 
   it('pops once per press, taking a mute back included', () => {

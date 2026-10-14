@@ -3,7 +3,10 @@ import { Pop, useViewportMeasure } from '@/Design/Primitives';
 import { playSound } from '../../Sounds';
 import { AnswerCard, type AnswerAuthor } from '../AnswerCard';
 import type { PlayerId } from '@/Core';
+import { createLogger } from '@/Core';
 import styles from './AnswerCards.module.css';
+
+const log = createLogger('AnswerCards');
 
 /** One answer the room is being shown, as the bank draws it. Its own shape rather than the
  * review screen's, since the bank is a design component and knows nothing about a phase. */
@@ -34,6 +37,15 @@ export interface AnswerCardsEntry {
   /** Whether the room has been told who wrote this answer yet. Off for the first stretch of the
    * card's beat, so an answer lands on its own before the room finds out who agreed with it. */
   authorsShown?: boolean;
+  /** How many of the writers have landed in the corner. The figure behind the answer counts up as
+   * it rises, and a shared answer is drawn as struck out on the second face rather than on the
+   * round's own decision, which the room was told about a beat before it could see it. */
+  landed?: number;
+  /** Whether the room is yet offered a like on this card. Off until the card has said everything
+   * it has to say and a beat has passed, since a like badge arriving on the same frame as the
+   * thing it is about is a control rather than an invitation. Left out, which is every screen but
+   * the round's own: a board being shown after the fact has nothing left to offer. */
+  revealed?: boolean;
   /** Which of the writers is this player, so their own chip is marked the way the bar at the top
    * of the game marks it. Left out, no chip is the local player's. */
   ownPlayerId?: PlayerId | null;
@@ -107,27 +119,73 @@ type SlotProps = Pick<AnswerCardsProps, 'onReject' | 'onLike' | 'muteLabel'> & {
 };
 
 /** What a card's arrival is keyed on, so the squash replays rather than playing once: the card
- * pops as it is turned over, again as the room is told who wrote it, and again as the host mutes
- * it or takes the mute back. A card whose writers are named the moment it is up has only the one
- * beat, and pops once. */
+ * pops as it is turned over, and again as the room is told who wrote it. Not on the mute: the
+ * mute is a recolour, and a squash on every card a host sweeps would drown the beat the room is
+ * watching. It also means the corner's badge wave is not replayed when the card is muted, which
+ * is the wave the room is actually watching. A card whose writers are named the moment it is up
+ * has only the one beat, and pops once. */
 function popTrigger(answer: AnswerCardsEntry, open: boolean): string {
   if (!open) return 'turned';
-  const beat = answer.authorsShown === false ? `open-${answer.id}` : `named-${answer.id}`;
-  return answer.voted ? `${beat}-muted` : beat;
+  return answer.authorsShown === false ? `open-${answer.id}` : `named-${answer.id}`;
 }
 
 function AnswerSlot({ answer, index, onReject, onLike, muteLabel, open }: SlotProps) {
-  // No vote out of a blank card: there is no answer on it, so a vote would move nothing the room
-  // can see and the press would read as a control that does not work.
+  // A shared answer is off the board from the start and cannot be put back, whatever the card is
+  // drawn as at this moment: what the room turned down was the thing several of them said, and
+  // undoing that is not one press by one host. A single writer's answer is still only theirs, and
+  // the host may still change their mind about it. The card decides when to draw itself that way,
+  // since it is the only thing that knows how many of its writers have landed.
+  const settled = answer.voted === true && answer.count > 1;
+  // The mute is the one control a muted card still keeps, since taking it back is what it is for.
+  // It is why this is not gated on the card being answered: a card that is muted is by definition
+  // not answered, and gating on that would leave every mute with no way back at all.
   const reject =
-    onReject === undefined || answer.blank === true ? undefined : () => onReject(answer.id);
-  // Nor a like, for the same reason: there is no answer on the card to have liked, and nor is it
-  // this player's to like. The count is drawn either way, the room being shown the same figure on
+    onReject === undefined || answer.blank === true || settled
+      ? undefined
+      : () => onReject(answer.id);
+  // Nor a like on a blank, or on a player's own answer: there is no answer on the card that is
+  // theirs to have liked. The count is drawn either way, the room being shown the same figure on
   // every card whether or not that card is one anybody may press.
+  //
+  // Deliberately not gated on the card being declined. A shared answer is declined from the start,
+  // but the room is not shown that until it has been told there was more than one of them, and the
+  // card is the only thing that knows when that is: it counts its own writers as they land. A board
+  // that took the like away at the same moment the round decided, rather than the moment the room
+  // found out, would take it away from a card nobody has been told is out of the round.
+  //
+  // Offered to the host as well, which is the correction for having once withheld it: the host
+  // presses the card itself to mute, but they are still a player in the room and they liked that
+  // answer like anybody else. They get it in the corner, where everybody gets it, rather than over
+  // the card, which is already the mute.
   const like =
     onLike === undefined || answer.blank === true || answer.own === true
       ? undefined
       : () => onLike(answer.id);
+  // Temporary: what each card decided, and what it was given to decide with, so a card drawn the
+  // wrong way can be told apart from one that was never offered the control in the first place.
+  // Keyed on the decisions rather than on the callbacks, which are new closures every render and
+  // would print the same board four times a second.
+  const canMute = reject !== undefined;
+  const canLike = like !== undefined;
+  const host = onReject !== undefined;
+  useEffect(() => {
+    log(
+      'info',
+      `card=${answer.id} count=${answer.count} voted=${answer.voted} locked=${settled} ` +
+        `host=${host} mute=${canMute} like=${canLike} ` +
+        `own=${answer.own === true} blank=${answer.blank === true}`
+    );
+  }, [
+    answer.id,
+    answer.count,
+    answer.voted,
+    answer.own,
+    answer.blank,
+    settled,
+    host,
+    canMute,
+    canLike,
+  ]);
   // The same note the round's question lands a word on, on the same kind of moment: this card is
   // up. Pitch zero rather than the card's place in the run, since a board played as a rising scale
   // would be a tune rather than a room reading what it wrote.
@@ -153,9 +211,12 @@ function AnswerSlot({ answer, index, onReject, onLike, muteLabel, open }: SlotPr
           count={answer.count}
           voted={answer.voted}
           blank={answer.blank}
+          locked={settled}
           turned={open}
           authors={answer.authors}
           authorsShown={answer.authorsShown ?? open}
+          landed={answer.landed ?? answer.count}
+          revealed={answer.revealed ?? true}
           ownPlayerId={answer.ownPlayerId}
           onReject={reject}
           likes={answer.likes}

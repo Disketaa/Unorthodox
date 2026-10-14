@@ -7,8 +7,9 @@ import type { PlayerLook } from '@/Core';
 
 const look: PlayerLook = { character: 'Ghost', color: 'Sky' };
 
-/** A room of three in Reviewing, two of whom wrote the same answer, so the board has a group of
- * two authors and one of a single author to tell a host mute apart on. */
+/** A room of three in Reviewing, every answer its own, so every card on the board is one the host
+ * may decide on. A shared answer would not do: one of those is off the board before the host has
+ * pressed anything, and this room is about the presses. */
 function reviewing(): ReviewingState {
   return {
     phase: 'Reviewing',
@@ -27,13 +28,26 @@ function reviewing(): ReviewingState {
     durationMs: 1000,
     startedAt: 0,
     answers: new Map([
-      ['host', 'нос'],
-      ['p1', 'кот'],
-      ['p2', 'кот'],
+      ['host', 'Кот'],
+      ['p1', 'Дом'],
+      ['p2', 'Чай'],
     ]),
     groupRejections: new Map(),
     groupLikes: new Map(),
     theme: undefined,
+  };
+}
+
+/** The same room with two players writing the same answer, so there is a card of two to mute. Its
+ * own, because a shared answer is off the board from the start and a host is not offered one. */
+function pairRoom(): ReviewingState {
+  return {
+    ...reviewing(),
+    answers: new Map([
+      ['host', 'Дом'],
+      ['p1', 'Кот'],
+      ['p2', 'Кот'],
+    ]),
   };
 }
 
@@ -72,15 +86,14 @@ describe('muting an answer', () => {
     // The board is dealt, so the card at position 0 is not the same answer twice running. The
     // muted id has to pick out the same card it did before, whatever order it went out in.
     const state = muted(reviewing(), 1);
-    const publicState = toPublicReviewingState(state);
-    const mutedCard = publicState.groups.find((group) => group.groupId === 1);
-    expect(mutedCard?.playerCount).toBe(2);
+    const mutedCard = toPublicReviewingState(state).groups.find((group) => group.groupId === 1);
+    expect(mutedCard?.text).toBe('Дом');
   });
 
   it('leaves a card nobody muted off the wire alone', () => {
     const state = muted(reviewing(), 0);
     expect(onTheWire(state)).toEqual([0]);
-    expect(toPublicReviewingState(state).groups).toHaveLength(2);
+    expect(toPublicReviewingState(state).groups).toHaveLength(3);
   });
 });
 
@@ -97,10 +110,15 @@ describe('what a muted answer scores', () => {
     // This is what the old rule could not do. It rejected a group when a majority of its own
     // authors had voted it out, and with only the host muting there is never more than one vote,
     // so a pair could only be muted by mistake.
-    const scored = toScoredGroups(muted(reviewing(), 1));
+    //
+    // A pair is off the board before the host is ever offered it now, so this is the rule rather
+    // than the way a pair is reached: the card is no longer theirs to mute, and this only says
+    // that the scorer would still take it off if they somehow did.
+    const pair = pairRoom();
+    const scored = toScoredGroups(muted(pair, 1));
     expect(scored).toEqual([
-      { playerIds: ['host'], isRejected: false },
-      { playerIds: ['p1', 'p2'], isRejected: true },
+      { playerIds: ['host', 'p1'], isRejected: true },
+      { playerIds: ['p2'], isRejected: false },
     ]);
   });
 

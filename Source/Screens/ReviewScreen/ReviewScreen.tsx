@@ -26,6 +26,11 @@ export interface ReviewGroup {
   ownPlayerId?: PlayerId | null;
   /** Whether the room has been told who wrote it yet. */
   authorsShown: boolean;
+  /** How many of the writers have landed in the card's corner, which is what the figure behind
+   * the answer counts up with and what a shared card is drawn as struck out on. */
+  landed: number;
+  /** Whether the room is yet offered a like on this card, a beat after the last face lands. */
+  revealed: boolean;
 }
 
 export interface ReviewScreenProps {
@@ -65,6 +70,8 @@ export function ReviewScreen({ topic, groups, revealed, onReject, onLike }: Revi
           likeLabel: Strings.reviewing.likes(group.likes),
           authors: group.authors,
           authorsShown: group.authorsShown,
+          landed: group.landed,
+          revealed: group.revealed,
           ownPlayerId: group.ownPlayerId,
         }))}
         revealed={revealed}

@@ -1,6 +1,7 @@
 import { ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { CharacterColor, CharacterId, PlayerId, createLogger } from '@/Core';
+import { CharacterColor, CharacterId, PlayerId } from '@/Core';
+import { writerDelayMs } from '@/Game';
 import { Pop } from '@/Design/Primitives';
 import { useFittedText } from './UseFittedText';
 import { playSound } from '../../Sounds';
@@ -26,24 +27,6 @@ const RoomyAuthors = 4;
  * nothing more, which is still a face per player rather than a figure nobody can find. */
 const CrowdedAuthors = 8;
 
-/** How long the room waits between the first writer of an answer and the second. Long on purpose:
- * two people writing the same thing is the moment the round is about, and the beat before the
- * second face lands is what makes it one rather than a fact. */
-const SecondWriterBeat = '700ms';
-
-/** How long each writer after the second takes. The same short beat for the third and the tenth,
- * since a room should not sit through eight pauses to be told the same thing again. */
-const FurtherWriterBeat = '110ms';
-
-/** When one writer's chip lands, as a finished length from the moment the room is told who wrote
- * this. The first is immediate, the second waits the dramatic beat, and every one after it takes a
- * short one — so a card ten people wrote still finishes inside a couple of seconds. */
-function writerDelay(index: number): string | undefined {
-  if (index <= 0) return undefined;
-  if (index === 1) return SecondWriterBeat;
-  return `calc(${SecondWriterBeat} + ${index - 1} * ${FurtherWriterBeat})`;
-}
-
 /** How roomy the writers are drawn, from how many of them there are: the more there are, the
  * smaller each seat and the less air between them, so a card ten people wrote still names ten
  * people rather than running out of corner and counting the rest. */
@@ -53,14 +36,13 @@ function authorsClass(count: number): string {
   return '';
 }
 
-const log = createLogger('AnswerCard');
-
 export interface AnswerCardProps {
   /** The answer, as everybody who wrote this wrote it. */
   text: string;
-  /** How many players wrote it. Drawn behind the answer as the card's own figure, and left off
-   * entirely when it is one, since a single writer is the common case and a figure of one
-   * behind every unique answer is a number that says nothing. */
+  /** How many players wrote it. Drawn behind the answer as the card's own figure: a figure of one
+   * for a card nobody shared, since that is decoration and not news, and for a card several people
+   * wrote it counts up as the writers land, so the figure and the faces in the corner are always
+   * the same claim and the card never says more than it has shown. */
   count: number;
   /** Whether the host has muted this answer, which the whole room is shown. */
   voted?: boolean;
@@ -95,34 +77,72 @@ export interface AnswerCardProps {
    * the sentence lands before the room finds out who agreed with it. On by default, which is
    * every use but the round's own. */
   authorsShown?: boolean;
+  /** How many of the writers have landed in the corner, counted by whoever is running the reveal,
+   * so that this card and the bar at the top of the screen land them on the same frame. Taken as
+   * a number rather than worked out here for the reason on the property below. */
+  landed?: number;
+  /** Whether this card has finished saying everything it has to say: the answer written out and
+   * every writer of it named. Nothing is offered for a press before this — a like is a reaction
+   * to what somebody said, and not to half of it. On by default, which is every screen but the
+   * round's own, since a board being shown after the fact has nothing left to reveal. */
+  revealed?: boolean;
+  /** Whether this card has been taken off the board and may not be put back, being a thing more
+   * than one player wrote. Drawn with the cursor that says so, which is the only way a card that
+   * was a control a moment ago can say it has stopped being one. */
+  locked?: boolean;
 }
 
 /** The classes a card is drawn as, so the one place that answers "what state is it in" is one
  * expression rather than one branch per state at every use. */
 function cardClasses(
   voted: boolean,
-  votable: boolean,
   blank: boolean,
-  turned: boolean
+  turned: boolean,
+  locked: boolean,
+  live: boolean
 ): string {
   const classes = [styles.Root];
   if (voted) classes.push(styles.Voted);
   if (blank) classes.push(styles.Blank);
-  if (!votable) classes.push(styles.Record);
+  // The card is either something to press or a record, and which of those two is decided by
+  // whether it is in the round rather than by whether this browser has a control for it: a host's
+  // card is live the moment it comes up, and so is anybody else's, and the difference between them
+  // is which control is lying on top rather than whether there is one.
+  classes.push(live ? styles.Live : styles.Record);
+  if (locked) classes.push(styles.Locked);
   if (!turned) classes.push(styles.Unturned);
   return classes.join(' ');
 }
 
-/** What is written on the card: the answer, fitted to the box it is given. The panel and the
- * grain are decoration on a surface the card paints itself, so they are spans rather than
- * layout elements: a `Card` here would fight the button's own box. */
-function Face({ text, count }: Pick<AnswerCardProps, 'text' | 'count'>): ComponentChildren {
+/** What is written on the card: the answer, fitted to the box it is given, and the figure behind
+ * it. The panel and the grain are decoration on a surface the card paints itself, so they are
+ * spans rather than layout elements: a `Card` here would fight the button's own box.
+ *
+ * A card one player wrote says one, and always has. It is the common case on a board of them and
+ * the figure is decoration there rather than news, so there is nothing to hold it back for.
+ *
+ * A card several players wrote counts up as the writers land, one figure for every face in the
+ * corner — so the number and the faces are always the same claim, and the room is never told more
+ * than it has been shown. Nothing at all is drawn until the first face lands: a card that says
+ * two the moment it comes up gave the answer away before the round had its beat. */
+function Face({
+  text,
+  count,
+  named,
+}: {
+  text: string;
+  count: number;
+  named: number;
+}): ComponentChildren {
+  const shared = count > 1;
+  const shown = shared ? Math.min(count, named) : count;
+  const held = shared && named === 0;
   return (
     <>
       <span class={styles.Panel} aria-hidden="true" />
-      {count > 1 && (
+      {!held && shown >= 1 && (
         <span class={styles.Mark} aria-hidden="true">
-          {count}
+          {shown}
         </span>
       )}
       <span class={styles.Noise} aria-hidden="true" />
@@ -152,15 +172,22 @@ function FittedAnswer({ text }: { text: string }) {
 function LikeCorner({
   blank,
   voted,
+  revealed,
   likes,
   liked,
   likeLabel,
   onLike,
-}: Pick<AnswerCardProps, 'blank' | 'voted' | 'likes' | 'liked' | 'likeLabel' | 'onLike'>) {
+}: Pick<
+  AnswerCardProps,
+  'blank' | 'voted' | 'revealed' | 'likes' | 'liked' | 'likeLabel' | 'onLike'
+>) {
   // A press counter rather than the liked flag, so the pop runs on the press and not on the state
   // arriving: the flag only flips once the host has answered, a beat after the finger.
   const [pressed, setPressed] = useState(0);
-  if (blank || voted) {
+  // Not until the card has finished saying everything it has to say. A like offered over an
+  // answer still being written at is a like on half a sentence, and one offered while the corner is
+  // still filling with faces is a like on a card that is about to be struck out of the round.
+  if (blank || voted || !revealed) {
     return null;
   }
   // The corner rather than the badge is held back, so the figure, the mark and the outline round
@@ -190,9 +217,20 @@ function LikeCorner({
   );
 }
 
+/** Fires when a badge lands, so the room hears each one come up rather than the wave as a whole.
+ * The first badge is silent: it comes up with the card, which already has its own sound. */
+function onBadgeLand() {
+  playSound('Pop');
+}
+
 /** Who wrote this answer, in the corner, once the room has had its moment with the sentence
  * itself: one seat per writer, each landing on its own beat. Drawn on a blank card too, and there
- * it is the whole point of the card: a seat nobody wrote for is the one the room is shown. */
+ * it is the whole point of the card: a seat nobody wrote for is the one the room is shown.
+ *
+ * Every seat reports the frame it lands on, which is what puts the card's figure behind the answer
+ * up to the count of the faces actually in the corner. It is the same event either way rather than
+ * a second timer beside it: a number counting up to writers that arrive on a schedule of their
+ * own is a number the room can catch out. */
 function Authors({
   authors,
   shown,
@@ -203,18 +241,25 @@ function Authors({
   ownPlayerId: PlayerId | null | undefined;
 }) {
   const all = authors ?? [];
-  // Temporary: what the card was handed and what it decided, so a missing face can be told apart
-  // from a face that was never offered.
-  useEffect(() => {
-    log('info', `authors=${all.length} shown=${shown}`);
-  }, [all.length, shown]);
   if (!shown || all.length === 0) {
     return null;
   }
   return (
     <div class={`${styles.Authors} ${authorsClass(all.length)}`}>
+      {/* Right to left, and the row hugs the right edge: the first writer is the one on the right,
+       * next to the badge, and the rest fill in leftward. The delay follows the place from the
+       * right — the rightmost badge comes up with the card, and the leftmost is last. */}
       {all.map((author, index) => (
-        <Pop key={author.id} trigger={author.id} delay={writerDelay(index)}>
+        <Pop
+          key={author.id}
+          trigger={author.id}
+          delay={`${writerDelayMs(index)}ms`}
+          squash="0"
+          // Each badge lands on its own beat, and the room hears it land: a sound per badge, not one
+          // at the end of the wave, which is what the mute's own pop already does. The first badge
+          // is silent - it comes up with the card, which already has its own sound.
+          onStart={index === 0 ? undefined : onBadgeLand}
+        >
           <PlayerBar
             inline
             players={[
@@ -245,6 +290,9 @@ export function AnswerCard({
   turned = true,
   authors,
   authorsShown = true,
+  landed = 0,
+  revealed = true,
+  locked = false,
   ownPlayerId,
   likes,
   liked,
@@ -253,46 +301,83 @@ export function AnswerCard({
   onReject,
   onLike,
 }: AnswerCardProps) {
-  const classes = cardClasses(voted, onReject !== undefined, blank, turned);
+  // How many of the writers have landed in the corner, as the board counts them rather than
+  // counting them here. Two things move on this number at once and neither is on the card alone:
+  // the figure behind the answer counts up as it rises, and the bar at the top of the screen takes
+  // these players off one seat at a time. A card keeping its own tally would leave the bar either
+  // a beat behind the corner or a beat ahead of it, and a seat going off while its owner's face is
+  // still arriving reads as the bar disagreeing with the board.
+  //
+  // Left to the writers rather than to the card: a card drawn as a record, on any screen but the
+  // round's own, has nobody counting for it and would sit at one face forever.
+  const named = Math.min(landed, count);
+  const declined = voted && (count < 2 || named > 1);
+  // A card is live from the frame it comes up, not from the frame its corner is finished. The
+  // room is already looking at it, and a card that has nothing to say for a second and a half and
+  // then starts saying it is a card whose cursor is lying to it for a second and a half.
+  const live = turned && !blank && !declined;
+  // A card only ever crosses over one way or the other, and never both, which is what lets each
+  // moment keep its own sound without either doubling. A card one player wrote is struck by the
+  // host pressing it, and the press sounds it. A card several wrote is struck by the round, with
+  // no press anywhere near it, and lands its sound here when the second face does.
+  const wasDeclined = useRef(declined);
+  // Set by the press, spent by the effect. Whoever pressed has already heard the card go off, so
+  // the effect stands down for them; everyone else was told by the board rather than by their own
+  // finger, and the effect is what they hear. Without this the sound belongs to the host alone,
+  // which is the one room of players who were all meant to be there.
+  const pressedIt = useRef(false);
+  useEffect(() => {
+    if (wasDeclined.current === declined) return;
+    wasDeclined.current = declined;
+    if (pressedIt.current) {
+      pressedIt.current = false;
+      return;
+    }
+    playSound(declined ? 'Break' : 'Pop');
+  }, [declined]);
+  const classes = cardClasses(declined, blank, turned, locked && declined, live);
   return (
     <div class={classes}>
-      <Face text={text} count={count} />
+      <Face text={text} count={count} named={named} />
       {onReject !== undefined && (
         <button
           type="button"
           class={styles.Whole}
-          aria-pressed={voted}
+          aria-pressed={declined}
           aria-label={muteLabel}
           onClick={() => {
-            playSound('Pop');
+            // With the finger going down, not with the board having caught up: the sound belongs to
+            // the press. Struck on the way in, the ordinary pop on the way back out. The effect
+            // stands down for this press and lets the rest of the room hear it off the board.
+            pressedIt.current = true;
+            playSound(declined ? 'Pop' : 'Break');
             onReject();
           }}
         />
       )}
       {/* Everybody else likes with the card itself: a control the size of a card is the one thing
         that can be pressed in a room where people are standing up. Pointer only — the badge stays
-        the labelled control, and a second tab stop for one action is one more than a card needs. */}
-      {onReject === undefined && onLike !== undefined && (
+        the labelled control, and a second tab stop for one action is one more than a card needs.
+        Gone with the badge the moment the card is drawn as declined, since a card that took the
+        press and did nothing would be the one control in the room with nothing behind it. */}
+      {onReject === undefined && onLike !== undefined && live && (
         <button
           type="button"
           class={styles.Whole}
           aria-label={likeLabel}
           aria-hidden="true"
-          tabindex="-1"
+          tabIndex={-1}
           onClick={() => {
             playSound('Pling', LikePitchSemitones);
             onLike();
           }}
         />
       )}
-      <Authors
-        authors={authors}
-        shown={authorsShown}
-        ownPlayerId={ownPlayerId}
-      />
+      <Authors authors={authors} shown={authorsShown} ownPlayerId={ownPlayerId} />
       <LikeCorner
         blank={blank}
-        voted={voted}
+        voted={declined}
+        revealed={revealed}
         likes={likes}
         liked={liked}
         likeLabel={likeLabel}

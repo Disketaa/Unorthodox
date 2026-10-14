@@ -1,17 +1,23 @@
 import { countByGroup } from './GroupVotes';
 import type { ReviewingState } from './GameState';
 
-/** What the room is told about the marks on the board: which cards are muted and how many liked
- * each one. A muted card's likes are dropped here, so no reading of the wire carries a count on
- * a card the host struck out and the room cannot take back. */
-export function marksForRoom(state: ReviewingState): {
+/** What the room is told about the marks on the board: which cards are off it and how many liked
+ * each one. `declined` is every answer the round has turned down, shared answers included, so the
+ * card and the bar are told the same thing the scorer is told rather than each working it out.
+ *
+ * A declined card's likes are dropped here rather than anywhere downstream: there is nothing on it
+ * left to like, and a count on a card the room has been shown as out of the round is a number
+ * about an answer that is not in it. */
+export function marksForRoom(
+  state: ReviewingState,
+  declined: ReadonlySet<number>
+): {
   mutedGroupIds?: number[];
   likeCounts?: { groupId: number; count: number }[];
 } {
-  const muted = state.groupRejections;
-  const counts = countByGroup(state.groupLikes).filter((entry) => !muted.has(entry.groupId));
+  const counts = countByGroup(state.groupLikes).filter((entry) => !declined.has(entry.groupId));
   return {
-    ...(muted.size === 0 ? {} : { mutedGroupIds: [...muted.keys()] }),
+    ...(declined.size === 0 ? {} : { mutedGroupIds: [...declined] }),
     ...(counts.length === 0 ? {} : { likeCounts: counts }),
   };
 }

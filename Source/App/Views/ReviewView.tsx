@@ -62,6 +62,8 @@ export function ReviewView({ view }: PhaseViewProps) {
         own,
         authors,
         authorsShown: reveal.authorsAt(index),
+        landed: reveal.landedAt(index, authors.length),
+        revealed: reveal.likesAt(index, authors.length),
         ownPlayerId: view.playerId,
       };
     }) ?? [];

@@ -1,5 +1,6 @@
 import { PlayerId, randomFor, shuffle, ThemeId } from '@/Core';
 import { marksForRoom } from './PublicMarks';
+import { declinedGroupIds } from './RoundScoring';
 import { HostState, ReviewingState } from './GameState';
 import { groupAnswersWithPlayers } from './Grouping';
 import type {
@@ -121,17 +122,19 @@ function reviewGroups(state: ReviewingState): PublicReviewingState['groups'] {
     isEmpty: false,
   }));
   const groups = shuffle(answers, randomFor(`${state.topic}:${written.join('|')}`));
-  let nextId = groups.length;
-  for (const playerId of state.players.keys()) {
-    if (state.answers.has(playerId)) continue;
+  // Everybody who wrote nothing is one card between them, the way everybody who wrote the same
+  // thing is. One blank each was a board that could be more cards than there were people with
+  // something to say in it, and a corner of the room spent entirely on faces with nothing behind
+  // them. The card still says how many, so the room still learns how many sat the round out.
+  const blanked = [...state.players.keys()].filter((playerId) => !state.answers.has(playerId));
+  if (blanked.length > 0) {
     groups.push({
-      groupId: nextId,
+      groupId: groups.length,
       text: '',
-      playerCount: 1,
-      playerIds: [playerId],
+      playerCount: blanked.length,
+      playerIds: blanked,
       isEmpty: true,
     });
-    nextId += 1;
   }
   return groups;
 }
@@ -149,7 +152,7 @@ export function toPublicReviewingState(state: HostState): PublicReviewingState {
     startedAt: state.startedAt,
     players: publicPlayers(state),
     groups,
-    ...marksForRoom(state),
+    ...marksForRoom(state, declinedGroupIds(state)),
     ...themeOf(state),
   };
 }

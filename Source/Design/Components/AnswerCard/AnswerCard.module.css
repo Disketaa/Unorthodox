@@ -86,6 +86,22 @@
   color: var(--Color-Text-Muted);
 }
 
+/* The figure on a card the room has turned down, brought up rather than left where it was. The
+ * card itself is held back to two fifths and washed in pink, and a figure at a tenth of the ink on
+ * top of that is a figure nobody can find — which is a shame, because this is the one card where
+ * the count is the whole point: how many of them said the thing nobody scored. It takes the pink
+ * the card's own writing is in rather than a grey, which on this wash would be the one mark on the
+ * card belonging to nothing else on it.
+ *
+ * Written against the root as well as with it, and restated for the hover, because the hover rule
+ * for a figure is the stronger of the two by a class and would otherwise put a grey figure back on
+ * a card that is pink everywhere else the moment a host swept the pointer over it. */
+.Root.Voted .Mark,
+.Root.Voted:hover .Mark {
+  opacity: calc(var(--Opacity-AnswerCardMark) * 4);
+  color: var(--Color-Feedback-Error);
+}
+
 /* The grain, laid over the card the way the paper is laid over the page, and the same tile at
  * the same blend the theme cards use: a noise tile at any opacity below one is a grey wash
  * unless it is blended, since the tile has grey in its light parts as well as its dark. Drawn
@@ -165,10 +181,10 @@
   right: var(--Space-AnswerCardPadding);
   z-index: 2;
   display: flex;
-  flex-direction: row;
+  flex-direction: row-reverse;
   flex-wrap: wrap;
   align-items: flex-start;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: var(--Space-Sm);
   max-width: calc(100% - var(--Space-AnswerCardPadding) * 2);
   pointer-events: none;
@@ -258,10 +274,25 @@
   }
 }
 
-/* A card nobody may mute: on every screen but the host's, a record of the round rather than a
- * control in it. No pointer, and no focus ring either, since there is nothing here to reach
- * with a keyboard: the card is drawn as a plain element and so cannot be tabbed to at all. */
+/* A card nobody may press: a blank, a card the round has turned down, and any card on a screen
+ * that is showing the round rather than playing it. No pointer, and no focus ring either, since
+ * there is nothing here to reach with a keyboard. */
 .Record {
+  cursor: var(--Cursor-Default);
+}
+
+/* A card that is something to press, from the frame it comes up rather than from the frame its
+ * corner is finished. The room is already looking at it, and a card that says nothing for a second
+ * and a half and then starts is a card whose cursor was lying to it for a second and a half. */
+.Live {
+  cursor: var(--Cursor-Pointer);
+}
+
+/* A card the room struck out that the host may not put back. The plain cursor, the same one every
+ * other record wears, rather than the declined one: the strike across the writing already says it
+ * is out of the round, and a cursor that also refuses is a second refusal over the top of it for
+ * the same fact. Declared against the live rule so it wins whichever order they are read in. */
+.Root.Locked {
   cursor: var(--Cursor-Default);
 }
 

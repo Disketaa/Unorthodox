@@ -134,10 +134,111 @@ describe('the board of answers', () => {
     expect(voted).toEqual([1]);
   });
 
-  it('draws the board as records when nobody may vote on it', () => {
-    // The round being shown rather than answered, which is the one case where a card is not a
-    // control and must not read as one.
+  it('draws the board as live cards, whatever control this browser has on it', () => {
+    // Whether a card is something to press is a fact about the round, not about which control
+    // this browser was handed: a host's card is live the moment it comes up and so is anybody
+    // else's, and the difference is which control is lying on top rather than whether one is.
     const { cards } = mount(4);
-    expect(cards.every((card) => card.className.includes('Record'))).toBe(true);
+    expect(cards.every((card) => card.className.includes('Live'))).toBe(true);
+  });
+});
+
+describe('an answer the host has taken off the board', () => {
+  /** One muted card and whatever else the board holds, mounted as the host sees it. */
+  function mutedBoard(
+    count: number,
+    onLike?: (id: number) => void
+  ): { card: Element | null; buttons: number } {
+    const container = document.body.appendChild(document.createElement('div'));
+    const muted: AnswerCardsEntry = {
+      id: 0,
+      text: 'the same answer twice',
+      count,
+      voted: true,
+      likeLabel: '0 likes',
+    };
+    act(() => {
+      render(<AnswerCards answers={[muted]} onReject={() => {}} onLike={onLike} />, container);
+    });
+    return {
+      card: container.querySelector('div[class*="Root"]'),
+      buttons: container.querySelectorAll('button').length,
+    };
+  }
+
+  it('keeps a shared answer struck and stops the host taking the mute back', () => {
+    // What the room struck out was the thing several of them said. Putting it back would be one
+    // host undoing a verdict the room has already been shown as settled, on a card that looks
+    // exactly as finished as one that really is.
+    const { buttons } = mutedBoard(3);
+    expect(buttons).toBe(0);
+  });
+
+  it('turns the cursor away on a settled card, since it was a control a moment ago', () => {
+    // The plain cursor is what a card that was never a control wears. This one was: somebody
+    // reaching for it again should be told why, rather than left to wonder whether the press did
+    // nothing or the card did not hear them.
+    const container = document.body.appendChild(document.createElement('div'));
+    const shared: AnswerCardsEntry = {
+      id: 0,
+      text: 'the same answer twice',
+      count: 3,
+      voted: true,
+      likeLabel: '0 likes',
+    };
+    act(() => {
+      render(<AnswerCards answers={[shared]} onReject={() => {}} />, container);
+    });
+    const card = container.querySelector('div[class*="Locked"]');
+    expect(card).not.toBeNull();
+    expect(card?.className).toContain('Voted');
+  });
+
+  it('still lets the host take back a single writer the room struck out', () => {
+    // One answer, one person, one opinion about it: the host changes their mind about their own
+    // read of it as often as they like, and a mute that could not be undone would be a decision
+    // made once with no way back.
+    const container = document.body.appendChild(document.createElement('div'));
+    const muted: AnswerCardsEntry = {
+      id: 0,
+      text: 'an answer of their own',
+      count: 1,
+      voted: true,
+      likeLabel: '0 likes',
+    };
+    act(() => {
+      render(<AnswerCards answers={[muted]} onReject={() => {}} />, container);
+    });
+    expect(container.querySelector('button')).not.toBeNull();
+  });
+
+  it('offers a player nothing at all on a card that is off the board', () => {
+    // Not even the card itself: the like badge is already gone, so a card that took the press
+    // would be the one control on the board that does nothing at all when pressed.
+    const { buttons } = mutedBoard(2, () => {});
+    expect(buttons).toBe(0);
+  });
+
+  it('takes a single writer back off the board, which is the whole point of a mute button', () => {
+    // The regression this is here for: the mute was left out of any card that was muted, on the
+    // reasoning that a card off the board is not an answered one — which is true, and left every
+    // mute in the room with no way back at all. One writer's answer is still one opinion about it.
+    const taken: number[] = [];
+    const container = document.body.appendChild(document.createElement('div'));
+    const muted: AnswerCardsEntry = {
+      id: 7,
+      text: 'an answer of their own',
+      count: 1,
+      voted: true,
+      likeLabel: '0 likes',
+    };
+    act(() => {
+      render(<AnswerCards answers={[muted]} onReject={(id) => taken.push(id)} />, container);
+    });
+    const mute = container.querySelector('button');
+    act(() => {
+      mute?.click();
+    });
+    expect(taken).toEqual([7]);
   });
 });

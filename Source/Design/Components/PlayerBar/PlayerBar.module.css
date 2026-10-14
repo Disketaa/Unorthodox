@@ -341,11 +341,13 @@
   opacity: 0.5;
 }
 
-/* The same seats, drawn inside something else — an answer card naming who wrote it — at whatever
+/* The same seats, drawn inside something else - an answer card naming who wrote it - at whatever
  * size that thing says rather than at the screen's: the bar's own formula divides a viewport by a
  * room's worth of seats, and a card corner has no viewport to divide, so both ends of the clamp
  * are pinned to the one size it was given. The label follows the seat rather than staying at the
- * bar's own width, or a name wider than its hexagon runs over the neighbour's. */
+ * bar's own width, or a name wider than its hexagon runs over the neighbour's. Only the hexagon
+ * is given up: a card corner is not a screen, and a hexagon there is a shape wearing the panel's
+ * place. The character and the name are the whole of the point and both stay. */
 .Inline {
   width: auto;
   --Size-PlayerBarSeatMin: var(--Size-PlayerBarInlineSeat);
@@ -353,14 +355,16 @@
   --Size-PlayerBarNameMax: calc(var(--Size-PlayerBarInlineSeat) * 1.2);
 }
 
-/* The same seats, drawn inside something else — an answer card naming who wrote it — at whatever
- * size that thing says rather than at the screen's: the bar's own formula divides a viewport by a
- * room's worth of seats, and a card corner has no viewport to divide, so both ends of the clamp
- * are pinned to the one size it was given. The label follows the seat rather than staying at the
- * bar's own width, or a name wider than its hexagon runs over the neighbour's. */
-.Inline {
-  width: auto;
-  --Size-PlayerBarSeatMin: var(--Size-PlayerBarInlineSeat);
-  --Size-PlayerBarSeatMax: var(--Size-PlayerBarInlineSeat);
-  --Size-PlayerBarNameMax: calc(var(--Size-PlayerBarInlineSeat) * 1.2);
+/* The hexagon, gone. The mask and the fill both, since the mask is what cuts the shape and the
+ * fill is what makes it a shape to cut: one without the other leaves either a square of grey or
+ * an empty hole. The box stays exactly as it was, because the character is inside it - taking the
+ * whole slot away takes the face with it - and the face is held in to nothing now, so it takes
+ * the whole of the box the hexagon had been measured against. */
+.Inline .Slot {
+  mask: none;
+  background: transparent;
+}
+
+.Inline .Seat {
+  --Inset-PlayerBarFace: 0%;
 }

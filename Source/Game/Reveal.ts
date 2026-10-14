@@ -62,3 +62,52 @@ export function typedOut(text: string, shown: number): string {
 export function authorsArrived(elapsedMs: number): boolean {
   return elapsedMs >= GameConfig.timing.revealAuthorsMs;
 }
+
+/** How long the room waits before the first writer of an answer is joined by the second. Long on
+ * purpose: two people writing the same thing is the moment the round is about, and the beat before
+ * the second face lands is what makes it one rather than a fact. */
+export const SecondWriterMs = 760;
+
+/** How long each writer after the second takes. The same short beat for the third and the tenth,
+ * since a room should not sit through eight pauses to be told the same thing again. */
+export const FurtherWriterMs = 130;
+
+/** When one writer of an answer is joined by the next, in milliseconds from the moment the room is
+ * told who wrote it. The first is immediate, the second waits the dramatic beat, and every one after
+ * it takes a short one — so a card ten people wrote still finishes inside a couple of seconds.
+ *
+ * Here rather than with the card that draws it, because two things have to land on the same frame
+ * and only one of them is on the board: the card's own figures, and the bar's seats going off with
+ * it. A second schedule beside this one would drift, and the room would watch a face arrive while
+ * the bar still said its owner was safe. */
+export function writerDelayMs(index: number): number {
+  if (index <= 0) return 0;
+  if (index === 1) return SecondWriterMs;
+  return SecondWriterMs + (index - 1) * FurtherWriterMs;
+}
+
+/** How many of an answer's writers have landed, out of how many wrote it. The count and not a
+ * boolean, since the figure behind the answer counts up one face at a time and a card struck out
+ * takes its players off the bar one at a time. */
+export function landedWriters(elapsedMs: number, total: number): number {
+  if (elapsedMs < 0) return 0;
+  let landed = 0;
+  for (let writer = 0; writer < total; writer += 1) {
+    if (elapsedMs >= writerDelayMs(writer)) landed = writer + 1;
+    else break;
+  }
+  return landed;
+}
+
+/** When the last of an answer's writers lands, in milliseconds from the moment they started
+ * arriving. Zero for a card nobody shared: there is only ever a first face. */
+function lastWriterMs(total: number): number {
+  return writerDelayMs(Math.max(0, total - 1));
+}
+
+/** Whether the room is yet offered a like on this answer, measured from the moment its writers
+ * started arriving. A beat past the last face, rather than on it: the card says what it has to say,
+ * and only then does the room get to answer it. */
+export function likesOffered(elapsedMs: number, total: number): boolean {
+  return elapsedMs >= lastWriterMs(total) + GameConfig.timing.revealLikeMs;
+}

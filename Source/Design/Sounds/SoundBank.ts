@@ -5,10 +5,12 @@ import tickUrl from './Tick.ogg';
 import alarmUrl from './Alarm.ogg';
 import cardUrl from './Card.ogg';
 import whooshUrl from './Whoosh.ogg';
+import breakUrl from './Break.ogg';
 import { audioContext, resumeAudio } from '../Audio/Context';
 import { muteBus } from './Mute';
 
-export type SoundName = 'Pop' | 'Pling' | 'Tick' | 'Alarm' | 'Card' | 'Whoosh' | 'Reveal';
+export type SoundName =
+  'Pop' | 'Pling' | 'Tick' | 'Alarm' | 'Card' | 'Whoosh' | 'Reveal' | 'Break';
 
 export const SoundNames: readonly SoundName[] = [
   'Pop',
@@ -18,6 +20,7 @@ export const SoundNames: readonly SoundName[] = [
   'Card',
   'Whoosh',
   'Reveal',
+  'Break',
 ];
 
 const Sources: Record<SoundName, string> = {
@@ -28,6 +31,7 @@ const Sources: Record<SoundName, string> = {
   Card: cardUrl,
   Whoosh: whooshUrl,
   Reveal: revealUrl,
+  Break: breakUrl,
 };
 
 /** Per clip, since the countdown's beat sits under the words rather than beside them: a tick at
@@ -40,6 +44,7 @@ const Volumes: Record<SoundName, number> = {
   Card: 0.3,
   Whoosh: 0.22,
   Reveal: 0.22,
+  Break: 0.3,
 };
 
 /** How far either side of the recorded pitch a press may land, in semitones. Wide enough that
@@ -62,6 +67,9 @@ const PitchSpreads: Record<SoundName, number> = {
   Card: 0,
   Whoosh: 0,
   Reveal: PressPitchSpread,
+  // A board can strike up to twelve cards in a run, and twelve of one note is the same printed
+  // loop the reveal would be, so this one wanders like the reveal does.
+  Break: PressPitchSpread,
 };
 
 interface Voice {

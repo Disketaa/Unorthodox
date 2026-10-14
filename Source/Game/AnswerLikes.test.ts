@@ -27,13 +27,27 @@ function reviewing(): ReviewingState {
     durationMs: 1000,
     startedAt: 0,
     answers: new Map([
-      ['host', 'нос'],
-      ['p1', 'кот'],
-      ['p2', 'кот'],
+      ['host', 'Кот'],
+      ['p1', 'Дом'],
+      ['p2', 'Чай'],
     ]),
     groupRejections: new Map(),
     groupLikes: new Map(),
     theme: undefined,
+  };
+}
+
+/** The same room, with two of them writing the same answer so there is a card of two to ask about.
+ * Its own, because a pair is off the board from the start and the rest of this file is about the
+ * likes on cards that are still in the round. */
+function pairRoom(): ReviewingState {
+  return {
+    ...reviewing(),
+    answers: new Map([
+      ['host', 'Дом'],
+      ['p1', 'Кот'],
+      ['p2', 'Кот'],
+    ]),
   };
 }
 
@@ -141,8 +155,12 @@ describe('a player liking their own answer', () => {
     // The grouping is what put them on this card, so the check is asked of the grouping. A player
     // who wrote a near-miss of somebody else's word cannot tell the two apart on screen, so the
     // host has to answer for the pair rather than for the card each of them remembers.
-    expect(likedGroups(liked(reviewing(), 'p1', 1), 1)).toEqual([]);
-    expect(likedGroups(liked(reviewing(), 'p2', 1), 1)).toEqual([]);
+    //
+    // Its own room, since the one the rest of these use is all answers of their own and a pair is
+    // off the board before the room has been told anything.
+    const pair = pairRoom();
+    expect(likedGroups(liked(pair, 'p1', 1), 1)).toEqual([]);
+    expect(likedGroups(liked(pair, 'p2', 1), 1)).toEqual([]);
   });
 
   it('leaves the room free to like the same card', () => {

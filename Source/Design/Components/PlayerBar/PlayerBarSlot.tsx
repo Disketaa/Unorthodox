@@ -46,6 +46,7 @@ export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
               character={entry.character}
               color={entry.color}
               size="Fill"
+              pulse={entry.pulse}
               index={index}
             />
           )}
