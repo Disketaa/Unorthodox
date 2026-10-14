@@ -172,6 +172,19 @@ function ThemeCardButton({ theme, name, index, rounds, spent, modifiers, mult, c
       {!spentOut && modifiers?.includes('Enchanted') === true && (
         <span class={styles.Glint} aria-hidden="true" />
       )}
+      {modifiers?.some((m) => m === 'Alone' || m === 'Half' || m === 'Laggards' || m === 'Leaders') && (
+        <img
+          src={
+            modifiers?.includes('Alone') ? '/Source/Design/Icons/EffectAlone.svg' :
+            modifiers?.includes('Half') ? '/Source/Design/Icons/EffectHalf.svg' :
+            modifiers?.includes('Laggards') ? '/Source/Design/Icons/EffectLaggards.svg' :
+            '/Source/Design/Icons/EffectLeaders.svg'
+          }
+          class={styles.Effect}
+          aria-hidden="true"
+          alt=""
+        />
+      )}
     </button>
   );
 }

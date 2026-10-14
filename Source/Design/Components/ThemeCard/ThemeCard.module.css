@@ -281,6 +281,17 @@
   opacity: var(--Opacity-ThemeCardGlint);
 }
 
+.Effect {
+  position: absolute;
+  top: var(--Space-ThemeCardPadding);
+  right: var(--Space-ThemeCardPadding);
+  z-index: 5;
+  width: calc(var(--Size-ThemeCardWidth) * 0.15);
+  height: calc(var(--Size-ThemeCardWidth) * 0.15);
+  pointer-events: none;
+  opacity: var(--Opacity-ThemeCardGlint);
+}
+
 /* The name on the card, which is the whole content of it, and the tint it takes on hover along
  * with the ticks and the number. All three the same value rather than the tint here and the ink
  * there: `Accents` gives one of each per theme for exactly this, the tint being the accent as

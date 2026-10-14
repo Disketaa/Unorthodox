@@ -162,6 +162,7 @@ export const GameConfig = {
     modifiers: {
       chance: 0.6,
       maxPerRound: 3,
+      effects: ['Alone', 'Half', 'Laggards', 'Leaders'] as const,
     },
     /** Multiplier values a card may wear, rolled per theme. */
     mults: [1.25, 1.5, 1.75, 2],
