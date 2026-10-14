@@ -239,6 +239,23 @@ describe('the screen frame', () => {
     expect(declares('Root', 'min-height')).toBe(false);
   });
 
+  it('asks for a frame of its own where the width is not the readable line length', () => {
+    // An auto margin on the cross axis takes the frame off the flex stretch of the stage it is
+    // drawn in, so it shrink-wraps to whatever its container asks for. Left to itself that put
+    // the writing phase's keyboard at 607px inside a stage 1888px wide — a width nothing chose,
+    // and a fifth of the room it was given. The wide frame is what asks for a width instead.
+    expect(declaration('WidthWide', 'width')).toBe(
+      'min(var(--Layout-ContainerMaxWidthWide),100%)',
+    );
+  });
+
+  it('reads the wide frame off the same width token the readable one is', () => {
+    // A track of its own rather than a second number beside the first: the frame and the
+    // containers on it then hold one width, and retuning the line length moves both.
+    expect(ruleBody('WidthWide')).toContain('--Layout-ContainerMaxWidth:');
+    expect(ruleBody('WidthWide')).not.toMatch(/\d+px/);
+  });
+
   it('reads its sizes from tokens, so one edit moves the whole layout', () => {
     // A length written here rather than in the stylesheet is a length that stops
     // answering to the theme, which is the one thing the token layer is for.
@@ -250,6 +267,19 @@ describe('the screen frame', () => {
 describe('the tokens behind it', () => {
   it('holds a container to the width the readable line length is set at', () => {
     expect(tokenValue('--Layout-ContainerMaxWidth')).toBe('480px');
+  });
+
+  it('holds a wide container to twice the line length, since it is a keyboard', () => {
+    // Twice rather than a length of its own, so the two widths stay related: the writing
+    // phase's keys are half again as wide as the frame they used to shrink-wrap into, which is
+    // what the keys were asked for and what the stage had the room for.
+    const scale = tokenNumber('--Scale-ContainerWide');
+    expect(tokenValue('--Layout-ContainerMaxWidthWide').replace(/\s+/g, '')).toBe(
+      'calc(var(--Layout-ContainerMaxWidth)*var(--Scale-ContainerWide))',
+    );
+    expect(tokenNumber('--Layout-ContainerMaxWidth') * scale).toBeGreaterThan(
+      tokenNumber('--Layout-ContainerMaxWidth') * 1,
+    );
   });
 
   it('asks for three containers across, and no more', () => {

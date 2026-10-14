@@ -1,4 +1,4 @@
-import { Screen, ScreenAlign, ScreenVertical } from './Screen';
+import { Screen, ScreenAlign, ScreenVertical, ScreenWidth } from './Screen';
 import { Card, Wordmark } from '@/Design/Components';
 import { Stack, Text } from '@/Design/Primitives';
 
@@ -6,6 +6,7 @@ interface DemoProps {
   caption: string;
   vertical: ScreenVertical;
   align: ScreenAlign;
+  width?: ScreenWidth;
   /** Whether the first container is the wordmark. It is a third of the height of the others,
    * which is the whole reason `align` exists: it is the one arrangement on the page where the
    * difference between the two alignments is impossible to miss. */
@@ -15,11 +16,11 @@ interface DemoProps {
 }
 
 /** One arrangement, labelled. Split out so each stays readable and under the limit. */
-function Demo({ caption, vertical, align, wordmark, spare }: DemoProps) {
+function Demo({ caption, vertical, align, width, wordmark, spare }: DemoProps) {
   return (
     <Stack direction="Vertical" gap="Md">
       <Text variant="Body">{caption}</Text>
-      <Screen vertical={vertical} align={align}>
+      <Screen vertical={vertical} align={align} width={width}>
         {wordmark ? (
           <Card variant="Plain">
             <Wordmark label="Нестандартненько" />
@@ -60,6 +61,12 @@ export function ScreenGallery() {
         vertical="Center"
         align="Center"
         wordmark
+      />
+      <Demo
+        caption="Wide, for a container that is a keyboard rather than a card of text"
+        vertical="Top"
+        align="Start"
+        width="Wide"
       />
     </Stack>
   );

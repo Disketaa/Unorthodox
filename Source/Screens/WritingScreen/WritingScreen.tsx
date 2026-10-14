@@ -41,7 +41,7 @@ export function WritingScreen({
   const timeUp = remainingMs <= 0;
 
   return (
-    <Screen vertical="Bottom">
+    <Screen vertical="Bottom" width="Wide">
       <Card variant="Elevated">
         <AnswerInput
           topic={topic}

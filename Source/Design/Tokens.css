@@ -702,6 +702,15 @@ body.PageFade {
    * is the cap on a row rather than a breakpoint. `Screen` sizes itself as this many columns
    * wide, so a track past the third has nowhere to go and the row wraps on its own. */
   --Layout-ContainerMaxWidth: 480px;
+  /* The one frame that is not a card of text. The writing phase's container is a row of keys
+   * rather than a readable line, so it is given twice the width above: left to shrink to what
+   * the keys ask for, the frame measured 607px inside a stage 1888px wide, a width nothing
+   * chose and a third of the room the keys were given. A share of the token above rather than a
+   * length of its own, so the two move together when either is retuned. */
+  --Scale-ContainerWide: 2;
+  --Layout-ContainerMaxWidthWide: calc(
+    var(--Layout-ContainerMaxWidth) * var(--Scale-ContainerWide)
+  );
   --Layout-ColumnsMax: 3;
   /* How narrow a column in a row of several may get before the row stops being a row. Not
    * `--Layout-ContainerMaxWidth`, and the difference is a layout that works on a laptop:
