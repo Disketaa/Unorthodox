@@ -31,8 +31,12 @@
   line-height: 1;
   /* The mark's colour, apart from when it has been liked. A quiet grey rather than the ink the
    * count is drawn in, because the two are on the same badge saying different things: the grey
-   * is the invitation, and the accent below is that this player took it up. */
-  --Color-LikeMark: var(--Color-Text-Quiet);
+   * is the invitation, and the accent below is that this player took it up.
+   *
+   * Read through an overridable name rather than written straight, so whoever owns this card can
+   * recolour the badge on it. On a card of your own the badge is a figure rather than a control,
+   * and a grey thumb on a yellow card is the one mark on it belonging to nothing else there. */
+  --Color-LikeMark: var(--Color-LikeMarkIdle, var(--Color-Text-Quiet));
 }
 
 /* Nothing has liked it, so the badge is held back rather than removed: a card with no likes is

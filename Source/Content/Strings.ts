@@ -53,11 +53,15 @@ export const Strings = {
         Fast: 'Быстро',
         Standard: 'Обычно',
       },
-      writing: 'Ответ',
-      deciding: 'Голосование',
+      writing: 'Написание ответа',
+      deciding: 'Просмотр ответов',
       category: 'Выбор темы',
       /** A wait in whole seconds, which is the only unit the buttons move in. */
       seconds: (seconds: number) => `${seconds}с`,
+      /** The most a wait can come to in this room, for a round whose length follows the board:
+       * the voting wait is priced for a full house and a smaller one ends sooner, so the card
+       * shows the ceiling rather than a figure the room will never actually sit through. */
+      secondsUpTo: (seconds: number) => `до ${seconds}с`,
       /** Fills the window with the room, for anyone who cannot see the mark. */
       fullscreen: 'Во весь экран',
       /** Gives the window back. */

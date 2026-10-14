@@ -214,6 +214,7 @@ function AnswerSlot({ answer, index, onReject, onLike, muteLabel, open }: SlotPr
           locked={settled}
           turned={open}
           authors={answer.authors}
+          own={answer.own === true}
           authorsShown={answer.authorsShown ?? open}
           landed={answer.landed ?? answer.count}
           revealed={answer.revealed ?? true}

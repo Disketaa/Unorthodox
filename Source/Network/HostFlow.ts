@@ -77,15 +77,29 @@ export function resolveRandomPickFrom(host: FlowHost): void {
   host.commit(resolveRandomPick(state));
 }
 
+/** How long the reviewing round runs for the room: a floor for being in it at all — ten seconds
+ * briskly, twenty slowly — and five more for every player after the first.
+ *
+ * Read here rather than off the phase table, because the table has one figure per pace and the
+ * room needs one per room size — and off the roster rather than off the board, because the answers
+ * are not fixed until the round is over, and two people writing the same thing would otherwise
+ * shorten the round by exactly the moment the room enjoyed most. Both of these used to come from
+ * the table: the room was quoted its pace's full figure, a fifth of which was dead time on a small
+ * board, whatever route into the phase it came by. */
+function reviewingMs(state: HostState): number {
+  if (state.phase !== 'Writing') return Game.phaseDurationMs('Reviewing', state.pace);
+  return Game.reviewingDurationMs(state.players.size, state.pace);
+}
+
 /** Advance out of Writing once everyone has answered, or out of Reviewing once its clock is up.
- * Which is read off the phase the room is in, since a late message can ask for either. The
- * length is the caller's: only Writing's clock knows how long the round it is closing ran. */
+ * Which is read off the phase the room is in, since a late message can ask for either. The length
+ * passed in is only the length of the phase being closed — reviewing is told its own below. */
 export function endReviewingFrom(host: FlowHost, durationMs: number): void {
   const state = host.getState();
   if (state === undefined) return;
   const next =
     state.phase === 'Writing'
-      ? closeWriting(state, durationMs, host.expectedAnswers())
+      ? closeWriting(state, reviewingMs(state), host.expectedAnswers())
       : closeReviewing(state, durationMs);
   host.commit(next);
 }
@@ -103,5 +117,7 @@ export function nextPhaseFrom(host: FlowHost, topic: string): void {
   const state = host.getState();
   if (state === undefined) return;
   const next = Game.phaseAfterCycling(state.phase);
-  host.commit(nextPhase(state, next, topic, Game.phaseDurationMs(next, state.pace)));
+  const durationMs =
+    next === 'Reviewing' ? reviewingMs(state) : Game.phaseDurationMs(next, state.pace);
+  host.commit(nextPhase(state, next, topic, durationMs));
 }

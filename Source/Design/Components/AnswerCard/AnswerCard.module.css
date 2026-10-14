@@ -3,7 +3,14 @@
  * over both, and every size a share of the card's width so a phone draws nine small cards
  * rather than nine wide ones with less room in them. The frame is re-declared rather than a
  * `Card` because the card has to be the thing the wash lands on, and `Card` paints its own
- * surface opaquely. */
+ * surface opaquely.
+ *
+ * The fill is the room's own yellow washed out, not the grey every other panel in the game wears.
+ * A board of nine grey cards is a list; nine cards the colour of the room is a board, and the wash
+ * is the same one the start button is drawn from, so the thing that begins the round and the thing
+ * the round produced are the same colour. Only while the card is in the round: a muted card takes
+ * the pink below, and there is nothing to say about a card the room has turned down in the colour
+ * of the room it is being turned down in. */
 .Root {
   position: relative;
   overflow: hidden;
@@ -16,6 +23,9 @@
   padding: var(--Space-AnswerCardPadding);
   gap: var(--Space-Xs);
   --AnswerCard-Surface: var(--Color-Surface-Hover);
+  /* What the pressed rim is mixed toward. The ink at rest, since a rim has to be the surface going
+   * darker into itself, and the card's own error colour once the room has turned the answer down so
+   * the edge is saying the same thing the writing does. */
   background: var(--AnswerCard-Surface);
   color: var(--Color-Text-Default);
   border: none;
@@ -30,8 +40,22 @@
   --Space-AnswerCardInset: calc(var(--Size-AnswerCardWidth) * 0.035);
   transition:
     background var(--Transition-Standard),
+    border-color var(--Transition-Standard),
     opacity var(--Transition-Standard),
     scale var(--Transition-Reveal);
+  /* The idle sway, handed over by the primitive rather than written here, so an answer card and a
+   * theme card and a character are one movement instead of three that happen to agree. On the list
+   * and not replacing it, for the primitive's reason: something that wants to add a second
+   * movement to a card must be able to. */
+  animation: var(--Sway-Animation);
+}
+
+.Moving {
+  composes: Moving from '../../Primitives/Sway/Sway.module.css';
+}
+
+.Still {
+  composes: Still from '../../Primitives/Sway/Sway.module.css';
 }
 
 /* The hover, in the palette's own next step down rather than in the reader's accent: the board is
@@ -43,10 +67,40 @@
   background: var(--AnswerCard-Surface);
 }
 
-/* The inner panel: the box the figure is printed in, set in from the card's edge. The figure is
- * cropped by the panel rather than by the card, so the answer and its figure are not cropped
- * together. A panel and not a ring: a ring is a second edge on a surface already one flat
- * colour. */
+/* This player's own answer, and only theirs: the room's yellow washed out, with the writing in
+ * the room's yellow darkened. The player's own card is the one thing on the board they already
+ * know the answer to, so it is the one card that can afford to be coloured — and finding it in a
+ * grid of nine is what the colour is for, not decoration.
+ *
+ * Scoped to the card and not the whole board on purpose: a board of nine yellow cards is a list
+ * with a colour scheme, and there is nothing on any of the others that says "this one is yours"
+ * the way this does. Written against the root so it outranks the plain surface, and so the muted
+ * rule below has to be written against the root as well to get past it. */
+.Root.Own {
+  --AnswerCard-Surface: var(--Color-Room-Yellow-Wash);
+  /* The badge in the corner reads this too, since on your own card it is a figure rather than a
+   * control and a grey thumb on a yellow card is the one mark on it belonging to nothing else. */
+  --Color-LikeMarkIdle: var(--Color-Room-Yellow-Ink);
+  background: var(--AnswerCard-Surface);
+  color: var(--Color-Room-Yellow-Ink);
+}
+
+.Root.Own:hover {
+  --AnswerCard-Surface: var(--Color-Room-Yellow-Wash-Hover);
+  background: var(--AnswerCard-Surface);
+}
+
+/* The inner panel: the box the figure is printed in, set in from the card's edge, and the
+ * frame the figure is cropped by rather than the card cropping it. That is the theme card's
+ * arrangement and the whole reason this element is here: the figure inside the panel, not beside
+ * it. Carries no frame or shadow of its own, which is what the theme card's panel does too - its
+ * edge is the inset against the page, not a line drawn around it.
+ *
+ * Two attempts at a rim here went the wrong way both times, and are worth not repeating. As a
+ * border it is a grey box drawn on top of a near-white card, which is what the room complained
+ * about twice. As an inset shadow at a strength that could actually be seen, it is the same grey
+ * box wearing a shadow instead of a border. The edge a card like this has is its fill meeting the
+ * page, and nothing else. */
 .Panel {
   position: absolute;
   inset: var(--Space-AnswerCardInset);
@@ -110,7 +164,12 @@
 .Noise {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  /* Above everything printed on the card, which is what the theme card's grain does over its
+   * name and is the whole idea of it: the grain is the paper, and paper is laid over the print,
+   * not under it. Here it also has to clear the two marks that used to tie with it at the same
+   * level and won on order in the markup, so the like badge and the writers in the corner were
+   * sitting on a clean card while the writing underneath them was grained. */
+  z-index: 3;
   pointer-events: none;
   background-image: var(--Texture-ThemeCardNoise);
   background-repeat: repeat;
@@ -141,6 +200,10 @@
   border: none;
   border-radius: var(--Radius-Card);
   background: transparent;
+  /* Its own cursor rather than the card's, because `cursor` is not an inherited property and a
+   * button with none declared gets the browser's default arrow whatever the card around it says.
+   * The hand needs no override: this button only exists on a card that is pressable, which is a
+   * live card or one the host may still take back, and both of those are hands. */
   cursor: var(--Cursor-Pointer);
 }
 
@@ -281,19 +344,29 @@
   cursor: var(--Cursor-Default);
 }
 
-/* A card that is something to press, from the frame it comes up rather than from the frame its
- * corner is finished. The room is already looking at it, and a card that says nothing for a second
- * and a half and then starts is a card whose cursor was lying to it for a second and a half. */
+/* A card that is something to press: the hand. Live means the card has finished saying what it
+ * has to say, so this is the whole of the answer's life and not just its first second.
+ *
+ * A card still being read is the plain arrow, which is what `.Record` already gives it. It is not
+ * refused: refusing says the room has been told this is not available, and what the room has been
+ * told so far is that somebody wrote it. It is simply not answered yet. */
 .Live {
   cursor: var(--Cursor-Pointer);
 }
 
-/* A card the room struck out that the host may not put back. The plain cursor, the same one every
- * other record wears, rather than the declined one: the strike across the writing already says it
- * is out of the round, and a cursor that also refuses is a second refusal over the top of it for
- * the same fact. Declared against the live rule so it wins whichever order they are read in. */
+/* Turned down by the host but still theirs to take back, which is the one case where a card out of
+ * the round is still something to press. The hand is honest: pressing it puts it back, and a
+ * card that says it is not available while offering the press that undoes it is lying. */
+.Takeback {
+  cursor: var(--Cursor-Pointer);
+}
+
+/* Turned down for good, and pink all over: refused. This is the card the room struck out and
+ * nobody may put back, so there is nothing on it to press and the cursor should say so rather
+ * than sitting there as a plain arrow over a card that is plainly finished. A blank is the other
+ * kind of record and keeps the plain cursor, since nobody having written is not a refusal. */
 .Root.Locked {
-  cursor: var(--Cursor-Default);
+  cursor: var(--Cursor-NotAllowed);
 }
 
 /* The card of a player who wrote nothing. Held to the same quietness as a theme card with no
@@ -308,17 +381,20 @@
  * mute the room has to notice is a mute that does not count. Washed in the feedback red with the
  * writing in it too, and the strike follows the writing: the board is otherwise black and white,
  * so the one card on it that is not counted is the one card on it with a colour. */
-.Voted {
+.Root.Voted {
   opacity: var(--Opacity-AnswerCardVoted);
   --AnswerCard-Surface: var(--Color-Feedback-Muted-Wash);
+  --Color-LikeMarkIdle: var(--Color-Feedback-Error);
   background: var(--AnswerCard-Surface);
   color: var(--Color-Feedback-Error);
 }
 
 /* The muted card answers the pointer too, or a host sweeping the board for the one they want back
  * gets no answer from the cards they are actually looking at. The wash deepens rather than steps
- * anywhere else, since red is already the only colour the card has. */
-.Voted:hover {
+ * anywhere else, since red is already the only colour the card has. Written against the root to
+ * tie with the own-card hover above, and placed after it so a card that is both yours and turned
+ * down deepens into the pink rather than back out into the yellow. */
+.Root.Voted:hover {
   --AnswerCard-Surface: color-mix(
     in srgb,
     var(--Color-Feedback-Error) 22%,

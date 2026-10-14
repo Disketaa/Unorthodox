@@ -1,6 +1,7 @@
 import { PlayerBar, type PlayerBarEntry } from '@/Design/Components';
 import { lookFor } from '@/Screens';
 import type { PlayerId } from '@/Core';
+import { useRef } from 'preact/hooks';
 import { useReveal, type RevealState } from '../Hooks/UseReveal';
 import type { PhaseViewProps } from './LobbyView';
 
@@ -63,14 +64,13 @@ export function struckWriters(
 }
 
 /** How many times each seat should have reacted, as one counter per player so that every event
- * pops again rather than only the first. One event only: the room being told who wrote an answer.
- * The board says it better in its own corner, in one corner of one card, while the bar says it
- * where the room has been looking at every seat all game — which is the whole reason for it.
+ * pops again rather than only the first. Two events, which are not the same thing and used to be
+ * counted as one: the room being told who wrote an answer, and the host turning it down.
  *
- * The host's own press is not counted here. It already shows on the bar by the seat coming apart,
- * which is a bigger change than a pop and needs no second one over the top of it, and the set of
- * declined cards can no longer tell a press from the round's own decision anyway: a shared answer
- * arrives already declined, before the host has pressed anything.
+ * The board says the first better in its own corner, in one corner of one card, while the bar says
+ * it where the room has been looking at every seat all game. The second has no corner at all — it
+ * is a press, and nothing on the card moves for it — so without this the bar was the only place in
+ * the game that reacted to the host doing something.
  *
  * Off the same reveal schedule the board is drawn from, rather than off a clock of its own: a seat
  * that popped when the room was told, but on a beat of its own, would say who wrote it a frame
@@ -78,7 +78,8 @@ export function struckWriters(
  * not been told yet. */
 export function seatPulses(
   view: PhaseViewProps['view'],
-  reveal: RevealState
+  reveal: RevealState,
+  presses: ReadonlyMap<PlayerId, number> = new Map()
 ): Map<PlayerId, number> {
   const reviewing = view.publicState?.phase === 'Reviewing' ? view.publicState : undefined;
   const pulses = new Map<PlayerId, number>();
@@ -91,7 +92,44 @@ export function seatPulses(
       pulses.set(playerId, (pulses.get(playerId) ?? 0) + 1);
     }
   });
+  for (const [playerId, times] of presses) {
+    pulses.set(playerId, (pulses.get(playerId) ?? 0) + times);
+  }
   return pulses;
+}
+
+/** The cards the host has turned down or taken back since the last time the bar was drawn, and
+ * who wrote them.
+ *
+ * A press is an event, and an event cannot be read out of a set of ids: a shared answer arrives
+ * already declined, so the ids on their own cannot say whether the host pressed a card or the
+ * round had already decided it. What they *can* say is which ids are new, which is the one thing a
+ * set of ids is good for. Both directions count, because taking a mute back is as much a thing the
+ * host did as taking it, and a bar that reacted to one and not the other would be answering half
+ * the presses.
+ *
+ * Everything declined when the board first arrived is skipped, since that came with the round
+ * rather than with anybody's finger: the first render compares the set against itself.
+ *
+ * Kept in a ref rather than in state because it is read during this render and compared against
+ * the last one; setting it here rather than in an effect keeps the comparison on the same frame
+ * the broadcast arrived on, and an effect would let a tick slip between the press and the seat
+ * reacting to it. The board re-renders on the reveal's own tick, so this is not a hot path. */
+function usePresses(view: PhaseViewProps['view']): Map<PlayerId, number> {
+  const reviewing = view.publicState?.phase === 'Reviewing' ? view.publicState : undefined;
+  const declared = new Set(reviewing?.mutedGroupIds ?? []);
+  const seen = useRef<Set<number> | undefined>(undefined);
+  const before = seen.current ?? declared;
+  seen.current = declared;
+
+  const presses = new Map<PlayerId, number>();
+  reviewing?.groups.forEach((group) => {
+    if (declared.has(group.groupId) === before.has(group.groupId)) return;
+    for (const playerId of group.playerIds) {
+      presses.set(playerId, (presses.get(playerId) ?? 0) + 1);
+    }
+  });
+  return presses;
 }
 
 /** The bar across the top of a game. In roster order, which is the order the room has held since
@@ -109,7 +147,8 @@ export function PlayerBarView({ view }: PhaseViewProps) {
   // The same hook the board is drawn from, on the same arguments, so the bar and the board are
   // told the same thing on the same frame. A bar that asked when it liked would be a bar guessing.
   const reveal = useReveal(
-    reviewing?.groups.length ?? 0,
+    reviewing?.groups.map((group) => group.playerIds.length) ?? [],
+    reviewing?.pace ?? 'Standard',
     view.durationMs,
     view.phaseStartedAt,
     reviewing !== undefined,
@@ -120,7 +159,7 @@ export function PlayerBarView({ view }: PhaseViewProps) {
   // off a second copy of the marks.
   const scoredNothing =
     reviewing === undefined ? new Set<PlayerId>() : struckWriters(view, reveal);
-  const named = seatPulses(view, reveal);
+  const named = seatPulses(view, reveal, usePresses(view));
   const players: PlayerBarEntry[] = [...view.playerNames].map(([id, name]) => {
     const look = lookFor(view.playerLooks, id);
     return {

@@ -3,17 +3,19 @@ import { describe, it, expect } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { LobbyPace } from './LobbyPace';
-import { GameConfig, type Pace } from '@/Game';
+import { GameConfig, reviewingDurationMs, type Pace } from '@/Game';
 import { Strings } from '@/Content';
 
 /** The three waits of the standard pace, as the card writes them. Taken from the config rather
  * than written out, so this cannot pass against a config the card is not actually using: the
- * theme clock in particular is being moved around while the roll at the end of it is looked at. */
-const standardWaits = waitsOf('Standard');
+ * theme clock in particular is being moved around while the roll at the end of it is looked at.
+ * A full room, since that is the one board a pace is actually priced for. */
+const standardWaits = waitsOf('Standard', GameConfig.limits.maxPlayers);
 
 /** One pace's three waits as the card shows them: whole seconds, each with the unit on it. */
-function waitsOf(pace: Pace): string[] {
-  const { writingMs, decidingMs, categoryMs } = GameConfig.paces[pace];
+function waitsOf(pace: Pace, players: number): string[] {
+  const { writingMs, categoryMs } = GameConfig.paces[pace];
+  const decidingMs = reviewingDurationMs(players, pace);
   return [writingMs, decidingMs, categoryMs].map((ms) =>
     Strings.lobby.settings.seconds(ms / 1000)
   );
@@ -27,7 +29,12 @@ function mount(isHost: boolean, picked: Pace[] = []): HTMLElement {
   const container = document.createElement('div');
   document.body.appendChild(container);
   render(
-    <LobbyPace pace="Standard" isHost={isHost} onPick={(pace) => picked.push(pace)} />,
+    <LobbyPace
+      pace="Standard"
+      players={12}
+      isHost={isHost}
+      onPick={(pace) => picked.push(pace)}
+    />,
     container
   );
   return container;

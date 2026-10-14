@@ -6,7 +6,7 @@ import {
   MusicButton,
   VolumeButton,
 } from '@/Design/Components';
-import { GameConfig, Pace } from '@/Game';
+import { GameConfig, Pace, reviewingDurationMs } from '@/Game';
 import { Strings } from '@/Content';
 import { LobbyCategory } from './LobbyCategory';
 
@@ -18,6 +18,9 @@ const paces: readonly Pace[] = ['Standard', 'Fast'];
 export interface LobbyPaceProps {
   /** The pace the room is set to, which only the host can change. */
   pace: Pace;
+  /** How many are in the room. The voting round is timed from the roster rather than from a fixed
+   * figure, so a room of four is told what four players get and not what a full house gets. */
+  players: number;
   /** Whether this device owns the setting, which is what makes the buttons live. A client still
    * sees the card and its numbers, and finds the buttons inert. */
   isHost: boolean;
@@ -26,9 +29,14 @@ export interface LobbyPaceProps {
 }
 
 /** The three waits of a round, in the order a player meets them. Read from the pace rather than
- * written out, so a wait cannot be shown here at one length and run at another. */
-function waits(pace: Pace) {
-  const { writingMs, decidingMs, categoryMs } = GameConfig.paces[pace];
+ * written out, so a wait cannot be shown here at one length and run at another.
+ *
+ * The voting round is a ceiling rather than a figure: a pace is priced for a full house, and a
+ * board smaller than that turns over sooner and should not then hand the difference to a
+ * countdown. So this shows the most this room's own board will cost, and the words say so. */
+function waits(pace: Pace, players: number) {
+  const { writingMs, categoryMs } = GameConfig.paces[pace];
+  const decidingMs = reviewingDurationMs(players, pace);
   return [
     { label: Strings.lobby.settings.writing, ms: writingMs },
     { label: Strings.lobby.settings.deciding, ms: decidingMs },
@@ -39,7 +47,7 @@ function waits(pace: Pace) {
 /** The room's pace, and what that pace means in seconds. A pace named "fast" says nothing, and a
  * fast game nobody can see the terms of is a trap rather than a choice, so the values are the
  * point. Drawn `disabled` for clients, never hidden. */
-export function LobbyPace({ pace, isHost, onPick }: LobbyPaceProps) {
+export function LobbyPace({ pace, players, isHost, onPick }: LobbyPaceProps) {
   return (
     <LobbyCategory
       title={Strings.lobby.settings.title}
@@ -65,7 +73,7 @@ export function LobbyPace({ pace, isHost, onPick }: LobbyPaceProps) {
         ))}
       </Stack>
       <Stack gap="Sm" align="Stretch">
-        {waits(pace).map((wait) => (
+        {waits(pace, players).map((wait) => (
           <Banner
             key={wait.label}
             variant="Muted"

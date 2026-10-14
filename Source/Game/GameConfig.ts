@@ -6,10 +6,25 @@ export type Pace = 'Fast' | 'Standard';
 export interface PaceTimings {
   /** Answering a topic. */
   writingMs: number;
-  /** Reading the room's answers and rejecting the ones that do not fit. */
+  /** Reading the room's answers and rejecting the ones that do not fit. What a full room gets: the
+   * round is worked out from who is in it rather than from a fixed figure, and these two are what
+   * a full house works out to, kept here so the phase table can still say something true. */
   decidingMs: number;
+  /** The round a room of one gets, and what each player after that adds. Two figures rather than
+   * one, because a room of two and a room of twelve are not one figure apart by any even multiple
+   * a host can say out loud — a game that took an hour and a half to read four answers was never
+   * going to be finished. Five seconds a head at both paces: what the slower pace adds is the
+   * longer floor to start from, not a slower count. */
+  decidingBaseMs: number;
+  decidingPerPlayerMs: number;
   /** Choosing what the next round asks about. */
   categoryMs: number;
+  /** The voting the room gets once the whole board is up and read, at this pace. Split out from
+   * `decidingMs` because the round is timed from the board rather than from nothing: the pace
+   * decides how long a full house may take, and this decides how much of what is left over is
+   * the room's to answer on. What a pace shortens here is the slack, never the reveal — a card
+   * cut off mid-way through naming its writers is not a quicker game, it is a broken one. */
+  voteMs: number;
 }
 
 const timing = {
@@ -80,25 +95,46 @@ const timing = {
    * writing, so the answer lands on its own first: who agreed with whom is the round's best joke
    * and it is worth the room reading the sentence before it finds out. */
   revealAuthorsMs: 1600,
-  /** How long after a card has said everything the room is offered a like on it. A beat of its
-   * own, past the last face landing, because a like badge appearing on the same frame as the thing
-   * it is about is a control arriving rather than an invitation — and on a card the round has
-   * turned down it never arrives at all, which is what the gap is for. */
-  revealLikeMs: 700,
+  /** How long after a card has said everything the room is offered anything to do about it: the
+   * like in the corner, and the mute under the card. A whole second past the last face landing,
+   * because a control appearing on the same frame as the thing it is about is a control arriving
+   * rather than an invitation — and on a card the round has turned down it never appears at all,
+   * which is what the gap is for. */
+  revealLikeMs: 1000,
 };
+
+/** How many players a room holds. The bar of hexes across the top of a game holds this many in
+ * one row, so the room and the bar are the same size and nothing is dropped from one and kept in
+ * the other. Here rather than inside `GameConfig`, because the paces below are worked out from it
+ * and `GameConfig` is not built yet when they are. */
+const MAX_PLAYERS = 12;
+
+/** The two paces' voting rounds, built from a base and a cost per head rather than written as
+ * whole figures, so a new player count cannot leave the table and the arithmetic disagreeing. The
+ * slower pace is longer to begin with rather than longer per player: what Normal is buying is the
+ * room a settled minute before anything is asked of it, not a longer pause between each question. */
+const deciding = (baseMs: number, perPlayerMs: number) => ({
+  decidingBaseMs: baseMs,
+  decidingPerPlayerMs: perPlayerMs,
+  // One player fewer than the room holds, since the base is already the first player's share and
+  // the table would otherwise quote a full house more than the game gives it.
+  decidingMs: baseMs + perPlayerMs * (MAX_PLAYERS - 1),
+});
 
 export const GameConfig = {
   timing,
   paces: {
     Standard: {
       writingMs: timing.writingDurationMs,
-      decidingMs: timing.reviewingDurationMs,
+      ...deciding(10000, 5000),
       categoryMs: 20000,
+      voteMs: timing.revealVoteMs,
     },
     Fast: {
       writingMs: 40000,
-      decidingMs: 60000,
+      ...deciding(5000, 5000),
       categoryMs: 15000,
+      voteMs: timing.revealVoteMs / 2,
     },
   } satisfies Record<Pace, PaceTimings>,
   scoring: {
@@ -140,9 +176,6 @@ export const GameConfig = {
     answerMaxLength: 20,
     roomCodeLength: 4,
     minPlayers: 2,
-    /** How many players a room holds. The bar of hexes across the top of a game holds this many
-     * in one row, so the room and the bar are the same size and nothing is dropped from one and
-     * kept in the other. */
-    maxPlayers: 12,
+    maxPlayers: MAX_PLAYERS,
   },
 };

@@ -9,6 +9,7 @@ import {
   revealedCount,
   revealedLetterCount,
 } from '@/Game';
+import type { Pace } from '@/Game';
 
 /** How much of the round's board is up, counted from the host's start of the phase so every
  * screen turns the same card at the same moment, and counted from it again the next round. A
@@ -27,10 +28,15 @@ export interface RevealState {
 }
 
 /** The board's count of answers turned over, and of the letters of the one being written.
+ * `writerCounts` is the board as the round will actually play it — one number per card, being how
+ * many people wrote that answer — because the beat between cards is sized from the largest thing
+ * on the board, and a bar drawn from a board told only how many cards there are turns the same
+ * answers at different moments than the board in front of it.
  * `startedAt` is already this device's own clock: the session converts the host's stamp through
  * the measured skew before a screen sees it, and adding that skew again counts from the future. */
 export function useReveal(
-  count: number,
+  writerCounts: readonly number[],
+  pace: Pace,
   durationMs: number,
   startedAt: number,
   active = true,
@@ -47,13 +53,15 @@ export function useReveal(
   }, [active, held]);
 
   const moment = held && heldAt !== undefined ? heldAt : now;
-  const beat = answerRevealBeat(count, durationMs);
+  const count = writerCounts.length;
+  const voteMs = GameConfig.paces[pace].voteMs;
+  const beat = answerRevealBeat(writerCounts, durationMs, voteMs);
   // Off the same moment the first card is counted from, including the lead-in, so the writing on a
   // card begins as that card comes over rather than a lead-in's worth of letters earlier.
   const first = startedAt + GameConfig.timing.revealLeadInMs;
 
   return {
-    upTo: active ? revealedCount(count, durationMs, startedAt, moment) : count,
+    upTo: active ? revealedCount(writerCounts, durationMs, startedAt, moment, voteMs) : count,
     shownAt: (index, length) =>
       revealedLetterCount(length, moment - first - index * beat, answerWriteMs(length)),
     // Off the same moment the writing is, since a card that named its writers while the sentence

@@ -2,7 +2,7 @@ import { ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { CharacterColor, CharacterId, PlayerId } from '@/Core';
 import { writerDelayMs } from '@/Game';
-import { Pop } from '@/Design/Primitives';
+import { Pop, useSwayMotion } from '@/Design/Primitives';
 import { useFittedText } from './UseFittedText';
 import { playSound } from '../../Sounds';
 import { LikeBadge, LikePitchSemitones } from '../LikeBadge';
@@ -68,6 +68,12 @@ export interface AnswerCardProps {
    * board: the room is shown one answer at a time, and a board already drawn is a board nobody
    * watched being wrong about. On by default, which is every use but the round's own. */
   turned?: boolean;
+  /** Whether this player wrote it, which is the one card on the board they already know the answer
+   * to and the only one that can afford to be coloured. Washes the card in the room's own yellow
+   * and writes the answer in it, which is how a player finds their own card in a grid of nine.
+   * Not the same thing as being the only writer: a card other players shared is still this
+   * player's card, and it is declined rather than merely unshared. */
+  own?: boolean;
   /** Who wrote it, drawn as the roster's own chips in the corner. */
   authors?: readonly AnswerAuthor[];
   /** Which of them is this player, so their own chip is marked the way the bar at the top of the
@@ -81,11 +87,16 @@ export interface AnswerCardProps {
    * so that this card and the bar at the top of the screen land them on the same frame. Taken as
    * a number rather than worked out here for the reason on the property below. */
   landed?: number;
-  /** Whether this card has finished saying everything it has to say: the answer written out and
-   * every writer of it named. Nothing is offered for a press before this — a like is a reaction
-   * to what somebody said, and not to half of it. On by default, which is every screen but the
-   * round's own, since a board being shown after the fact has nothing left to reveal. */
+  /** Whether this card has finished saying everything it has to say: the answer written out,
+   * every writer of it named, and a beat past. Nothing is offered for a press before this — not
+   * the like in the corner and not the mute under the card, since both are opinions about an
+   * answer the room has not finished reading. One flag for both, so the two cannot disagree
+   * about when a card is ready. On by default, which is every screen but the round's own, since a
+   * board being shown after the fact has nothing left to reveal. */
   revealed?: boolean;
+  /** Whether this card idles. On by default, since a still card is the odd one out among a board
+   * of them; off for a gallery row or anything already moving. */
+  moving?: boolean;
   /** Whether this card has been taken off the board and may not be put back, being a thing more
    * than one player wrote. Drawn with the cursor that says so, which is the only way a card that
    * was a control a moment ago can say it has stopped being one. */
@@ -99,16 +110,21 @@ function cardClasses(
   blank: boolean,
   turned: boolean,
   locked: boolean,
-  live: boolean
+  live: boolean,
+  takeback: boolean,
+  own: boolean,
+  moving: boolean
 ): string {
-  const classes = [styles.Root];
+  const classes = [styles.Root, moving ? styles.Moving : styles.Still];
   if (voted) classes.push(styles.Voted);
+  if (own) classes.push(styles.Own);
   if (blank) classes.push(styles.Blank);
   // The card is either something to press or a record, and which of those two is decided by
   // whether it is in the round rather than by whether this browser has a control for it: a host's
   // card is live the moment it comes up, and so is anybody else's, and the difference between them
   // is which control is lying on top rather than whether there is one.
   classes.push(live ? styles.Live : styles.Record);
+  if (takeback) classes.push(styles.Takeback);
   if (locked) classes.push(styles.Locked);
   if (!turned) classes.push(styles.Unturned);
   return classes.join(' ');
@@ -139,12 +155,19 @@ function Face({
   const held = shared && named === 0;
   return (
     <>
-      <span class={styles.Panel} aria-hidden="true" />
-      {!held && shown >= 1 && (
-        <span class={styles.Mark} aria-hidden="true">
-          {shown}
-        </span>
-      )}
+      {/* The figure inside the panel rather than beside it, which is the arrangement the theme
+       * card uses and the whole reason the panel is there. Out here it is a sibling, so the panel
+       * is an empty box cropping nothing and the space round the figure comes from the figure's
+       * own offset instead: the mark hangs past the corner of the card with nothing holding it in.
+       * Inside, the panel is the frame, its inset is the margin, and the mark is cropped by the
+       * same edge the answer is measured against. */}
+      <span class={styles.Panel} aria-hidden="true">
+        {!held && shown >= 1 && (
+          <span class={styles.Mark} aria-hidden="true">
+            {shown}
+          </span>
+        )}
+      </span>
       <span class={styles.Noise} aria-hidden="true" />
       <FittedAnswer text={text} />
     </>
@@ -289,10 +312,12 @@ export function AnswerCard({
   blank = false,
   turned = true,
   authors,
+  own = false,
   authorsShown = true,
   landed = 0,
   revealed = true,
   locked = false,
+  moving = true,
   ownPlayerId,
   likes,
   liked,
@@ -312,10 +337,19 @@ export function AnswerCard({
   // round's own, has nobody counting for it and would sit at one face forever.
   const named = Math.min(landed, count);
   const declined = voted && (count < 2 || named > 1);
-  // A card is live from the frame it comes up, not from the frame its corner is finished. The
-  // room is already looking at it, and a card that has nothing to say for a second and a half and
-  // then starts saying it is a card whose cursor is lying to it for a second and a half.
-  const live = turned && !blank && !declined;
+  // Live means pressable, which means the card has finished saying what it has to say. Before
+  // that the room is still reading it and its corner is still filling with faces, so there is
+  // nothing on it to have an opinion about yet — and a press that took one anyway is a like cast
+  // on half an answer, heard as the like sound with nothing on the card behind it.
+  const live = turned && !blank && !declined && revealed;
+  // Turned down by the host but still theirs to take back, which is the one case where a card out
+  // of the round is still something to press. The hand is honest here: pressing it puts it back.
+  const takeback = declined && !locked;
+  // The sway is rolled onto the card itself rather than onto anything inside it, so every value
+  // behind it is this card's own and no two answers on a board lean the same way. Paired with the
+  // pop the board wraps each card in, which uses the individual scale and rotate so the two
+  // movements compose instead of one replacing the other.
+  const motion = useSwayMotion<HTMLDivElement>();
   // A card only ever crosses over one way or the other, and never both, which is what lets each
   // moment keep its own sound without either doubling. A card one player wrote is struck by the
   // host pressing it, and the press sounds it. A card several wrote is struck by the round, with
@@ -335,11 +369,34 @@ export function AnswerCard({
     }
     playSound(declined ? 'Break' : 'Pop');
   }, [declined]);
-  const classes = cardClasses(declined, blank, turned, locked && declined, live);
+  // The badge arriving makes the ordinary press note, and not the break: nothing has been struck
+  // and the room has not been told anything yet, a control has simply turned up. A board where the
+  // one thing that arrives with a sound is the card coming over would say the answer mattered and
+  // the invitation did not, which is backwards - the invitation is the part the room has to act on.
+  const wasRevealed = useRef(revealed);
+  useEffect(() => {
+    if (wasRevealed.current === revealed) return;
+    wasRevealed.current = revealed;
+    if (revealed) playSound('Pop');
+  }, [revealed]);
+  const classes = cardClasses(
+    declined,
+    blank,
+    turned,
+    locked && declined,
+    live,
+    takeback,
+    own,
+    moving
+  );
   return (
-    <div class={classes}>
+    <div class={classes} ref={motion}>
       <Face text={text} count={count} named={named} />
-      {onReject !== undefined && (
+      {/* The mute waits for the same beat the like badge does, and on the same flag rather than a rule
+        of its own. A host should not be able to turn an answer down while the room is still
+        reading it, or while its corner is still filling with faces: the card has not finished
+        saying what it is, so there is nothing on it yet to have an opinion about. */}
+      {onReject !== undefined && revealed && (
         <button
           type="button"
           class={styles.Whole}
@@ -360,7 +417,7 @@ export function AnswerCard({
         the labelled control, and a second tab stop for one action is one more than a card needs.
         Gone with the badge the moment the card is drawn as declined, since a card that took the
         press and did nothing would be the one control in the room with nothing behind it. */}
-      {onReject === undefined && onLike !== undefined && live && (
+      {onReject === undefined && onLike !== undefined && revealed && !declined && (
         <button
           type="button"
           class={styles.Whole}

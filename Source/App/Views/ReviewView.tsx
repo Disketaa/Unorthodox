@@ -16,7 +16,8 @@ export function ReviewView({ view }: PhaseViewProps) {
   const state = view.publicState?.phase === 'Reviewing' ? view.publicState : undefined;
   const round = state !== undefined;
   const reveal = useReveal(
-    state?.groups.length ?? 0,
+    state?.groups.map((group) => group.playerIds.length) ?? [],
+    state?.pace ?? 'Standard',
     view.durationMs,
     view.phaseStartedAt,
     round,

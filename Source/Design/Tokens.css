@@ -425,6 +425,32 @@ body.PageFade {
    * the viewer's tint: a crown in the accent would name whoever is looking as the host. */
   --Color-Room-Yellow: #eeb62e;
 
+  /* The room's yellow washed out to a surface, and the hover of it a step deeper. Built by mix
+   * rather than picked out of the palette for the same reason the muted wash is: it has to stay
+   * the room's own yellow at a strength that can hold black writing on it, and a hand-picked pale
+   * yellow would be a fifth colour that only looks like this one. Twelve percent is as far as the
+   * yellow goes and still reads as a card rather than as a highlight. */
+  --Color-Room-Yellow-Wash: color-mix(
+    in srgb,
+    var(--Color-Room-Yellow) 12%,
+    var(--Color-Surface-Hover)
+  );
+  --Color-Room-Yellow-Wash-Hover: color-mix(
+    in srgb,
+    var(--Color-Room-Yellow) 20%,
+    var(--Color-Surface-Hover)
+  );
+
+  /* The room's yellow as writing: the wash darkened, so an answer is written in the colour of the
+   * card it is written on rather than in the black every other panel in the game uses. Mixed far
+   * enough toward the ink to be read on the wash — the raw yellow on twelve percent of itself is
+   * a highlight, not a sentence. */
+  --Color-Room-Yellow-Ink: color-mix(
+    in srgb,
+    var(--Color-Room-Yellow) 45%,
+    var(--Color-Text-Default)
+  );
+
   /* The ghost button, in the accent rather than in the room's yellow. The one accent-coloured
    * control left. It is unstyled by design — nothing filled, the mark or the word is what says
    * what it is — so the accent does not compete with anything, and a player still sees their
