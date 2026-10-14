@@ -17,6 +17,12 @@ function withOneFinished(themes: readonly ThemeId[], first: ThemeId | undefined)
   return spent;
 }
 
+/** A display mults map for the gallery: each theme gets a different multiplier so the feature is visible. */
+function galleryMults(themes: readonly ThemeId[]): Map<ThemeId, number> {
+  const values = [1.25, 1.5, 1.75, 2, 1.5, 1.25];
+  return new Map(themes.map((theme, i) => [theme, values[i]]));
+}
+
 /** The same bank again, with only what this case is showing left to differ. Four near-identical
  * banks is four blocks of the same props, and one of them being edited without the other is how
  * a gallery stops showing the component it is a gallery of. */
@@ -28,21 +34,22 @@ export function ThemeCardsGallery() {
   const themes: readonly ThemeId[] = dealThemes(createRandom(7), 6);
   const first = themes[0];
   const spent = partlySpent(first);
+  const mults = galleryMults(themes);
   return (
     <Stack gap="Lg">
       {/* The bank on offer, to the player whose turn it is. */}
-      <Bank themes={themes} spent={spent} onPick={() => {}} />
+      <Bank themes={themes} spent={spent} onPick={() => {}} mults={mults} />
       {first !== undefined && (
         <>
           {/* The same bank on somebody else's turn: held back, still under the pointer. */}
-          <Bank themes={themes} spent={spent} />
+          <Bank themes={themes} spent={spent} mults={mults} />
           {/* And a bank with a theme in it that the room has finished. */}
-          <Bank themes={themes} spent={withOneFinished(themes, first)} />
+          <Bank themes={themes} spent={withOneFinished(themes, first)} mults={mults} />
           {/* And a bank the room is answering itself, with its roll on one card. */}
-          <Bank themes={themes} spent={spent} picking swept={themes[2]} />
+          <Bank themes={themes} spent={spent} picking swept={themes[2]} mults={mults} />
           {/* And the room's answer, at full strength on every screen: whoever pressed it and
            * whoever did not, the expanded card is drawn the same either way. */}
-          <Bank themes={themes} spent={spent} picked={first} />
+          <Bank themes={themes} spent={spent} picked={first} mults={mults} />
         </>
       )}
     </Stack>

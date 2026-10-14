@@ -156,6 +156,15 @@ export const GameConfig = {
      * and the number of topics the theme answers for. Ten because the game is five rounds and
      * two themes to a round fills it. */
     roundsPerTheme: 10,
+    /** What a round's bank may carry on top of its six themes: how likely it is to enchant
+     * anything, and how many cards it may reach. A cap rather than a count, since a bank where
+     * every card is enchanted has nothing left to choose between. */
+    modifiers: {
+      chance: 0.6,
+      maxPerRound: 3,
+    },
+    /** Multiplier values a card may wear, rolled per theme. */
+    mults: [1.25, 1.5, 1.75, 2],
   },
   limits: {
     nameMaxLength: 16,

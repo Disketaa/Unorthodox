@@ -9,10 +9,7 @@ import { ThemeIds, dealThemes, createRandom, randomFor } from '../Source/Core';
 const sheet = stylesheet('../Source/Design/Components/ThemeCards/ThemeCards.module.css');
 const card = stylesheet('../Source/Design/Components/ThemeCard/ThemeCard.module.css');
 const meter = stylesheet('../Source/Design/Components/RoundMeter/RoundMeter.module.css');
-const tokens = readFileSync(
-  new URL('../Source/Design/Tokens.css', import.meta.url),
-  'utf8',
-);
+const tokens = readFileSync(new URL('../Source/Design/Tokens.css', import.meta.url), 'utf8');
 const tokenValue = tokenReader(tokens);
 /** The gap between cards at the narrowest screen, which is the floor of its `clamp`. */
 function narrowestGap(): number {
@@ -27,7 +24,10 @@ function narrowestGap(): number {
  * is. */
 function widthShare(name: string): number {
   const match = card.text.match(
-    new RegExp(`${name}:\\s*calc\\(\\s*var\\(--Size-ThemeCardWidth\\)\\s*\\*\\s*([0-9.]+)\\s*\\)`, 'i'),
+    new RegExp(
+      `${name}:\\s*calc\\(\\s*var\\(--Size-ThemeCardWidth\\)\\s*\\*\\s*([0-9.]+)\\s*\\)`,
+      'i'
+    )
   );
   if (match?.[1] === undefined) throw new Error(`no width share found for ${name}`);
   return Number(match[1]);
@@ -52,9 +52,10 @@ const SlotCard = /\.Slot > \*[^{]*\{([^}]*)\}/;
 /** The card itself, and what is layered on it. */
 const Card = /\.Root[^{]*\{([^}]*)\}/;
 const CardMark = /\.Mark[^{]*\{([^}]*)\}/;
-const Initial = /\.Initial[^{]*\{([^}]*)\}/;
-const InitialHover = /\.Root:hover \.Initial[^{]*\{([^}]*)\}/;
+const Mult = /\.Mult[^{]*\{([^}]*)\}/;
+const MultHover = /\.Root:hover \.Mult[^{]*\{([^}]*)\}/;
 const Noise = /\.Noise[^{]*\{([^}]*)\}/;
+const Glint = /\.Glint[^{]*\{([^}]*)\}/;
 const Name = /\.Name[^{]*\{([^}]*)\}/;
 describe('the row of theme cards', () => {
   it('fills the width it is given rather than sizing itself to its cards', () => {
@@ -89,7 +90,10 @@ describe('the row of theme cards', () => {
     // A query cannot hold a `var()`, so the literal has to be written out beside the token that
     // says what it means. Resolved here rather than trusted: a threshold that drifts from the
     // card width it was derived from is a threshold that no longer describes anything.
-    for (const token of ['--Size-ThemeCardThreeAcrossWidth', '--Size-ThemeCardOneAcrossWidth']) {
+    for (const token of [
+      '--Size-ThemeCardThreeAcrossWidth',
+      '--Size-ThemeCardOneAcrossWidth',
+    ]) {
       const literal = tokenValue(token).replace('px', '');
       expect(sheet.text).toContain(`width: ${literal}px`);
     }
@@ -127,7 +131,7 @@ describe('the row of theme cards', () => {
     // and a pair. A cap rather than a count, since the count is a query above.
     expect(sheet.declaration(Root, 'max-width')).toBe('var(--Layout-ThemeCardsMaxWidth)');
     expect(tokenValue('--Layout-ThemeCardsMaxWidth').replace(/\s+/g, '')).toBe(
-      'calc(3*var(--Size-ThemeCardWidthMax)+2*var(--Space-ThemeCardsGap))',
+      'calc(3*var(--Size-ThemeCardWidthMax)+2*var(--Space-ThemeCardsGap))'
     );
   });
   it('takes the height its parent has left, so six cards never scroll', () => {
@@ -145,7 +149,7 @@ describe('the row of theme cards', () => {
     expect(sheet.declaration(Slot, 'container-type')).toBe('size');
     expect(sheet.declaration(Slot, 'height')).toBe('100%');
     expect(sheet.declaration(SlotCard, '--Size-ThemeCardWidth')).toBe(
-      'min(100cqw,100cqh*10/7)',
+      'min(100cqw,100cqh*10/7)'
     );
     expect(sheet.declares(Slot, '--Size-ThemeCardWidth')).toBe(false);
     expect(sheet.declares(Root, '--Size-ThemeCardWidth')).toBe(false);
@@ -177,7 +181,7 @@ describe('the row of theme cards', () => {
     const shares: [string, string][] = [
       ['--FontSize-ThemeCard', '0.14'],
       ['--FontSize-ThemeCardMark', '1.45'],
-      ['--FontSize-ThemeCardInitial', '0.0775'],
+      ['--FontSize-ThemeCardMult', '0.0775'],
       ['--Space-ThemeCardPadding', '0.05'],
       ['--Space-ThemeCardInset', '0.025'],
     ];
@@ -203,7 +207,7 @@ describe('the row of theme cards', () => {
   });
 });
 describe('the theme cards', () => {
-it('washes in the theme accent on hover, in the same time as every other control', () => {
+  it('washes in the theme accent on hover, in the same time as every other control', () => {
     // The fill is the pale wash and the name and border take the tint в— the accent as the
     // game draws it everywhere else. The ink is the same hue turned down until text can sit
     // on that wash, and using it here made a hovered card a different colour from the rest of
@@ -214,14 +218,14 @@ it('washes in the theme accent on hover, in the same time as every other control
     // one, and a second declaration of the fill would be a second answer to what colour this card
     // is. The value it is given is the wash.
     expect(card.declaration(hover, 'background')).toBe('var(--ThemeCard-Surface)');
-    expect(
-      card.declaration(hover, '--ThemeCard-Surface').replace(/\s+/g, ''),
-    ).toBe('var(--ThemeCard-Wash,var(--Accent-Wash))');
+    expect(card.declaration(hover, '--ThemeCard-Surface').replace(/\s+/g, '')).toBe(
+      'var(--ThemeCard-Wash,var(--Accent-Wash))'
+    );
     expect(card.declaration(hover, 'color')).toContain('var(--ThemeCard-Tint');
     expect(card.declaration(hover, 'color')).not.toContain('--ThemeCard-Ink');
     expect(card.text).toContain('var(--Transition-Standard)');
     expect(tokenValue('--Transition-Standard')).toBe(
-      'var(--Duration-Fast) var(--Easing-Standard)',
+      'var(--Duration-Fast) var(--Easing-Standard)'
     );
   });
   it('has no frame, and is one step off the page rather than white on it', () => {
@@ -260,36 +264,34 @@ it('washes in the theme accent on hover, in the same time as every other control
     expect(card.declaration(/\.Root:active[^{]*\{([^}]*)\}/, 'scale')).toBe('0.97');
     expect(card.ruleBody(/\.Root:active[^{]*\{([^}]*)\}/)).not.toContain('transform');
   });
-it('draws the theme initial as one letter in a pale grey, at full strength', () => {
-    // The one thing on the card that says which theme this is without being the name. Grey
-    // rather than any step of the accent: the tint is what the ticks and the hovered name are
-    // drawn in, so a corner letter in it would compete with both, and the ink is dark enough
-    // to read as a second label. A pale step rather than the grey the number behind the name
-    // wears, because that one is already on the card. It answers the pointer with the theme's
-    // wash: the card has already gone to the wash under it, so a corner letter left in the grey
-    // would be the one thing on the card still at rest — and the darkened accent rather than the
-    // wash, since a letter in the wash would be the one thing on the card that did not answer.
-    // At full strength rather than faded, because a corner letter faded is a mark that is
-    // neither the name nor the theme.
-    expect(card.declaration(Initial, 'color')).toBe('var(--Color-Neutral-300)');
-    expect(card.declaration(InitialHover, 'color').replace(/\s+/g, '')).toBe(
-      'var(--ThemeCard-Ink,var(--Accent-Ink))',
+  it("draws the room's roll as one mark in black, at full strength", () => {
+    // The one thing on the card that says what the room's roll is rather than which theme the
+    // card is — the name says that, and six rolls are six cards. Black rather than yellow:
+    // the roll is about the room and not about whoever is looking, and black is the default
+    // text colour. It answers the pointer with the theme's tint: the card has already gone to
+    // the wash under it, so a mark in the wash would be the one thing on the card that did not
+    // answer, and the theme's own tint is the change that says which theme the card is.
+    // At full strength rather than faded, because a corner mark faded is a mark that is neither
+    // the roll nor the theme.
+    expect(card.declaration(Mult, 'color')).toBe('var(--Color-Text-Default)');
+    expect(card.declaration(MultHover, 'color').replace(/\s+/g, '')).toBe(
+      'var(--ThemeCard-Tint,var(--Accent-Tint))'
     );
-    expect(card.declaration(Initial, 'pointer-events')).toBe('none');
+    expect(card.declaration(Mult, 'pointer-events')).toBe('none');
   });
-  it('puts the initial in the card corner at a share of the card, so it is the same mark everywhere', () => {
-    // A letter in the corner is a mark printed on the card the way a catalogue entry prints
-    // one, not a figure the card is showing, so it is held by the card's own padding rather
-    // than pushed past the centre. A share of the width for its size, so a card that narrows on
-    // a phone gets a letter that narrows with it.
-    expect(card.declaration(Initial, 'top')).toBe('var(--Space-ThemeCardPadding)');
-    expect(card.declaration(Initial, 'left')).toBe('var(--Space-ThemeCardPadding)');
-    expect(card.declaration(Initial, 'font-size')).toBe('var(--FontSize-ThemeCardInitial)');
-    expect(cardToken('--FontSize-ThemeCardInitial').replace(/\s+/g, '')).toBe(
-      'calc(var(--Size-ThemeCardWidth)*0.0775)',
+  it('puts the roll in the card corner at a share of the card, so it is the same mark everywhere', () => {
+    // A mark in the corner is a mark printed on the card the way a catalogue entry prints one,
+    // not a figure the card is showing, so it is held by the card's own padding rather than
+    // pushed past the centre. A share of the width for its size, so a card that narrows on a
+    // phone gets a mark that narrows with it.
+    expect(card.declaration(Mult, 'top')).toBe('var(--Space-ThemeCardPadding)');
+    expect(card.declaration(Mult, 'left')).toBe('var(--Space-ThemeCardPadding)');
+    expect(card.declaration(Mult, 'font-size')).toBe('var(--FontSize-ThemeCardMult)');
+    expect(cardToken('--FontSize-ThemeCardMult').replace(/\s+/g, '')).toBe(
+      'calc(var(--Size-ThemeCardWidth)*0.0775)'
     );
   });
-it('crops the number at a panel of its own rather than at the edge of the card', () => {
+  it('crops the number at a panel of its own rather than at the edge of the card', () => {
     // A figure a third again as wide as the card, stopped by the card's own edge, reads as a
     // number painted to fit the card rather than as a number printed on something and cut by
     // its frame. The panel has margins of its own, and is set in less far than the card's
@@ -308,10 +310,12 @@ it('crops the number at a panel of its own rather than at the edge of the card',
     // card is and the hover changes it in one place.
     expect(card.declaration(Card, 'background')).toBe('var(--ThemeCard-Surface)');
     expect(
-      card.declaration(/\.Root:hover[^{]*\{([^}]*)\}/, '--ThemeCard-Surface').replace(/\s+/g, ''),
+      card
+        .declaration(/\.Root:hover[^{]*\{([^}]*)\}/, '--ThemeCard-Surface')
+        .replace(/\s+/g, '')
     ).toBe('var(--ThemeCard-Wash,var(--Accent-Wash))');
     expect(widthShare('--Space-ThemeCardInset')).toBeLessThan(
-      widthShare('--Space-ThemeCardPadding'),
+      widthShare('--Space-ThemeCardPadding')
     );
     // The card draws no second edge of its own.
     expect(card.text).not.toContain('.Root::after');
@@ -319,7 +323,7 @@ it('crops the number at a panel of its own rather than at the edge of the card',
     // the card came out with a word on it and no bar. The row of rounds is above the panel and
     // under the grain, which is the only order the three of them can be in.
     expect(Number(meter.declaration(Meter, 'z-index'))).toBeGreaterThan(
-      Number(card.declaration(panel, 'z-index')),
+      Number(card.declaration(panel, 'z-index'))
     );
   });
   it('is one figure, cut off by the card, and not a second thing written on it', () => {
@@ -336,7 +340,7 @@ it('crops the number at a panel of its own rather than at the edge of the card',
     expect(card.declaration(CardMark, 'top')).toBe('50%');
     expect(card.declaration(CardMark, 'left')).toBe('50%');
     expect(card.declaration(CardMark, 'translate')).toBe(
-      'var(--Offset-ThemeCardMark)var(--Offset-ThemeCardMark)',
+      'var(--Offset-ThemeCardMark)var(--Offset-ThemeCardMark)'
     );
   });
   it('holds its offset in its own size, so it does not come back inside a small card', () => {
@@ -345,13 +349,11 @@ it('crops the number at a panel of its own rather than at the edge of the card',
     expect(tokenValue('--Offset-ThemeCardMark')).toMatch(/em$/);
   });
   it('is drawn far larger than the card, or it is a number on a card', () => {
-    const mark = Number(
-      cardToken('--FontSize-ThemeCardMark').match(/[\d.]+/)?.[0],
-    );
+    const mark = Number(cardToken('--FontSize-ThemeCardMark').match(/[\d.]+/)?.[0]);
     const name = Number(cardToken('--FontSize-ThemeCard').match(/[\d.]+/)?.[0]);
     expect(mark).toBeGreaterThan(name * 8);
   });
-it('is held back with opacity rather than with a colour of its own', () => {
+  it('is held back with opacity rather than with a colour of its own', () => {
     // The name is drawn in the tint and has to stay the stronger of the two, so the mark
     // cannot be a paler version of that hue в— it is grey and faint, which are two separate
     // things from the colour.
@@ -366,10 +368,10 @@ it('is held back with opacity rather than with a colour of its own', () => {
     // one thing on it not wearing the theme.
     expect(card.declaration(CardMark, 'color')).toBe('var(--Color-Text-Quiet)');
     expect(card.declaration(/\.Root:hover\s+\.Mark[^{]*\{([^}]*)\}/, 'color')).toBe(
-      'var(--ThemeCard-Tint,var(--Accent-Tint))',
+      'var(--ThemeCard-Tint,var(--Accent-Tint))'
     );
   });
-it('answers the pointer differently from how it rests', () => {
+  it('answers the pointer differently from how it rests', () => {
     // Which way it goes is a matter of taste and has changed; that it goes is not. A mark that
     // did not answer at all would be a figure on a card that did not notice it was being
     // looked at.
@@ -381,7 +383,7 @@ it('answers the pointer differently from how it rests', () => {
     expect(lifted).toBeGreaterThan(0);
     expect(lifted).toBeLessThan(1);
   });
-it('snaps the mark open rather than easing it, and leaves the name to take its time', () => {
+  it('snaps the mark open rather than easing it, and leaves the name to take its time', () => {
     // A figure cut off by the card's own frame, growing behind a frame that stays still, reads
     // as the crop being wrong rather than as the number opening up. The card is either being
     // pointed at or it is not, and the two states differ in one step.
@@ -406,7 +408,7 @@ it('snaps the mark open rather than easing it, and leaves the name to take its t
     expect(card.declaration(Noise, 'mix-blend-mode')).toBe('var(--Blend-ThemeCardNoise)');
     expect(card.declaration(Noise, 'opacity')).toBe('var(--Opacity-ThemeCardNoise)');
   });
-it('blends the grain into the card rather than drawing it opaquely', () => {
+  it('blends the grain into the card rather than drawing it opaquely', () => {
     // A noise tile at any opacity below one is a grey wash unless it is blended, because the
     // tile has grey in its light parts as well as its dark. Which blend it is has changed more
     // than once while this was being looked at в— the pale card defeats some of them в— so what
@@ -427,11 +429,11 @@ it('blends the grain into the card rather than drawing it opaquely', () => {
     // card, and it is `pointer-events: none` because it covers the whole of the thing being
     // pressed в— an overlay that ate the pointer would make half the card dead.
     expect(Number(card.declaration(Noise, 'z-index'))).toBeGreaterThan(
-      Number(card.declaration(Name, 'z-index')),
+      Number(card.declaration(Name, 'z-index'))
     );
     expect(card.declaration(Noise, 'pointer-events')).toBe('none');
   });
-it('holds the grain short of the name, which is the thing on the card being read', () => {
+  it('holds the grain short of the name, which is the thing on the card being read', () => {
     // How faint exactly is a matter of taste and has moved both ways while this was being
     // looked at. What has not moved is that the grain is a finish over the card rather than
     // something competing with the name on it, so it never reaches full strength.
@@ -449,19 +451,60 @@ it('holds the grain short of the name, which is the thing on the card being read
     expect(card.ruleBody(/\.Root:hover\s+\.Noise[^{]*\{([^}]*)\}/)).not.toContain('transition');
   });
   it('is scaled on hover rather than resized, so nothing reflows under the pointer', () => {
-expect(card.declaration(/\.Root:hover\s+\.Mark[^{]*\{([^}]*)\}/, 'transform')).toBe(
-      'scale(var(--Scale-ThemeCardMarkHover))',
+    expect(card.declaration(/\.Root:hover\s+\.Mark[^{]*\{([^}]*)\}/, 'transform')).toBe(
+      'scale(var(--Scale-ThemeCardMarkHover))'
     );
     expect(card.declaration(CardMark, 'transform')).toBe('scale(1)');
   });
   it('opens with the name by one ratio, or the panel is one image changing size', () => {
     expect(card.declaration(/\.Root:hover\s+\.Name[^{]*\{([^}]*)\}/, 'font-size')).toBe(
-      'calc(var(--FontSize-ThemeCard)*var(--Scale-ThemeCardHover))',
+      'calc(var(--FontSize-ThemeCard)*var(--Scale-ThemeCardHover))'
     );
+  });
+  it('lays the glint over the grain, since a shine under the grain is a shine nothing sees', () => {
+    // The enchantment is the top finish on the card. Under the grain it would be blended into
+    // it, and the grain is a texture of its own rather than a clear sheet.
+    expect(Number(card.declaration(Glint, 'z-index'))).toBeGreaterThan(
+      Number(card.declaration(Noise, 'z-index'))
+    );
+  });
+  it('lays the glint over the name too, or it is painted into the card', () => {
+    // A shine that stops at the name is a finish under the word rather than one passing over
+    // the surface, which is not what an enchanted card is saying.
+    expect(Number(card.declaration(Glint, 'z-index'))).toBeGreaterThan(
+      Number(card.declaration(Name, 'z-index'))
+    );
+  });
+  it('holds the corner mark above the glint, since a label is not a finish', () => {
+    // The one thing on the card saying what the room's roll is cannot be the one thing the
+    // enchantment is drawn across.
+    expect(Number(card.declaration(Mult, 'z-index'))).toBeGreaterThan(
+      Number(card.declaration(Glint, 'z-index'))
+    );
+  });
+  it('blends the glint in and takes no pointer, like every other layer over the card', () => {
+    // A tile below full strength is a wash unless it is blended, for the reason the grain is,
+    // and the glint covers the whole of the thing being pressed.
+    expect(card.declaration(Glint, 'mix-blend-mode')).toBe('var(--Blend-ThemeCardGlint)');
+    expect(card.declaration(Glint, 'pointer-events')).toBe('none');
+    expect(card.declaration(Glint, 'background-size')).toBe('cover');
+  });
+  it('shines from its own tile rather than from the grain, which is a different texture', () => {
+    // Both are drawn at their own pixels, since scaled down either one averages into flat grey.
+    // They cannot be one token either: the glint is a shine that moves and the grain is a
+    // surface that does not, and a card with only the grain on it is the card this undoes.
+    expect(tokenValue('--Texture-ThemeCardGlint')).toBe("url('./Overlays/Glint.gif')");
+    expect(tokenValue('--Texture-ThemeCardNoise')).toBe("url('./Overlays/Noise.gif')");
+    expect(card.declaration(Glint, 'background-image')).toBe('var(--Texture-ThemeCardGlint)');
+  });
+  it('holds the glint short of full strength, or the card stops being a card', () => {
+    const shine = Number(tokenValue('--Opacity-ThemeCardGlint'));
+    expect(shine).toBeGreaterThan(0);
+    expect(shine).toBeLessThan(1);
   });
 });
 describe('the round ticks along the bottom of a card', () => {
-it('sits directly under the name, as the second line of one thing', () => {
+  it('sits directly under the name, as the second line of one thing', () => {
     // The card centres the name and the bar together as a column. Neither may grow, or one of
     // them takes the room and leaves the other against an edge в— a growing name pinned the bar
     // to the bottom of the card with the word centred in whatever was left over, which read as
@@ -493,12 +536,14 @@ it('sits directly under the name, as the second line of one thing', () => {
     // side, and a bank of six with rows at different places is not a bank.
     expect(meter.declaration(Meter, 'justify-content')).toBe('center');
   });
-it('draws every tick in the theme accent, and greys the spent ones by opacity', () => {
+  it('draws every tick in the theme accent, and greys the spent ones by opacity', () => {
     // The bar is one thing the card is saying в— this theme, this many rounds в— so every tick
     // is that accent and a spent one is still that accent. The greying is opacity rather than
     // a paler colour for the same reason: a bar whose spent part is a different hue is a
     // bar showing two kinds of thing rather than one bar with less in it.
-    expect(meter.declaration(Mark, 'background')).toBe('var(--ThemeCard-Tint,var(--Accent-Tint))');
+    expect(meter.declaration(Mark, 'background')).toBe(
+      'var(--ThemeCard-Tint,var(--Accent-Tint))'
+    );
     expect(meter.declaration(Spent, 'opacity')).toBe('var(--Opacity-RoundMarkSpent)');
     expect(meter.ruleBody(Spent)).not.toContain('background');
   });
@@ -550,7 +595,7 @@ describe('the tokens behind the bank', () => {
     expect(size).toBe('calc(var(--Size-ThemeCardWidth)*0.14)');
     expect(card.declaration(Name, 'font-size')).toBe('var(--FontSize-ThemeCard)');
   });
-it('keeps the name off the frame of its own card', () => {
+  it('keeps the name off the frame of its own card', () => {
     // At zero the longest word touches the edge, and the edge is the one part of a card that
     // is never looked at until something is in the way. A share of the width rather than a
     // length, so the inset holds at every card size: a flat padding is a quarter of a narrow
@@ -596,8 +641,8 @@ describe('the deal', () => {
   it('is not the same six to every room', () => {
     // A deal that ignored its seed would hand every lobby in the game the same themes,
     // which is the failure the seeded generator exists to prevent.
-    const deals = ['ABCD', 'WXYZ', 'QWER', 'ASDF'].map(
-      (code) => dealThemes(randomFor(code), GameConfig.themes.cardsPerLobby).join(','),
+    const deals = ['ABCD', 'WXYZ', 'QWER', 'ASDF'].map((code) =>
+      dealThemes(randomFor(code), GameConfig.themes.cardsPerLobby).join(',')
     );
     expect(new Set(deals).size).toBeGreaterThan(1);
   });

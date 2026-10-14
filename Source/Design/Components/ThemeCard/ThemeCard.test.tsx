@@ -11,7 +11,8 @@ function card(
   index?: number,
   waiting = false,
   spent?: number,
-  rounds = 10
+  rounds = 10,
+  mult?: number
 ) {
   const container = document.createElement('div');
   document.body.appendChild(container);
@@ -27,6 +28,7 @@ function card(
         waiting={waiting}
         spent={spent}
         rounds={rounds}
+        mult={mult}
       />,
       container
     );
@@ -53,7 +55,7 @@ describe('one theme card', () => {
 
   it('hides every decoration on the card, so the name is all that is announced', () => {
     // The number is a mark on the panel, not part of its name, and read out as one the theme
-    // would be announced as "one, интернет". The corner initial, the grain and the tick row
+    // would be announced as "one, интернет". The corner roll, the grain and the tick row
     // carry nothing at all, and ten ticks read out as a burst of punctuation. All of them are
     // `aria-hidden`, so what the DOM still holds is not what is read — the name is the only
     // thing on the card that is.
@@ -61,20 +63,22 @@ describe('one theme card', () => {
     expect(mark?.getAttribute('aria-hidden')).toBe('true');
     const hidden = [...container.querySelectorAll('[aria-hidden="true"]')];
     expect(hidden).toHaveLength(4);
-    expect(hidden.map((node) => node.textContent).join('')).toBe('И1');
-    expect(container.textContent).toBe('И1Интернет');
+    expect(hidden.map((node) => node.textContent).join('')).toBe('1');
+    expect(container.textContent).toBe('1Интернет');
   });
 
-  it('is marked with the first letter of the name, as the player sees it', () => {
-    // A card with a name on it and nothing else is a label; the letter is the one thing on the
-    // panel that says which theme this is without being the name. Taken from the name rather
-    // than from the catalogue, so it follows the language — and `hidden`, because a letter in
-    // front of the name would be announced as part of it.
-    // The initial comes first in the markup and the grain carries nothing, so the letter is the
-    // first hidden node rather than the one before it.
-    const initial = card().button.querySelectorAll('[aria-hidden="true"]')[0];
-    expect(initial?.getAttribute('aria-hidden')).toBe('true');
-    expect(initial?.textContent).toBe('И');
+  it("carries the room's roll in the corner, as the player sees it", () => {
+    // The roll is the one thing on the card that says what the room's roll is rather than which
+    // theme the card is — the name says that, and six rolls are six cards. Taken from the room
+    // rather than from the catalogue, so it is the same on every screen in it. A card with no
+    // roll is plain and shows nothing, which is a real answer rather than a card wearing a
+    // number that belongs to no round.
+    const roll = card(undefined, undefined, false, undefined, 10, 1.5);
+    const corner = roll.button.querySelectorAll('[aria-hidden="true"]')[0];
+    expect(corner?.getAttribute('aria-hidden')).toBe('true');
+    expect(corner?.textContent).toBe('1.5x');
+    const plain = card();
+    expect(plain.button.querySelectorAll('[aria-hidden="true"]')[0]?.textContent).toBe('');
   });
 
   it('writes its own accent onto itself rather than taking the colour as a prop', () => {
@@ -229,6 +233,48 @@ describe("the card the room's own roll is on", () => {
       button.click();
     });
     expect(picked).toEqual([]);
+  });
+});
+
+describe('a card the round has enchanted', () => {
+  it('wears the glint, and a card left alone does not', () => {
+    // The round enchants some of the bank or none of it, so a card with nothing on it has to
+    // read as plain rather than as a finish too faint to see. Nothing is rendered at all when
+    // there is no modifier, rather than a node left transparent over every card.
+    const shine = document.createElement('div');
+    document.body.appendChild(shine);
+    act(() => {
+      render(<ThemeCard theme="Еда" name="Еда" modifiers={['Enchanted']} />, shine);
+    });
+    expect(shine.querySelector('[class*="Glint"]')).not.toBeNull();
+    expect(card().container.querySelector('[class*="Glint"]')).toBeNull();
+  });
+
+  it('hides the glint, since a shine is not part of the card being read', () => {
+    // The name is the only thing announced on a theme card, and a second hidden tile that is
+    // not announced either is still a node read out of the DOM by anything walking it.
+    const shine = document.createElement('div');
+    document.body.appendChild(shine);
+    act(() => {
+      render(<ThemeCard theme="Еда" name="Еда" modifiers={['Enchanted']} />, shine);
+    });
+    const glint = shine.querySelector('[class*="Glint"]');
+    expect(glint?.getAttribute('aria-hidden')).toBe('true');
+    expect(glint?.textContent).toBe('');
+  });
+
+  it('is still the same card underneath, since nothing about it changed', () => {
+    // The enchantment is a finish over the surface and not a different surface: it takes no
+    // class of its own, so a bank reads as six cards with some of them shining.
+    const classes = (props: { modifiers?: readonly 'Enchanted'[] }) => {
+      const host = document.createElement('div');
+      document.body.appendChild(host);
+      act(() => {
+        render(<ThemeCard theme="Еда" name="Еда" {...props} />, host);
+      });
+      return host.querySelector('button')?.className;
+    };
+    expect(classes({ modifiers: ['Enchanted'] })).toBe(classes({}));
   });
 });
 

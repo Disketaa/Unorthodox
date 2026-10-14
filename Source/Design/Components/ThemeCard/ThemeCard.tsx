@@ -1,4 +1,4 @@
-import { ThemeId, themeAccent } from '@/Core';
+import { ThemeId, ThemeModifierId, themeAccent } from '@/Core';
 import { useCallback } from 'preact/hooks';
 import { useSwayMotion } from '@/Design/Primitives';
 import { playSound } from '../../Sounds';
@@ -21,6 +21,12 @@ export interface ThemeCardProps {
    * the theme's place in the catalogue: the six in front of a player are numbered one to six
    * whatever they are. */
   index?: number;
+  /** What the round has put on this card on top of its theme. Off for every card in a bank the
+   * round left alone, which is a real answer rather than a bank waiting to be told. */
+  modifiers?: readonly ThemeModifierId[];
+  /** The multiplier this card wears, from the room's roll. A card with none is plain: the corner
+   * is left empty rather than showing a number that belongs to no round. */
+  mult?: number;
   /** Asking for this theme. Nothing is decided yet, so nothing acts on it yet. */
   onPick?: (theme: ThemeId) => void;
   /** Whether the card idles. On by default, since a still card is the odd one out; off for a
@@ -45,16 +51,10 @@ export interface ThemeCardProps {
   waiting?: boolean;
 }
 
-/** The theme's own first letter, as the card's substance. One letter, not an abbreviation: the
- * name is right there and is the thing being read, so this is here because a card with a name
- * and nothing else is a label. */
-function initialOf(name: string) {
-  return [...name.trim()][0] ?? '';
-}
-
 /** The card's own place in the turn of the blink, as places from the first, so the wave is one
  * value per card rather than six cards handed six delays. */
-function writeTheme(node: HTMLElement, theme: ThemeId, index: number) {
+function writeTheme(node: HTMLElement | null | undefined, theme: ThemeId, index: number) {
+  if (node == null) return;
   const accent = themeAccent(theme);
   node.style.setProperty('--ThemeCard-Wash', accent.wash);
   node.style.setProperty('--ThemeCard-Ink', accent.ink);
@@ -88,10 +88,10 @@ function useCardRef(
   theme: ThemeId,
   index: number
 ) {
-  return useCallback(
+    return useCallback(
     (node: HTMLButtonElement | null) => {
       motion.current = node;
-      if (node !== null) {
+      if (node != null) {
         writeTheme(node, theme, index);
       }
     },
@@ -106,11 +106,12 @@ function CardFace({
   index,
   rounds,
   spent,
-}: Pick<ThemeCardProps, 'name' | 'index' | 'rounds' | 'spent'>) {
+  mult,
+}: Pick<ThemeCardProps, 'name' | 'index' | 'rounds' | 'spent' | 'mult'>) {
   return (
     <>
-      <span class={styles.Initial} aria-hidden="true">
-        {initialOf(name ?? '')}
+      <span class={styles.Mult} aria-hidden="true">
+        {mult !== undefined ? `${mult}x` : ''}
       </span>
       <span class={styles.Panel}>
         <span class={styles.Mark} aria-hidden="true">
@@ -133,6 +134,7 @@ export function ThemeCard({
   index = 1,
   rounds = 10,
   spent = 0,
+  modifiers,
   onPick,
   moving = true,
   blink = true,
@@ -140,22 +142,23 @@ export function ThemeCard({
   swept = false,
   locked = false,
   waiting = false,
+  mult,
 }: ThemeCardProps) {
   const motion = useSwayMotion<HTMLButtonElement>();
   // A theme the room has already spent every round it had. Read off the counts rather than taken
   // as a prop, because the card is what knows its own rounds and its own count of them.
   const spentOut = spent >= rounds;
-
   const ref = useCardRef(motion, theme, index);
 
+  return <ThemeCardButton theme={theme} name={name} index={index} rounds={rounds} spent={spent} modifiers={modifiers} mult={mult} chosen={chosen} swept={swept} locked={locked} waiting={waiting} moving={moving} blink={blink} onPick={onPick} cardClasses={cardClasses} motion={motion} buttonRef={ref} spentOut={spentOut} />;
+}
+function ThemeCardButton({ theme, name, index, rounds, spent, modifiers, mult, chosen, swept, locked, waiting, moving, blink, onPick, cardClasses, motion, buttonRef, spentOut }: ThemeCardProps & { cardClasses: typeof cardClasses; motion: { current: HTMLButtonElement | null }; buttonRef: (node: HTMLButtonElement | null) => void; spentOut: boolean }) {
   return (
     <button
       type="button"
-      ref={ref}
+      ref={buttonRef}
       class={cardClasses(moving, blink, chosen, swept, waiting, spentOut)}
       disabled={locked}
-      // Announced rather than disabled: the card is on screen and readable, so a screen reader is
-      // told it cannot be pressed instead of being left to find a button that does nothing.
       aria-disabled={waiting || spentOut || swept || undefined}
       onClick={() => {
         if (waiting || spentOut || swept) {
@@ -165,7 +168,10 @@ export function ThemeCard({
         onPick?.(theme);
       }}
     >
-      <CardFace name={name} index={index} rounds={rounds} spent={spent} />
+      <CardFace name={name} index={index} rounds={rounds} spent={spent} mult={mult} />
+      {!spentOut && modifiers?.includes('Enchanted') === true && (
+        <span class={styles.Glint} aria-hidden="true" />
+      )}
     </button>
   );
 }

@@ -9,6 +9,10 @@ export function ThemeCardGallery() {
       <ThemeCard theme="Nature" name="Природа" waiting />
       {/* Pressed out of every hover, which is the room having answered. */}
       <ThemeCard theme="Music" name="Музыка" locked />
+      {/* Carrying what the round put on it: the glint laid over the grain. */}
+      <ThemeCard theme="Food" name="Еда" modifiers={['Enchanted']} />
+      {/* Carrying what the room rolled: the multiplier in the corner, in the room's yellow. */}
+      <ThemeCard theme="Travel" name="Путешествия" mult={1.5} />
     </Stack>
   );
 }

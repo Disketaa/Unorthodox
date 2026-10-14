@@ -50,7 +50,7 @@
    * chain at the root resolves against whatever the width token holds there — and it holds
    * nothing, since the width is `100cqw` from inside the slot. At the root all five of these
    * were guaranteed-invalid and every element using one fell back to an inherited size. */
-  --FontSize-ThemeCardInitial: calc(var(--Size-ThemeCardWidth) * 0.0775);
+  --FontSize-ThemeCardMult: calc(var(--Size-ThemeCardWidth) * 0.0775);
   --FontSize-ThemeCard: calc(var(--Size-ThemeCardWidth) * 0.14);
   --FontSize-ThemeCardMark: calc(var(--Size-ThemeCardWidth) * 1.45);
   --Space-ThemeCardPadding: calc(var(--Size-ThemeCardWidth) * 0.05);
@@ -197,34 +197,37 @@
   pointer-events: none;
 }
 
-/* The initial: the theme's own first letter, in the card's top left corner and in its quiet
- * grey. It is the one thing on the card that says which theme this is without being the name: a
- * card with a name and nothing else is a label, while six letters are six themes. Grey rather
- * than any step of the theme's accent — the tint is what the ticks and the hovered name are
- * drawn in, and the ink is dark enough to read as a second label. A pale step rather than the
- * grey the number behind the name wears: two marks at one weight are two marks, not one card. */
-.Initial {
+/* The multiplier: the room's roll, in the card's top left corner and in the room's yellow. It is
+ * the one thing on the card that says what the room's roll is rather than which theme the card
+ * is — the name says that, and six multipliers are six rolls. Room yellow rather than grey: the
+ * roll is about the room and not about whoever is looking, and the yellow is the only colour on
+ * the card that is not the theme's — the tint, the ink and the wash are all the accent, so a
+ * yellow mark is the one thing on the card that is not. */
+.Mult {
   position: absolute;
   top: var(--Space-ThemeCardPadding);
   left: var(--Space-ThemeCardPadding);
-  z-index: 3;
+  /* Above the glint as well as the grain, since the roll is a label and the shine is a finish:
+   * the one thing on the card that says what the room's roll is cannot be the one thing the
+   * enchantment is drawn across. */
+  z-index: 4;
   font-family: var(--FontFamily-Display);
-  font-size: var(--FontSize-ThemeCardInitial);
+  font-size: var(--FontSize-ThemeCardMult);
   font-weight: bold;
   line-height: 0.8;
-  color: var(--Color-Neutral-300);
+  color: var(--Color-Text-Default);
   user-select: none;
   pointer-events: none;
   transition: font-size var(--Transition-Standard);
 }
 
-/* The initial answers the pointer with the theme's ink, the way the name answers with the tint.
- * The darkened accent and not the wash: the card has already gone to the wash under the
- * pointer, so a letter in the wash would be the one thing on it that did not answer, and grey
- * to the theme's own colour is the change that says which theme the card is. */
-.Root:hover .Initial,
-.Root.Swept .Initial {
-  color: var(--ThemeCard-Ink, var(--Accent-Ink));
+/* The multiplier answers the pointer with the theme's tint, the way the name answers with the
+ * tint. The card has already gone to the wash under the pointer, so a mark in the wash would be
+ * the one thing on it that did not answer, and the theme's own tint is the change that says
+ * which theme the card is. */
+.Root:hover .Mult,
+.Root.Swept .Mult {
+  color: var(--ThemeCard-Tint, var(--Accent-Tint));
 }
 
 /* The grain, laid over the card the way the paper is laid over the page. Blended rather than
@@ -251,6 +254,31 @@
 .Root:hover .Noise,
 .Root.Swept .Noise {
   opacity: var(--Opacity-ThemeCardNoiseHover);
+}
+
+/* The glint on a card the round has enchanted, over the grain and over the name. Over both,
+ * because a shine that stops at the name is a shine painted into the card rather than one
+ * passing over it, and the enchantment is meant to read as the surface moving rather than as a
+ * different surface. Blended like the grain, for the same reason a tile below full strength is
+ * otherwise a wash, and hidden from the pointer for the same reason: it covers the whole of the
+ * thing being pressed.
+ *
+ * Covering rather than tiling, which is the whole of what it is not: the shine is one sweep
+ * travelling across one panel, and a tile cuts it into a wallpaper of the same sweep. Scaled down
+ * to fit rather than drawn at its own pixels, which is the one thing the grain on this card may
+ * not do — the grain exists to be at its own size, and this is a picture of a shine that has to
+ * be as big as the card it is shining on. */
+.Glint {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background-image: var(--Texture-ThemeCardGlint);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  mix-blend-mode: var(--Blend-ThemeCardGlint);
+  opacity: var(--Opacity-ThemeCardGlint);
 }
 
 /* The name on the card, which is the whole content of it, and the tint it takes on hover along
@@ -356,13 +384,14 @@
   opacity: var(--Opacity-ThemeCardNoiseHover);
 }
 
-/* The corner letter with them: the chosen card is locked, so no hover will bring the ink back.
- * And smaller, since the chosen card has already had its answer and the letter has given up its
- * share of the card to the name underneath it — the same opening-up the name and the mark do,
- * in the other direction. */
-.Chosen .Initial {
-  color: var(--ThemeCard-Ink, var(--Accent-Ink));
-  font-size: calc(var(--FontSize-ThemeCardInitial) * var(--Scale-ThemeCardInitialChosen));
+/* The corner mark with them: the chosen card is locked, so no hover will bring the ink back.
+   * And smaller, since the chosen card has already had its answer and the mark has given up its
+   * share of the card to the name underneath it — the same opening-up the name and the mark do,
+   * in the other direction. Still the room's yellow: the roll is the room's either way, and a
+   * chosen card is not about to start wearing the theme. */
+.Chosen .Mult {
+  font-size: calc(var(--FontSize-ThemeCardMult) * var(--Scale-ThemeCardInitialChosen));
+  color: var(--ThemeCard-Tint, var(--Accent-Tint));
 }
 
 /* A card that has stopped taking presses. `pointer-events` rather than a restatement of every
@@ -420,8 +449,8 @@
   color: var(--Color-Text-Quiet);
 }
 
-.SpentOut:hover .Initial {
-  color: var(--Color-Neutral-300);
+.SpentOut:hover .Mult {
+  color: var(--Color-Room-Yellow);
 }
 
 .SpentOut:hover .Noise {

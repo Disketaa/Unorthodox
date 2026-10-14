@@ -2,7 +2,7 @@ import { ThemeId, themesForRoom } from '@/Core';
 import { useMemo } from 'preact/hooks';
 import { useThemeSweep } from '../Hooks/UseThemeSweep';
 import { ThemeCards } from '@/Design/Components';
-import { GameConfig } from '@/Game';
+import { GameConfig, multForTheme, modifiersForRound } from '@/Game';
 
 export interface ThemeCardsViewProps {
   /** The room's code, which is what the deal is rolled from. */
@@ -33,6 +33,22 @@ export interface ThemeCardsViewProps {
 /** The themes this lobby is playing, on the game screen. Rolled from the room code rather than
  * `Math.random`, which is the whole of "random per lobby": two players in one room derive the
  * same six from the same four letters. */
+function computeMults(
+  roomCode: string,
+  themes: readonly ThemeId[],
+  round: number,
+  modifiers: ReadonlyMap<ThemeId, readonly ThemeModifierId[]>
+): ReadonlyMap<ThemeId, number> {
+  const map = new Map<ThemeId, number>();
+  for (const theme of themes) {
+    const mods = modifiers.get(theme);
+    if (mods?.includes('Enchanted')) {
+      map.set(theme, multForTheme(roomCode, theme, round));
+    }
+  }
+  return map;
+}
+
 export function ThemeCardsView({
   roomCode,
   choosing,
@@ -51,11 +67,26 @@ export function ThemeCardsView({
     [roomCode]
   );
   const { looking } = useThemeSweep(picking, themes, clockOffsetMs);
+  // What this round has put on the bank, rolled from the room code and the round rather than
+  // sent, so a client cannot deal a different set of enchanted cards from the host. Held across
+  // renders for the same reason the deal is: a fresh map every render is a fresh roll.
+  const round = spentRounds(spent);
+  const modifiers = useMemo(
+    () => modifiersForRound(roomCode, themes, round),
+    [roomCode, themes, round]
+  );
+  // Multiplier rolled per theme from room/round seed; only enchanted cards get >1.
+  const mults = useMemo(
+    () => computeMults(roomCode, themes, round, modifiers),
+    [roomCode, themes, round, modifiers]
+  );
   return (
     <ThemeCards
       themes={themes}
       roundsPerTheme={GameConfig.themes.roundsPerTheme}
       spent={spent}
+      modifiers={modifiers}
+      mults={mults}
       picked={theme}
       picking={picking !== undefined}
       swept={looking}
@@ -65,4 +96,18 @@ export function ThemeCardsView({
       onPick={choosing && myTurn && picking === undefined && !paused ? onPickTheme : undefined}
     />
   );
+}
+
+/** How many rounds the room has played, which is the number the next round is rolled against.
+ * Counted off the per-theme counts rather than carried as a counter of its own, since those are
+ * what the state holds and a second number in it could drift away from them. */
+function spentRounds(spent: ReadonlyMap<ThemeId, number> | undefined): number {
+  if (spent === undefined) {
+    return 0;
+  }
+  let total = 0;
+  for (const rounds of spent.values()) {
+    total += rounds;
+  }
+  return total;
 }

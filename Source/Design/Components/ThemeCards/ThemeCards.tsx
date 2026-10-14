@@ -1,4 +1,4 @@
-import { ThemeId, themeAccent } from '@/Core';
+import { ThemeId, ThemeModifierId, themeAccent } from '@/Core';
 import { useEffect, useRef } from 'preact/hooks';
 import type { RefObject } from 'preact';
 import { Pop } from '@/Design/Primitives';
@@ -27,6 +27,12 @@ export interface ThemeCardsProps {
    * for the bank, because the bank is the same six themes every round and each drains on its
    * own. */
   spent?: ReadonlyMap<ThemeId, number>;
+  /** What this round has put on the bank's cards, by theme. Absent wherever the round rolled no
+   * modifiers at all, which is one of the answers the roll can give. */
+  modifiers?: ReadonlyMap<ThemeId, readonly ThemeModifierId[]>;
+  /** The multiplier on each card, by theme. Rolled from the room and the round rather than sent,
+   * so a client cannot hand a card a number the host did not roll. */
+  mults?: ReadonlyMap<ThemeId, number>;
 }
 
 /** Raised over `--Pop-Stagger`, which is sized for a row of characters standing close: six large
@@ -56,7 +62,10 @@ function useWash(picked: ThemeId | undefined, bank: RefObject<HTMLDivElement>): 
 
 /** What one slot is told: the bank's own props, with the two that are the bank's decision rather
  * than a card's added. */
-type SlotProps = Pick<ThemeCardsProps, 'roundsPerTheme' | 'spent' | 'picked' | 'onPick'> & {
+type SlotProps = Pick<
+  ThemeCardsProps,
+  'roundsPerTheme' | 'spent' | 'modifiers' | 'mults' | 'picked' | 'onPick'
+> & {
   theme: ThemeId;
   index: number;
   swept: ThemeId | undefined;
@@ -71,6 +80,8 @@ function ThemeSlot({
   index,
   roundsPerTheme,
   spent,
+  modifiers,
+  mults,
   picked,
   swept,
   onPick,
@@ -93,6 +104,8 @@ function ThemeSlot({
           index={index + 1}
           rounds={roundsPerTheme}
           spent={played}
+          modifiers={modifiers?.get(theme)}
+          mult={mults?.get(theme)}
           chosen={chosen}
           swept={theme === swept}
           locked={picked !== undefined}
@@ -112,6 +125,8 @@ export function ThemeCards({
   onPick,
   roundsPerTheme,
   spent,
+  modifiers,
+  mults,
   picked,
   picking = false,
   swept,
@@ -136,6 +151,8 @@ export function ThemeCards({
           index={index}
           roundsPerTheme={roundsPerTheme}
           spent={spent}
+          modifiers={modifiers}
+          mults={mults}
           picked={picked}
           swept={swept}
           onPick={onPick}
