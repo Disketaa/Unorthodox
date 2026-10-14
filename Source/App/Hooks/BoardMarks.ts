@@ -1,9 +1,9 @@
 import type { PublicState } from '@/Game';
-import { likedIn, wroteAnswerIn, type RoundMarks } from './RoundMarks';
+import { likedIn, type RoundMarks } from './RoundMarks';
 
-/** What a board of answers is drawn from. Three sources and no fourth: the host's mutes come
- * down with the room, the room's likes come down as counts only, and which of those were this
- * browser's own presses cannot come down at all, since every client is handed the same state. */
+/** What a board of answers is drawn from. The host's mutes come down with the room, and which
+ * likes were this browser's own presses cannot come down at all. Who wrote a card is not asked
+ * here: the board already carries the writers, as the faces in each corner are drawn from them. */
 export interface BoardMarks {
   /** Which cards the host has taken off the board. */
   rejectedGroupIds: ReadonlySet<number>;
@@ -12,8 +12,6 @@ export interface BoardMarks {
   /** Which of those likes were this player's own, kept here because the room is sent the counts
    * and never who cast them. */
   myLikedGroupIds: ReadonlySet<number>;
-  /** Whether this player wrote the answer on a card, and so may not like their own. */
-  wroteAnswer: (text: string) => boolean;
 }
 
 export function boardMarks(
@@ -25,7 +23,6 @@ export function boardMarks(
     rejectedGroupIds: mutedBy(publicState),
     likedGroupIds: likedBy(publicState),
     myLikedGroupIds: likedIn(marks, topic),
-    wroteAnswer: (text: string) => wroteAnswerIn(marks, topic, text),
   };
 }
 

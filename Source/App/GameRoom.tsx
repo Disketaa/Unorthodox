@@ -1,23 +1,13 @@
 import { useRef } from 'preact/hooks';
 import type { ComponentChildren } from 'preact';
-import {
-  InfoScreen,
-  LobbyDebugTools,
-  PauseDebugTools,
-  PhaseDebugTools,
-  TurnDebugTools,
-} from '@/Screens';
+import { InfoScreen } from '@/Screens';
 import { Strings } from '@/Content';
 import { PlayerLook, assertNever } from '@/Core';
-import {
-  DebugDock,
-  PausedRoom,
-  PhaseSplash,
-  PhaseSplashMs,
-  StartCountdown,
-} from '@/Design/Overlays';
+import { PausedRoom, PhaseSplash, PhaseSplashMs, StartCountdown } from '@/Design/Overlays';
 import { useDuckedMusic, useHeldMusic, useMusic, type MusicName } from '@/Design/Music';
 import { useGameSession } from './Hooks/UseGameSession';
+import { AnswerFlushProvider } from './Hooks/UseAnswerFlush';
+import { RoomDebugTools } from './Views/RoomTools';
 import { useDebugToggle } from './Hooks/UseDebugToggle';
 import { usePhaseSplash } from './Hooks/UsePhaseSplash';
 import { useStartCountdown } from './Hooks/UseStartCountdown';
@@ -171,25 +161,13 @@ function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
   if (!counting && (!splashing || covered)) {
     underRef.current = view;
   }
-
   return (
-    <>
+    <AnswerFlushProvider>
       {counting && <StartCountdown veiling={veiling} count={count} />}
       {splashing && <PhaseSplash label={Strings.phaseSplash.label} />}
       {view.paused && <PausedRoom label={Strings.pause.held} />}
       <PhaseScreen view={underRef.current ?? view} />
-      {!counting && !splashing && (
-        <DebugDock enabled={debugEnabled}>
-          {view.isHost && (
-            <>
-              <LobbyDebugTools publicState={view.publicState} onAddBot={view.addBot} />
-              <TurnDebugTools publicState={view.publicState} onNextTurn={view.nextTurn} />
-              <PauseDebugTools paused={view.paused} onSetPaused={view.setPaused} />
-              <PhaseDebugTools publicState={view.publicState} onNextPhase={view.nextPhase} />
-            </>
-          )}
-        </DebugDock>
-      )}
-    </>
+      {!counting && !splashing && <RoomDebugTools view={view} enabled={debugEnabled} />}
+    </AnswerFlushProvider>
   );
 }

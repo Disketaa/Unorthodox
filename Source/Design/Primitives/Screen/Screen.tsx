@@ -43,9 +43,5 @@ export function Screen({
     styles[`Width${width}`],
   ].filter(Boolean);
 
-  return (
-    <div class={classes.join(' ')}>
-      {children}
-    </div>
-  );
+  return <div class={classes.join(' ')}>{children}</div>;
 }

@@ -35,9 +35,9 @@
 
 /* A frame twice the readable line length, for the screen whose container is a keyboard rather
  * than a card of text. It re-reads the width token the track is written against rather than
- * carrying a track of its own, so the frame and its containers hold one number.
- * The width declared here is load-bearing rather than a second reading of it: `margin: 0 auto`
- * keeps the frame off the flex stretch of the stage it draws in, so with no width of its own it
+ * carrying a track of its own, so the frame and its containers hold one number. The width
+ * declared here is load-bearing rather than a second reading of it: `margin: 0 auto` keeps the
+ * frame off the flex stretch of the stage it draws in, so with no width of its own it
  * shrink-wraps to its contents. `min()` against the parent, so a phone keeps what it has. */
 .WidthWide {
   --Layout-ContainerMaxWidth: var(--Layout-ContainerMaxWidthWide);

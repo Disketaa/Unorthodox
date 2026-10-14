@@ -1,12 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  emptyMarks,
-  hasSubmittedIn,
-  likedIn,
-  markLiked,
-  markSubmitted,
-  wroteAnswerIn,
-} from './RoundMarks';
+import { emptyMarks, hasSubmittedIn, likedIn, markLiked, markSubmitted } from './RoundMarks';
 
 const roundOne = 'First topic';
 const roundTwo = 'Second topic';
@@ -59,22 +52,5 @@ describe('Round marks', () => {
     marks = markLiked(marks, roundTwo, 2);
     expect([...likedIn(marks, roundTwo)]).toEqual([2]);
     expect([...likedIn(marks, roundOne)]).toEqual([]);
-  });
-
-  it('recognises its own answer however it was spelled', () => {
-    // This is the only way a browser knows which cards are its own: the room is never told who
-    // wrote what, so it is asked of the answer it remembers sending, compared the way the board
-    // compares answers rather than by equality.
-    const marks = markSubmitted(emptyMarks(), roundOne, 'Кот.');
-    expect(wroteAnswerIn(marks, roundOne, 'кот')).toBe(true);
-    expect(wroteAnswerIn(marks, roundOne, 'Кот.')).toBe(true);
-    expect(wroteAnswerIn(marks, roundOne, 'дом')).toBe(false);
-  });
-
-  it('claims no answer before it has sent one', () => {
-    expect(wroteAnswerIn(emptyMarks(), roundOne, 'кот')).toBe(false);
-    expect(wroteAnswerIn(markSubmitted(emptyMarks(), roundTwo, 'кот'), roundOne, 'кот')).toBe(
-      false
-    );
   });
 });

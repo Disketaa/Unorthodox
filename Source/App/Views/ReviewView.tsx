@@ -50,10 +50,11 @@ function reviewGroups(
       // word already sitting there while its neighbours were typed at would be the one card
       // nobody watched turn over.
       const text = group.isEmpty ? Strings.reviewing.blank : group.text;
-      // Read off the answer as it was sent rather than as it is being written out: a half-written
-      // card matches no answer at all, so a player mid-reveal would be offered a like on their
-      // own. A blank is nobody's own and nobody may like it, being a record of an empty seat.
       const authors = authorsOn(group.playerIds, roster);
+      // Read off the card's own writers, not out of what this browser remembers sending: the board
+      // already carries who wrote each card in `playerIds` and cannot go stale. The remembered
+      // string could and did, so an answer reaching the board by another path came back grey.
+      const wroteThis = view.playerId !== null && group.playerIds.includes(view.playerId);
       return {
         groupId: group.groupId,
         text: typedOut(text, reveal.shownAt(index, text.length)),
@@ -62,7 +63,7 @@ function reviewGroups(
         isEmpty: group.isEmpty,
         likes: view.likedGroupIds.get(group.groupId) ?? 0,
         liked: view.myLikedGroupIds.has(group.groupId),
-        own: !group.isEmpty && view.wroteAnswer(group.text),
+        own: !group.isEmpty && wroteThis,
         authors,
         writerDelays: authors.map((_, seat) => reveal.writerDelayAt(seat)),
         authorsShown: reveal.authorsAt(index),
