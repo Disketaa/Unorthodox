@@ -4,6 +4,7 @@ export * from './Question';
 export * from './Reveal';
 export * from './ThemeDeck';
 export * from './ThemeModifiers';
+export * from './ThemeEffects';
 export * from './Normalization';
 export * from './Grouping';
 export * from './Scoring';

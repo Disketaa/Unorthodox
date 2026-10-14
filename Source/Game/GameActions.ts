@@ -14,15 +14,22 @@ export type GameAction =
   /** The lobby into the first phase of play, which chooses a theme rather than answering one. */
   | { type: 'START_GAME'; durationMs: number; startedAt: number; leadInMs?: number }
   /** The room's answer to the bank: this theme, for this round. Carries who pressed it so the
-   * host can refuse a press from anybody but the player whose turn it is. */
-  | { type: 'CHOOSE_THEME'; playerId: PlayerId; theme: ThemeId; at: number }
+   * host can refuse a press from anybody but the player whose turn it is, and the seats the
+   * card's effect reaches, worked out by the host from the standings rather than rolled here. */
+  | {
+      type: 'CHOOSE_THEME';
+      playerId: PlayerId;
+      theme: ThemeId;
+      at: number;
+      affectedPlayers?: PlayerId[];
+    }
   /** Nobody answered the bank before its clock ran out, so the room is answering it. Carries the
    * theme rather than rolling one here, since the reducer is the rule and not the dice. The
    * answer is held back until `RESOLVE_RANDOM_PICK`, which is what gives the sweep its length. */
   | { type: 'START_RANDOM_PICK'; theme: ThemeId; startedAt: number }
   /** The room's roll commits, once the sweep has run. No player to name: the room chose it, not
-   * one of the seats. */
-  | { type: 'RESOLVE_RANDOM_PICK'; at: number }
+   * one of the seats. Carries the seats the card's effect reaches, worked out by the host. */
+  | { type: 'RESOLVE_RANDOM_PICK'; at: number; affectedPlayers?: PlayerId[] }
   /** The theme answered, so the round's question is drawn from its bank and starts arriving. The
    * question travels on the action rather than being read from a catalogue here: what a theme
    * asks about is the content's business, and the reducer is the rule and not the dice. */

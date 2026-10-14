@@ -48,5 +48,8 @@ export function handleResolveRandomPick(
     picking: undefined,
     answeredAt: action.at,
     themeRounds: roundsAfter(state.themeRounds, state.picking.theme),
+    // Who the card's effect reaches, worked out by the host and sent with the commit. Empty where
+    // the card carries no effect, which is the ordinary card.
+    affectedPlayers: new Set(action.affectedPlayers ?? []),
   };
 }

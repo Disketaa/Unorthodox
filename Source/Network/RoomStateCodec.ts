@@ -98,6 +98,10 @@ export interface Members {
   turnPlayerId: PlayerId | null;
   pace: Pace;
   themeRounds: Map<ThemeId, number>;
+  /** The seats the round's enchanted card reaches, or undefined where the stored room predates
+   * the effect or its card carried none. A host that refreshed mid-round comes back into the
+   * same spread rather than losing it off the bar. */
+  affectedPlayers: Set<PlayerId> | undefined;
   /** Whether the room was held, and when. A host that refreshed while the room was held has to
    * come back into the hold rather than let a stopped clock start running behind its back. */
   paused: boolean;
@@ -112,12 +116,16 @@ function optionalNumber(value: unknown): number | undefined {
 
 /** The seats, totals, turn, pace and theme counts a stored room comes back with. */
 function membersFrom(fields: Fields): Members {
+  const affected = rawPairs(fields, 'affected').filter(
+    (value): value is PlayerId => typeof value === 'string'
+  );
   return {
     scores: toMap(rawPairs(fields, 'scores'), isNumber),
     players: toMap(rawPairs(fields, 'players'), isPlayer),
     turnPlayerId: turnFrom(fields),
     pace: paceFrom(fields),
     themeRounds: themeRoundsFrom(fields),
+    affectedPlayers: affected.length > 0 ? new Set(affected) : undefined,
     paused: fields.get('paused') === true,
     pausedAt: optionalNumber(fields.get('pausedAt')),
   };

@@ -33,6 +33,7 @@ export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>
     // ran. Started empty rather than carried from a lobby that could have been jumped into from a
     // finished game.
     themeRounds: new Map(),
+    affectedPlayers: new Set(),
   };
 }
 
@@ -58,6 +59,9 @@ export function handleChooseTheme(
     // this theme: the expanded card's own row of ticks has to be one shorter than it was a moment
     // earlier, on every screen at once, or the row reads as a bar that never drains.
     themeRounds: roundsAfter(state.themeRounds, action.theme),
+    // Who the card's effect reaches, worked out by the host from the standings and sent with the
+    // press. Empty where the card carries no effect, which is the ordinary card and not a bug.
+    affectedPlayers: new Set(action.affectedPlayers ?? []),
   };
 }
 
@@ -145,6 +149,9 @@ export function handleEndReviewing(
     scores: roundScores,
     cumulativeScores,
     theme: state.theme,
+    // The round is over, so the spread is over with it: the seats it reached stop wearing the
+    // glint the moment the scores are up rather than carrying it into the next bank.
+    affectedPlayers: new Set(),
   };
 }
 
@@ -170,6 +177,8 @@ export function handleNextRound(state: HostState, action: ActionOf<'NEXT_ROUND'>
     questionAt: undefined,
     // No count-in on a round that is not the first: the room is already looking at the bank.
     leadInMs: 0,
+    // A new bank with nothing on it: the spread belonged to the round that has just been scored.
+    affectedPlayers: new Set(),
   };
 }
 
@@ -177,5 +186,11 @@ export function handleFinal(state: HostState): HostState {
   if (state.phase !== 'Scores' && state.phase !== 'Reviewing') {
     return state;
   }
-  return { ...membersOf(state), phase: 'Final', theme: state.theme };
+  return {
+    ...membersOf(state),
+    phase: 'Final',
+    theme: state.theme,
+    // The game is over, so nothing is reaching anybody: the last round's spread goes with it.
+    affectedPlayers: new Set(),
+  };
 }

@@ -1,5 +1,6 @@
 import * as Game from '@/Game';
-import { createLogger, themesForRoom, type Random, type ThemeId } from '@/Core';
+import { createLogger, themesForRoom, type PlayerId, type Random, type ThemeId } from '@/Core';
+import { affectedByChoice } from './HostIncoming';
 
 const log = createLogger('HostPhases');
 
@@ -11,9 +12,7 @@ export function startGame(
   durationMs: number,
   leadInMs = 0
 ): Game.HostState {
-  if (state?.phase !== 'Lobby') {
-    return state ?? Game.freshLobbyState();
-  }
+  if (state?.phase !== 'Lobby') return state ?? Game.freshLobbyState();
   log('info', 'starting game');
   return Game.reducer(state, {
     type: 'START_GAME',
@@ -81,12 +80,38 @@ export function startRandomPick(
 }
 
 /** The sweep is over and the room's roll commits. */
-export function resolveRandomPick(state: Game.HostState | undefined): Game.HostState {
-  if (state?.phase !== 'Choosing') {
+export function resolveRandomPick(
+  state: Game.HostState | undefined,
+  roomCode: string | undefined
+): Game.HostState {
+  if (state?.phase !== 'Choosing' || state.picking === undefined) {
     return state ?? Game.freshLobbyState();
   }
   log('info', 'room is settling on its own pick');
-  return Game.reducer(state, { type: 'RESOLVE_RANDOM_PICK', at: Date.now() });
+  const affected = affectedByChoice(state, roomCode, state.picking.theme, '');
+  return Game.reducer(state, {
+    type: 'RESOLVE_RANDOM_PICK',
+    at: Date.now(),
+    ...(affected === undefined ? {} : { affectedPlayers: affected }),
+  });
+}
+
+/** A seat answering the bank, with the seats the card's effect reaches worked out beside it. */
+export function chooseTheme(
+  state: Game.HostState | undefined,
+  roomCode: string | undefined,
+  theme: ThemeId,
+  playerId: PlayerId
+): Game.HostState {
+  if (state === undefined) return Game.freshLobbyState();
+  const affected = affectedByChoice(state, roomCode, theme, playerId);
+  return Game.reducer(state, {
+    type: 'CHOOSE_THEME',
+    playerId,
+    theme,
+    at: Date.now(),
+    ...(affected === undefined ? {} : { affectedPlayers: affected }),
+  });
 }
 
 /** Holding the room, or letting it go. Not a phase change, but the host pressing one control, so
@@ -145,9 +170,7 @@ export function nextPhase(
   topic: string,
   durationMs: number
 ): Game.HostState {
-  if (state === undefined) {
-    return Game.freshLobbyState();
-  }
+  if (state === undefined) return Game.freshLobbyState();
   return Game.reducer(state, {
     type: 'GO_TO_PHASE',
     phase,

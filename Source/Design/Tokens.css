@@ -596,6 +596,11 @@ body.PageFade {
   --Texture-ThemeCardGlint: url('./Overlays/Glint.gif');
   --Blend-ThemeCardGlint: multiply;
   --Opacity-ThemeCardGlint: 0.35;
+  /* The same glint on a seat in the bar of players, at full strength rather than the card's
+   * faint step: a seat is a fraction of the card's size, so the card's opacity reads as almost
+   * nothing there. One token rather than a second copy of the card's, since the two are the same
+   * shine and only the strength differs. */
+  --Opacity-PlayerBarGlint: 0.6;
   /* The round ticks along the bottom of a card: how big one is, how far apart they sit, how
    * rounded, and how faint the ones the room is not on are. A tick rather than a dot, and
    * taller than it is wide: a row of dots on a card this size reads as a rating meter, and ten

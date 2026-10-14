@@ -13,10 +13,7 @@ import { stylesheet, tokenReader } from './Stylesheet';
 const sheet = stylesheet('../Source/Design/Primitives/Screen/Screen.module.css');
 const flat = sheet.flat;
 
-const tokens = readFileSync(
-  new URL('../Source/Design/Tokens.css', import.meta.url),
-  'utf8',
-);
+const tokens = readFileSync(new URL('../Source/Design/Tokens.css', import.meta.url), 'utf8');
 const tokenValue = tokenReader(tokens);
 
 /** The body of one rule, named rather than spelled out. Most of the rules checked here are plain
@@ -85,7 +82,7 @@ describe('the screen frame', () => {
     // three", which reads as the pair the screen is about with the third left over
     // underneath it.
     expect(declaration('Root', 'grid-template-columns')).toBe(
-      'min(var(--Layout-ContainerMaxWidth),100%)',
+      'min(var(--Layout-ContainerMaxWidth),100%)'
     );
   });
 
@@ -145,7 +142,7 @@ describe('the screen frame', () => {
     const margins = 2 * tokenNumber('--Layout-ScreenPaddingHorizontal');
     expect(queryWidth() - margins).toBeLessThan(queryWidth());
     expect(rowWidthFromTokens()).toBeGreaterThan(
-      tokenNumber('--Layout-ColumnsMax') * tokenNumber('--Layout-ColumnMinWidth'),
+      tokenNumber('--Layout-ColumnsMax') * tokenNumber('--Layout-ColumnMinWidth')
     );
   });
 
@@ -169,7 +166,7 @@ describe('the screen frame', () => {
     // construction, so this is the only place a floor is needed and it is on the
     // default rather than inside the query.
     expect(declaration('Root', 'grid-template-columns')).toBe(
-      'min(var(--Layout-ContainerMaxWidth),100%)',
+      'min(var(--Layout-ContainerMaxWidth),100%)'
     );
   });
 
@@ -245,7 +242,7 @@ describe('the screen frame', () => {
     // the writing phase's keyboard at 607px inside a stage 1888px wide — a width nothing chose,
     // and a fifth of the room it was given. The wide frame is what asks for a width instead.
     expect(declaration('WidthWide', 'width')).toBe(
-      'min(var(--Layout-ContainerMaxWidthWide),100%)',
+      'min(var(--Layout-ContainerMaxWidthWide),100%)'
     );
   });
 
@@ -275,10 +272,10 @@ describe('the tokens behind it', () => {
     // what the keys were asked for and what the stage had the room for.
     const scale = tokenNumber('--Scale-ContainerWide');
     expect(tokenValue('--Layout-ContainerMaxWidthWide').replace(/\s+/g, '')).toBe(
-      'calc(var(--Layout-ContainerMaxWidth)*var(--Scale-ContainerWide))',
+      'calc(var(--Layout-ContainerMaxWidth)*var(--Scale-ContainerWide))'
     );
     expect(tokenNumber('--Layout-ContainerMaxWidth') * scale).toBeGreaterThan(
-      tokenNumber('--Layout-ContainerMaxWidth') * 1,
+      tokenNumber('--Layout-ContainerMaxWidth') * 1
     );
   });
 

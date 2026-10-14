@@ -18,7 +18,10 @@ export function modifiersForRound(
   if (random() >= rule.chance) return enchanted;
   const count = 1 + Math.floor(random() * Math.min(rule.maxPerRound, themes.length));
   for (const theme of sampleUnique(themes, count, random)) {
-    const effect = GameConfig.themes.modifiers.effects[Math.floor(random() * GameConfig.themes.modifiers.effects.length)];
+    const effect =
+      GameConfig.themes.modifiers.effects[
+        Math.floor(random() * GameConfig.themes.modifiers.effects.length)
+      ];
     enchanted.set(theme, ['Enchanted', effect]);
   }
   return enchanted;

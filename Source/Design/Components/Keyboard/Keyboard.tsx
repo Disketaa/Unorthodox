@@ -42,6 +42,9 @@ export interface KeyboardProps {
   spaceLabel: string;
   enterLabel: string;
   langLabel: string;
+  /** Whether the round's enchanted card reaches this player, which lays the glint over the whole
+   * keyboard. The room's own roll says who, so it is the same on every screen. */
+  glinted?: boolean;
 }
 
 /** The four names a screen has to hand over, gathered once so the row and the keys that need
@@ -149,6 +152,7 @@ export function Keyboard({
   spaceLabel,
   enterLabel,
   langLabel,
+  glinted = false,
 }: KeyboardProps) {
   const [lang, chooseLang] = useLayout();
   const [presses, setPresses] = useState<Readonly<Record<string, number>>>({});
@@ -163,6 +167,7 @@ export function Keyboard({
 
   return (
     <div class={classes}>
+      {glinted && <span class={styles.Glint} aria-hidden="true" />}
       {rows.map((row, rowIndex) => (
         <RowKeys
           key={rowIndex}

@@ -31,7 +31,10 @@ const Noise = /\.Noise[^{]*\{([^}]*)\}/;
  * the board decides can only be resolved where that width is. */
 function widthShare(name: string): number {
   const match = card.text.match(
-    new RegExp(`${name}:\\s*calc\\(\\s*var\\(--Size-AnswerCardWidth\\)\\s*\\*\\s*([0-9.]+)\\s*\\)`, 'i'),
+    new RegExp(
+      `${name}:\\s*calc\\(\\s*var\\(--Size-AnswerCardWidth\\)\\s*\\*\\s*([0-9.]+)\\s*\\)`,
+      'i'
+    )
   );
   if (match?.[1] === undefined) throw new Error(`no width share found for ${name}`);
   return Number(match[1]);
@@ -43,8 +46,12 @@ describe('the board of answers', () => {
     // class per count the board is drawn at, and nothing beyond the third. A fourth column would
     // start a row of four beside three, reading as a strip and a pair rather than as one board.
     expect(sheet.declaration(Columns1, 'grid-template-columns')).toBe('minmax(0,1fr)');
-    expect(sheet.declaration(Columns2, 'grid-template-columns')).toBe('repeat(2,minmax(0,1fr))');
-    expect(sheet.declaration(Columns3, 'grid-template-columns')).toBe('repeat(3,minmax(0,1fr))');
+    expect(sheet.declaration(Columns2, 'grid-template-columns')).toBe(
+      'repeat(2,minmax(0,1fr))'
+    );
+    expect(sheet.declaration(Columns3, 'grid-template-columns')).toBe(
+      'repeat(3,minmax(0,1fr))'
+    );
     expect(sheet.flat).not.toContain('repeat(4');
   });
 
@@ -61,7 +68,7 @@ describe('the board of answers', () => {
     // sizes are not a board. Floored, so a row the room is short of becomes a scrolled board
     // rather than a card of twenty pixels with a word cut across it.
     expect(sheet.declaration(Root, 'grid-auto-rows')).toBe(
-      'minmax(var(--Size-AnswerCardHeightMin),1fr)',
+      'minmax(var(--Size-AnswerCardHeightMin),1fr)'
     );
     expect(sheet.declaration(Slot, 'height')).toBe('100%');
   });
@@ -79,7 +86,7 @@ describe('the board of answers', () => {
     // since the count is a class above.
     expect(sheet.declaration(Root, 'max-width')).toBe('var(--Layout-AnswerCardsMaxWidth)');
     expect(tokenValue('--Layout-AnswerCardsMaxWidth').replace(/\s+/g, '')).toBe(
-      'calc(3*var(--Size-AnswerCardWidthMax)+2*var(--Space-AnswerCardsGap))',
+      'calc(3*var(--Size-AnswerCardWidthMax)+2*var(--Space-AnswerCardsGap))'
     );
   });
 
@@ -130,7 +137,9 @@ describe('the board of answers', () => {
     // overflows it and scrolls the page. Hence the two-dimensional container and the slot being
     // given its height rather than measuring it.
     expect(sheet.declaration(Slot, 'container-type')).toBe('size');
-    expect(sheet.declaration(SlotCard, '--Size-AnswerCardWidth')).toBe('min(100cqw,100cqh*4/3)');
+    expect(sheet.declaration(SlotCard, '--Size-AnswerCardWidth')).toBe(
+      'min(100cqw,100cqh*4/3)'
+    );
     expect(sheet.declares(Slot, '--Size-AnswerCardWidth')).toBe(false);
     expect(sheet.declares(Root, '--Size-AnswerCardWidth')).toBe(false);
   });
@@ -148,10 +157,12 @@ describe('an answer card', () => {
     // the answer rather than declared as a token on the card, since a custom property substitutes
     // where it is declared: a fit written on the answer cannot reach a size the card resolved.
     expect(card.declaration(Answer, 'font-size')).toBe(
-      'calc(var(--Size-AnswerCardWidth)*0.22*var(--AnswerCard-Fit,1))',
+      'calc(var(--Size-AnswerCardWidth)*0.22*var(--AnswerCard-Fit,1))'
     );
     expect(widthShare('--Space-AnswerCardPadding')).toBeGreaterThan(0);
-    expect(widthShare('--Space-AnswerCardInset')).toBeLessThan(widthShare('--Space-AnswerCardPadding'));
+    expect(widthShare('--Space-AnswerCardInset')).toBeLessThan(
+      widthShare('--Space-AnswerCardPadding')
+    );
   });
 
   it('fits the writing into the card rather than cutting the end off an answer', () => {
@@ -184,7 +195,9 @@ describe('an answer card', () => {
     // need both: with the frame gone the rounded corner and the fill are the whole edge.
     expect(card.declaration(CardRoot, 'border')).toBe('none');
     expect(card.declaration(CardRoot, 'background')).toBe('var(--AnswerCard-Surface)');
-    expect(card.declaration(CardRoot, '--AnswerCard-Surface')).toBe('var(--Color-Surface-Hover)');
+    expect(card.declaration(CardRoot, '--AnswerCard-Surface')).toBe(
+      'var(--Color-Surface-Hover)'
+    );
   });
 
   it('puts the count behind the answer rather than beside it', () => {
@@ -197,7 +210,7 @@ describe('an answer card', () => {
     expect(card.declares(Mark, 'z-index')).toBe(false);
     expect(card.declaration(Room, 'z-index')).toBe('1');
     expect(Number(card.declaration(Noise, 'z-index'))).toBeGreaterThan(
-      Number(card.declaration(Room, 'z-index')),
+      Number(card.declaration(Room, 'z-index'))
     );
   });
 
@@ -245,7 +258,7 @@ describe('an answer card', () => {
     expect(card.declaration(Noise, 'mix-blend-mode')).toBe('var(--Blend-ThemeCardNoise)');
     expect(card.declares(Noise, 'background-size')).toBe(false);
     expect(Number(card.declaration(Noise, 'z-index'))).toBeGreaterThan(
-      Number(card.declaration(Room, 'z-index')),
+      Number(card.declaration(Room, 'z-index'))
     );
   });
 
@@ -253,11 +266,13 @@ describe('an answer card', () => {
     // Held back and struck, since the mute is the host's judgement and the room is shown it
     // rather than left to work out why a card is quiet. This held the other way round while
     // muting was one player's vote, where a strike would have said more than the vote was worth.
-    expect(card.declaration(/\.Voted\s*\{([^}]*)\}/, 'opacity')).toBe('var(--Opacity-AnswerCardVoted)');
+    expect(card.declaration(/\.Voted\s*\{([^}]*)\}/, 'opacity')).toBe(
+      'var(--Opacity-AnswerCardVoted)'
+    );
     expect(card.ruleBody(/\.Voted \.Answer\s*\{([^}]*)\}/)).toContain('line-through');
   });
 
-  it('answers the pointer in the palette\'s own next step, muted or not', () => {
+  it("answers the pointer in the palette's own next step, muted or not", () => {
     // The board is read as one thing, so a card wears nobody's accent: the hover is the palette's
     // next step down, and the figure behind the answer takes the muted grey with it, since a
     // surface alone moving one step is a change nobody sees. A muted card used to be left out of
@@ -266,10 +281,12 @@ describe('an answer card', () => {
     const hover = /\.Root:hover[^{]*\{([^}]*)\}/;
     expect(card.declaration(hover, '--AnswerCard-Surface')).toBe('var(--Color-Surface-Active)');
     expect(card.declaration(/\.Root:hover\s+\.Mark[^{]*\{([^}]*)\}/, 'color')).toBe(
-      'var(--Color-Text-Muted)',
+      'var(--Color-Text-Muted)'
     );
     expect(card.text).not.toContain(':not(.Voted)');
-    expect(card.text).not.toContain('.Voted:hover{--AnswerCard-Surface:var(--Color-Surface-Hover)');
+    expect(card.text).not.toContain(
+      '.Voted:hover{--AnswerCard-Surface:var(--Color-Surface-Hover)'
+    );
   });
 
   it('washes a muted answer in the feedback red, writing and all', () => {
@@ -281,7 +298,7 @@ describe('an answer card', () => {
     // The wash is one token, shared with the bar of players the round scored nothing, so a muted
     // card and a broken seat are the same pink rather than two reds a room has to learn.
     expect(card.declaration(voted, '--AnswerCard-Surface')).toBe(
-      'var(--Color-Feedback-Muted-Wash)',
+      'var(--Color-Feedback-Muted-Wash)'
     );
     expect(card.declaration(voted, 'color')).toBe('var(--Color-Feedback-Error)');
     expect(card.declares(voted, 'border')).toBe(false);
@@ -289,7 +306,7 @@ describe('an answer card', () => {
     // The muted card answers the pointer as well, or the host gets no answer from the cards they
     // are actually looking at.
     expect(card.declaration(/\.Voted:hover\s*\{([^}]*)\}/, '--AnswerCard-Surface')).toContain(
-      'color-mix(insrgb',
+      'color-mix(insrgb'
     );
   });
 

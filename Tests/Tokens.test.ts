@@ -9,10 +9,7 @@ import { contrastRatio, parseHex } from '../Source/Core/Color';
  * palette. It is out here rather than under `Source/` because it reads a file with `node:fs`,
  * and widening the app's TypeScript `types` to allow that would let browser code import Node
  * built-ins. `Tests/` is outside the app's `tsconfig` and vitest still picks the file up. */
-const tokens = readFileSync(
-  new URL('../Source/Design/Tokens.css', import.meta.url),
-  'utf8',
-);
+const tokens = readFileSync(new URL('../Source/Design/Tokens.css', import.meta.url), 'utf8');
 
 /** WCAG AA for body text. The button labels are 16px, so this is the bar. */
 const BodyText = 4.5;
@@ -56,24 +53,24 @@ describe('the two filled buttons', () => {
     // is compared rather than the hex: two different colours cannot share a hex.
     expect(shareDarkened(Primary('Background'), Primary('Hover'))).toBeCloseTo(
       shareDarkened(Secondary('Background'), Secondary('Hover')),
-      2,
+      2
     );
   });
 
   it('darkens both by the same amount when pressed', () => {
     expect(shareDarkened(Primary('Hover'), Primary('Active'))).toBeCloseTo(
       shareDarkened(Secondary('Hover'), Secondary('Active')),
-      2,
+      2
     );
   });
 
   it('goes further on press than on hover, in both', () => {
     // A press that was shallower than the hover would read as the button letting go.
     expect(shareDarkened(Primary('Hover'), Primary('Active'))).toBeGreaterThan(
-      shareDarkened(Primary('Background'), Primary('Hover')),
+      shareDarkened(Primary('Background'), Primary('Hover'))
     );
     expect(shareDarkened(Secondary('Hover'), Secondary('Active'))).toBeGreaterThan(
-      shareDarkened(Secondary('Background'), Secondary('Hover')),
+      shareDarkened(Secondary('Background'), Secondary('Hover'))
     );
   });
 

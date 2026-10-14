@@ -2,7 +2,7 @@
  * Its own file because reading a phase and guarding its fields are two different jobs, and only
  * one of them changes when a phase gains a field. */
 import type { HostState, RandomPick, RoomMembers } from '@/Game';
-import { isThemeId } from '@/Core';
+import { isThemeId, type ThemeId } from '@/Core';
 import { toGroupVotes } from './RoomGroupVotes';
 
 /** The marks a board of answers carries when a room is restored mid-round: which cards were
@@ -50,7 +50,16 @@ function answeredFrom(fields: Fields): number | undefined {
 
 /** The two untimed phases, which carry no clock at all. */
 function plainFrom(fields: Fields, members: Members): HostState | undefined {
-  const { scores, players, turnPlayerId, pace, themeRounds, paused, pausedAt } = members;
+  const {
+    scores,
+    players,
+    turnPlayerId,
+    pace,
+    themeRounds,
+    affectedPlayers,
+    paused,
+    pausedAt,
+  } = members;
   switch (fields.get('phase')) {
     case 'Lobby':
       return {
@@ -60,6 +69,7 @@ function plainFrom(fields: Fields, members: Members): HostState | undefined {
         turnPlayerId,
         pace,
         themeRounds,
+        affectedPlayers,
         paused,
         pausedAt,
       };
@@ -71,6 +81,7 @@ function plainFrom(fields: Fields, members: Members): HostState | undefined {
         turnPlayerId,
         pace,
         themeRounds,
+        affectedPlayers,
         paused,
         pausedAt,
         theme: themeFrom(fields),
@@ -111,9 +122,46 @@ function choosingFrom(
   };
 }
 
+/** The scores phase, which carries the round's own points beside the running totals. */
+function scoresFrom(fields: Fields, members: Members, theme: ThemeId | undefined): HostState {
+  const {
+    scores,
+    players,
+    turnPlayerId,
+    pace,
+    themeRounds,
+    affectedPlayers,
+    paused,
+    pausedAt,
+  } = members;
+  return {
+    phase: 'Scores',
+    ...clockOf(fields),
+    scores: toMap(rawPairs(fields, 'round'), isNumber),
+    players,
+    cumulativeScores: scores,
+    turnPlayerId,
+    pace,
+    themeRounds,
+    affectedPlayers,
+    paused,
+    pausedAt,
+    theme,
+  };
+}
+
 /** The three timed phases, which all read the same clock, roster and turn. */
 function timedFrom(fields: Fields, members: Members): HostState | undefined {
-  const { scores, players, turnPlayerId, pace, themeRounds, paused, pausedAt } = members;
+  const {
+    scores,
+    players,
+    turnPlayerId,
+    pace,
+    themeRounds,
+    affectedPlayers,
+    paused,
+    pausedAt,
+  } = members;
   const common = {
     ...clockOf(fields),
     topic: text(fields, 'topic'),
@@ -123,6 +171,7 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
     turnPlayerId,
     pace,
     themeRounds,
+    affectedPlayers,
     paused,
     pausedAt,
   };
@@ -135,19 +184,7 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
     case 'Reviewing':
       return { phase: 'Reviewing', ...common, ...reviewMarks(fields), theme };
     case 'Scores':
-      return {
-        phase: 'Scores',
-        ...clockOf(fields),
-        scores: toMap(rawPairs(fields, 'round'), isNumber),
-        players,
-        cumulativeScores: scores,
-        turnPlayerId,
-        pace,
-        themeRounds,
-        paused,
-        pausedAt,
-        theme,
-      };
+      return scoresFrom(fields, members, theme);
     default:
       return undefined;
   }

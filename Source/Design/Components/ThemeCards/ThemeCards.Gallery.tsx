@@ -17,7 +17,8 @@ function withOneFinished(themes: readonly ThemeId[], first: ThemeId | undefined)
   return spent;
 }
 
-/** A display mults map for the gallery: each theme gets a different multiplier so the feature is visible. */
+/** A display mults map for the gallery: each theme gets a different multiplier so the feature is
+ * visible. */
 function galleryMults(themes: readonly ThemeId[]): Map<ThemeId, number> {
   const values = [1.25, 1.5, 1.75, 2, 1.5, 1.25];
   return new Map(themes.map((theme, i) => [theme, values[i]]));

@@ -273,7 +273,7 @@ describe('the theme cards', () => {
     // answer, and the theme's own tint is the change that says which theme the card is.
     // At full strength rather than faded, because a corner mark faded is a mark that is neither
     // the roll nor the theme.
-    expect(card.declaration(Mult, 'color')).toBe('var(--Color-Text-Default)');
+    expect(card.declaration(Mult, 'color')).toBe('var(--Color-Neutral-500)');
     expect(card.declaration(MultHover, 'color').replace(/\s+/g, '')).toBe(
       'var(--ThemeCard-Tint,var(--Accent-Tint))'
     );
@@ -475,10 +475,10 @@ describe('the theme cards', () => {
       Number(card.declaration(Name, 'z-index'))
     );
   });
-  it('holds the corner mark above the glint, since a label is not a finish', () => {
-    // The one thing on the card saying what the room's roll is cannot be the one thing the
-    // enchantment is drawn across.
-    expect(Number(card.declaration(Mult, 'z-index'))).toBeGreaterThan(
+  it('holds the corner mark below the glint, since a label is not a finish', () => {
+    // The roll and the effect are read off the card, so they sit under the shine rather than over
+    // it: a label drawn across the enchantment is a label fighting the finish.
+    expect(Number(card.declaration(Mult, 'z-index'))).toBeLessThan(
       Number(card.declaration(Glint, 'z-index'))
     );
   });

@@ -128,6 +128,9 @@ export function PlayerBarView({ view }: PhaseViewProps) {
   // off a second copy of the marks.
   const scoredNothing = struckWriters(reviewing, view.rejectedGroupIds, reveal);
   const named = seatPulses(reviewing, reveal, usePresses(reviewing));
+  // Who the round's enchanted card reaches, read off the room's own roll rather than worked out
+  // here: the host named the seats and every screen is told the same ones.
+  const glinted = new Set(view.publicState?.affectedPlayerIds ?? []);
   const players: PlayerBarEntry[] = [...view.playerNames].map(([id, name]) => {
     const look = lookFor(view.playerLooks, id);
     return {
@@ -140,6 +143,7 @@ export function PlayerBarView({ view }: PhaseViewProps) {
       isTurning: waitingOnTurn && id === view.turnPlayerId,
       scoredNothing: scoredNothing.has(id),
       pulse: named.get(id) ?? 0,
+      glinted: glinted.has(id),
       // Every seat still at work, and not only this browser's own: the room says who has written,
       // so a row of seats fills up as the answers come in. Writing over an answer already sent
       // counts as work again, and the room is told that too, so it holds for everybody's bar.

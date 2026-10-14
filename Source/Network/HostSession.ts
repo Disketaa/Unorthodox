@@ -6,6 +6,7 @@ import {
   revealQuestionFrom,
   startRandomPickFrom,
   resolveRandomPickFrom,
+  chooseThemeFrom,
   setPausedFrom,
   endReviewingFrom,
   nextRoundFrom,
@@ -76,7 +77,6 @@ export class HostSession {
     log('info', 'stopping host session');
     this.room.close();
     this.transport.stop();
-    this.botsAdded = 0;
   }
 
   /** What the phase flow reads and writes, so the flow needs no reference back to this class. */
@@ -116,7 +116,7 @@ export class HostSession {
    * move the host makes about itself, so it is refused when it is not their turn like anybody
    * else's. */
   chooseTheme(theme: ThemeId): void {
-    this.apply({ type: 'CHOOSE_THEME', playerId: HostPlayerId, theme, at: Date.now() });
+    chooseThemeFrom(this.flow, this.roomCode, theme, HostPlayerId);
   }
 
   rejectOwnGroup(groupId: number): void {
@@ -172,7 +172,7 @@ export class HostSession {
 
   /** The sweep is over and the roll commits. */
   resolveRandomPick(): void {
-    resolveRandomPickFrom(this.flow);
+    resolveRandomPickFrom(this.flow, this.roomCode);
   }
 
   /** Holding the room still, or letting it run again. */

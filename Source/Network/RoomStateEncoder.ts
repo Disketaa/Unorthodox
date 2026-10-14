@@ -15,6 +15,7 @@ interface Members {
   turnPlayerId: PlayerId | null;
   pace: Pace;
   themeRounds: [ThemeId, number][];
+  affected?: PlayerId[];
 }
 
 /** The roster, totals, turn, pace and per-theme round counts every phase carries. The counts
@@ -27,6 +28,9 @@ function membersOf(state: HostState): Members {
     turnPlayerId: state.turnPlayerId,
     pace: state.pace,
     themeRounds: [...state.themeRounds.entries()],
+    ...(state.affectedPlayers !== undefined && state.affectedPlayers.size > 0
+      ? { affected: [...state.affectedPlayers] }
+      : {}),
   };
 }
 

@@ -23,7 +23,7 @@ describe('the bar of hexes', () => {
     expect(sheet.flat).not.toContain('overflow-x');
   });
 
-  it('cuts its seats with the game\'s own hexagon rather than a polygon it could redraw', () => {
+  it("cuts its seats with the game's own hexagon rather than a polygon it could redraw", () => {
     // The drawing is not a regular hexagon: its corners are rounded and its top and bottom points
     // are pulled off centre, so a six-point polygon would be a different shape wearing its place.
     // Filled to the box rather than contained, so the drawing's proportions are the seat's.
@@ -39,7 +39,7 @@ describe('the bar of hexes', () => {
     // changes shape under it.
     expect(tokenValue('--Space-PlayerBarSeam')).toBe('0.06');
     expect(declaration('Seat', 'margin-right')).toBe(
-      'calc(var(--Size-PlayerBarSeat)*var(--Space-PlayerBarSeam))',
+      'calc(var(--Size-PlayerBarSeat)*var(--Space-PlayerBarSeam))'
     );
   });
 
@@ -108,17 +108,19 @@ describe('the bar of hexes', () => {
     expect(tokenValue('--Size-PlayerBarNameMax')).toBe('48px');
   });
 
-  it('strokes the name in the hexagon\'s own fill, and paints that stroke under the glyph', () => {
+  it("strokes the name in the hexagon's own fill, and paints that stroke under the glyph", () => {
     // The name crosses the hexagon's top point, so plain text there is a word lying on a shape.
     // `paint-order: stroke fill` is the part that keeps it readable: the default paints fill then
     // stroke, and a stroke centred on the outline eats half the glyph — thin and grey at twelve
     // pixels. Painted first, only the outside half is left showing.
-    expect(declaration('Name', '-webkit-text-stroke')).toContain('var(--Size-PlayerBarNameStroke)');
+    expect(declaration('Name', '-webkit-text-stroke')).toContain(
+      'var(--Size-PlayerBarNameStroke)'
+    );
     expect(declaration('Name', 'paint-order')).toBe('strokefill');
     // Declared once on the seat and inherited, so the name and the score cannot end up cut against
     // different colours, and a state is one declaration rather than a rule per element.
     expect(declaration('Seat', '--Color-PlayerBarNameStroke')).toBe(
-      'var(--Color-PlayerBarSeatFill)',
+      'var(--Color-PlayerBarSeatFill)'
     );
     // The seat's fill and the hexagon's have to be the same colour for any of this to work.
     expect(declaration('Slot', 'background')).toBe('var(--Color-PlayerBarSeatFill)');
@@ -131,7 +133,7 @@ describe('the bar of hexes', () => {
     // ground. Inked rather than filled, so the fallback is the page rather than a token that would
     // be one step off nothing.
     expect(declaration('Seat', '--Color-PlayerBarSeatFill')).toContain(
-      'color-mix(insrgb,var(--Color-Page-Fill,var(--Color-Surface-Default))95%',
+      'color-mix(insrgb,var(--Color-Page-Fill,var(--Color-Surface-Default))95%'
     );
   });
 
@@ -174,7 +176,7 @@ describe('the bar of hexes', () => {
     expect(declaration('Score', 'composes')).toContain('Stroke');
   });
 
-  it('washes the seat under the pointer in the room\'s yellow, matching the score\'s stroke', () => {
+  it("washes the seat under the pointer in the room's yellow, matching the score's stroke", () => {
     // The same note the local player's own seat wears at rest, so "this one" reads the same
     // whether the pointer found a seat or the pointer is you. A fill outright would hide the
     // character the seat exists to show.
@@ -183,13 +185,13 @@ describe('the bar of hexes', () => {
     // room's yellow and not from `--Accent-Wash`, which is themed — a rose room would wash the
     // hovered seat rose and the hover would say nothing at all.
     expect(declaration('Seat', '--Color-PlayerBarHoverWash')).toContain(
-      'color-mix(insrgb,var(--Color-Room-Yellow)25%',
+      'color-mix(insrgb,var(--Color-Room-Yellow)25%'
     );
     expect(sheet.ruleBody(/\.Seat:hover\s*\{([^}]*)\}/)).toContain(
-      '--Color-PlayerBarNameStroke:var(--Color-PlayerBarHoverWash)',
+      '--Color-PlayerBarNameStroke:var(--Color-PlayerBarHoverWash)'
     );
     expect(sheet.ruleBody(/\.Seat:hover\s\.Slot\s*\{([^}]*)\}/)).toContain(
-      'background:var(--Color-PlayerBarHoverWash)',
+      'background:var(--Color-PlayerBarHoverWash)'
     );
     // The themed wash must not appear anywhere in a hover: it is what made a rose room wash rose.
     expect(sheet.text).not.toMatch(/:hover[^{]*\{[^}]*--Accent-Wash/);
@@ -199,17 +201,17 @@ describe('the bar of hexes', () => {
     expect(sheet.declares(/\.Seat:hover\s\.Slot\s*\{([^}]*)\}/, 'transition')).toBe(false);
   });
 
-  it('washes the local player\'s seat in their own tint, since that is what is unmistakably theirs', () => {
+  it("washes the local player's seat in their own tint, since that is what is unmistakably theirs", () => {
     // The seat carries the tint class of the player it belongs to, the same one the character
     // inside it wears. Composing every tint onto every seat instead would leave the last one in
     // source order winning for the whole row, so every seat would wear one colour whatever player
     // it held.
     expect(sheet.ruleBody(/\.Seat\s*\{([^}]*)\}/)).not.toContain('composes:');
     expect(declaration('Seat', '--Color-PlayerBarSeatWash')).toContain(
-      'color-mix(insrgb,var(--Character-Tint)26%',
+      'color-mix(insrgb,var(--Character-Tint)26%'
     );
     expect(sheet.declaration(/\.Self\s*\{([^}]*)\}/, '--Color-PlayerBarNameStroke')).toBe(
-      'var(--Color-PlayerBarSeatWash)',
+      'var(--Color-PlayerBarSeatWash)'
     );
   });
 
@@ -277,10 +279,10 @@ describe('the tokens behind it', () => {
     // the ranks apart.
     expect(tokenValue('--Offset-PlayerBarZigzag')).toBe('0.925');
     expect(
-      sheet.declaration(/\.Root\.Compact\s\.Seat:nth-child\(even\)\s*\{([^}]*)\}/, 'margin-top'),
+      sheet.declaration(/\.Root\.Compact\s\.Seat:nth-child\(even\)\s*\{([^}]*)\}/, 'margin-top')
     ).toBe('calc(var(--Size-PlayerBarSeat)*var(--Offset-PlayerBarZigzag))');
     expect(
-      sheet.declares(/\.Root\.Compact\s\.Seat:nth-child\(even\)\s*\{([^}]*)\}/, 'margin-left'),
+      sheet.declares(/\.Root\.Compact\s\.Seat:nth-child\(even\)\s*\{([^}]*)\}/, 'margin-left')
     ).toBe(false);
     expect(sheet.text).not.toContain(':nth-child(odd)');
   });

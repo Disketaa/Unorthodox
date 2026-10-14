@@ -2,7 +2,7 @@ import { ThemeId, ThemeModifierId, themeAccent } from '@/Core';
 import { useCallback } from 'preact/hooks';
 import { useSwayMotion } from '@/Design/Primitives';
 import { playSound } from '../../Sounds';
-import { RoundMeter } from '../RoundMeter';
+import { CardFace } from './ThemeCardFace';
 import styles from './ThemeCard.module.css';
 
 export interface ThemeCardProps {
@@ -27,6 +27,9 @@ export interface ThemeCardProps {
   /** The multiplier this card wears, from the room's roll. A card with none is plain: the corner
    * is left empty rather than showing a number that belongs to no round. */
   mult?: number;
+  /** What the card's effect is called, in the player's language. Passed in rather than read from
+   * the content here, since a card is drawn in Design and the words are the content's. */
+  effectLabel?: string;
   /** Asking for this theme. Nothing is decided yet, so nothing acts on it yet. */
   onPick?: (theme: ThemeId) => void;
   /** Whether the card idles. On by default, since a still card is the odd one out; off for a
@@ -88,7 +91,7 @@ function useCardRef(
   theme: ThemeId,
   index: number
 ) {
-    return useCallback(
+  return useCallback(
     (node: HTMLButtonElement | null) => {
       motion.current = node;
       if (node != null) {
@@ -99,60 +102,49 @@ function useCardRef(
   );
 }
 
-/** The card's face, as spans rather than layout elements: the card paints its own surface, so
- * the face is decoration on it and a Stack here would fight the button's own box. */
-function CardFace({
+/** One theme, as a card with its name on it. A button, since a Card paints an opaque surface. */
+export function ThemeCard(props: ThemeCardProps) {
+  const { theme, index = 1, spent = 0, rounds = 10 } = props;
+  const motion = useSwayMotion<HTMLButtonElement>();
+  // A theme the room has spent every round it had, read off the card's own counts.
+  const spentOut = spent >= rounds;
+  const ref = useCardRef(motion, theme, index);
+
+  return (
+    <ThemeCardButton
+      {...props}
+      index={index}
+      spent={spent}
+      rounds={rounds}
+      buttonRef={ref}
+      spentOut={spentOut}
+    />
+  );
+}
+
+/** The card's own button, split out to keep the component above under the line limit. */
+function ThemeCardButton({
+  theme,
   name,
   index,
   rounds,
   spent,
-  mult,
-}: Pick<ThemeCardProps, 'name' | 'index' | 'rounds' | 'spent' | 'mult'>) {
-  return (
-    <>
-      <span class={styles.Mult} aria-hidden="true">
-        {mult !== undefined ? `${mult}x` : ''}
-      </span>
-      <span class={styles.Panel}>
-        <span class={styles.Mark} aria-hidden="true">
-          {index}
-        </span>
-      </span>
-      <span class={styles.Noise} aria-hidden="true" />
-      <span class={styles.Name}>{name}</span>
-      <RoundMeter rounds={rounds ?? 10} spent={spent ?? 0} />
-    </>
-  );
-}
-
-/** One theme, as a card with its name on it. A button rather than a `Card` inside one, since
- * `Card` paints an opaque surface and takes no `className`, so a wash underneath would never be
- * seen. */
-export function ThemeCard({
-  theme,
-  name,
-  index = 1,
-  rounds = 10,
-  spent = 0,
   modifiers,
-  onPick,
-  moving = true,
-  blink = true,
+  mult,
+  effectLabel,
   chosen = false,
   swept = false,
   locked = false,
   waiting = false,
-  mult,
-}: ThemeCardProps) {
-  const motion = useSwayMotion<HTMLButtonElement>();
-  // A theme the room has already spent every round it had. Read off the counts rather than taken
-  // as a prop, because the card is what knows its own rounds and its own count of them.
-  const spentOut = spent >= rounds;
-  const ref = useCardRef(motion, theme, index);
-
-  return <ThemeCardButton theme={theme} name={name} index={index} rounds={rounds} spent={spent} modifiers={modifiers} mult={mult} chosen={chosen} swept={swept} locked={locked} waiting={waiting} moving={moving} blink={blink} onPick={onPick} cardClasses={cardClasses} motion={motion} buttonRef={ref} spentOut={spentOut} />;
-}
-function ThemeCardButton({ theme, name, index, rounds, spent, modifiers, mult, chosen, swept, locked, waiting, moving, blink, onPick, cardClasses, motion, buttonRef, spentOut }: ThemeCardProps & { cardClasses: typeof cardClasses; motion: { current: HTMLButtonElement | null }; buttonRef: (node: HTMLButtonElement | null) => void; spentOut: boolean }) {
+  moving = true,
+  blink = true,
+  onPick,
+  buttonRef,
+  spentOut,
+}: ThemeCardProps & {
+  buttonRef: (node: HTMLButtonElement | null) => void;
+  spentOut: boolean;
+}) {
   return (
     <button
       type="button"
@@ -172,19 +164,7 @@ function ThemeCardButton({ theme, name, index, rounds, spent, modifiers, mult, c
       {!spentOut && modifiers?.includes('Enchanted') === true && (
         <span class={styles.Glint} aria-hidden="true" />
       )}
-      {modifiers?.some((m) => m === 'Alone' || m === 'Half' || m === 'Laggards' || m === 'Leaders') && (
-        <img
-          src={
-            modifiers?.includes('Alone') ? '/Source/Design/Icons/EffectAlone.svg' :
-            modifiers?.includes('Half') ? '/Source/Design/Icons/EffectHalf.svg' :
-            modifiers?.includes('Laggards') ? '/Source/Design/Icons/EffectLaggards.svg' :
-            '/Source/Design/Icons/EffectLeaders.svg'
-          }
-          class={styles.Effect}
-          aria-hidden="true"
-          alt=""
-        />
-      )}
+      {effectLabel !== undefined && <span class={styles.EffectLabel}>{effectLabel}</span>}
     </button>
   );
 }

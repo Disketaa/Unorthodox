@@ -94,8 +94,12 @@ describe('the yellow', () => {
   });
 
   it('is full before the mark has settled, so the mark always lands on the colour', () => {
-    const discFull = Number(sheet.text.match(/@keyframes PhaseSplashDisc[\s\S]*?(\d+)% \{\s*scale: 1;/) ?.[1]);
-    const markSettled = Number(sheet.text.match(/@keyframes PhaseSplashGrow[\s\S]*?(\d+)% \{\s*scale: 0\.25;/) ?.[1]);
+    const discFull = Number(
+      sheet.text.match(/@keyframes PhaseSplashDisc[\s\S]*?(\d+)% \{\s*scale: 1;/)?.[1]
+    );
+    const markSettled = Number(
+      sheet.text.match(/@keyframes PhaseSplashGrow[\s\S]*?(\d+)% \{\s*scale: 0\.25;/)?.[1]
+    );
     expect(discFull).toBeLessThan(markSettled);
   });
 
@@ -131,13 +135,13 @@ describe('the mark in the middle of it', () => {
     expect(step('PhaseSplashGrow', '20')).toContain('scale:0.25');
   });
 
-it('is centred on the window rather than laid out in it', () => {
-  // Absolute and centred in both directions, so the mark sits in the middle of the colour
-  // rather than beside it.
+  it('is centred on the window rather than laid out in it', () => {
+    // Absolute and centred in both directions, so the mark sits in the middle of the colour
+    // rather than beside it.
     expect(sheet.ruleBody(/\.Mark\s*\{([^}]*)\}/)).toContain('translate:-50%-50%');
   });
 
-it('grows to a quarter of the window, overshooting by a hundredth', () => {
+  it('grows to a quarter of the window, overshooting by a hundredth', () => {
     // Nothing, up to a quarter of the window, held while the room reads it. The overshoot is
     // where the back-out curve lands and is still under one, so the mask is never stretched
     // past the size it was drawn at.
@@ -147,7 +151,7 @@ it('grows to a quarter of the window, overshooting by a hundredth', () => {
     expect(step('PhaseSplashGrow', '85')).toContain('scale:0.25');
   });
 
-it('leaves by growing as it fades, both starting at the same moment', () => {
+  it('leaves by growing as it fades, both starting at the same moment', () => {
     // The mark drifts out of the yellow and dims in one movement: a mark that faded where it
     // stood, or shrank out from the middle, was being wound back in rather than taken away.
     // Both halves begin at the same step, so the mark is never either full size or already gone.
@@ -156,7 +160,7 @@ it('leaves by growing as it fades, both starting at the same moment', () => {
     expect(step('PhaseSplashGrow', '100')).toContain('opacity:0');
   });
 
-it('holds the mark at full opacity until the very end', () => {
+  it('holds the mark at full opacity until the very end', () => {
     // The opacity is named at every step and flat at one through the growth and the hold. An
     // opacity written only at the last step is one the browser is free to interpolate across the
     // steps in between, which fades the mark long before it is supposed to go.
@@ -185,7 +189,9 @@ it('holds the mark at full opacity until the very end', () => {
     // spends most of the splash looking at a mark that has already settled.
     const arrivedAt = Number(sheet.text.match(/(\d+)% \{\s*scale: 0\.26/)?.[1]);
     const leavesAt = Number(
-      sheet.text.match(/(\d+)% \{\s*scale: 0\.25;\s*opacity: 1;\s*animation-timing-function: var\(--Easing-Smooth\)/)?.[1]
+      sheet.text.match(
+        /(\d+)% \{\s*scale: 0\.25;\s*opacity: 1;\s*animation-timing-function: var\(--Easing-Smooth\)/
+      )?.[1]
     );
     expect(arrivedAt).toBeLessThan(25);
     expect(leavesAt).toBeGreaterThan(75);

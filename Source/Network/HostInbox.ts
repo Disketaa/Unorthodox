@@ -50,6 +50,7 @@ export class HostInbox {
       roster: this.room.roster,
       transport: this.wire,
       state,
+      roomCode: this.room.code,
     });
     if (action !== undefined) {
       this.apply(action);

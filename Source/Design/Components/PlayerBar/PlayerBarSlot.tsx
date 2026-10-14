@@ -31,6 +31,7 @@ export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
     atWork ? styles.Waiting : '',
     offline ? styles.Offline : '',
     scoredNothing ? styles.Destroyed : '',
+    entry.glinted ? styles.Glinted : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -51,6 +52,7 @@ export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
             />
           )}
         </span>
+        {entry.glinted && <span class={styles.Glint} aria-hidden="true" />}
       </span>
       <span class={styles.Label}>
         <span class={styles.Name}>{entry.name}</span>

@@ -1,12 +1,48 @@
 import { ClientMessage } from './Protocol';
 import { Transport } from './Transport';
 import { HostRoster, resolveLook } from './HostRoster';
-import { GameAction, HostState } from '@/Game';
+import { affectedPlayersFor, GameAction, HostState, modifiersForRound } from '@/Game';
 import { GameConfig } from '@/Game';
-import { createLogger } from '@/Core';
+import { ThemeEffectId, ThemeId, createLogger, themesForRoom } from '@/Core';
 import { HostPlayerId } from './HostSession';
 
 const log = createLogger('HostIncoming');
+
+/** Who a chosen card's effect reaches, or undefined where it carries none. Rolled here rather
+ * than in the reducer because the reducer is the rule and not the dice. Shared by the press and
+ * the room's own roll, which are one answer given by two different hands. */
+export function affectedByChoice(
+  state: HostState,
+  roomCode: string | undefined,
+  theme: ThemeId,
+  chooserId: string
+): string[] | undefined {
+  if (roomCode === undefined || state.phase !== 'Choosing') {
+    return undefined;
+  }
+  const themes = themesForRoom(roomCode, GameConfig.themes.cardsPerLobby);
+  let round = 0;
+  for (const count of state.themeRounds.values()) round += count;
+  const carried = modifiersForRound(roomCode, themes, round).get(theme) ?? [];
+  const effect = carried.find(
+    (modifier): modifier is ThemeEffectId =>
+      modifier === 'Alone' ||
+      modifier === 'Half' ||
+      modifier === 'Laggards' ||
+      modifier === 'Leaders'
+  );
+  if (effect === undefined) {
+    return undefined;
+  }
+  const affected = affectedPlayersFor(
+    effect,
+    [...state.players.keys()],
+    state.cumulativeScores,
+    chooserId,
+    `${roomCode}:effect:${round}:${theme}`
+  );
+  return [...affected];
+}
 
 /** What the host needs to turn one message from a client into a change of state. */
 export interface IncomingContext {
@@ -16,6 +52,9 @@ export interface IncomingContext {
   roster: HostRoster;
   transport: Transport;
   state: HostState;
+  /** The room's code, which is what the deal and the round's modifiers are rolled from. Absent
+   * before a room is open, which is the only time nothing needs either. */
+  roomCode: string | undefined;
 }
 
 /** A player taking a seat, or taking it back. Its own function because joining is the only
@@ -79,6 +118,12 @@ export function toAction(context: IncomingContext): GameAction | undefined {
         playerId: message.playerId,
         theme: message.theme,
         at: Date.now(),
+        affectedPlayers: affectedByChoice(
+          context.state,
+          context.roomCode,
+          message.theme,
+          message.playerId
+        ),
       };
     case 'SubmitAnswer':
       return { type: 'SUBMIT_ANSWER', playerId: message.playerId, text: message.text };

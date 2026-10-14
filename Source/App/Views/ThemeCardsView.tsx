@@ -1,8 +1,9 @@
-import { ThemeId, themesForRoom } from '@/Core';
+import { ThemeId, ThemeModifierId, themesForRoom } from '@/Core';
 import { useMemo } from 'preact/hooks';
 import { useThemeSweep } from '../Hooks/UseThemeSweep';
 import { ThemeCards } from '@/Design/Components';
 import { GameConfig, multForTheme, modifiersForRound } from '@/Game';
+import { Strings } from '@/Content';
 
 export interface ThemeCardsViewProps {
   /** The room's code, which is what the deal is rolled from. */
@@ -49,6 +50,48 @@ function computeMults(
   return map;
 }
 
+/** What each card's effect is called, in the player's language. */
+function labelsFor(
+  themes: readonly ThemeId[],
+  modifiers: ReadonlyMap<ThemeId, readonly ThemeModifierId[]>
+): ReadonlyMap<ThemeId, string> {
+  const labels = new Map<ThemeId, string>();
+  for (const theme of themes) {
+    const carried = modifiers.get(theme) ?? [];
+    const label = carried.includes('Alone')
+      ? Strings.effects.alone
+      : carried.includes('Half')
+        ? Strings.effects.half
+        : carried.includes('Laggards')
+          ? Strings.effects.laggards
+          : carried.includes('Leaders')
+            ? Strings.effects.leaders
+            : undefined;
+    if (label !== undefined) labels.set(theme, label);
+  }
+  return labels;
+}
+
+/** Everything the round has put on the bank: the modifiers, the multipliers and what each effect
+ * is called. One roll of the modifiers feeding the other two, so a card's mult and its label
+ * are always about the same enchantment. */
+function bankFor(
+  roomCode: string,
+  themes: readonly ThemeId[],
+  bankRound: number
+): {
+  modifiers: ReadonlyMap<ThemeId, readonly ThemeModifierId[]>;
+  mults: ReadonlyMap<ThemeId, number>;
+  effectLabels: ReadonlyMap<ThemeId, string>;
+} {
+  const modifiers = modifiersForRound(roomCode, themes, bankRound);
+  return {
+    modifiers,
+    mults: computeMults(roomCode, themes, bankRound, modifiers),
+    effectLabels: labelsFor(themes, modifiers),
+  };
+}
+
 export function ThemeCardsView({
   roomCode,
   choosing,
@@ -60,25 +103,19 @@ export function ThemeCardsView({
   onPickTheme,
   spent,
 }: ThemeCardsViewProps) {
-  // Held across renders, because a fresh array every render is a fresh dependency: the sweep
-  // walks off one, and a walk that restarts after every hop is a hop somewhere random every hop.
+  // Held across renders: a fresh array every render is a fresh dependency for the sweep.
   const themes = useMemo(
     () => themesForRoom(roomCode, GameConfig.themes.cardsPerLobby),
     [roomCode]
   );
   const { looking } = useThemeSweep(picking, themes, clockOffsetMs);
-  // What this round has put on the bank, rolled from the room code and the round rather than
-  // sent, so a client cannot deal a different set of enchanted cards from the host. Held across
-  // renders for the same reason the deal is: a fresh map every render is a fresh roll.
   const round = spentRounds(spent);
-  const modifiers = useMemo(
-    () => modifiersForRound(roomCode, themes, round),
-    [roomCode, themes, round]
-  );
-  // Multiplier rolled per theme from room/round seed; only enchanted cards get >1.
-  const mults = useMemo(
-    () => computeMults(roomCode, themes, round, modifiers),
-    [roomCode, themes, round, modifiers]
+  // The round the bank was offered in: the pick is counted the moment it lands, so rolling
+  // against the round after it would be a different set of cards.
+  const bankRound = theme !== undefined ? Math.max(0, round - 1) : round;
+  const { modifiers, mults, effectLabels } = useMemo(
+    () => bankFor(roomCode, themes, bankRound),
+    [roomCode, themes, bankRound]
   );
   return (
     <ThemeCards
@@ -87,6 +124,7 @@ export function ThemeCardsView({
       spent={spent}
       modifiers={modifiers}
       mults={mults}
+      effectLabels={effectLabels}
       picked={theme}
       picking={picking !== undefined}
       swept={looking}

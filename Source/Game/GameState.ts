@@ -24,8 +24,11 @@ export interface RoomMembers {
    * buttons are drawn for clients too, to show what a pace would mean. */
   pace: Pace;
   /** How many rounds have been played in each theme. Per theme rather than one running total,
-   * since the bank is the same six themes every round and each of them drains at its own rate. */
+   * since the bank is the same six themes every round and each drains at its own rate. */
   themeRounds: Map<ThemeId, number>;
+  /** The seats the round's enchanted card reaches. Empty where the card carried no effect, and
+   * empty again the moment a new bank is offered. Optional, so an older save reads as nobody. */
+  affectedPlayers?: Set<PlayerId>;
   /** Whether the host has held the room, which stops every clock and every answer at once. The
    * room's rather than the host screen's: a player watching a timer run on has to be stopped by
    * the same hand that started it. */
@@ -50,6 +53,7 @@ export function membersOf(state: HostState): RoomMembers {
     turnPlayerId: state.turnPlayerId,
     pace: state.pace,
     themeRounds: state.themeRounds,
+    affectedPlayers: state.affectedPlayers,
     paused: false,
     pausedAt: undefined,
   };

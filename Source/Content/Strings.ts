@@ -203,4 +203,10 @@ export const Strings = {
      * the first thing to suspect rather than one thing among several. */
     clockUnchecked: 'Время не синхронизировано.',
   },
+  effects: {
+    alone: 'Выбирающему',
+    half: 'Рандомно',
+    laggards: 'Отстающим',
+    leaders: 'Лидирующим',
+  },
 } as const;

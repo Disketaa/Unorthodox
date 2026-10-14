@@ -3,12 +3,14 @@
  * passed in, so a phase cannot be entered at a length the table does not give it. */
 import * as Game from '@/Game';
 import type { HostState } from '@/Game';
+import type { PlayerId, ThemeId } from '@/Core';
 import {
   startGame,
   startWriting,
   revealQuestion,
   startRandomPick,
   resolveRandomPick,
+  chooseTheme,
   setPaused,
   closeWriting,
   closeReviewing,
@@ -71,10 +73,22 @@ export function startRandomPickFrom(host: FlowHost, roomCode: string): void {
 }
 
 /** The sweep is over and the roll commits. */
-export function resolveRandomPickFrom(host: FlowHost): void {
+export function resolveRandomPickFrom(host: FlowHost, roomCode: string): void {
   const state = host.getState();
   if (state === undefined) return;
-  host.commit(resolveRandomPick(state));
+  host.commit(resolveRandomPick(state, roomCode));
+}
+
+/** A seat answering the bank from the host's own screen. */
+export function chooseThemeFrom(
+  host: FlowHost,
+  roomCode: string,
+  theme: ThemeId,
+  playerId: PlayerId
+): void {
+  const state = host.getState();
+  if (state === undefined) return;
+  host.commit(chooseTheme(state, roomCode, theme, playerId));
 }
 
 /** How long the reviewing round runs for the room: a floor for being in it at all — five seconds

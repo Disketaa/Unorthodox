@@ -143,6 +143,24 @@
   mask: url('../../Icons/HexagonDestroyed.svg') center / 100% 100% no-repeat;
 }
 
+/* A seat the round's enchanted card reaches: the glint laid over the whole hexagon, the same
+ * shine a card carries. Over the face and not beside it, since the spread is a finish on the seat
+ * rather than a second thing drawn on it, and blended the way the card's is so it reads as the
+ * one effect the room already knows. Hidden from the pointer, since the seat is still the seat
+ * being pressed. */
+.Glint {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image: var(--Texture-ThemeCardGlint);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  mix-blend-mode: var(--Blend-ThemeCardGlint);
+  opacity: var(--Opacity-PlayerBarGlint);
+}
+
 /* The character inside the hexagon. Held well in from the sloped edges, since the top of the
  * drawing is narrow and a face drawn to it spills past them — one inset for every seat, so no
  * face is measured differently from another's. */

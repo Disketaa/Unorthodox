@@ -16,6 +16,12 @@ export class HostRoom {
 
   constructor(readonly wire: Transport) {}
 
+  /** The room's code, for anything that has to roll the same deal the room did. Undefined before
+   * a room is open, which is the only time nothing needs it. */
+  get code(): string | undefined {
+    return this.roomCode;
+  }
+
   /** Open a room, picking up the game this tab was already running. A refreshing host has not
    * left, so a fresh lobby would be a different room with the same code, and everybody in it
    * would be waiting on a host that no longer exists. */

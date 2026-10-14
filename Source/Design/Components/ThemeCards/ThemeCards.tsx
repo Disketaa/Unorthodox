@@ -33,6 +33,9 @@ export interface ThemeCardsProps {
   /** The multiplier on each card, by theme. Rolled from the room and the round rather than sent,
    * so a client cannot hand a card a number the host did not roll. */
   mults?: ReadonlyMap<ThemeId, number>;
+  /** What each card's effect is called, by theme. Passed in rather than read here, since the
+   * words are the content's and a card is drawn in Design. */
+  effectLabels?: ReadonlyMap<ThemeId, string>;
 }
 
 /** Raised over `--Pop-Stagger`, which is sized for a row of characters standing close: six large
@@ -64,7 +67,7 @@ function useWash(picked: ThemeId | undefined, bank: RefObject<HTMLDivElement>): 
  * than a card's added. */
 type SlotProps = Pick<
   ThemeCardsProps,
-  'roundsPerTheme' | 'spent' | 'modifiers' | 'mults' | 'picked' | 'onPick'
+  'roundsPerTheme' | 'spent' | 'modifiers' | 'mults' | 'effectLabels' | 'picked' | 'onPick'
 > & {
   theme: ThemeId;
   index: number;
@@ -82,6 +85,7 @@ function ThemeSlot({
   spent,
   modifiers,
   mults,
+  effectLabels,
   picked,
   swept,
   onPick,
@@ -106,6 +110,7 @@ function ThemeSlot({
           spent={played}
           modifiers={modifiers?.get(theme)}
           mult={mults?.get(theme)}
+          effectLabel={effectLabels?.get(theme)}
           chosen={chosen}
           swept={theme === swept}
           locked={picked !== undefined}
@@ -127,6 +132,7 @@ export function ThemeCards({
   spent,
   modifiers,
   mults,
+  effectLabels,
   picked,
   picking = false,
   swept,
@@ -153,6 +159,7 @@ export function ThemeCards({
           spent={spent}
           modifiers={modifiers}
           mults={mults}
+          effectLabels={effectLabels}
           picked={picked}
           swept={swept}
           onPick={onPick}

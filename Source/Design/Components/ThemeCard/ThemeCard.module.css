@@ -210,12 +210,12 @@
   /* Above the glint as well as the grain, since the roll is a label and the shine is a finish:
    * the one thing on the card that says what the room's roll is cannot be the one thing the
    * enchantment is drawn across. */
-  z-index: 4;
+  z-index: 1;
   font-family: var(--FontFamily-Display);
   font-size: var(--FontSize-ThemeCardMult);
   font-weight: bold;
   line-height: 0.8;
-  color: var(--Color-Text-Default);
+  color: var(--Color-Neutral-500);
   user-select: none;
   pointer-events: none;
   transition: font-size var(--Transition-Standard);
@@ -286,10 +286,37 @@
   top: var(--Space-ThemeCardPadding);
   right: var(--Space-ThemeCardPadding);
   z-index: 5;
-  width: calc(var(--Size-ThemeCardWidth) * 0.15);
-  height: calc(var(--Size-ThemeCardWidth) * 0.15);
+  width: 1em;
+  height: 1em;
   pointer-events: none;
   opacity: var(--Opacity-ThemeCardGlint);
+  filter: grayscale(1) brightness(0.3);
+  transition: filter var(--Transition-Standard);
+}
+
+.Root:hover .Effect,
+.Root.Swept .Effect {
+  filter: grayscale(0) brightness(1);
+}
+
+.EffectLabel {
+  position: absolute;
+  top: var(--Space-ThemeCardPadding);
+  right: var(--Space-ThemeCardPadding);
+  z-index: 1;
+  font-family: var(--FontFamily-Display);
+  font-size: var(--FontSize-ThemeCardMult);
+  font-weight: bold;
+  line-height: 0.8;
+  color: var(--Color-Neutral-500);
+  user-select: none;
+  pointer-events: none;
+  transition: color var(--Transition-Standard);
+}
+
+.Root:hover .EffectLabel,
+.Root.Swept .EffectLabel {
+  color: var(--ThemeCard-Tint, var(--Accent-Tint));
 }
 
 /* The name on the card, which is the whole content of it, and the tint it takes on hover along

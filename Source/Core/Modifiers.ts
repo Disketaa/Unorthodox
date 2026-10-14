@@ -2,3 +2,8 @@
  * card is drawn in Design, a round's modifiers are rolled in Game and the room sees the result
  * on every screen at once: one union is what all three have to agree on. */
 export type ThemeModifierId = 'Enchanted' | 'Alone' | 'Half' | 'Laggards' | 'Leaders';
+
+/** The four spreads an enchanted card's multiplier can take, without the enchantment itself. A
+ * card is enchanted and then carries one of these; the enchantment is what draws the glint and
+ * the effect is who the multiplier reaches. */
+export type ThemeEffectId = 'Alone' | 'Half' | 'Laggards' | 'Leaders';

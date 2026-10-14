@@ -33,6 +33,9 @@ export interface PlayerBarEntry {
    * rather than a flag, so two reveals in a row are two reactions. Rises when the room is told
    * this player wrote something, which the bar says better than the board does. */
   pulse?: number;
+  /** Whether the round's enchanted card reaches this seat, which draws the glint over them. The
+   * room's own roll says who, so it is the same on every screen rather than each browser's. */
+  glinted?: boolean;
 }
 
 export interface PlayerBarProps {

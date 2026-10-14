@@ -7,10 +7,7 @@ import { stylesheet, tokenReader } from './Stylesheet';
  * the layout tests read declarations rather than render: happy-dom does not run an animation
  * and does not time one, so what can be checked is the length the stylesheet asks for. */
 const sheet = stylesheet('../Source/Design/Overlays/StartCountdown/StartCountdown.module.css');
-const tokens = readFileSync(
-  new URL('../Source/Design/Tokens.css', import.meta.url),
-  'utf8',
-);
+const tokens = readFileSync(new URL('../Source/Design/Tokens.css', import.meta.url), 'utf8');
 const tokenValue = tokenReader(tokens);
 
 /** The one thing the veil and the code have to agree on: how long the shade takes. */
@@ -79,7 +76,7 @@ describe('the number arriving', () => {
     // The spring easing carries it past one and back; a straight tween to one reads as
     // a zoom rather than as something turning up.
     expect(sheet.declaration(/(?:^|})\s*\.Stage\s*\{([^}]*)\}/, 'animation')).toContain(
-      'var(--Easing-Spring)',
+      'var(--Easing-Spring)'
     );
   });
 

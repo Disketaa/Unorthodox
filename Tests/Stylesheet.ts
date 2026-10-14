@@ -11,7 +11,10 @@ import { readFileSync } from 'node:fs';
  * selector. A pattern is expected to capture the rule body, so
  * `ruleBody(/\.Root\s*\{([^}]*)\}/)` rather than a name. */
 export function readStylesheet(relativePath: string): string {
-  return readFileSync(new URL(relativePath, import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  return readFileSync(new URL(relativePath, import.meta.url), 'utf8').replace(
+    /\/\*[\s\S]*?\*\//g,
+    ''
+  );
 }
 
 export interface Stylesheet {
@@ -46,7 +49,9 @@ export function stylesheet(relativePath: string): Stylesheet {
   }
 
   function declaration(selector: RegExp, property: string): string {
-    const match = ruleBody(selector).match(new RegExp(`(?:^|;)\\s*${property}\\s*:([^;]+);`, 'i'));
+    const match = ruleBody(selector).match(
+      new RegExp(`(?:^|;)\\s*${property}\\s*:([^;]+);`, 'i')
+    );
     if (match?.[1] === undefined) throw new Error(`no ${property} on ${selector.source}`);
     return match[1].replace(/\s+/g, '');
   }
