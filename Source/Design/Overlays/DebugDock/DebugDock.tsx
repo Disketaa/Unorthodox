@@ -1,7 +1,15 @@
-import { ComponentChildren } from 'preact';
+import { ComponentChildren, TargetedMouseEvent } from 'preact';
 import { Stack } from '@/Design/Primitives';
 import { Card } from '@/Design/Components';
 import styles from './DebugDock.module.css';
+
+/** A focused button answers the next Enter to itself, so a dock button left holding the focus
+ * would step the phase again instead of letting the player send what was typed. The dock is
+ * pressed with the mouse and is not part of the game the keyboard is driving, so it lets go. */
+function releaseFocus(event: TargetedMouseEvent<HTMLDivElement>): void {
+  if (!(event.target instanceof Element)) return;
+  event.target.closest('button')?.blur();
+}
 
 export interface DebugDockProps {
   /** False until the host presses "", which is the only thing that brings the dock. */
@@ -18,7 +26,7 @@ export interface DebugDockProps {
 export function DebugDock({ enabled, children }: DebugDockProps) {
   if (!enabled) return null;
   return (
-    <div class={styles.Root}>
+    <div class={styles.Root} onClick={releaseFocus}>
       <Card variant="Outlined">
         <Stack direction="Horizontal" gap="Xs" align="Center">
           {children}
