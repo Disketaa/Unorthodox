@@ -1,23 +1,20 @@
-import { PlayerId, randomFor, shuffle, ThemeId } from '@/Core';
+import { randomFor, shuffle, ThemeId } from '@/Core';
 import { marksForRoom } from './PublicMarks';
 import { declinedGroupIds } from './RoundScoring';
 import { HostState, ReviewingState } from './GameState';
 import { groupAnswersWithPlayers } from './Grouping';
 import type {
-  PublicFinalState,
   PublicLobbyState,
   PublicPlayer,
   PublicReviewingState,
-  PublicScoresState,
   PublicWritingState,
   PublicChoosingState,
   PublicRoom,
 } from './PublicState';
 
-/** One phase of the host's state, as a client is told about it. Every phase sends the roster and
- * the room's pace, so the bar of players runs across the whole game and a client that refreshed
- * mid-round is handed the room back rather than an empty strip. */
-function publicPlayers(state: HostState): PublicPlayer[] {
+/** The roster every phase sends, so the bar of players runs across the whole game and a client
+ * that refreshed mid-round is handed the room back rather than an empty strip. */
+export function publicPlayers(state: HostState): PublicPlayer[] {
   const players: PublicPlayer[] = [];
   state.players.forEach((player, id) => {
     players.push({ id, name: player.name, look: player.look, isOnline: player.isOnline });
@@ -25,15 +22,8 @@ function publicPlayers(state: HostState): PublicPlayer[] {
   return players;
 }
 
-/** A score map as the pairs a client reads, in the room's own order. */
-function totalsOf(scores: ReadonlyMap<PlayerId, number>): { id: PlayerId; score: number }[] {
-  const totals: { id: PlayerId; score: number }[] = [];
-  scores.forEach((score, id) => totals.push({ id, score }));
-  return totals;
-}
-
 /** The room's turn, pace and per-theme round counts, as every phase carries them. */
-function room(state: HostState): PublicRoom {
+export function room(state: HostState): PublicRoom {
   return {
     turnPlayerId: state.turnPlayerId,
     pace: state.pace,
@@ -82,7 +72,7 @@ export function toPublicChoosingState(state: HostState): PublicChoosingState {
 /** The theme every phase after the choice carries, since the bank is on screen through all of
  * them. A spread rather than a named field on each phase, so a phase added without one still
  * sends the card the room pressed. */
-function themeOf(state: HostState): { theme?: ThemeId } {
+export function themeOf(state: HostState): { theme?: ThemeId } {
   return state.phase === 'Lobby' || state.theme === undefined ? {} : { theme: state.theme };
 }
 
@@ -107,11 +97,8 @@ export function toPublicWritingState(state: HostState): PublicWritingState {
 }
 
 /** The board's cards: the answers as written, in an order nobody can read off who wrote what,
- * plus one card per player who wrote nothing, the blanks after the deal rather than in it.
- * Seeded from the round and not the clock, since letting a held room go shifts the clock.
- *
- * Grouped by the same walk the scorer uses, so a card and the points it is worth are about the
- * same set of people: two groupings over the same answers is two answers to the question. */
+ * plus one card between all the players who wrote nothing. Seeded from the round and not the
+ * clock, since letting a held room go shifts the clock. */
 function reviewGroups(state: ReviewingState): PublicReviewingState['groups'] {
   const written = [...state.answers.values()];
   const answers = groupAnswersWithPlayers(state.answers).map((group) => ({
@@ -123,9 +110,8 @@ function reviewGroups(state: ReviewingState): PublicReviewingState['groups'] {
   }));
   const groups = shuffle(answers, randomFor(`${state.topic}:${written.join('|')}`));
   // Everybody who wrote nothing is one card between them, the way everybody who wrote the same
-  // thing is. One blank each was a board that could be more cards than there were people with
-  // something to say in it, and a corner of the room spent entirely on faces with nothing behind
-  // them. The card still says how many, so the room still learns how many sat the round out.
+  // thing is. One blank each was a board with more cards than there were people to put in it. The
+  // card still says how many, so the room still learns how many sat the round out.
   const blanked = [...state.players.keys()].filter((playerId) => !state.answers.has(playerId));
   if (blanked.length > 0) {
     groups.push({
@@ -153,36 +139,6 @@ export function toPublicReviewingState(state: HostState): PublicReviewingState {
     players: publicPlayers(state),
     groups,
     ...marksForRoom(state, declinedGroupIds(state)),
-    ...themeOf(state),
-  };
-}
-
-export function toPublicScoresState(state: HostState): PublicScoresState {
-  if (state.phase !== 'Scores') {
-    throw new Error('Invalid state for Scores');
-  }
-  return {
-    ...room(state),
-    phase: 'Scores',
-    durationMs: state.durationMs,
-    startedAt: state.startedAt,
-    players: publicPlayers(state),
-    scores: totalsOf(state.scores),
-    cumulative: totalsOf(state.cumulativeScores),
-    ...themeOf(state),
-  };
-}
-
-export function toPublicFinalState(state: HostState): PublicFinalState {
-  if (state.phase !== 'Final') {
-    throw new Error('Invalid state for Final');
-  }
-  return {
-    ...room(state),
-    phase: 'Final',
-    durationMs: 0,
-    players: publicPlayers(state),
-    scores: totalsOf(state.cumulativeScores),
     ...themeOf(state),
   };
 }

@@ -1,16 +1,9 @@
 /* One answer on a panel. The theme card's own construction, with the answer in the place its
- * name goes: a filled surface with no frame, an oversized figure behind the writing, the grain
- * over both, and every size a share of the card's width so a phone draws nine small cards
- * rather than nine wide ones with less room in them. The frame is re-declared rather than a
- * `Card` because the card has to be the thing the wash lands on, and `Card` paints its own
- * surface opaquely.
- *
- * The fill is the room's own yellow washed out, not the grey every other panel in the game wears.
- * A board of nine grey cards is a list; nine cards the colour of the room is a board, and the wash
- * is the same one the start button is drawn from, so the thing that begins the round and the thing
- * the round produced are the same colour. Only while the card is in the round: a muted card takes
- * the pink below, and there is nothing to say about a card the room has turned down in the colour
- * of the room it is being turned down in. */
+ * name goes: a filled surface with no frame, an oversized figure behind the writing, and the
+ * grain over both. The frame is re-declared rather than a `Card` because the card has to be the
+ * thing the wash lands on, and `Card` paints its own surface opaquely. Every size a share of
+ * the card's width, so a phone draws nine small cards rather than nine wide ones with less room
+ * in them. */
 .Root {
   position: relative;
   overflow: hidden;
@@ -23,9 +16,9 @@
   padding: var(--Space-AnswerCardPadding);
   gap: var(--Space-Xs);
   --AnswerCard-Surface: var(--Color-Surface-Hover);
-  /* What the pressed rim is mixed toward. The ink at rest, since a rim has to be the surface going
-   * darker into itself, and the card's own error colour once the room has turned the answer down so
-   * the edge is saying the same thing the writing does. */
+  /* What the pressed rim is mixed toward. The ink at rest, since a rim has to be the surface
+   * going darker into itself, and the card's own error colour once the room has turned the
+   * answer down so the edge is saying the same thing the writing does. */
   background: var(--AnswerCard-Surface);
   color: var(--Color-Text-Default);
   border: none;
@@ -43,9 +36,9 @@
     border-color var(--Transition-Standard),
     opacity var(--Transition-Standard),
     scale var(--Transition-Reveal);
-  /* The idle sway, handed over by the primitive rather than written here, so an answer card and a
-   * theme card and a character are one movement instead of three that happen to agree. On the list
-   * and not replacing it, for the primitive's reason: something that wants to add a second
+  /* The idle sway, handed over by the primitive rather than written here, so an answer card and
+   * a theme card and a character are one movement instead of three that happen to agree. On the
+   * list and not replacing it, for the primitive's reason: something that wants to add a second
    * movement to a card must be able to. */
   animation: var(--Sway-Animation);
 }
@@ -58,24 +51,20 @@
   composes: Still from '../../Primitives/Sway/Sway.module.css';
 }
 
-/* The hover, in the palette's own next step down rather than in the reader's accent: the board is
- * read as one thing, and a card that wore whoever was looking at it would be a card that changed
- * whose it was. The figure behind the answer takes the muted grey with it, since a surface alone
- * moving one step is a change nobody sees. */
+/* The hover, in the palette's own next step down rather than in the reader's accent: the board
+ * is read as one thing, and a card that wore whoever was looking at it would be a card that
+ * changed whose it was. The figure behind the answer takes the muted grey with it, since a
+ * surface alone moving one step is a change nobody sees. */
 .Root:hover {
   --AnswerCard-Surface: var(--Color-Surface-Active);
   background: var(--AnswerCard-Surface);
 }
 
 /* This player's own answer, and only theirs: the room's yellow washed out, with the writing in
- * the room's yellow darkened. The player's own card is the one thing on the board they already
- * know the answer to, so it is the one card that can afford to be coloured — and finding it in a
- * grid of nine is what the colour is for, not decoration.
- *
- * Scoped to the card and not the whole board on purpose: a board of nine yellow cards is a list
- * with a colour scheme, and there is nothing on any of the others that says "this one is yours"
- * the way this does. Written against the root so it outranks the plain surface, and so the muted
- * rule below has to be written against the root as well to get past it. */
+ * the room's yellow darkened. The one card on the board they already know the answer to, so the
+ * one that can afford to be coloured — and finding it in a grid of nine is what the colour is
+ * for. Written against the root so it outranks the plain surface, and so the muted rule below
+ * has to be written against the root as well to get past it. */
 .Root.Own {
   --AnswerCard-Surface: var(--Color-Room-Yellow-Wash);
   /* The badge in the corner reads this too, since on your own card it is a figure rather than a
@@ -90,17 +79,11 @@
   background: var(--AnswerCard-Surface);
 }
 
-/* The inner panel: the box the figure is printed in, set in from the card's edge, and the
- * frame the figure is cropped by rather than the card cropping it. That is the theme card's
- * arrangement and the whole reason this element is here: the figure inside the panel, not beside
- * it. Carries no frame or shadow of its own, which is what the theme card's panel does too - its
- * edge is the inset against the page, not a line drawn around it.
- *
- * Two attempts at a rim here went the wrong way both times, and are worth not repeating. As a
- * border it is a grey box drawn on top of a near-white card, which is what the room complained
- * about twice. As an inset shadow at a strength that could actually be seen, it is the same grey
- * box wearing a shadow instead of a border. The edge a card like this has is its fill meeting the
- * page, and nothing else. */
+/* The inner panel: the box the figure is printed in, set in from the card's edge, and the frame
+ * the figure is cropped by rather than the card cropping it — the theme card's arrangement and
+ * the whole reason this element is here. Carries no rim of its own, which is what the theme
+ * card's panel does too: its edge is the inset against the page, not a line drawn around it.
+ * Two attempts at a rim here went the wrong way twice, and are worth not repeating. */
 .Panel {
   position: absolute;
   inset: var(--Space-AnswerCardInset);
@@ -141,15 +124,10 @@
 }
 
 /* The figure on a card the room has turned down, brought up rather than left where it was. The
- * card itself is held back to two fifths and washed in pink, and a figure at a tenth of the ink on
- * top of that is a figure nobody can find — which is a shame, because this is the one card where
- * the count is the whole point: how many of them said the thing nobody scored. It takes the pink
- * the card's own writing is in rather than a grey, which on this wash would be the one mark on the
- * card belonging to nothing else on it.
- *
- * Written against the root as well as with it, and restated for the hover, because the hover rule
- * for a figure is the stronger of the two by a class and would otherwise put a grey figure back on
- * a card that is pink everywhere else the moment a host swept the pointer over it. */
+ * card is held back to two fifths and washed in pink, and a figure at a tenth of the ink on top
+ * of that is one nobody can find — a shame on the one card where the count is the whole point.
+ * It takes the pink the writing is in rather than a grey. Restated for the hover, which is
+ * otherwise stronger. */
 .Root.Voted .Mark,
 .Root.Voted:hover .Mark {
   opacity: calc(var(--Opacity-AnswerCardMark) * 4);
@@ -189,9 +167,9 @@
 /* The control laid over the whole card, which is still the card as far as the pointer is
  * concerned: a control the size of a card is the one thing that can be pressed in a room where
  * people are standing up. A sibling of the answer rather than the card itself, because a badge
- * now sits inside the card and a button inside a button is not a button. Transparent rather than
- * absent, so the card's own wash and hover carry the surface. The host mutes with it; everybody
- * else likes with it, the badge in the corner staying the labelled control. */
+ * now sits inside the card and a button inside a button is not a button. Transparent rather
+ * than absent, so the card's own wash and hover carry the surface. The host mutes with it;
+ * everybody else likes with it, the badge in the corner staying the labelled control. */
 .Whole {
   position: absolute;
   inset: 0;
@@ -201,18 +179,18 @@
   border-radius: var(--Radius-Card);
   background: transparent;
   /* Its own cursor rather than the card's, because `cursor` is not an inherited property and a
-   * button with none declared gets the browser's default arrow whatever the card around it says.
-   * The hand needs no override: this button only exists on a card that is pressable, which is a
-   * live card or one the host may still take back, and both of those are hands. */
+   * button with none declared gets the browser's default arrow whatever the card around it
+   * says. The hand needs no override: this button only exists on a card that is pressable,
+   * which is a live card or one the host may still take back, and both of those are hands. */
   cursor: var(--Cursor-Pointer);
 }
 
-/* The corner the like badge sits in, above the whole-card control rather than beside it: a badge
- * under a full-bleed button would be a badge nobody can reach. Inset by the card's own padding so
- * it sits on the panel's edge rather than over the card's. Measured here and not on the badge,
- * because the badge is wrapped in the pop that plays when it is pressed and that wrapper fills
- * its parent: a badge sized for its own contents would collapse to nothing inside a box with
- * nothing to size against. The two are one box at two levels. */
+/* The corner the like badge sits in, above the whole-card control rather than beside it: a
+ * badge under a full-bleed button would be a badge nobody can reach. Inset by the card's own
+ * padding so it sits on the panel's edge rather than over the card's. Measured here and not on
+ * the badge, because the badge is wrapped in the pop that plays when it is pressed and that
+ * wrapper fills its parent: a badge sized for its own contents would collapse to nothing inside
+ * a box with nothing to size against. The two are one box at two levels. */
 .Corner {
   position: absolute;
   right: var(--Space-AnswerCardPadding);
@@ -234,10 +212,10 @@
 }
 
 /* Who wrote this answer, in the corner opposite the like badge: the seats out of the bar at the
- * top of the game, over the panel rather than inside the card's padding box, so they do not push
- * the answer about as the round reveals them. Wrapping rather than one line, and every seat sized
- * from the card rather than from the screen: a room of ten is a room of ten, and the seats give up
- * their size before the writers give up their faces. */
+ * top of the game, over the panel rather than inside the card's padding box, so they do not
+ * push the answer about as the round reveals them. Wrapping rather than one line, and every
+ * seat sized from the card rather than from the screen: a room of ten is a room of ten, and the
+ * seats give up their size before the writers give up their faces. */
 .Authors {
   position: absolute;
   top: var(--Space-AnswerCardPadding);
@@ -281,12 +259,13 @@
   );
 }
 
-/* The pop each seat arrives in is a block the width of whatever holds it, which as a flex item is
- * the whole row: one seat per line, and a corner of ten seats is a column running off the card. An
- * auto width on a flex item is the item's own, so the seats sit beside each other and wrap only
- * when the card runs out of row. Matched on the pop's own `--Pop-Index` rather than `*`, since a
- * single class beats a universal selector and the pop's own `width: 100%` would otherwise stand. */
-.Authors > [style*="--Pop-Index"] {
+/* The pop each seat arrives in is a block the width of whatever holds it, which as a flex item
+ * is the whole row: one seat per line, and a corner of ten seats is a column running off the
+ * card. An auto width on a flex item is the item's own, so the seats sit beside each other and
+ * wrap only when the card runs out of row. Matched on the pop's own `--Pop-Index` rather than
+ * `*`, since a single class beats a universal selector and the pop's own `width: 100%` would
+ * otherwise stand. */
+.Authors > [style*='--Pop-Index'] {
   width: auto;
 }
 
@@ -303,10 +282,10 @@
 
 /* The answer, and the only thing given a width of its own: centred by the flex box above with
  * nothing around it, the writing would be an anonymous flex item sized to its longest line, and
- * a word wider than the card could never wrap — and a cut answer is a hidden one. `min-width: 0`
- * is declared rather than composed in from `Truncate`, which carries `white-space: nowrap` and
- * lands after this rule in the built sheet. A word is never cut in half: the fit below shrinks
- * the writing until the longest word holds, so every break is at a space. */
+ * a word wider than the card could never wrap — and a cut answer is a hidden one. `min-width:
+ * 0` is declared rather than composed in from `Truncate`, which carries `white-space: nowrap`
+ * and lands after this rule in the built sheet. A word is never cut in half: the fit below
+ * shrinks the writing until the longest word holds, so every break is at a space. */
 .Answer {
   display: block;
   width: 100%;
@@ -345,17 +324,16 @@
 }
 
 /* A card that is something to press: the hand. Live means the card has finished saying what it
- * has to say, so this is the whole of the answer's life and not just its first second.
- *
- * A card still being read is the plain arrow, which is what `.Record` already gives it. It is not
- * refused: refusing says the room has been told this is not available, and what the room has been
- * told so far is that somebody wrote it. It is simply not answered yet. */
+ * has to say, so this is the whole of the answer's life and not just its first second. A card
+ * still being read is the plain arrow, which is what `.Record` already gives it. It is not
+ * refused: refusing says the room has been told this is not available, and what the room has
+ * been told so far is that somebody wrote it. It is simply not answered yet. */
 .Live {
   cursor: var(--Cursor-Pointer);
 }
 
-/* Turned down by the host but still theirs to take back, which is the one case where a card out of
- * the round is still something to press. The hand is honest: pressing it puts it back, and a
+/* Turned down by the host but still theirs to take back, which is the one case where a card out
+ * of the round is still something to press. The hand is honest: pressing it puts it back, and a
  * card that says it is not available while offering the press that undoes it is lying. */
 .Takeback {
   cursor: var(--Cursor-Pointer);
@@ -363,8 +341,9 @@
 
 /* Turned down for good, and pink all over: refused. This is the card the room struck out and
  * nobody may put back, so there is nothing on it to press and the cursor should say so rather
- * than sitting there as a plain arrow over a card that is plainly finished. A blank is the other
- * kind of record and keeps the plain cursor, since nobody having written is not a refusal. */
+ * than sitting there as a plain arrow over a card that is plainly finished. A blank is the
+ * other kind of record and keeps the plain cursor, since nobody having written is not a
+ * refusal. */
 .Root.Locked {
   cursor: var(--Cursor-NotAllowed);
 }
@@ -378,9 +357,9 @@
 
 /* An answer the host has muted. Held back rather than deleted, so the room can still read what
  * was said and see why it was not counted, and struck through rather than only dimmed, since a
- * mute the room has to notice is a mute that does not count. Washed in the feedback red with the
- * writing in it too, and the strike follows the writing: the board is otherwise black and white,
- * so the one card on it that is not counted is the one card on it with a colour. */
+ * mute the room has to notice is a mute that does not count. Washed in the feedback red with
+ * the writing in it too, and the strike follows the writing: the board is otherwise black and
+ * white, so the one card on it that is not counted is the one card on it with a colour. */
 .Root.Voted {
   opacity: var(--Opacity-AnswerCardVoted);
   --AnswerCard-Surface: var(--Color-Feedback-Muted-Wash);
@@ -389,11 +368,11 @@
   color: var(--Color-Feedback-Error);
 }
 
-/* The muted card answers the pointer too, or a host sweeping the board for the one they want back
- * gets no answer from the cards they are actually looking at. The wash deepens rather than steps
- * anywhere else, since red is already the only colour the card has. Written against the root to
- * tie with the own-card hover above, and placed after it so a card that is both yours and turned
- * down deepens into the pink rather than back out into the yellow. */
+/* The muted card answers the pointer too, or a host sweeping the board for the one they want
+ * back gets no answer from the cards they are actually looking at. The wash deepens rather than
+ * steps anywhere else, since red is already the only colour the card has. Written against the
+ * root to tie with the own-card hover above, and placed after it so a card that is both yours
+ * and turned down deepens into the pink rather than back out into the yellow. */
 .Root.Voted:hover {
   --AnswerCard-Surface: color-mix(
     in srgb,

@@ -125,19 +125,19 @@
 }
 
 /* The hexagon's fill is not drawn on a card corner: the card is the background, and a filled
- * hexagon behind a face is a second shape wearing the first one's place. The face stays, and the
- * seat's own fill and the destroyed wash still paint over this, so a self or a broken seat on a
- * card keeps its colour. */
+ * hexagon behind a face is a second shape wearing the first one's place. The face stays, and
+ * the seat's own fill and the destroyed wash still paint over this, so a self or a broken seat
+ * on a card keeps its colour. */
 .Inline .Slot {
   background: transparent;
 }
 
 /* The seat of a player the round gave nothing to, cut as the shattered hexagon instead of the
  * whole one: the same fill shows through the shards, so a broken seat is the same seat with
- * holes in it rather than a second colour. The face inside is cut by the same mask, which is the
- * point — the round broke the card, and the character drawn on it goes with it. The wash is the
- * same muted pink the board uses for a card the host has taken, so a broken seat and a muted card
- * are the one pink the room learns. */
+ * holes in it rather than a second colour. The face inside is cut by the same mask, which is
+ * the point — the round broke the card, and the character drawn on it goes with it. The wash is
+ * the same muted pink the board uses for a card the host has taken, so a broken seat and a
+ * muted card are the one pink the room learns. */
 .Destroyed .Slot {
   background: var(--Color-Feedback-Muted-Wash);
   mask: url('../../Icons/HexagonDestroyed.svg') center / 100% 100% no-repeat;
@@ -297,10 +297,10 @@
   transform: scale(1.08);
 }
 
-/* A card corner has no pointer to find and no room to grow: the yellow wash and the lift are the
- * bar's note about where the eye is, and on a card the eye is on the answer, not on a face in its
- * corner. The fill and the destroyed wash still paint over this, so a self or a broken seat on a
- * card keeps its colour when the room hovers it. */
+/* A card corner has no pointer to find and no room to grow: the yellow wash and the lift are
+ * the bar's note about where the eye is, and on a card the eye is on the answer, not on a face
+ * in its corner. The fill and the destroyed wash still paint over this, so a self or a broken
+ * seat on a card keeps its colour when the room hovers it. */
 .Inline .Seat:hover .Slot {
   background: transparent;
   transform: none;
@@ -341,13 +341,11 @@
   opacity: 0.5;
 }
 
-/* The same seats, drawn inside something else - an answer card naming who wrote it - at whatever
- * size that thing says rather than at the screen's: the bar's own formula divides a viewport by a
- * room's worth of seats, and a card corner has no viewport to divide, so both ends of the clamp
- * are pinned to the one size it was given. The label follows the seat rather than staying at the
- * bar's own width, or a name wider than its hexagon runs over the neighbour's. Only the hexagon
- * is given up: a card corner is not a screen, and a hexagon there is a shape wearing the panel's
- * place. The character and the name are the whole of the point and both stay. */
+/* The same seats, drawn inside something else — an answer card naming who wrote it — at
+ * whatever size that thing says rather than at the screen's: the bar's own formula divides a
+ * viewport by a room's worth of seats, and a card corner has no viewport to divide, so both
+ * ends of the clamp are pinned. The label follows the seat rather than staying at the bar's
+ * width, or a name wider than its hexagon runs over the neighbour's. */
 .Inline {
   width: auto;
   --Size-PlayerBarSeatMin: var(--Size-PlayerBarInlineSeat);
@@ -357,9 +355,9 @@
 
 /* The hexagon, gone. The mask and the fill both, since the mask is what cuts the shape and the
  * fill is what makes it a shape to cut: one without the other leaves either a square of grey or
- * an empty hole. The box stays exactly as it was, because the character is inside it - taking the
- * whole slot away takes the face with it - and the face is held in to nothing now, so it takes
- * the whole of the box the hexagon had been measured against. */
+ * an empty hole. The box stays exactly as it was, because the character is inside it - taking
+ * the whole slot away takes the face with it - and the face is held in to nothing now, so it
+ * takes the whole of the box the hexagon had been measured against. */
 .Inline .Slot {
   mask: none;
   background: transparent;

@@ -5,16 +5,15 @@ import { GameConfig } from './GameConfig';
 const singleLetter = /^[а-я]$/;
 
 /** Glue the fragments of a word that was typed with the spaces still in it back into one word.
- * Two passes, because a spaced-out word takes two shapes: a run of three or more single letters is
- * a word somebody spelled out, and a lone single letter beside a longer token is a word
- * somebody's thumb split in half. */
+ * Two passes, because a spaced-out word takes two shapes: a run of three or more single letters
+ * is a word somebody spelled out, a lone one beside a longer token is a thumb split in half. */
 export function mergeStrayLetters(tokens: readonly string[]): string[] {
   return glueFragments(collapseRuns(tokens));
 }
 
-/** A run of single letters long enough to be a spelled-out word becomes that word. Real one-letter
- * words are counted here, since "я в а" spelled out is one word and not three — the cost being
- * that a genuine "я в а" is read the same way, which is rare enough to accept. */
+/** A run of single letters long enough to be a spelled-out word becomes that word. Real
+ * one-letter words are counted here, since "я в а" spelled out is one word and not three — the
+ * cost being that a genuine "я в а" is read the same way, which is rare enough to accept. */
 function collapseRuns(tokens: readonly string[]): string[] {
   const merged: string[] = [];
   let run: string[] = [];

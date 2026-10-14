@@ -2,6 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import {
   GameConfig,
   answerRevealBeat,
+  writerDelayMs,
   answerWriteMs,
   authorsArrived,
   landedWriters,
@@ -21,6 +22,10 @@ export interface RevealState {
   shownAt: (index: number, length: number) => number;
   /** Whether the room has been told who wrote the answer at this place yet. */
   authorsAt: (index: number) => boolean;
+  /** When the nth writer of the answer at this place lands, in milliseconds from the moment the
+   * writers start arriving. Handed to the card so the beat lives in one place: the round's, not
+   * the drawing's. */
+  writerDelayAt: (writer: number) => number;
   /** How many of the writers on the card at this place have landed, out of `total`. */
   landedAt: (index: number, total: number) => number;
   /** Whether the room is yet offered a like on the card at this place. */
@@ -28,12 +33,8 @@ export interface RevealState {
 }
 
 /** The board's count of answers turned over, and of the letters of the one being written.
- * `writerCounts` is the board as the round will actually play it — one number per card, being how
- * many people wrote that answer — because the beat between cards is sized from the largest thing
- * on the board, and a bar drawn from a board told only how many cards there are turns the same
- * answers at different moments than the board in front of it.
- * `startedAt` is already this device's own clock: the session converts the host's stamp through
- * the measured skew before a screen sees it, and adding that skew again counts from the future. */
+ * `writerCounts` is the board as the round will play it, since the beat between cards is sized
+ * from the largest thing on it. `startedAt` is this device's clock, already skew-corrected. */
 export function useReveal(
   writerCounts: readonly number[],
   pace: Pace,
@@ -67,10 +68,9 @@ export function useReveal(
     // Off the same moment the writing is, since a card that named its writers while the sentence
     // was still arriving would be answering a question the room had not finished being asked.
     authorsAt: (index) => authorsArrived(elapsedAt(moment, first, beat, index)),
-    // Measured from the moment the writers start arriving rather than from the card's own beat,
-    // since the delay between the first writer and the second is a wait that begins when the room
-    // is told, not one that has been running since the card came up. Read from the phase start, the
-    // whole wave is already over by the time the card is allowed to show any of it.
+    writerDelayAt: (writer) => writerDelayMs(writer),
+    // Measured from the moment the writers start arriving rather than from the card's own beat, since
+    // that delay is a wait which begins when the room is told rather than one already running.
     landedAt: (index, total) =>
       landedWriters(
         elapsedAt(moment, first, beat, index) - GameConfig.timing.revealAuthorsMs,

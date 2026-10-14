@@ -144,7 +144,7 @@ describe('the board of answers', () => {
 });
 
 describe('an answer the host has taken off the board', () => {
-  /** One muted card and whatever else the board holds, mounted as the host sees it. */
+  // One muted card and whatever else the board holds, mounted as the host sees it.
   function mutedBoard(
     count: number,
     onLike?: (id: number) => void

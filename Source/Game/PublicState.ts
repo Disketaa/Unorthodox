@@ -1,12 +1,11 @@
 import { HostState } from './GameState';
 import {
-  toPublicFinalState,
   toPublicLobbyState,
   toPublicReviewingState,
-  toPublicScoresState,
   toPublicWritingState,
   toPublicChoosingState,
 } from './PublicPhases';
+import { toPublicFinalState, toPublicScoresState } from './PublicEndgame';
 import { PlayerId, PlayerLook, ThemeId, assertNever } from '@/Core';
 import type { RandomPick } from './GameState';
 import type { Pace } from './GameConfig';
@@ -98,9 +97,7 @@ export type PublicReviewingState = PublicRoom & {
   startedAt: number;
   players: PublicPlayer[];
   /** One answer group as the room is shown it. `isEmpty` marks the card of a player who wrote
-   * nothing, so the room can see who sat the round out rather than seeing somebody missing.
-   * `playerIds` is who wrote it, and the board draws their faces in the card's corner once the
-   * room has had a moment to read what the card says. */
+   * nothing, so the room sees who sat the round out rather than seeing somebody missing. */
   groups: {
     groupId: number;
     text: string;

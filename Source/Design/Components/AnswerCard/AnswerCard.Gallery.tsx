@@ -1,5 +1,6 @@
 import { Stack } from '@/Design/Primitives';
-import { AnswerCard, type AnswerCardProps } from './AnswerCard';
+import { AnswerCard } from './AnswerCard';
+import type { AnswerCardProps } from './AnswerCardProps';
 
 /** A card with its badge and mute named, said once so the states below stay a card each. The
  * like counts run 0, 3 and 2 so a badge nobody pressed, one the room pressed and one pressed on

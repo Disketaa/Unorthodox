@@ -17,10 +17,8 @@ export interface PopProps {
    * reaction whose timing is the point: the second of two faces on an answer is held back on
    * purpose, and no share of a row's beat says that. */
   delay?: string;
-  /** How tall the reaction starts, as a share of its own height. The whole game squashes from
-   * over-tall down to true, which is what a character already on the screen does when it reacts.
-   * A reaction that is also an arrival starts at nothing and grows: zero, so the character is
-   * briefly invisible and the room watches it come up rather than watching it wobble. */
+  /** How tall the reaction starts, as a share of its own height. The game squashes down from
+   * over-tall, and an arrival starts at nothing so the room watches it come up. */
   squash?: string;
   /** Fires after this reaction's wait, so a row of arrivals can each make their own sound. The
    * wait is the same one the stylesheet uses — parsed off the delay rather than passed twice. */
@@ -50,10 +48,8 @@ function delayMsOf(delay: string | undefined): number {
  * ancestor's `transform`, so a pop plays over an idle sway without either replacing the other. */
 export function Pop({ trigger, index, stagger, delay, squash, onStart, children }: PopProps) {
   // The sound callback is read through a ref rather than closed over. A caller cannot hold a
-  // callback still across renders - an inline arrow inside a map is a new function every time -
-  // and this ref callback runs again whenever its identity changes, which would put a fresh timer
-  // on the node, which would fire the caller's callback, which would render, and around again.
-  // That loop freezes the page, so what re-runs the timing must not be who is doing the sounding.
+  // callback still across renders, and this ref callback re-running on every new identity would
+  // put a fresh timer on the node, which fires that callback, which renders, and around again.
   const start = useRef(onStart);
   start.current = onStart;
 

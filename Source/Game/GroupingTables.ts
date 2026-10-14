@@ -1,6 +1,6 @@
 /** Latin digraphs that stand for one Cyrillic letter, longest first so `shch` is read as `щ`
- * before `sh` can take the `sh` out of it. A Russian answer typed on a Latin keyboard is the same
- * answer, and this is what says so. */
+ * before `sh` can take the `sh` out of it. A Russian answer typed on a Latin keyboard is the
+ * same answer, and this is what says so. */
 export const latinDigraphs: Readonly<Record<string, string>> = {
   shch: 'щ',
   sch: 'щ',
@@ -19,9 +19,8 @@ export const latinDigraphs: Readonly<Record<string, string>> = {
 };
 
 /** Latin letters that stand for one Cyrillic letter each. Where a letter has two readings the
- * table picks the one a Russian keyboard's Latin layout puts in that place, and the edit distance
- * absorbs the rest: `c` reads as `с` here and as `ц` nowhere, which is a guess tuned from play
- * rather than a rule. */
+ * table takes the one a Russian keyboard's Latin layout puts in that place, and the edit
+ * distance absorbs the rest: a guess tuned from play rather than a rule. */
 export const latinLetters: Readonly<Record<string, string>> = {
   a: 'а',
   b: 'б',

@@ -62,11 +62,14 @@ describe('the board of answers', () => {
     expect(blank?.playerCount).toBe(1);
   });
 
-  it('counts a card per player who wrote nothing, not one card counting them', () => {
-    // One card would say that one player wrote nothing rather than that three did, and a room
-    // reading the board would be counting the wrong seats.
+  it('counts everybody who wrote nothing as one card between them', () => {
+    // One card per blank was a board with more cards than there were people to put in it, and a
+    // corner of the room spent entirely on faces with nothing behind them. The card still says how
+    // many, so the room still learns how many sat the round out.
     const groups = toPublicReviewingState(reviewing(6, threeAnswers)).groups;
-    expect(groups.filter((group) => group.isEmpty)).toHaveLength(3);
+    const blanks = groups.filter((group) => group.isEmpty);
+    expect(blanks).toHaveLength(1);
+    expect(blanks[0].playerCount).toBe(3);
   });
 
   it('deals the answers and puts the blank cards after them', () => {

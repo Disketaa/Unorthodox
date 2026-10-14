@@ -18,8 +18,9 @@ const paces: readonly Pace[] = ['Standard', 'Fast'];
 export interface LobbyPaceProps {
   /** The pace the room is set to, which only the host can change. */
   pace: Pace;
-  /** How many are in the room. The voting round is timed from the roster rather than from a fixed
-   * figure, so a room of four is told what four players get and not what a full house gets. */
+  /** How many are in the room. The voting round is timed from the roster rather than from a
+   * fixed figure, so a room of four is told what four players get and not what a full house
+   * gets. */
   players: number;
   /** Whether this device owns the setting, which is what makes the buttons live. A client still
    * sees the card and its numbers, and finds the buttons inert. */
@@ -29,11 +30,7 @@ export interface LobbyPaceProps {
 }
 
 /** The three waits of a round, in the order a player meets them. Read from the pace rather than
- * written out, so a wait cannot be shown here at one length and run at another.
- *
- * The voting round is a ceiling rather than a figure: a pace is priced for a full house, and a
- * board smaller than that turns over sooner and should not then hand the difference to a
- * countdown. So this shows the most this room's own board will cost, and the words say so. */
+ * written out, so a wait cannot be shown at one length and run at another. */
 function waits(pace: Pace, players: number) {
   const { writingMs, categoryMs } = GameConfig.paces[pace];
   const decidingMs = reviewingDurationMs(players, pace);

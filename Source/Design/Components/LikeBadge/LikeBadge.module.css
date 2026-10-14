@@ -31,11 +31,10 @@
   line-height: 1;
   /* The mark's colour, apart from when it has been liked. A quiet grey rather than the ink the
    * count is drawn in, because the two are on the same badge saying different things: the grey
-   * is the invitation, and the accent below is that this player took it up.
-   *
-   * Read through an overridable name rather than written straight, so whoever owns this card can
-   * recolour the badge on it. On a card of your own the badge is a figure rather than a control,
-   * and a grey thumb on a yellow card is the one mark on it belonging to nothing else there. */
+   * is the invitation, and the accent below is that this player took it up. Read through an
+   * overridable name rather than written straight, so whoever owns this card can recolour the
+   * badge on it. On a card of your own the badge is a figure rather than a control, and a grey
+   * thumb on a yellow card is the one mark on it belonging to nothing else there. */
   --Color-LikeMark: var(--Color-LikeMarkIdle, var(--Color-Text-Quiet));
 }
 
@@ -46,14 +45,12 @@
   opacity: var(--Opacity-LikeBadgeQuiet);
 }
 
-/* Pressed: this player is one of the people who liked it, so the mark takes the reading player's
- * own accent and the count stays the dark figure it always was. The accent is already a custom
- * property on the page, written by whoever chose it for this browser, so the badge wears the
- * reader's colour without being told what it is — which is what every other accent-borne mark in
- * the game does, and why none of them take a prop for it.
- *
- * Deliberately not the board's own pink: pink is what the board strikes a declined answer in, and
- * a like mark wearing it would say the opposite of what it means. */
+/* Pressed: this player is one of the people who liked it, so the mark takes the reading
+ * player's own accent and the count stays the dark figure it always was. The accent is already
+ * a custom property on the page, written by whoever chose it for this browser, so the badge
+ * wears the reader's colour without being told what it is — as every other accent-borne mark in
+ * the game does. Deliberately not the board's pink: a like mark wearing it would say the
+ * opposite of what it means. */
 .Liked {
   --Color-LikeMark: var(--Accent-Tint);
   opacity: 1;

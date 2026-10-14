@@ -5,8 +5,8 @@ import { landedWriters, writerDelayMs } from './Reveal';
 const Hold = GameConfig.timing.revealAuthorsMs;
 
 /** Every count below is measured from the moment the writers start arriving, which is what the
- * board measures them from and what `landedWriters` is handed. Counting from the card's own beat
- * instead is the bug the second test here is about. */
+ * board measures them from and what `landedWriters` is handed. Counting from the card's own
+ * beat instead is the bug the second test here is about. */
 const sinceWritersStart = (ms: number): number => ms;
 
 describe('the writers of an answer arriving', () => {

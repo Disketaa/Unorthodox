@@ -1,7 +1,7 @@
 import { editDistance, editsAllowed } from './EditDistance';
 
-/** A word with a digit in it, which has to match exactly: "дота 2" and "дота 3" are two different
- * answers and not one typo. */
+/** A word with a digit in it, which has to match exactly: "дота 2" and "дота 3" are two
+ * different answers and not one typo. */
 const digit = /[0-9]/;
 
 /** Whether two words are the same word: exactly, or within the edits the shorter of them is

@@ -1,16 +1,16 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from 'preact';
+import type { AnswerAuthor } from './AnswerCardProps';
 
 const playSound = vi.fn();
 
 vi.mock('../../Sounds', () => ({ playSound }));
 
-// Imported after the mock's `playSound` exists: a static import of the badge would pull the mocked
-// module in while the factory's own closure is still uninitialised.
+/** Imported after the mock's `playSound` exists: a static import of the badge would pull the
+ * mocked module in while the factory's own closure is still uninitialised. */
 const { AnswerCard } = await import('./AnswerCard');
 const { LikePitchSemitones } = await import('../LikeBadge');
-type AnswerAuthor = import('./AnswerCard').AnswerAuthor;
 
 beforeEach(() => {
   playSound.mockClear();
@@ -25,7 +25,8 @@ function renderCard(props: Partial<Parameters<typeof AnswerCard>[0]> = {}) {
   return root;
 }
 
-/** The row of seats in a card's corner, which is the only thing on a card that says who wrote it. */
+/** The row of seats in a card's corner, which is the only thing on a card that says who wrote
+ * it. */
 function authorsOf(root: HTMLElement): HTMLElement {
   const authors = root.firstElementChild?.querySelector<HTMLElement>('div');
   if (authors === null || authors === undefined) throw new Error('no authors drawn');
@@ -132,8 +133,14 @@ describe('an answer card', () => {
 });
 
 describe('who wrote an answer', () => {
+  const one: AnswerAuthor = {
+    id: 'p1',
+    name: 'Ghost Player',
+    character: 'Ghost',
+    color: 'Sky',
+  };
   const two: AnswerAuthor[] = [
-    { id: 'p1', name: 'Ghost Player', character: 'Ghost', color: 'Sky' },
+    one,
     { id: 'p2', name: 'Star Player', character: 'Star', color: 'Rose' },
   ];
 
@@ -146,7 +153,7 @@ describe('who wrote an answer', () => {
   it('draws a seat for the one player who wrote it', () => {
     // Every card says who wrote it, the way the bar at the top of the game does: a card with one
     // name on it is the common case and the room reads the same markers either way.
-    const root = renderCard({ count: 1, authors: [two[0] as AnswerAuthor], onLike: () => {} });
+    const root = renderCard({ count: 1, authors: [one], onLike: () => {} });
     expect(root.textContent).toContain('Ghost Player');
   });
 

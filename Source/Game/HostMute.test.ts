@@ -7,9 +7,9 @@ import type { PlayerLook } from '@/Core';
 
 const look: PlayerLook = { character: 'Ghost', color: 'Sky' };
 
-/** A room of three in Reviewing, every answer its own, so every card on the board is one the host
- * may decide on. A shared answer would not do: one of those is off the board before the host has
- * pressed anything, and this room is about the presses. */
+/** A room of three in Reviewing, every answer its own, so every card on the board is one the
+ * host may decide on. A shared answer would not do: one of those is off the board before the
+ * host has pressed anything, and this room is about the presses. */
 function reviewing(): ReviewingState {
   return {
     phase: 'Reviewing',
@@ -38,8 +38,9 @@ function reviewing(): ReviewingState {
   };
 }
 
-/** The same room with two players writing the same answer, so there is a card of two to mute. Its
- * own, because a shared answer is off the board from the start and a host is not offered one. */
+/** The same room with two players writing the same answer, so there is a card of two to mute.
+ * Its own, because a shared answer is off the board from the start and a host is not offered
+ * one. */
 function pairRoom(): ReviewingState {
   return {
     ...reviewing(),
@@ -113,17 +114,19 @@ describe('what a muted answer scores', () => {
     //
     // A pair is off the board before the host is ever offered it now, so this is the rule rather
     // than the way a pair is reached: the card is no longer theirs to mute, and this only says
-    // that the scorer would still take it off if they somehow did.
-    const pair = pairRoom();
-    const scored = toScoredGroups(muted(pair, 1));
+    // that the scorer would still take it off if they somehow did. The host's own answer is
+    // group 0 and the pair behind it group 1.
+    const scored = toScoredGroups(muted(pairRoom(), 1));
     expect(scored).toEqual([
-      { playerIds: ['host', 'p1'], isRejected: true },
-      { playerIds: ['p2'], isRejected: false },
+      { playerIds: ['host'], isRejected: false },
+      { playerIds: ['p1', 'p2'], isRejected: true },
     ]);
   });
 
   it('leaves the rest of the board scoring', () => {
+    // Three answers are dealt and one of them is muted, so two of them still score.
     const scored = toScoredGroups(muted(reviewing(), 1));
-    expect(scored.filter((group) => !group.isRejected)).toHaveLength(1);
+    expect(scored).toHaveLength(3);
+    expect(scored.filter((group) => !group.isRejected)).toHaveLength(2);
   });
 });

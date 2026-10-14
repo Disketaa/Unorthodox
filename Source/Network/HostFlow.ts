@@ -77,23 +77,17 @@ export function resolveRandomPickFrom(host: FlowHost): void {
   host.commit(resolveRandomPick(state));
 }
 
-/** How long the reviewing round runs for the room: a floor for being in it at all — ten seconds
- * briskly, twenty slowly — and five more for every player after the first.
- *
- * Read here rather than off the phase table, because the table has one figure per pace and the
- * room needs one per room size — and off the roster rather than off the board, because the answers
- * are not fixed until the round is over, and two people writing the same thing would otherwise
- * shorten the round by exactly the moment the room enjoyed most. Both of these used to come from
- * the table: the room was quoted its pace's full figure, a fifth of which was dead time on a small
- * board, whatever route into the phase it came by. */
+/** How long the reviewing round runs for the room: a floor for being in it at all — five seconds
+ * briskly, ten slowly — and five more for every player after the first. Read here rather than
+ * off the phase table, which has one figure per pace where the room needs one per room size. */
 function reviewingMs(state: HostState): number {
   if (state.phase !== 'Writing') return Game.phaseDurationMs('Reviewing', state.pace);
   return Game.reviewingDurationMs(state.players.size, state.pace);
 }
 
 /** Advance out of Writing once everyone has answered, or out of Reviewing once its clock is up.
- * Which is read off the phase the room is in, since a late message can ask for either. The length
- * passed in is only the length of the phase being closed — reviewing is told its own below. */
+ * Which is read off the phase the room is in, since a late message can ask for either. The
+ * length passed in is only the length of the phase being closed. */
 export function endReviewingFrom(host: FlowHost, durationMs: number): void {
   const state = host.getState();
   if (state === undefined) return;

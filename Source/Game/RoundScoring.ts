@@ -11,13 +11,8 @@ export interface ScoredGroup {
 }
 
 /** Whether the round has declined this answer, which is the one rule the card, the bar and the
- * score all have to agree on: a card struck out that still scores is a card the room cannot trust,
- * and a card that scores nothing while being drawn as live is worse.
- *
- * Two ways an answer comes to be declined, and they are not the same thing. The host muting one is
- * a press, and may be taken back while the round is still open. A thing more than one player wrote
- * is declined from the start and cannot: the round is played on the answer nobody else had, so a
- * duplicate is the one outcome that was never in it. */
+ * score all have to agree on: a card struck out that still scores is a card the room cannot
+ * trust. Two ways an answer comes to be declined, and they are not the same thing. */
 export function isDeclined(
   group: { groupId: number; playerIds: readonly PlayerId[] },
   muted: ReadonlyMap<number, Set<PlayerId>>
@@ -37,9 +32,8 @@ export function declinedGroupIds(state: ReviewingState): Set<number> {
 }
 
 /** Mark a group rejected when the host has muted it. The scorer is deliberately left alone by
- * `isDeclined`: the board shows a shared answer as declined, but a pair still scores, which is the
- * round working rather than the round breaking. If a duplicate is ever meant to score nothing,
- * this is the one line that decides it. */
+ * `isDeclined`: the board shows a shared answer as declined, but a pair still scores, which is
+ * the round working rather than the round breaking. */
 export function toScoredGroups(state: ReviewingState): ScoredGroup[] {
   return groupAnswersWithPlayers(state.answers).map((group) => ({
     playerIds: group.playerIds,

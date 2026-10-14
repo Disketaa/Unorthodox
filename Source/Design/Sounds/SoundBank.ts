@@ -56,9 +56,9 @@ const PressPitchSpread = 2.5;
  * wanders by a quarter tone every second is a wobble rather than a beat. */
 const TickPitchSpread = 1;
 
-/** The alarm, the card and the whoosh have none — each happens once, and there is nothing to vary
- * it against. A card that wandered in pitch would be a second card waiting to be seen. The reveal
- * has one: a board deals up to twelve of them, and twelve of one note is a printed loop. */
+/** The alarm, the card and the whoosh have none — each happens once, and there is nothing to
+ * vary it against. A card that wandered in pitch would be a second card waiting to be seen. The
+ * reveal has one: a board deals up to twelve of them, and twelve of one note is a printed loop. */
 const PitchSpreads: Record<SoundName, number> = {
   Pop: PressPitchSpread,
   Pling: PressPitchSpread,
@@ -67,8 +67,8 @@ const PitchSpreads: Record<SoundName, number> = {
   Card: 0,
   Whoosh: 0,
   Reveal: PressPitchSpread,
-  // A board can strike up to twelve cards in a run, and twelve of one note is the same printed
-  // loop the reveal would be, so this one wanders like the reveal does.
+  /** A board can strike up to twelve cards in a run, and twelve of one note is the same printed
+   * loop the reveal would be, so this one wanders like the reveal does. */
   Break: PressPitchSpread,
 };
 

@@ -37,9 +37,9 @@ function reviewing(): ReviewingState {
   };
 }
 
-/** The same room, with two of them writing the same answer so there is a card of two to ask about.
- * Its own, because a pair is off the board from the start and the rest of this file is about the
- * likes on cards that are still in the round. */
+/** The same room, with two of them writing the same answer so there is a card of two to ask
+ * about. Its own, because a pair is off the board from the start and the rest of this file is
+ * about the likes on cards that are still in the round. */
 function pairRoom(): ReviewingState {
   return {
     ...reviewing(),

@@ -21,6 +21,8 @@ export interface ReviewGroup {
   own: boolean;
   /** Who wrote it, drawn as faces in the card's corner a beat after the card comes up. */
   authors: readonly AnswerAuthor[];
+  /** When each of those writers lands, in the order they are drawn. */
+  writerDelays: readonly number[];
   /** Which of them is this player, so their own chip is marked the way the bar at the top of the
    * game marks it. */
   ownPlayerId?: PlayerId | null;
@@ -69,6 +71,7 @@ export function ReviewScreen({ topic, groups, revealed, onReject, onLike }: Revi
           own: group.own,
           likeLabel: Strings.reviewing.likes(group.likes),
           authors: group.authors,
+          writerDelays: group.writerDelays,
           authorsShown: group.authorsShown,
           landed: group.landed,
           revealed: group.revealed,

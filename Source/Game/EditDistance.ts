@@ -1,8 +1,8 @@
 import { GameConfig } from './GameConfig';
 
-/** How many edits two words may be apart and still be the same word, by the length of the shorter
- * one. A short word has no room to be wrong in: `нюх` and `дота` are one edit apart and are not
- * the same answer, so anything under the fuzzy floor has to match exactly. */
+/** How many edits two words may be apart and still be the same word, by the length of the
+ * shorter one. A short word has no room to be wrong in: `нюх` and `дота` are one edit apart and
+ * are not the same answer, so anything under the fuzzy floor has to match exactly. */
 export function editsAllowed(length: number): number {
   const { noEdits, fuzzyMinLength, fuzzyMaxEdits, fuzzyLongMinLength, fuzzyLongMaxEdits } =
     GameConfig.grouping;

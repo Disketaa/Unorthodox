@@ -5,8 +5,8 @@ import { sameWords } from './WordMatch';
 import { stripRussianEndings } from './WordForms';
 
 /** Normalize an answer to the string form of it: the basic normalization plus Russian endings
- * stripped from each word. No longer the key the grouping compares — that is `answerWords`, which
- * also folds a Latin keyboard and glues a spaced-out word back together. */
+ * stripped from each word. No longer the key the grouping compares — that is `answerWords`,
+ * which also folds a Latin keyboard and glues a spaced-out word back together. */
 export function normalizeForGrouping(answer: string): string {
   return normalizeAnswer(answer)
     .split(' ')
@@ -14,18 +14,16 @@ export function normalizeForGrouping(answer: string): string {
     .join(' ');
 }
 
-/** Whether two answers are the same answer, by the rule the board groups them with. The one
- * comparison both sides of a card have to make: the host decides who wrote a group and a browser
- * decides which cards are its own, and the two have to agree or a player is offered a like on
- * their own answer. */
+/** Whether two answers are the same answer, by the rule the board groups them with. The host
+ * decides who wrote a group and a browser decides which cards are its own, and if the two
+ * disagree a player is offered a like on their own answer. */
 export function sameAnswer(a: string, b: string): boolean {
   return sameWords(answerWords(a), answerWords(b));
 }
 
-/** Group answers on the rule the board shows them with. Greedy: each answer joins the first group
- * whose key it matches, and a group's key is its first member — fuzzy matching is not transitive,
- * so a group is whatever its first answer is rather than whatever its members agree on, and a
- * browser asking "is this mine" has to ask about that first answer. */
+/** Group answers on the rule the board shows them with. Greedy: each answer joins the first
+ * group whose key it matches, and a group's key is its first member. Fuzzy matching is not
+ * transitive, so a browser asking "is this mine" has to ask about that first answer. */
 function cluster<T>(items: readonly T[], textOf: (item: T) => string): T[][] {
   const keys: string[][] = [];
   const groups: T[][] = [];
@@ -42,7 +40,6 @@ function cluster<T>(items: readonly T[], textOf: (item: T) => string): T[][] {
   return groups;
 }
 
-/** Group answers, each group carrying the answers that went into it. */
 export function groupAnswers(answers: string[]): { groupId: number; answers: string[] }[] {
   return cluster(answers, (answer) => answer).map((group, groupId) => ({
     groupId,
