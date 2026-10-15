@@ -43,7 +43,7 @@ const timing = {
   alarmStaleMs: 1500,
   /** The count-in: the shade goes up over the lobby the moment the host presses Start and comes
    * down on the theme being picked. Two parts, the shade first, so the first number is not
-   * already half faded. No phase is made longer for it — it plays out over the theme choice. */
+   * already half faded. No phase is made longer for it: it plays out over the theme choice. */
   startVeilMs: 300,
   startCountdownMs: 3000,
   /** How long the room's own roll sweeps the bank before it settles on a card. Long enough for
@@ -110,14 +110,24 @@ const deciding = (baseMs: number, perPlayerMs: number) => ({
   decidingMs: baseMs + perPlayerMs * (MaxPlayers - 1),
 });
 
-/** How many letters an enchanted card bans, by the multiplier it wears, climbing one, two, four
- * and six out of the twelve lookalike pairs: the gentlest card costs a player a single letter
- * and only the ×2 card takes half of the set both layouts share. */
-const BannedLetterCounts: Record<number, number> = {
+/** How many letters an enchanted card bans or demands, by the multiplier it wears: one, two,
+ * four and six out of the twelve lookalike pairs. It scales the cost of the enchantment rather
+ * than the chance of it, so the x2 card takes half the set both layouts share. */
+const LetterCounts: Record<number, number> = {
   1.25: 1,
   1.5: 2,
   1.75: 4,
   2: 6,
+};
+
+/** How many letters an enchanted card demands, by the multiplier it wears: four, three, two and
+ * one, the mirror of the bans above. Taking letters away and asking for them are the same cost
+ * to read and opposite costs to write, so a bigger card makes one of the two easier. */
+const DemandCounts: Record<number, number> = {
+  1.25: 4,
+  1.5: 3,
+  1.75: 2,
+  2: 1,
 };
 
 export const GameConfig = {
@@ -176,10 +186,16 @@ export const GameConfig = {
     },
     /** Multiplier values a card may wear, rolled per theme. */
     mults: [1.25, 1.5, 1.75, 2],
-    /** The bans each multiplier carries, counted in the lookalike pairs in `Core` so a ban is
-     * the same letter in both layouts. Paired with `mults` above: a multiplier with no count
-     * there bans nothing. */
-    bannedLetters: BannedLetterCounts,
+    /** How many letters an enchanted card takes or demands, by the multiplier it wears, counted
+     * in the lookalike pairs in `Core` so a letter is the same one in both layouts. A
+     * multiplier with no count here asks nothing of the answer. */
+    /** The two enchantments a chosen card rolls between. One per round, not both: the round's
+     * enchantment is a fact the room reads once, and two of them is a puzzle to solve rather
+     * than a twist to play against. */
+    enchants: ['Ban', 'Demand'] as const,
+    letterCounts: LetterCounts,
+    /** How many of them are demanded rather than taken, on the mirrored table above. */
+    demandCounts: DemandCounts,
   },
   limits: {
     nameMaxLength: 16,

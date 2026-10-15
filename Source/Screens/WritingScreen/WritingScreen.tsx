@@ -31,46 +31,25 @@ export interface WritingScreenProps {
    * nothing. Off the same roll as the note above them, since a bar naming banned letters over
    * keys that still type them is a bar that lies. */
   bannedLetters?: ReadonlySet<string>;
+  /** The letters the round's enchantment insists the answer carry, marked on the keys and held
+   * against the send. Off the same roll as the note over them. */
+  requiredLetters?: ReadonlySet<string>;
 }
 
 /** Writing phase: the question, the answer field, and the keys that write it. What the room is
  * waiting for is not said in a line of its own — the answer itself turns yellow once it is
  * sent, which says it where the player is already looking. */
-export function WritingScreen({
-  topic,
-  theme,
-  themeAccent,
-  remainingMs,
-  durationMs,
-  value,
-  held,
-  onValueChange,
-  onSubmit,
-  onEditing,
-  glinted,
-  enchantment,
-  bannedLetters,
-}: WritingScreenProps) {
+export function WritingScreen(props: WritingScreenProps) {
+  // Taken apart rather than destructured: the input is the same thing under two other names, and
+  // spelling the pairs out twice is how a prop gets added to one and forgotten on the other.
+  const { durationMs, remainingMs, enchantment, glinted, ...shared } = props;
   const timeUp = remainingMs <= 0;
+  const input = { ...shared, remainingMs, totalMs: durationMs, timeUp };
   return (
     <Screen vertical="Bottom" width="Wide">
       <Card variant="Elevated">
         <EnchantmentBar note={enchantment} glinted={glinted} />
-        <AnswerInput
-          topic={topic}
-          theme={theme}
-          themeAccent={themeAccent}
-          remainingMs={remainingMs}
-          totalMs={durationMs}
-          value={value}
-          timeUp={timeUp}
-          held={held}
-          onValueChange={onValueChange}
-          onSubmit={onSubmit}
-          onEditing={onEditing}
-          glinted={glinted}
-          bannedLetters={bannedLetters}
-        />
+        <AnswerInput {...input} />
       </Card>
     </Screen>
   );

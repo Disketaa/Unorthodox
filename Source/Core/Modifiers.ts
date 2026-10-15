@@ -8,6 +8,10 @@ export type ThemeModifierId = 'Enchanted' | 'Alone' | 'Half' | 'Laggards' | 'Lea
  * the effect is who the multiplier reaches. */
 export type ThemeEffectId = 'Alone' | 'Half' | 'Laggards' | 'Leaders';
 
+/** Which enchantment a chosen enchanted card carries: `Ban` takes letters away, `Demand` insists
+ * on one. A round is enchanted by one of them, never by both. */
+export type ThemeEnchantId = 'Ban' | 'Demand';
+
 /** The effect a card's modifiers carry, or undefined where it carries none. */
 export function effectOf(
   carried: readonly ThemeModifierId[] | undefined

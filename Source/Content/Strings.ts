@@ -124,6 +124,10 @@ export const Strings = {
      * bans. Both layouts' spellings of each letter, since the keys are struck in whichever set
      * is up and the bar has to say the same thing to both. */
     enchantment: (letters: string) => `Буквы запрещены: ${letters}`,
+    /** The other enchantment, asking for a letter rather than taking one away. Kept beside the
+     * ban because the two are the same round's one enchantment, and a bar that changed its verb
+     * halfway down the screen would read as two different rounds. */
+    demand: (letters: string) => `Нужна буква: ${letters}`,
     /** Said over the round to the one player its enchanted card reached. The name of what has
      * happened rather than the effect, since the bar under it spells the effect out and a
      * player glancing up should be told only that it is them. */

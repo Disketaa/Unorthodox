@@ -81,6 +81,23 @@
   color: var(--Color-Room-Yellow);
 }
 
+/* The bare field with its words written but not yet acceptable: the room's error pink, which is
+ * the colour a thing that will not go out already wears everywhere else in the game. Said in
+ * the words rather than in a border, because the words are what the player is looking at while
+ * they decide whether to add the letter the round is asking for. */
+.VariantUnmet {
+  composes: VariantBare;
+  color: var(--Color-Feedback-Error);
+}
+
+/* The same bare field once the draft does carry the letter the round asked for: the same green
+ * the demanded key wears, so the words and the key agree about what the room is waiting for.
+ * Where the pink is what has not happened yet, this is what has. */
+.VariantMet {
+  composes: VariantBare;
+  color: var(--Color-Feedback-Success);
+}
+
 /* The beam an empty bare field stands in on: the font's own bar, so it is the height of the
  * letters that will follow it, in the room's yellow rather than a hint's grey. */
 .VariantBare::placeholder {

@@ -4,6 +4,7 @@ import { pressKey } from './PressKey';
 import { useSentAnswer } from './UseSentAnswer';
 import { Strings } from '@/Content';
 import { GameConfig } from '@/Game';
+import { draftCarries } from '@/Core';
 
 export interface AnswerInputProps {
   /** The round's question, headed over the keys: the answer is typed into this box, so the
@@ -36,6 +37,9 @@ export interface AnswerInputProps {
   /** The letters the round's enchanted card has banned, in both key layouts. Carried here rather
    * than looked up, so the keys strike through exactly the letters the bar above names. */
   bannedLetters?: ReadonlySet<string>;
+  /** The letters the enchantment insists on, in both layouts: marked on the keys and held
+   * against the send, so the answer cannot go out without one of them. */
+  requiredLetters?: ReadonlySet<string>;
 }
 
 /** What the round is asking: the theme it was drawn from, and the question itself, which goes
@@ -74,11 +78,12 @@ function AnswerKeys({
   canSubmit,
   timeUp,
   bannedLetters,
+  requiredLetters,
   onValueChange,
   onSubmit,
 }: Pick<
   AnswerInputProps,
-  'value' | 'timeUp' | 'bannedLetters' | 'onValueChange' | 'onSubmit'
+  'value' | 'timeUp' | 'bannedLetters' | 'requiredLetters' | 'onValueChange' | 'onSubmit'
 > & {
   canSubmit: boolean;
 }) {
@@ -87,6 +92,7 @@ function AnswerKeys({
       disabled={timeUp}
       canSubmit={canSubmit}
       banned={bannedLetters}
+      required={requiredLetters}
       backspaceLabel={Strings.writing.backspaceKey}
       spaceLabel={Strings.writing.spaceKey}
       enterLabel={Strings.writing.enterKey}
@@ -100,22 +106,37 @@ function AnswerKeys({
  * will follow it rather than a box sized to guess at it. */
 const Beam = '|';
 
-/** The words in the field, yellow once they have been sent and black again the moment anything
- * is changed. Read-only, because the keys below are how an answer is written. */
+/** No enchantment demanding anything, which is a round whose theme is not enchanted. */
+const NoLetters: ReadonlySet<string> = new Set();
+
+/** What the draft is worth against the round's demand: nothing is asked of it, it is written and
+ * still short of the letter, or it carries the letter. An empty draft is never short — the beam
+ * has not started, and calling it short would paint a fault before anything has been done. */
+function demandOf(value: string, required: ReadonlySet<string> | undefined): Demand {
+  const wanted = required ?? NoLetters;
+  if (wanted.size === 0 || value.trim().length === 0) return 'None';
+  return draftCarries(value, wanted) ? 'Met' : 'Pending';
+}
+
+/** The words in the field, yellow once sent and black again the moment anything is changed.
+ * While the round is asking for a letter the draft is pink until it carries one and green once
+ * it does. */
 function AnswerField({
   value,
   sent,
   closed,
   glinted,
+  unmet,
   onValueChange,
 }: Pick<AnswerInputProps, 'value' | 'onValueChange'> & {
   sent: boolean;
   closed: boolean;
   glinted: boolean;
+  unmet: Demand;
 }) {
   return (
     <TextField
-      variant={sent ? 'Sent' : 'Bare'}
+      variant={sent ? 'Sent' : unmet === 'None' ? 'Bare' : unmet === 'Met' ? 'Met' : 'Unmet'}
       value={value}
       placeholder={Beam}
       maxLength={GameConfig.limits.answerMaxLength}
@@ -127,47 +148,57 @@ function AnswerField({
   );
 }
 
+/** What the round's demand makes of a draft: nothing asked, a written draft still short of the
+ * letter, or one carrying it. */
+export type Demand = 'None' | 'Pending' | 'Met';
+
 /** The writing phase: the question above, the words in the middle, the keys under. The words
  * stay once sent and stay editable: a player who has sent an answer can change their mind, and
  * the room takes the last one they send. */
-export function AnswerInput({
-  topic,
-  theme,
-  themeAccent,
-  remainingMs,
-  totalMs,
-  value,
-  timeUp,
-  held,
-  onValueChange,
-  onSubmit,
-  onEditing,
-  glinted = false,
-  bannedLetters,
-}: AnswerInputProps) {
+export function AnswerInput(props: AnswerInputProps) {
+  const { value, timeUp, held, requiredLetters, bannedLetters, glinted = false } = props;
   // A held room is not writing: the clock is stopped, so the field and the keys both close.
   const closed = timeUp || held;
-  const { clean, change, send } = useSentAnswer(value, onValueChange, onSubmit, onEditing);
+  const { clean, change, send } = useSentAnswer(
+    value,
+    props.onValueChange,
+    props.onSubmit,
+    props.onEditing
+  );
+  const { topic, theme, themeAccent, remainingMs, totalMs } = props;
   const heading = { topic, theme, themeAccent, remainingMs, totalMs };
+  // The same gate as an empty answer: the send key is dead until the draft is something the room
+  // will accept, and a demanded letter the draft does not carry is not that.
+  const ready = value.trim().length > 0 && draftCarries(value, requiredLetters ?? NoLetters);
+  // Three states rather than two, because an empty draft is not a draft failing the round: it is
+  // a draft that has not started, and painting the beam pink would be a fault before anything has
+  // been done. Only a written draft is pending, and only a written one carrying the letter is met.
+  const unmet = demandOf(value, requiredLetters);
+  const field = {
+    value,
+    sent: clean,
+    closed,
+    glinted,
+    unmet,
+    onValueChange: change,
+  };
+  // The demanded letters stop being marked the moment the draft carries one of them: green says
+  // "still owed", and leaving it on keys the answer has already satisfied would leave the room
+  // asking for a letter it already has. Take the letter back out and the marks come back with it.
+  const keys = {
+    value,
+    timeUp: closed,
+    bannedLetters,
+    requiredLetters: unmet === 'Met' ? NoLetters : requiredLetters,
+    onValueChange: change,
+    onSubmit: send,
+  };
 
   return (
     <Stack gap="Sm">
       <AnswerHeading {...heading} />
-      <AnswerField
-        value={value}
-        sent={clean}
-        closed={closed}
-        glinted={glinted}
-        onValueChange={change}
-      />
-      <AnswerKeys
-        value={value}
-        canSubmit={!closed && !clean && value.trim().length > 0}
-        timeUp={closed}
-        bannedLetters={bannedLetters}
-        onValueChange={change}
-        onSubmit={send}
-      />
+      <AnswerField {...field} />
+      <AnswerKeys {...keys} canSubmit={!closed && !clean && ready} />
     </Stack>
   );
 }

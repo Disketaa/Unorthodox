@@ -26,6 +26,14 @@ export const LetterPairs: readonly LetterPair[] = [
   { ru: 'Х', en: 'X' },
 ];
 
+/** Whether a draft carries at least one of the letters an enchantment demands: the round names
+ * four and the writer picks which one to use, since a word cannot be four letters and a joke at
+ * once. Asked of the draft rather than of the keys, so a typed letter is held to one rule. */
+export function draftCarries(value: string, required: ReadonlySet<string>): boolean {
+  if (required.size === 0) return true;
+  return [...required].some((letter) => value.toUpperCase().includes(letter));
+}
+
 /** Every spelling of the given pairs, as the set a keyboard checks a key against. Both layouts
  * are in it, so a key asks one question whichever set is up. */
 export function lettersOf(pairs: readonly LetterPair[]): ReadonlySet<string> {

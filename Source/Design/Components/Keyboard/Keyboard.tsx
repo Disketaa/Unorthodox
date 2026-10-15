@@ -36,6 +36,9 @@ export interface KeyboardProps {
   /** The letters the round's enchanted card has banned, struck through on the keys and taking no
    * press. Both layouts are in the set, so a key asks one question whichever set is up. */
   banned?: ReadonlySet<string>;
+  /** The letters the round's enchantment insists the answer carry, marked on the keys and still
+   * live. Both layouts are in the set, so a key asks one question whichever set is up. */
+  required?: ReadonlySet<string>;
   /** Letter or one of the named keys pressed, from a tap on the keys or from the hardware
    * keyboard behind them. The layout itself holds no text, so the field being typed into stays
    * the single place a draft exists. */
@@ -152,6 +155,7 @@ export function Keyboard({
   disabled = false,
   canSubmit = false,
   banned,
+  required,
   onKeyPress,
   backspaceLabel,
   spaceLabel,
@@ -180,6 +184,7 @@ export function Keyboard({
           canSubmit={canSubmit}
           presses={presses}
           banned={banned}
+          required={required}
           labels={labels}
           onKeyPress={press}
         />

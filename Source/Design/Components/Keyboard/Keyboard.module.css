@@ -7,7 +7,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--Key-Gap, var(--Space-Sm));
-  --Key-Pop-Animation: KeyPop var(--Duration-KeyPop) var(--Easing-Smooth) both;
+  /* `backwards` rather than `both`: the pop's last frame is a key at rest in ink on the
+   * ordinary fill, and holding on it afterwards would leave a pressed key there for good. That
+   * is invisible on an ordinary key, since that is the state it was in anyway, but a demanded
+   * key is not — one that has been pressed and satisfied the round kept the pop's ink instead
+   * of its green, and the green only came back if the class were put on again from scratch.
+   * Released at the end, the key returns to whichever fill and ink it is actually drawn as. */
+  --Key-Pop-Animation: KeyPop var(--Duration-KeyPop) var(--Easing-Smooth) backwards;
 }
 
 /* Centred rather than left-aligned: a short row sits under the middle of the long one, the way
@@ -34,7 +40,7 @@
 
 /* The width the keys that are not letters hold, measured against the widest layout rather than
  * the current one. Sized from the letter width these keys resized with the letter set, so
- * backspace and the language key grew every time the answer changed language — a key that is
+ * backspace and the language key grew every time the answer changed language вЂ” a key that is
  * not a letter should not move because the letters around it did. Measured off the
  * twelve-column letter width, which is the narrower of the two, so no layout makes a named key
  * larger than the largest letter. */
@@ -51,8 +57,12 @@
 .Key {
   flex: 0 0 var(--Key-Width);
   min-width: 0;
-  /* The glint is painted against the key's own corners, so the key is what it is clipped to. */
+  /* The glint is painted against the key's own corners, so the key is what it is clipped to. It
+   * also holds a stacking context of its own: without one the glint and the letter, which are
+   * positioned and numbered, would count against the room's overlays rather than against the
+   * key, and a demanded letter would sit on top of the veil a held room is drawn under. */
   position: relative;
+  z-index: 0;
   height: clamp(var(--Size-TouchTarget), min(9vw, 12vh), var(--Size-KeyboardKeyHeightMax));
   display: inline-flex;
   align-items: center;
@@ -122,11 +132,10 @@
   cursor: var(--Cursor-NotAllowed);
 }
 
-/* A letter the round's enchanted card has banned. The same pink and the same strike a muted
- * answer card wears, since both are the room being told a thing does not count — and the tokens
- * are the answer card's own rather than a second set of colours, so the two cannot drift apart.
- * Held at full strength rather than the half a disabled key takes, since a banned letter is not
- * a key waiting to come back: it is out for the round. */
+/* A letter the round's enchantment has taken away: the pink and the strike of a muted answer
+ * card, since both are the room being told a thing does not count. Pink for taken and green for
+ * asked, so the two never borrow each other's colour. Held at full strength rather than the
+ * half a disabled key takes, since it is not a key waiting to come back. */
 .Key.Banned {
   background: var(--Color-Feedback-Muted-Wash);
   color: var(--Color-Feedback-Error);
@@ -137,7 +146,18 @@
   opacity: 1;
 }
 
-/* The glint laid over a banned key, on the same tiles the banner over the keys wears, so the
+/* A letter the round's enchantment insists the answer carry. Green and underlined rather than
+ * pink and struck, and left live: nothing is taken away here, the line says this is the letter
+ * the room wants to see, and the key is as usable as any other. */
+.Key.Required {
+  background: var(--Color-Feedback-Muted-Good-Wash);
+  color: var(--Color-Feedback-Success);
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--Border-Width-AnswerCardMuted);
+  text-decoration-color: currentColor;
+}
+
+/* The glint laid over a marked key, on the same tiles the banner over the keys wears, so the
  * set of banned letters is read as one enchantment rather than as a decoration on each key.
  * Over the key rather than in place of its fill: the strike is the fact, the glint is the room
  * saying so. A span of its own rather than a background-image on the key, since the key's own

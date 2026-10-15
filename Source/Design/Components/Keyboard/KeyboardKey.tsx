@@ -21,6 +21,9 @@ export interface KeyProps {
   /** Whether the round's enchanted card has banned this letter, which strikes it through and
    * takes the press off it. */
   banned?: boolean;
+  /** Whether the round's enchantment insists on this letter. Marked rather than struck, and
+   * still live: a demanded letter is one the answer has to carry, not one taken from it. */
+  required?: boolean;
   label?: string;
   glyph?: string;
   extra?: string;
@@ -48,6 +51,7 @@ export function Key({
   repeats = true,
   icon,
   banned = false,
+  required = false,
   label,
   glyph,
   extra,
@@ -55,7 +59,11 @@ export function Key({
 }: KeyProps) {
   const hold = useKeyPress(keyName, repeats, onKeyPress);
   const glintVariant = useGlintVariant();
-  const glint = banned ? `${styles.Glint} ${styles[`Glint${glintVariant}`]}` : '';
+  // Either mark wears the glint: both are the enchantment's own doing on the key, and a key the
+  // round has something to say about that stayed plain would be the one key it had nothing to say
+  // about.
+  const marked = banned || required;
+  const glint = marked ? `${styles.Glint} ${styles[`Glint${glintVariant}`]}` : '';
   const button = useRef<HTMLButtonElement>(null);
   // The pop is restarted by hand: dropping the class and putting it back on the same element is
   // what makes the animation run again, where a class that merely stays on would play once and
@@ -70,13 +78,13 @@ export function Key({
   return (
     <button
       ref={button}
-      class={keyClass(pressCount, icon, extra, banned)}
+      class={keyClass(pressCount, icon, extra, banned, required)}
       type="button"
       disabled={disabled || banned}
       aria-label={label}
       {...hold}
     >
-      {banned && <span class={glint} aria-hidden="true" />}
+      {marked && <span class={glint} aria-hidden="true" />}
       <span class={styles.Glyph}>{icon === undefined && (glyph ?? keyName)}</span>
       {icon !== undefined && <span class={styles.Icon} aria-hidden="true" />}
     </button>
@@ -85,13 +93,20 @@ export function Key({
 
 /** The classes a key carries. The pop is not one of them: it is put on and taken off the element
  * by hand, so that a second press restarts it rather than leaving it already running. */
-function keyClass(pressCount: number, icon?: string, extra?: string, banned?: boolean): string {
+function keyClass(
+  pressCount: number,
+  icon?: string,
+  extra?: string,
+  banned?: boolean,
+  required?: boolean
+): string {
   return [
     styles.Key,
     pressCount > 0 ? styles.KeyPopped : '',
     icon ?? '',
     extra ?? '',
     banned === true ? styles.Banned : '',
+    required === true ? styles.Required : '',
   ]
     .filter(Boolean)
     .join(' ');

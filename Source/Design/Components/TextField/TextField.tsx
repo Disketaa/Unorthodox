@@ -1,7 +1,7 @@
 import styles from './TextField.module.css';
 import { useGlintVariant, type GlintVariant } from '../Glint';
 
-export type TextFieldVariant = 'Bare' | 'Filled' | 'Sent' | 'Underline';
+export type TextFieldVariant = 'Bare' | 'Filled' | 'Sent' | 'Met' | 'Unmet' | 'Underline';
 
 export interface TextFieldProps {
   variant?: TextFieldVariant;

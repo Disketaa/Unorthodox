@@ -504,6 +504,16 @@ body.PageFade {
     var(--Color-Surface-Hover)
   );
 
+  /* A letter the round's enchantment takes away is drawn in the room's green rather than in the
+   * pink of a thing that does not count: nothing is being rejected here, the round is closing a
+   * door and saying so kindly, and a struck key in red reads as a key that is broken. Mixed
+   * onto the same surface the pink is, so the two washes stay the same depth of quiet. */
+  --Color-Feedback-Muted-Good-Wash: color-mix(
+    in srgb,
+    var(--Color-Feedback-Success) 14%,
+    var(--Color-Surface-Hover)
+  );
+
   --Radius-Card: var(--Radius-Md);
   --Radius-Button: var(--Radius-Sm);
   --Radius-Input: var(--Radius-Sm);

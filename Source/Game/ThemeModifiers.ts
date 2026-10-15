@@ -5,6 +5,7 @@ import {
   LetterPair,
   LetterPairs,
   ThemeEffectId,
+  ThemeEnchantId,
   ThemeId,
   ThemeModifierId,
   randomFor,
@@ -55,26 +56,45 @@ export function roundsPlayed(spent: readonly { rounds: number }[] | undefined): 
 /** Nothing banned, which is what a round whose theme carries no enchantment gives. */
 const NoLetters: readonly LetterPair[] = [];
 
-/** What the round's enchantment does to the answer being written: which effect the card carries
- * and the letters it bans. Rolled from the room's seed, so every screen sees the same thing.
- * The effect comes back as its id rather than its name, since the words are the content's. */
+/** What the round's enchantment does to the answer being written: the spread it carries, which
+ * of the two enchants it rolled, and the letter it has something to say about. */
 export function enchantmentFor(
   roomCode: string,
   theme: ThemeId | undefined,
   spent: readonly { rounds: number }[] | undefined
-): { effect: ThemeEffectId | undefined; banned: readonly LetterPair[] } {
-  if (theme === undefined) return { effect: undefined, banned: NoLetters };
+): {
+  effect: ThemeEffectId | undefined;
+  enchant: ThemeEnchantId | undefined;
+  letters: readonly LetterPair[];
+} {
+  const none = { effect: undefined, enchant: undefined, letters: NoLetters };
+  if (theme === undefined) return none;
   // The round the bank was offered in: the pick is counted the moment it lands, so rolling
   // against the round after it would be a different set of cards.
   const bankRound = Math.max(0, roundsPlayed(spent) - 1);
   const themes = themesForRoom(roomCode, GameConfig.themes.cardsPerLobby);
   const carried = modifiersForRound(roomCode, themes, bankRound).get(theme);
-  if (carried?.includes('Enchanted') !== true) return { effect: undefined, banned: NoLetters };
+  if (carried?.includes('Enchanted') !== true) return none;
   const effect = carried.find((id): id is ThemeEffectId => id !== 'Enchanted');
+  // Which of the two the card carries, rolled off the room's own seed rather than this player's:
+  // the enchantment is the room's fact, and two players drawing two of them would put two
+  // different rounds under the same card.
+  const roll = randomFor(`${roomCode}:enchant:${bankRound}:${theme}`);
+  const enchants = GameConfig.themes.enchants;
+  const enchant = enchants[Math.floor(roll() * enchants.length)];
+  // Which table of counts it reads decides how much the enchantment asks for, so it is asked
+  // after the enchantment is known rather than before.
   const mult = multForTheme(roomCode, theme, bankRound);
-  const bannedLettersMap = GameConfig.themes.bannedLetters;
-  const count = bannedLettersMap[mult];
-  if (count === undefined || count === 0) return { effect, banned: NoLetters };
-  const random = randomFor(`${roomCode}:banned:${bankRound}:${theme}`);
-  return { effect, banned: sampleUnique(LetterPairs, count, random) };
+  const table =
+    enchant === 'Demand' ? GameConfig.themes.demandCounts : GameConfig.themes.letterCounts;
+  const count = table[mult];
+  if (count === undefined || count <= 0) return { effect, enchant, letters: NoLetters };
+  // Drawn off the room's own seed too, so every tab is held to the same letters: a player who
+  // switched device would otherwise be playing a different round from the one the room is on.
+  const letters = sampleUnique(
+    LetterPairs,
+    count,
+    randomFor(`${roomCode}:letters:${bankRound}:${theme}`)
+  );
+  return { effect, enchant, letters };
 }

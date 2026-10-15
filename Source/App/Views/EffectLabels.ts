@@ -20,18 +20,32 @@ export function lettersLine(banned: readonly { ru: string; en: string }[]): stri
   return banned.map((pair) => pair.ru).join(', ');
 }
 
-/** What the round's enchantment does, off the room's own roll: the note naming the effect and
- * the letters it bans, and the letters as the set the keys check against. Read in one place,
- * since the question stage and the writing phase name the same enchantment. */
+/** What the round's enchantment is, off the room's own roll: the note naming it and the letters
+ * it has something to say about, split into the two ways the keys act on them. Read in one
+ * place, since the question stage and the writing phase name the same enchantment. */
 export function enchantmentOf(
   roomCode: string,
   theme: string | undefined,
   spent: PublicRoom['spent'] | undefined
-): { note: string | undefined; banned: ReadonlySet<string> } {
-  const { effect, banned } = enchantmentFor(roomCode, theme, spent ?? []);
+): {
+  note: string | undefined;
+  banned: ReadonlySet<string>;
+  required: ReadonlySet<string>;
+} {
+  const { effect, enchant, letters } = enchantmentFor(roomCode, theme, spent ?? []);
   const label = effectLabelOf(effect);
+  if (label === undefined) return { note: undefined, banned: new Set(), required: new Set() };
+  const line = lettersLine(letters);
+  if (enchant === 'Demand') {
+    return {
+      note: Strings.writing.demand(line),
+      banned: new Set(),
+      required: lettersOf(letters),
+    };
+  }
   return {
-    note: label === undefined ? undefined : Strings.writing.enchantment(lettersLine(banned)),
-    banned: lettersOf(banned),
+    note: Strings.writing.enchantment(line),
+    banned: lettersOf(letters),
+    required: new Set(),
   };
 }

@@ -19,6 +19,9 @@ export interface RowProps {
   /** The letters the round's enchanted card has banned, in both layouts, so a key asks one
    * question whichever set is up. */
   banned?: ReadonlySet<string>;
+  /** The letters the round's enchantment insists on, marked on the keys but still live: a
+   * demanded letter is one the answer has to carry rather than one taken from it. */
+  required?: ReadonlySet<string>;
   labels: Record<'Backspace' | 'Space' | 'Enter' | 'Lang', string>;
   onKeyPress?: (key: KeyboardKey) => void;
 }
@@ -41,7 +44,7 @@ export function RowKeys(props: RowProps) {
 }
 
 /** The letters of one row, which is all the row holds when no named key belongs to it. */
-function Letters({ row, rowIndex, disabled, banned, presses, onKeyPress }: RowProps) {
+function Letters({ row, rowIndex, disabled, banned, required, presses, onKeyPress }: RowProps) {
   return (
     <>
       {row.map((letter, column) => {
@@ -54,6 +57,7 @@ function Letters({ row, rowIndex, disabled, banned, presses, onKeyPress }: RowPr
             pressCount={pressCount}
             disabled={disabled}
             banned={banned?.has(letter) === true}
+            required={required?.has(letter) === true}
             onKeyPress={onKeyPress}
           />
         );
@@ -117,7 +121,10 @@ function BottomKeys({ disabled, canSubmit, presses, labels, onKeyPress }: RowPro
         icon={styles.MarkEnter}
         label={labels.Enter}
         extra={[styles.Action, canSubmit ? styles.MarkSend : ''].filter(Boolean).join(' ')}
-        disabled={disabled}
+        // Muted while there is nothing to send, rather than live and refusing: a send key
+        // that answers a press with silence reads as a key gone wrong, where a dimmed one says
+        // the draft is not ready. The press guard stays, since hardware enter never touches this.
+        disabled={disabled || !canSubmit}
         onKeyPress={onKeyPress}
       />
     </>

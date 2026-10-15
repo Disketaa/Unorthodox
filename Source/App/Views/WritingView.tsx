@@ -5,6 +5,7 @@ import { useCountdown } from '../Hooks/UseCountdown';
 import { useAnswerFlush } from '../Hooks/UseAnswerFlush';
 import { enchantmentOf } from './EffectLabels';
 import { PhaseViewProps } from './LobbyView';
+import type { PublicRoom } from '@/Game';
 
 /** Whether the round's enchanted card has reached this player, which is what the answer field
  * and the bar over the keys wear the glint for. */
@@ -14,6 +15,25 @@ function glintedFor(view: PhaseViewProps['view']): boolean {
     (view.publicState?.affectedPlayerIds?.includes(view.playerId) ?? false)
   );
 }
+
+/** What the round's enchantment asks of this player, which is nothing at all unless the card
+ * reached them: the roll is the room's, but a player it did not touch is not held to it, so the
+ * bar and the marked keys stay off their screen rather than showing a round they are not in. */
+function enchantmentFor(
+  view: PhaseViewProps['view'],
+  theme: string | undefined,
+  spent: PublicRoom['spent'] | undefined
+) {
+  if (!glintedFor(view)) return NoEnchantment;
+  return enchantmentOf(view.roomCode, theme, spent);
+}
+
+/** What a round with nothing asked of this player gives the screen. */
+const NoEnchantment = {
+  note: undefined,
+  banned: new Set<string>(),
+  required: new Set<string>(),
+};
 
 /** Writing: topic, timer and the answer draft, which is local UI state. */
 export function WritingView({ view }: PhaseViewProps) {
@@ -31,7 +51,8 @@ export function WritingView({ view }: PhaseViewProps) {
   const writing = view.publicState?.phase === 'Writing' ? view.publicState : undefined;
   const theme = writing?.theme;
   const accent = theme === undefined ? undefined : themeAccent(theme);
-  const enchantment = enchantmentOf(view.roomCode, theme, writing?.spent);
+  const enchanted = glintedFor(view);
+  const enchantment = enchantmentFor(view, theme, writing?.spent);
   flush.publish(() => {
     if (draft.trim().length > 0) view.submitAnswer(draft);
   });
@@ -49,9 +70,10 @@ export function WritingView({ view }: PhaseViewProps) {
       onValueChange={setDraft}
       onSubmit={() => view.submitAnswer(draft)}
       onEditing={view.setEditing}
-      glinted={glintedFor(view)}
+      glinted={enchanted}
       enchantment={enchantment.note}
       bannedLetters={enchantment.banned}
+      requiredLetters={enchantment.required}
     />
   );
 }

@@ -81,20 +81,24 @@ export function themeAccent(theme: ThemeId): Accent {
 }
 
 /** Take `count` things off a pool without repetition, shuffling as you go rather than rolling
- * each one and hoping. The one sampler the theme deal and the question decks are both drawn
- * with. */
+ * each one and hoping. The one sampler the theme deal, the question decks and the enchantment's
+ * letters are all drawn with. */
 export function sampleUnique<T>(items: readonly T[], count: number, random: Random): T[] {
-  const pool = [...items];
-  const taken = Math.min(Math.max(count, 0), pool.length);
-  for (let i = 0; i < taken; i += 1) {
+  const shuffled = shuffle([...items], random);
+  return shuffled.slice(0, Math.min(Math.max(count, 0), shuffled.length));
+}
+
+/** The list in a new order, by exchanging each place with one further down the list. */
+function shuffle<T>(pool: T[], random: Random): T[] {
+  for (let i = 0; i < pool.length; i += 1) {
     const swapWith = i + Math.floor(random() * (pool.length - i));
     const held = pool[i];
     const drawn = pool[swapWith];
-    if (held === undefined || drawn === undefined) return pool.slice(0, taken);
+    if (held === undefined || drawn === undefined) return pool;
     pool[i] = drawn;
     pool[swapWith] = held;
   }
-  return pool.slice(0, taken);
+  return pool;
 }
 
 /** The themes one room is offered, rolled from its code. One function rather than each caller
