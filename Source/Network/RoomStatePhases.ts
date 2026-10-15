@@ -48,8 +48,10 @@ function answeredFrom(fields: Fields): number | undefined {
   return isNumber(value) ? value : undefined;
 }
 
-/** The two untimed phases, which carry no clock at all. */
-function plainFrom(fields: Fields, members: Members): HostState | undefined {
+/** The roster, totals, turn and pace every phase carries, read once out of the stored members.
+ * The scores are the running totals here rather than the round's own, which is why they are
+ * renamed on the way out. */
+function commonOf(members: Members): RoomMembers {
   const {
     scores,
     players,
@@ -60,32 +62,26 @@ function plainFrom(fields: Fields, members: Members): HostState | undefined {
     paused,
     pausedAt,
   } = members;
+  return {
+    players,
+    cumulativeScores: scores,
+    turnPlayerId,
+    pace,
+    themeRounds,
+    affectedPlayers,
+    paused,
+    pausedAt,
+  };
+}
+
+/** The two untimed phases, which carry no clock at all. */
+function plainFrom(fields: Fields, members: Members): HostState | undefined {
+  const common = commonOf(members);
   switch (fields.get('phase')) {
     case 'Lobby':
-      return {
-        phase: 'Lobby',
-        players,
-        cumulativeScores: scores,
-        turnPlayerId,
-        pace,
-        themeRounds,
-        affectedPlayers,
-        paused,
-        pausedAt,
-      };
+      return { phase: 'Lobby', ...common };
     case 'Final':
-      return {
-        phase: 'Final',
-        players,
-        cumulativeScores: scores,
-        turnPlayerId,
-        pace,
-        themeRounds,
-        affectedPlayers,
-        paused,
-        pausedAt,
-        theme: themeFrom(fields),
-      };
+      return { phase: 'Final', ...common, theme: themeFrom(fields) };
     default:
       return undefined;
   }
@@ -124,56 +120,22 @@ function choosingFrom(
 
 /** The scores phase, which carries the round's own points beside the running totals. */
 function scoresFrom(fields: Fields, members: Members, theme: ThemeId | undefined): HostState {
-  const {
-    scores,
-    players,
-    turnPlayerId,
-    pace,
-    themeRounds,
-    affectedPlayers,
-    paused,
-    pausedAt,
-  } = members;
   return {
     phase: 'Scores',
     ...clockOf(fields),
+    ...commonOf(members),
     scores: toMap(rawPairs(fields, 'round'), isNumber),
-    players,
-    cumulativeScores: scores,
-    turnPlayerId,
-    pace,
-    themeRounds,
-    affectedPlayers,
-    paused,
-    pausedAt,
     theme,
   };
 }
 
 /** The three timed phases, which all read the same clock, roster and turn. */
 function timedFrom(fields: Fields, members: Members): HostState | undefined {
-  const {
-    scores,
-    players,
-    turnPlayerId,
-    pace,
-    themeRounds,
-    affectedPlayers,
-    paused,
-    pausedAt,
-  } = members;
   const common = {
     ...clockOf(fields),
     topic: text(fields, 'topic'),
     answers: toMap(rawPairs(fields, 'answers'), isText),
-    players,
-    cumulativeScores: scores,
-    turnPlayerId,
-    pace,
-    themeRounds,
-    affectedPlayers,
-    paused,
-    pausedAt,
+    ...commonOf(members),
   };
   const theme = themeFrom(fields);
   switch (fields.get('phase')) {

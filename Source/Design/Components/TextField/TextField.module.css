@@ -112,3 +112,29 @@
   outline: none;
   border-bottom-color: var(--Color-Border-Focus);
 }
+
+/* The words wearing the round's glint rather than ink, for a player the enchanted card reaches:
+ * the text is the mask, so the shine is the letters and the field stays bare. Full strength
+ * rather than the faint wash a card wears, since here the shine is the text. */
+.Glinted {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* The tile itself, one of three, since which one is rolled rather than fixed. */
+.GlintA {
+  background-image: var(--Texture-ThemeCardGlintA);
+}
+
+.GlintB {
+  background-image: var(--Texture-ThemeCardGlintB);
+}
+
+.GlintC {
+  background-image: var(--Texture-ThemeCardGlintC);
+}

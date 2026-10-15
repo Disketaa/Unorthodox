@@ -56,6 +56,9 @@ const Mult = /\.Mult[^{]*\{([^}]*)\}/;
 const MultHover = /\.Root:hover \.Mult[^{]*\{([^}]*)\}/;
 const Noise = /\.Noise[^{]*\{([^}]*)\}/;
 const Glint = /\.Glint[^{]*\{([^}]*)\}/;
+const GlintA = /\.GlintA[^{]*\{([^}]*)\}/;
+const GlintB = /\.GlintB[^{]*\{([^}]*)\}/;
+const GlintC = /\.GlintC[^{]*\{([^}]*)\}/;
 const Name = /\.Name[^{]*\{([^}]*)\}/;
 describe('the row of theme cards', () => {
   it('fills the width it is given rather than sizing itself to its cards', () => {
@@ -493,9 +496,13 @@ describe('the theme cards', () => {
     // Both are drawn at their own pixels, since scaled down either one averages into flat grey.
     // They cannot be one token either: the glint is a shine that moves and the grain is a
     // surface that does not, and a card with only the grain on it is the card this undoes.
-    expect(tokenValue('--Texture-ThemeCardGlint')).toBe("url('./Overlays/Glint.gif')");
+    expect(tokenValue('--Texture-ThemeCardGlintA')).toBe("url('./Overlays/Glint1.gif')");
+    expect(tokenValue('--Texture-ThemeCardGlintB')).toBe("url('./Overlays/Glint2.gif')");
+    expect(tokenValue('--Texture-ThemeCardGlintC')).toBe("url('./Overlays/Glint3.gif')");
     expect(tokenValue('--Texture-ThemeCardNoise')).toBe("url('./Overlays/Noise.gif')");
-    expect(card.declaration(Glint, 'background-image')).toBe('var(--Texture-ThemeCardGlint)');
+    expect(card.declaration(GlintA, 'background-image')).toBe('var(--Texture-ThemeCardGlintA)');
+    expect(card.declaration(GlintB, 'background-image')).toBe('var(--Texture-ThemeCardGlintB)');
+    expect(card.declaration(GlintC, 'background-image')).toBe('var(--Texture-ThemeCardGlintC)');
   });
   it('holds the glint short of full strength, or the card stops being a card', () => {
     const shine = Number(tokenValue('--Opacity-ThemeCardGlint'));

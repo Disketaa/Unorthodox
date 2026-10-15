@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'preact/hooks';
 import { Stack, Text } from '@/Design/Primitives';
 import { Keyboard, TextField, ThemeLabel } from '@/Design/Components';
 import { pressKey } from './PressKey';
@@ -31,6 +30,9 @@ export interface AnswerInputProps {
   /** Reports that a sent answer is being changed, which puts the player back at work in the bar
    * above. Sent as a change rather than read, because the draft this turns on is local to here. */
   onEditing?: (editing: boolean) => void;
+  /** Whether the round's enchanted card reaches this player, which fills the words being written
+   * with the glint. The room's own roll says who, so it is the same on every screen. */
+  glinted?: boolean;
 }
 
 /** What the round is asking: the theme it was drawn from, and the question itself, which goes
@@ -42,10 +44,7 @@ function AnswerHeading({
   themeAccent,
   remainingMs,
   totalMs,
-}: Pick<AnswerInputProps, 'topic' | 'theme' | 'themeAccent'> & {
-  remainingMs: number;
-  totalMs: number;
-}) {
+}: Pick<AnswerInputProps, 'topic' | 'theme' | 'themeAccent' | 'remainingMs' | 'totalMs'>) {
   if (theme === undefined || themeAccent === undefined) {
     return (
       <Text variant="Body" fontWeight="Bold">
@@ -99,10 +98,12 @@ function AnswerField({
   value,
   sent,
   closed,
+  glinted,
   onValueChange,
 }: Pick<AnswerInputProps, 'value' | 'onValueChange'> & {
   sent: boolean;
   closed: boolean;
+  glinted: boolean;
 }) {
   return (
     <TextField
@@ -112,6 +113,7 @@ function AnswerField({
       maxLength={GameConfig.limits.answerMaxLength}
       disabled={closed}
       readOnly
+      glinted={glinted}
       onChange={onValueChange}
     />
   );
@@ -132,30 +134,23 @@ export function AnswerInput({
   onValueChange,
   onSubmit,
   onEditing,
+  glinted = false,
 }: AnswerInputProps) {
-  // A held room is not writing: the clock is stopped for everyone, so an answer written now would
-  // be timed against a round that is not running. The keys close as well as the field, since they
-  // are what writes it now.
+  // A held room is not writing: the clock is stopped, so the field and the keys both close.
   const closed = timeUp || held;
-  const { clean, editing, change, send } = useSentAnswer(value, onValueChange, onSubmit);
-  // Held in a ref so the effect turns on the flag and not the callback's identity: a fresh
-  // callback each render would re-fire it every frame, and firing it tells the room.
-  const report = useRef(onEditing);
-  report.current = onEditing;
-  useEffect(() => {
-    report.current?.(editing);
-  }, [editing]);
+  const { clean, change, send } = useSentAnswer(value, onValueChange, onSubmit, onEditing);
+  const heading = { topic, theme, themeAccent, remainingMs, totalMs };
 
   return (
     <Stack gap="Sm">
-      <AnswerHeading
-        topic={topic}
-        theme={theme}
-        themeAccent={themeAccent}
-        remainingMs={remainingMs}
-        totalMs={totalMs}
+      <AnswerHeading {...heading} />
+      <AnswerField
+        value={value}
+        sent={clean}
+        closed={closed}
+        glinted={glinted}
+        onValueChange={change}
       />
-      <AnswerField value={value} sent={clean} closed={closed} onValueChange={change} />
       <AnswerKeys
         value={value}
         canSubmit={!closed && !clean && value.trim().length > 0}

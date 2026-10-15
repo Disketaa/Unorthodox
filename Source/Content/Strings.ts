@@ -205,7 +205,7 @@ export const Strings = {
   },
   effects: {
     alone: 'Выбирающему',
-    half: 'Рандомно',
+    half: 'Случайным',
     laggards: 'Отстающим',
     leaders: 'Лидирующим',
   },

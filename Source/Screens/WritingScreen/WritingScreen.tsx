@@ -21,6 +21,9 @@ export interface WritingScreenProps {
   /** Reports that a sent answer is being changed, so the bar above can put the seat back at
    * work. */
   onEditing?: (editing: boolean) => void;
+  /** Whether the round's enchanted card reaches this player, which fills the words in the answer
+   * field with the glint. The room's own roll says who, so it is the same on every screen. */
+  glinted?: boolean;
 }
 
 /** Writing phase: the question, the answer field, and the keys that write it. What the room is
@@ -37,6 +40,7 @@ export function WritingScreen({
   onValueChange,
   onSubmit,
   onEditing,
+  glinted,
 }: WritingScreenProps) {
   const timeUp = remainingMs <= 0;
 
@@ -55,6 +59,7 @@ export function WritingScreen({
           onValueChange={onValueChange}
           onSubmit={onSubmit}
           onEditing={onEditing}
+          glinted={glinted}
         />
       </Card>
     </Screen>

@@ -21,6 +21,11 @@ export function WritingView({ view }: PhaseViewProps) {
   const writing = view.publicState?.phase === 'Writing' ? view.publicState : undefined;
   const theme = writing?.theme;
   const accent = theme === undefined ? undefined : themeAccent(theme);
+  // Whether the round's enchanted card reaches this seat, read off the room's own roll rather
+  // than worked out here: the host named the seats and every screen is told the same ones.
+  const glinted =
+    view.playerId !== null &&
+    (view.publicState?.affectedPlayerIds?.includes(view.playerId) ?? false);
   // Offered to the room rather than sent here, because the only thing that can throw a draft away
   // without warning is the host's skip button. An answer nobody sent is still one they wrote: the
   // room is a card short and a seat marked finished later for it. Blank is not an answer.
@@ -46,6 +51,7 @@ export function WritingView({ view }: PhaseViewProps) {
       onValueChange={setDraft}
       onSubmit={() => view.submitAnswer(draft)}
       onEditing={view.setEditing}
+      glinted={glinted}
     />
   );
 }

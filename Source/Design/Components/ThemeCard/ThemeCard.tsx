@@ -2,6 +2,7 @@ import { ThemeId, ThemeModifierId, themeAccent } from '@/Core';
 import { useCallback } from 'preact/hooks';
 import { useSwayMotion } from '@/Design/Primitives';
 import { playSound } from '../../Sounds';
+import { useGlintVariant } from '../Glint';
 import { CardFace } from './ThemeCardFace';
 import styles from './ThemeCard.module.css';
 
@@ -122,15 +123,22 @@ export function ThemeCard(props: ThemeCardProps) {
   );
 }
 
+/** Pressing a card the room is still offering. A card that is waiting, spent or already swept
+ * takes the press and does nothing with it, since the room is not asking about it. */
+function pressCard(
+  theme: ThemeId,
+  onPick: ((theme: ThemeId) => void) | undefined,
+  blocked: boolean
+) {
+  if (blocked) return;
+  playSound('Pop');
+  onPick?.(theme);
+}
+
 /** The card's own button, split out to keep the component above under the line limit. */
 function ThemeCardButton({
   theme,
-  name,
-  index,
-  rounds,
-  spent,
   modifiers,
-  mult,
   effectLabel,
   chosen = false,
   swept = false,
@@ -141,10 +149,14 @@ function ThemeCardButton({
   onPick,
   buttonRef,
   spentOut,
+  ...face
 }: ThemeCardProps & {
   buttonRef: (node: HTMLButtonElement | null) => void;
   spentOut: boolean;
 }) {
+  const enchanted = !spentOut && modifiers?.includes('Enchanted') === true;
+  const variant = useGlintVariant();
+  const glintClass = `${styles.Glint} ${styles[`Glint${variant}`]}`;
   return (
     <button
       type="button"
@@ -152,18 +164,10 @@ function ThemeCardButton({
       class={cardClasses(moving, blink, chosen, swept, waiting, spentOut)}
       disabled={locked}
       aria-disabled={waiting || spentOut || swept || undefined}
-      onClick={() => {
-        if (waiting || spentOut || swept) {
-          return;
-        }
-        playSound('Pop');
-        onPick?.(theme);
-      }}
+      onClick={() => pressCard(theme, onPick, waiting || spentOut || swept)}
     >
-      <CardFace name={name} index={index} rounds={rounds} spent={spent} mult={mult} />
-      {!spentOut && modifiers?.includes('Enchanted') === true && (
-        <span class={styles.Glint} aria-hidden="true" />
-      )}
+      <CardFace {...face} />
+      {enchanted && <span class={glintClass} aria-hidden="true" />}
       {effectLabel !== undefined && <span class={styles.EffectLabel}>{effectLabel}</span>}
     </button>
   );

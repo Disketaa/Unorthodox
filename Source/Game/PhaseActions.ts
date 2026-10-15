@@ -149,9 +149,6 @@ export function handleEndReviewing(
     scores: roundScores,
     cumulativeScores,
     theme: state.theme,
-    // The round is over, so the spread is over with it: the seats it reached stop wearing the
-    // glint the moment the scores are up rather than carrying it into the next bank.
-    affectedPlayers: new Set(),
   };
 }
 

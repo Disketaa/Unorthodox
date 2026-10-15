@@ -8,27 +8,6 @@
   flex-direction: column;
   gap: var(--Key-Gap, var(--Space-Sm));
   --Key-Pop-Animation: KeyPop var(--Duration-KeyPop) var(--Easing-Smooth) both;
-  position: relative;
-  /* Holds the glint's own layer, so a shine at a negative index stays inside the keyboard rather
-   * than slipping behind whatever the keyboard is sitting on. */
-  isolation: isolate;
-}
-
-/* The glint over the whole keyboard for a player the round's enchanted card reaches: the same
- * shine a card and a seat wear, laid under the keys rather than over them so it reads as the
- * surface the keys sit on rather than as a second thing drawn on top. Blended the way the card's
- * is, and hidden from the pointer since the keys are what is being pressed. */
-.Glint {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image: var(--Texture-ThemeCardGlint);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  mix-blend-mode: var(--Blend-ThemeCardGlint);
-  opacity: var(--Opacity-PlayerBarGlint);
 }
 
 /* Centred rather than left-aligned: a short row sits under the middle of the long one, the way

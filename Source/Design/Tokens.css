@@ -589,18 +589,17 @@ body.PageFade {
   --Blend-ThemeCardNoise: overlay;
   --Opacity-ThemeCardNoise: 0.2;
   --Opacity-ThemeCardNoiseHover: 0.5;
-  /* The glint on an enchanted card: the tile, how it blends and how much of itself it is worth.
-   * Laid over the grain rather than beside it, since the enchantment is the top finish on the
-   * card and a shine underneath the grain is a shine nothing can see. Drawn at its own size for
-   * the reason the grain is: scaled down, both tiles average into flat grey. */
-  --Texture-ThemeCardGlint: url('./Overlays/Glint.gif');
+  /* The glint on an enchanted card: the tiles, how it blends and how much of itself it is
+   * worth. Laid over the grain rather than beside it, since the enchantment is the top finish
+   * on the card and a shine underneath the grain is a shine nothing can see. Three tiles
+   * reading as one shine, and which one is worn is rolled in the browser rather than agreed by
+   * the room: the finish is decoration and not a signal, so two players need not be shown the
+   * same one. */
+  --Texture-ThemeCardGlintA: url('./Overlays/Glint1.gif');
+  --Texture-ThemeCardGlintB: url('./Overlays/Glint2.gif');
+  --Texture-ThemeCardGlintC: url('./Overlays/Glint3.gif');
   --Blend-ThemeCardGlint: multiply;
-  --Opacity-ThemeCardGlint: 0.35;
-  /* The same glint on a seat in the bar of players, at full strength rather than the card's
-   * faint step: a seat is a fraction of the card's size, so the card's opacity reads as almost
-   * nothing there. One token rather than a second copy of the card's, since the two are the same
-   * shine and only the strength differs. */
-  --Opacity-PlayerBarGlint: 0.6;
+  --Opacity-ThemeCardGlint: 0.2;
   /* The round ticks along the bottom of a card: how big one is, how far apart they sit, how
    * rounded, and how faint the ones the room is not on are. A tick rather than a dot, and
    * taller than it is wide: a row of dots on a card this size reads as a rating meter, and ten

@@ -197,12 +197,12 @@
   pointer-events: none;
 }
 
-/* The multiplier: the room's roll, in the card's top left corner and in the room's yellow. It is
- * the one thing on the card that says what the room's roll is rather than which theme the card
- * is — the name says that, and six multipliers are six rolls. Room yellow rather than grey: the
- * roll is about the room and not about whoever is looking, and the yellow is the only colour on
- * the card that is not the theme's — the tint, the ink and the wash are all the accent, so a
- * yellow mark is the one thing on the card that is not. */
+/* The multiplier: the room's roll, in the card's top left corner and in the room's yellow. It
+ * is the one thing on the card that says what the room's roll is rather than which theme the
+ * card is — the name says that, and six multipliers are six rolls. Room yellow rather than
+ * grey: the roll is about the room and not about whoever is looking, and the yellow is the only
+ * colour on the card that is not the theme's — the tint, the ink and the wash are all the
+ * accent, so a yellow mark is the one thing on the card that is not. */
 .Mult {
   position: absolute;
   top: var(--Space-ThemeCardPadding);
@@ -256,29 +256,35 @@
   opacity: var(--Opacity-ThemeCardNoiseHover);
 }
 
-/* The glint on a card the round has enchanted, over the grain and over the name. Over both,
- * because a shine that stops at the name is a shine painted into the card rather than one
- * passing over it, and the enchantment is meant to read as the surface moving rather than as a
- * different surface. Blended like the grain, for the same reason a tile below full strength is
- * otherwise a wash, and hidden from the pointer for the same reason: it covers the whole of the
- * thing being pressed.
- *
- * Covering rather than tiling, which is the whole of what it is not: the shine is one sweep
- * travelling across one panel, and a tile cuts it into a wallpaper of the same sweep. Scaled down
- * to fit rather than drawn at its own pixels, which is the one thing the grain on this card may
- * not do — the grain exists to be at its own size, and this is a picture of a shine that has to
- * be as big as the card it is shining on. */
+/* The glint on a card the round has enchanted, over the grain and over the name: a shine that
+ * stops at the name is one painted into the card rather than passing over it. Blended like the
+ * grain, since a tile below full strength is otherwise a wash, and hidden from the pointer
+ * because it covers the whole of the thing being pressed. Covering rather than tiling, since
+ * the shine is one sweep across one panel, and scaled to fit rather than drawn at its own
+ * pixels, which is the one thing the grain on this card may not do. */
 .Glint {
   position: absolute;
   inset: 0;
   z-index: 3;
   pointer-events: none;
-  background-image: var(--Texture-ThemeCardGlint);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   mix-blend-mode: var(--Blend-ThemeCardGlint);
   opacity: var(--Opacity-ThemeCardGlint);
+}
+
+/* The tile itself, one of three, since which one is rolled rather than fixed. */
+.GlintA {
+  background-image: var(--Texture-ThemeCardGlintA);
+}
+
+.GlintB {
+  background-image: var(--Texture-ThemeCardGlintB);
+}
+
+.GlintC {
+  background-image: var(--Texture-ThemeCardGlintC);
 }
 
 .Effect {
@@ -311,7 +317,9 @@
   color: var(--Color-Neutral-500);
   user-select: none;
   pointer-events: none;
-  transition: color var(--Transition-Standard);
+  transition:
+    color var(--Transition-Standard),
+    font-size var(--Transition-Standard);
 }
 
 .Root:hover .EffectLabel,
@@ -422,12 +430,12 @@
   opacity: var(--Opacity-ThemeCardNoiseHover);
 }
 
-/* The corner mark with them: the chosen card is locked, so no hover will bring the ink back.
-   * And smaller, since the chosen card has already had its answer and the mark has given up its
-   * share of the card to the name underneath it — the same opening-up the name and the mark do,
-   * in the other direction. Still the room's yellow: the roll is the room's either way, and a
-   * chosen card is not about to start wearing the theme. */
-.Chosen .Mult {
+/* The corner marks with them: the chosen card is locked, so no hover will bring the ink back.
+ * And smaller, since the chosen card has already had its answer and the marks have given up
+ * their share of the card to the name underneath it — the same opening-up the name does, in the
+ * other direction. The two the same size, since they are read as one line rather than as two. */
+.Chosen .Mult,
+.Chosen .EffectLabel {
   font-size: calc(var(--FontSize-ThemeCardMult) * var(--Scale-ThemeCardInitialChosen));
   color: var(--ThemeCard-Tint, var(--Accent-Tint));
 }

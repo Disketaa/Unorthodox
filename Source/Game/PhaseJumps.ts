@@ -32,6 +32,13 @@ export function handleGoToPhase(state: HostState, action: ActionOf<'GO_TO_PHASE'
     // not that answer. One waiting to be drawn is a round whose topic nobody has chosen.
     question: undefined,
     questionAt: undefined,
+    // The spread belongs to the round being played, and the scores are still that round being
+    // settled: Writing, Reviewing and Scores keep it, so the reached seats still wear the shine
+    // while the room reads what it won. A fresh bank, a fresh room and the end leave it behind.
+    affectedPlayers:
+      action.phase === 'Writing' || action.phase === 'Reviewing' || action.phase === 'Scores'
+        ? state.affectedPlayers
+        : new Set<PlayerId>(),
   };
   return { ...phaseBody(base, state, action.phase, action.topic), ...base };
 }
