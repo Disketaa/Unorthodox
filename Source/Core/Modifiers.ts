@@ -9,8 +9,8 @@ export type ThemeModifierId = 'Enchanted' | 'Alone' | 'Half' | 'Laggards' | 'Lea
 export type ThemeEffectId = 'Alone' | 'Half' | 'Laggards' | 'Leaders';
 
 /** Which enchantment a chosen enchanted card carries: `Ban` takes letters away, `Demand` insists
- * on one. A round is enchanted by one of them, never by both. */
-export type ThemeEnchantId = 'Ban' | 'Demand';
+ * on one, `MinLength` asks for a longer answer and `MaxLength` a shorter one. One per round. */
+export type ThemeEnchantId = 'Ban' | 'Demand' | 'MinLength' | 'MaxLength';
 
 /** The effect a card's modifiers carry, or undefined where it carries none. */
 export function effectOf(

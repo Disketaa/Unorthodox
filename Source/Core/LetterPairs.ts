@@ -26,6 +26,18 @@ export const LetterPairs: readonly LetterPair[] = [
   { ru: 'Х', en: 'X' },
 ];
 
+/** Which end of a length an enchantment holds an answer to: the least it may be, or the most, or
+ * absent where the round asks nothing about how long it is. */
+export type LetterBound = { figure: number; least: boolean } | undefined;
+
+/** Whether a draft sits inside the length an enchantment holds it to. Counting letters rather
+ * than characters, since the two layouts' spellings of a pair are one letter each and a player
+ * answering in English is not answering with two extra letters for it. */
+export function draftFits(value: string, bound: LetterBound): boolean {
+  if (bound === undefined) return true;
+  return bound.least ? value.length >= bound.figure : value.length <= bound.figure;
+}
+
 /** Whether a draft carries at least one of the letters an enchantment demands: the round names
  * four and the writer picks which one to use, since a word cannot be four letters and a joke at
  * once. Asked of the draft rather than of the keys, so a typed letter is held to one rule. */

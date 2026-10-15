@@ -27,8 +27,13 @@ export function useTimerFill(
     if (!root) return;
     if (tint === undefined) {
       root.style.removeProperty('--Timer-Fill');
+      root.style.removeProperty('--Timer-Track');
       return;
     }
     root.style.setProperty('--Timer-Fill', tint);
+    // No track under a tint: the block already stands on a wash of that colour, so a grey track
+    // is a third colour on the screen and a washed one is the same colour twice over. The fill
+    // and the words are all there is to read.
+    root.style.setProperty('--Timer-Track', 'transparent');
   }, [tint]);
 }

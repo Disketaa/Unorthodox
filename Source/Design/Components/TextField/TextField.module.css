@@ -81,23 +81,6 @@
   color: var(--Color-Room-Yellow);
 }
 
-/* The bare field with its words written but not yet acceptable: the room's error pink, which is
- * the colour a thing that will not go out already wears everywhere else in the game. Said in
- * the words rather than in a border, because the words are what the player is looking at while
- * they decide whether to add the letter the round is asking for. */
-.VariantUnmet {
-  composes: VariantBare;
-  color: var(--Color-Feedback-Error);
-}
-
-/* The same bare field once the draft does carry the letter the round asked for: the same green
- * the demanded key wears, so the words and the key agree about what the room is waiting for.
- * Where the pink is what has not happened yet, this is what has. */
-.VariantMet {
-  composes: VariantBare;
-  color: var(--Color-Feedback-Success);
-}
-
 /* The beam an empty bare field stands in on: the font's own bar, so it is the height of the
  * letters that will follow it, in the room's yellow rather than a hint's grey. */
 .VariantBare::placeholder {
@@ -130,10 +113,15 @@
   border-bottom-color: var(--Color-Border-Focus);
 }
 
-/* The words wearing the round's glint rather than ink, for a player the enchanted card reaches:
- * the text is the mask, so the shine is the letters and the field stays bare. Full strength
- * rather than the faint wash a card wears, since here the shine is the text. */
+/* The words wearing the round's glint, for a player the enchanted card reaches: the text is the
+ * mask, so the shine is the letters. No blend and no tint underneath. An earlier version
+ * multiplied the field's own colour into the tile so the words would stay readable, and it
+ * worked on a desktop and did nothing on a phone: a blend inside a clipped-text background is
+ * not honoured by iOS, which paints the flat colour and drops the shine. One mechanism,
+ * plainly, is what every browser agrees on — the field's ink goes under the tile as a fallback
+ * for a tile that has not loaded yet, and the shine is simply the tile where it has. */
 .Glinted {
+  background-color: var(--Color-Text-Default);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -141,6 +129,11 @@
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
+}
+
+/* A sent answer keeps its own yellow under the shine, the same way an unsent one keeps its ink. */
+.Glinted.VariantSent {
+  background-color: var(--Color-Room-Yellow);
 }
 
 /* The tile itself, one of three, since which one is rolled rather than fixed. */
@@ -152,6 +145,25 @@
   background-image: var(--Texture-ThemeCardGlintB);
 }
 
+.GlintC {
+  background-image: var(--Texture-ThemeCardGlintC);
+}
+
+.VariantUnmet {
+  composes: VariantBare;
+  color: var(--Color-Feedback-Error);
+}
+
+/* The same fault under the glint. The pink goes down at full strength and the tile screens over
+ * it, so the letters are pink where the tile is dark and bright where it is not. Two earlier
+ * versions are worth recording, since both looked broken for the same reason: a pale pink under
+ * the tile, and an opaque one multiplied by it. A white shine needs something dark to lift off,
+ * and cream paper is not it. */
+.Glinted.VariantUnmet {
+  background-color: var(--Color-Feedback-Error);
+}
+
+/* The tile itself, one of three, since which one is rolled rather than fixed. */
 .GlintC {
   background-image: var(--Texture-ThemeCardGlintC);
 }

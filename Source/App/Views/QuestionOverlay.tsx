@@ -43,6 +43,7 @@ export function QuestionOverlay({ view }: PhaseViewProps) {
       // Off entirely before the word has gone rather than drawn dark and brought in: nobody ever
       // sees the bar before the thing it belongs to has been said.
       note={said ? enchantment.note : undefined}
+      mult={said ? enchantment.mult : undefined}
       glinted
     />
   );

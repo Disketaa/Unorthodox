@@ -215,10 +215,16 @@
   font-size: var(--FontSize-ThemeCardMult);
   font-weight: bold;
   line-height: 0.8;
-  color: var(--Color-Neutral-500);
+  /* The theme's own tint at half strength rather than a neutral grey. The roll and the effect
+   * are the two things on the card that belong to the room rather than to the theme, and a grey
+   * label next to a coloured card reads as chrome; the tint half faded is the same fact in the
+   * card's own voice, and it has the room's yellow to keep the two apart. */
+  color: color-mix(in srgb, var(--ThemeCard-Tint, var(--Accent-Tint)) 45%, transparent);
   user-select: none;
   pointer-events: none;
-  transition: font-size var(--Transition-Standard);
+  transition:
+    color var(--Transition-Standard),
+    font-size var(--Transition-Standard);
 }
 
 /* The multiplier answers the pointer with the theme's tint, the way the name answers with the
@@ -314,7 +320,10 @@
   font-size: var(--FontSize-ThemeCardMult);
   font-weight: bold;
   line-height: 0.8;
-  color: var(--Color-Neutral-500);
+  /* Half the theme's tint, the same as the multiplier above and for the same reason: the label
+   * names what the round's enchantment does, which is the room's business, and it is said in
+   * the card's own colour rather than in a grey that belongs to no card on the table. */
+  color: color-mix(in srgb, var(--ThemeCard-Tint, var(--Accent-Tint)) 45%, transparent);
   user-select: none;
   pointer-events: none;
   transition:

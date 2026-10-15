@@ -267,16 +267,16 @@ describe('the theme cards', () => {
     expect(card.declaration(/\.Root:active[^{]*\{([^}]*)\}/, 'scale')).toBe('0.97');
     expect(card.ruleBody(/\.Root:active[^{]*\{([^}]*)\}/)).not.toContain('transform');
   });
-  it("draws the room's roll as one mark in black, at full strength", () => {
+  it("draws the room's roll as one mark, faded, in the card's own tint", () => {
     // The one thing on the card that says what the room's roll is rather than which theme the
-    // card is — the name says that, and six rolls are six cards. Black rather than yellow:
-    // the roll is about the room and not about whoever is looking, and black is the default
-    // text colour. It answers the pointer with the theme's tint: the card has already gone to
-    // the wash under it, so a mark in the wash would be the one thing on the card that did not
-    // answer, and the theme's own tint is the change that says which theme the card is.
-    // At full strength rather than faded, because a corner mark faded is a mark that is neither
-    // the roll nor the theme.
-    expect(card.declaration(Mult, 'color')).toBe('var(--Color-Neutral-500)');
+    // card is — the name says that, and six rolls are six cards. The theme's tint at half
+    // strength rather than a neutral grey: a grey label beside a coloured card reads as chrome
+    // rather than as this card's own roll, and the tint answers the pointer at full strength so
+    // the fade is what changes on hover. Faded rather than a second weight, since the roll is a
+    // quiet fact until somebody asks about it.
+    expect(card.declaration(Mult, 'color').replace(/\s+/g, '')).toBe(
+      'color-mix(insrgb,var(--ThemeCard-Tint,var(--Accent-Tint))45%,transparent)'
+    );
     expect(card.declaration(MultHover, 'color').replace(/\s+/g, '')).toBe(
       'var(--ThemeCard-Tint,var(--Accent-Tint))'
     );

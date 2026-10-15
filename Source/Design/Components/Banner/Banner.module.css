@@ -47,6 +47,20 @@
   mask: url('../../Icons/Info.svg') center / contain no-repeat;
 }
 
+/* Words where the mark would be: the enchantment's own multiplier, in the display face and at
+ * half the words' strength. Faded rather than chipped, so it is still the same sentence with
+ * one word quietly out of step — a chip behind it would be a second object on the bar, and this
+ * is one note with its figure at the head of it. */
+.Badge {
+  flex-shrink: 0;
+  opacity: 0.5;
+  font-family: var(--FontFamily-Display);
+  font-size: 1.05em;
+  font-weight: 700;
+  line-height: 1;
+  user-select: none;
+}
+
 .MarkClock {
   mask-image: url('../../Icons/Clock.svg');
 }
@@ -136,6 +150,24 @@
 .VariantAccent {
   background: var(--Accent-Wash);
   color: var(--Color-Accent-Ink);
+}
+
+/* The ink a glinted banner wears, set after the variants so it wins over the grey a quiet one
+ * is drawn in. The shine on its own is a finish; grey words under it read as a caption rather
+ * than as the round's condition on this player's answer, and the error red says it plainly. */
+.GlintOn {
+  color: var(--Color-Feedback-Error);
+}
+
+/* The same bar in the room's success colour whenever it is not in its error one: a bar carrying
+ * a badge is a bar naming a condition on what the player has written, and grey says the room is
+ * reporting a fact while green says the player has done what it asked. Keyed on the badge
+ * rather than on a prop, so the colour cannot be set on a bar that has no condition to be in.
+ * `:has` is what keeps this off the rest of the game: a mute is grey wherever it is not about a
+ * player's own answer, and a plain class on the banner would have to be set by hand in each of
+ * those places to keep them grey. */
+.Root:has(.Badge):not(.GlintOn) {
+  color: var(--Color-Feedback-Success);
 }
 
 /* The glint over the banner when the round's enchanted card reaches this player. Rounded with

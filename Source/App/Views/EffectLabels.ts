@@ -1,4 +1,4 @@
-import { ThemeEffectId, lettersOf } from '@/Core';
+import { ThemeEffectId, ThemeEnchantId, lettersOf, type LetterBound } from '@/Core';
 import { Strings } from '@/Content';
 import { enchantmentFor } from '@/Game';
 import type { PublicRoom } from '@/Game';
@@ -20,32 +20,80 @@ export function lettersLine(banned: readonly { ru: string; en: string }[]): stri
   return banned.map((pair) => pair.ru).join(', ');
 }
 
-/** What the round's enchantment is, off the room's own roll: the note naming it and the letters
- * it has something to say about, split into the two ways the keys act on them. Read in one
- * place, since the question stage and the writing phase name the same enchantment. */
+/** Which end of a length an enchantment holds an answer to, or absent where the round asks about
+ * letters rather than length. */
+export type LengthBound = LetterBound;
+
+/** What an enchantment asks of a screen: the letters it takes away, the ones it insists on, and
+ * the length it holds the answer to. Exactly one of the three is ever asked for, since a round
+ * carries one enchantment and not a list of them. */
+export interface EnchantmentAsk {
+  banned: ReadonlySet<string>;
+  required: ReadonlySet<string>;
+  bound: LengthBound;
+}
+
+/** The round's enchantment as a screen reads it: what to name it, and what it asks of the
+ * answer. */
+export interface Enchantment extends EnchantmentAsk {
+  note: string | undefined;
+  /** The multiplier the card wears, worn at the head of the bar in the same hand as the card. */
+  mult: number | undefined;
+}
+
+/** What the round's enchantment is, off the room's own roll: the note naming it and the three
+ * things it could ask for, of which it asks exactly one. Read in one place, since the question
+ * stage and the writing phase name the same enchantment. */
 export function enchantmentOf(
   roomCode: string,
   theme: string | undefined,
   spent: PublicRoom['spent'] | undefined
-): {
-  note: string | undefined;
-  banned: ReadonlySet<string>;
-  required: ReadonlySet<string>;
-} {
-  const { effect, enchant, letters } = enchantmentFor(roomCode, theme, spent ?? []);
-  const label = effectLabelOf(effect);
-  if (label === undefined) return { note: undefined, banned: new Set(), required: new Set() };
-  const line = lettersLine(letters);
-  if (enchant === 'Demand') {
+): Enchantment {
+  const roll = enchantmentFor(roomCode, theme, spent ?? []);
+  const label = effectLabelOf(roll.effect);
+  if (label === undefined) return { note: undefined, ...NoEnchantment, mult: undefined };
+  if (
+    roll.bound !== undefined &&
+    (roll.enchant === 'MinLength' || roll.enchant === 'MaxLength')
+  ) {
+    return {
+      note: lengthNote(roll.enchant, roll.bound),
+      ...NoEnchantment,
+      mult: roll.mult,
+      ...lengthBound(roll.enchant, roll.bound),
+    };
+  }
+  const line = lettersLine(roll.letters);
+  const letters = lettersOf(roll.letters);
+  if (roll.enchant === 'Demand') {
     return {
       note: Strings.writing.demand(line),
-      banned: new Set(),
-      required: lettersOf(letters),
+      ...NoEnchantment,
+      required: letters,
+      mult: roll.mult,
     };
   }
   return {
     note: Strings.writing.enchantment(line),
-    banned: lettersOf(letters),
-    required: new Set(),
+    ...NoEnchantment,
+    banned: letters,
+    mult: roll.mult,
   };
 }
+
+/** The two length enchants in one place, since they differ only in which end they hold. */
+function lengthNote(enchant: ThemeEnchantId, figure: number): string {
+  return enchant === 'MinLength'
+    ? Strings.writing.minLength(figure)
+    : Strings.writing.maxLength(figure);
+}
+
+function lengthBound(enchant: ThemeEnchantId, figure: number) {
+  return { bound: { figure, least: enchant === 'MinLength' } };
+}
+
+const NoEnchantment: EnchantmentAsk = {
+  banned: new Set<string>(),
+  required: new Set<string>(),
+  bound: undefined,
+};

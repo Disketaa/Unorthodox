@@ -20,8 +20,11 @@
   padding: var(--Timer-PadY) var(--Timer-PadX);
   border-radius: var(--Radius-Card);
   /* The empty part of the block: the paper's own hover tone rather than a grey of its own, so a
-   * phase that has not started yet reads as part of the page. */
-  background: var(--Color-Surface-Hover);
+   * phase that has not started yet reads as part of the page. A tint given by the caller
+   * replaces it with a wash of that tint, since the block is standing over a wash of the same
+   * colour and a grey track on top of it is the one thing on the screen that belongs to
+   * neither. */
+  background: var(--Timer-Track, var(--Color-Surface-Hover));
   overflow: hidden;
   /* The banner's own type and padding and radius, so a timed phase is a note of the same height
    * as an untimed one and the row of a screen does not step when the phase changes. */

@@ -128,6 +128,10 @@ export const Strings = {
      * ban because the two are the same round's one enchantment, and a bar that changed its verb
      * halfway down the screen would read as two different rounds. */
     demand: (letters: string) => `Нужна буква: ${letters}`,
+    /** The shortest an answer may be, and the longest, as one figure each: the two are separate
+     * enchantments rather than one window, so the room is never asked to guess between them. */
+    minLength: (letters: number) => `Минимум ${letters} букв`,
+    maxLength: (letters: number) => `Максимум ${letters} букв`,
     /** Said over the round to the one player its enchanted card reached. The name of what has
      * happened rather than the effect, since the bar under it spells the effect out and a
      * player glancing up should be told only that it is them. */

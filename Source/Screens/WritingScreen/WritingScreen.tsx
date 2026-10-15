@@ -1,6 +1,8 @@
 import { Screen } from '@/Design/Primitives';
-import { Banner, Card } from '@/Design/Components';
+import { Card, EnchantmentBar } from '@/Design/Components';
+import type { LetterBound } from '@/Core';
 import { AnswerInput } from './AnswerInput';
+import { demandOf, roundAsks, unsent } from './Demand';
 
 export interface WritingScreenProps {
   topic: string;
@@ -27,6 +29,8 @@ export interface WritingScreenProps {
   /** What the round's enchantment does, named over the keys: the effect and the letters it bans.
    * Absent where the round's theme carries no enchantment, and the bar with it. */
   enchantment?: string;
+  /** The multiplier the round's enchanted card wears, shown at the head of that bar. */
+  mult?: number;
   /** The letters the round's enchanted card has banned, so the keys strike them through and take
    * nothing. Off the same roll as the note above them, since a bar naming banned letters over
    * keys that still type them is a bar that lies. */
@@ -34,34 +38,33 @@ export interface WritingScreenProps {
   /** The letters the round's enchantment insists the answer carry, marked on the keys and held
    * against the send. Off the same roll as the note over them. */
   requiredLetters?: ReadonlySet<string>;
+  /** The bound of letters the enchantment holds the answer to, off the same roll as the note. */
+  bound?: LetterBound;
 }
 
 /** Writing phase: the question, the answer field, and the keys that write it. What the room is
- * waiting for is not said in a line of its own — the answer itself turns yellow once it is
- * sent, which says it where the player is already looking. */
+ * waiting for is not said in a line of its own: the answer itself turns yellow once it is sent,
+ * which says it where the player is already looking. */
 export function WritingScreen(props: WritingScreenProps) {
-  // Taken apart rather than destructured: the input is the same thing under two other names, and
-  // spelling the pairs out twice is how a prop gets added to one and forgotten on the other.
-  const { durationMs, remainingMs, enchantment, glinted, ...shared } = props;
+  const { durationMs, remainingMs, enchantment, ...shared } = props;
   const timeUp = remainingMs <= 0;
   const input = { ...shared, remainingMs, totalMs: durationMs, timeUp };
+  // The bar says the requirement is not met yet, in every sense of it — including an empty draft,
+  // since nothing written is no answer and the bar is the only place that can be said out loud.
+  // The words go pink only when a draft is wrong, since an unfinished one is not a fault.
+  const unmet = demandOf(shared.value, shared.requiredLetters, shared.bound);
+  const faulted =
+    unsent(unmet) || (unmet === 'None' && roundAsks(shared.requiredLetters, shared.bound));
   return (
     <Screen vertical="Bottom" width="Wide">
       <Card variant="Elevated">
-        <EnchantmentBar note={enchantment} glinted={glinted} />
+        <EnchantmentBar
+          note={enchantment}
+          mult={props.mult}
+          glinted={props.glinted === true && faulted}
+        />
         <AnswerInput {...input} />
       </Card>
     </Screen>
-  );
-}
-
-/** The bar naming what the round's enchantment does, over the keys it takes letters away from.
- * Absent where the round carries none, rather than drawn empty. */
-function EnchantmentBar({ note, glinted }: { note: string | undefined; glinted?: boolean }) {
-  if (note === undefined) return null;
-  return (
-    <Banner variant="Muted" glinted={glinted}>
-      {note}
-    </Banner>
   );
 }

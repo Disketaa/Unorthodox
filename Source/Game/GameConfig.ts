@@ -130,6 +130,14 @@ const DemandCounts: Record<number, number> = {
   2: 1,
 };
 
+/** How many letters a card's two length enchants hold an answer to, by multiplier: the least a
+ * `MinLength` answer may be, and the most a `MaxLength` one may be. One climbs and the other
+ * falls, so a bigger card buys its spread by asking for a pun rather than an epic. */
+const LengthBounds: Record<'min' | 'max', Record<number, number>> = {
+  min: { 1.25: 4, 1.5: 5, 1.75: 6, 2: 8 },
+  max: { 1.25: 10, 1.5: 8, 1.75: 7, 2: 6 },
+};
+
 export const GameConfig = {
   timing,
   paces: {
@@ -189,13 +197,15 @@ export const GameConfig = {
     /** How many letters an enchanted card takes or demands, by the multiplier it wears, counted
      * in the lookalike pairs in `Core` so a letter is the same one in both layouts. A
      * multiplier with no count here asks nothing of the answer. */
-    /** The two enchantments a chosen card rolls between. One per round, not both: the round's
-     * enchantment is a fact the room reads once, and two of them is a puzzle to solve rather
-     * than a twist to play against. */
-    enchants: ['Ban', 'Demand'] as const,
+    /** The four enchantments a chosen card rolls between, one per round rather than a list: the
+     * round's enchantment is a fact the room reads once, and two of them at once is a puzzle to
+     * solve rather than a twist to play against. */
+    enchants: ['Ban', 'Demand', 'MinLength', 'MaxLength'] as const,
     letterCounts: LetterCounts,
     /** How many of them are demanded rather than taken, on the mirrored table above. */
     demandCounts: DemandCounts,
+    /** The least and the most a card's two length enchants will accept, one each. */
+    lengthBounds: LengthBounds,
   },
   limits: {
     nameMaxLength: 16,

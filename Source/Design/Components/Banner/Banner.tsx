@@ -21,6 +21,10 @@ export interface BannerProps {
    * is already in the wording and four marks would make a set of notes read as a set of
    * statuses. Only the mark that has to say more than the words asks for a different one. */
   mark?: BannerMark;
+  /** Words in the mark's place rather than a mark: the enchantment's own figure, which is the
+   * one thing at the head of that line that a drawn mark cannot say. Absent everywhere else,
+   * and the mark stands as it always did. */
+  badge?: string;
   /** The figure at the end of the line, held against the right edge. Only where the block is a
    * setting rather than a note: a value the eye compares down the column, which is why the
    * words are on the left and the number at the far end. */
@@ -38,6 +42,7 @@ export function Banner({
   align = 'Start',
   fill = false,
   mark = 'Info',
+  badge,
   value,
   children,
   glinted = false,
@@ -46,10 +51,16 @@ export function Banner({
   const glintClass = glinted ? `${styles.Glint} ${styles[`Glint${variantClass}`]}` : '';
   return (
     <div
-      class={`${styles.Root} ${fill ? styles.Fill : ''} ${styles[`Variant${variant}`]} ${styles[`Align${align}`]}`}
+      class={`${styles.Root} ${fill ? styles.Fill : ''} ${glinted ? styles.GlintOn : ''} ${styles[`Variant${variant}`]} ${styles[`Align${align}`]}`}
     >
       {glinted && <span class={glintClass} aria-hidden="true" />}
-      <span class={`${styles.Icon} ${styles[`Mark${mark}`]}`} aria-hidden="true" />
+      {badge === undefined && (
+        <span
+          class={[styles.Icon, styles[`Mark${mark}`]].filter(Boolean).join(' ')}
+          aria-hidden="true"
+        />
+      )}
+      {badge !== undefined && <span class={styles.Badge}>{badge}</span>}
       <span class={styles.Text}>{children}</span>
       {value !== undefined && <span class={styles.Value}>{value}</span>}
     </div>

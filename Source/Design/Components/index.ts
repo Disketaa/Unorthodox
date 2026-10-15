@@ -10,6 +10,7 @@ export * from './AnswerCards';
 export * from './LikeBadge';
 export * from './ScoreRow';
 export * from './Banner';
+export * from './EnchantmentBar';
 export * from './Character';
 export * from './ColorSwatch';
 export * from './CharacterPicker';

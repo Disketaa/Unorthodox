@@ -57,38 +57,40 @@ export function roundsPlayed(spent: readonly { rounds: number }[] | undefined): 
 const NoLetters: readonly LetterPair[] = [];
 
 /** What the round's enchantment does to the answer being written: the spread it carries, which
- * of the two enchants it rolled, and the letter it has something to say about. */
+ * of the four enchants it rolled, and either the letters it has something to say about or the
+ * length it holds the answer to. */
 export function enchantmentFor(
   roomCode: string,
   theme: ThemeId | undefined,
   spent: readonly { rounds: number }[] | undefined
-): {
-  effect: ThemeEffectId | undefined;
-  enchant: ThemeEnchantId | undefined;
-  letters: readonly LetterPair[];
-} {
-  const none = { effect: undefined, enchant: undefined, letters: NoLetters };
-  if (theme === undefined) return none;
+): EnchantmentRoll {
+  if (theme === undefined) return NoEnchantment;
   // The round the bank was offered in: the pick is counted the moment it lands, so rolling
   // against the round after it would be a different set of cards.
   const bankRound = Math.max(0, roundsPlayed(spent) - 1);
   const themes = themesForRoom(roomCode, GameConfig.themes.cardsPerLobby);
   const carried = modifiersForRound(roomCode, themes, bankRound).get(theme);
-  if (carried?.includes('Enchanted') !== true) return none;
+  if (carried?.includes('Enchanted') !== true) return NoEnchantment;
   const effect = carried.find((id): id is ThemeEffectId => id !== 'Enchanted');
-  // Which of the two the card carries, rolled off the room's own seed rather than this player's:
+  // Which of the four the card carries, rolled off the room's own seed rather than this player's:
   // the enchantment is the room's fact, and two players drawing two of them would put two
   // different rounds under the same card.
   const roll = randomFor(`${roomCode}:enchant:${bankRound}:${theme}`);
   const enchants = GameConfig.themes.enchants;
   const enchant = enchants[Math.floor(roll() * enchants.length)];
-  // Which table of counts it reads decides how much the enchantment asks for, so it is asked
-  // after the enchantment is known rather than before.
   const mult = multForTheme(roomCode, theme, bankRound);
+  // The two length enchants ask about how long the answer is rather than which letters it holds,
+  // so they read their own tables and come with a figure instead of a letter.
+  if (enchant === 'MinLength' || enchant === 'MaxLength') {
+    const bounds = GameConfig.themes.lengthBounds[enchant === 'MinLength' ? 'min' : 'max'];
+    return { effect, enchant, letters: NoLetters, bound: bounds[mult], mult };
+  }
+  // Which table of counts the other two read decides how much they ask for, so it is asked after
+  // the enchantment is known rather than before.
   const table =
     enchant === 'Demand' ? GameConfig.themes.demandCounts : GameConfig.themes.letterCounts;
   const count = table[mult];
-  if (count === undefined || count <= 0) return { effect, enchant, letters: NoLetters };
+  if (count === undefined || count <= 0) return { ...NoEnchantment, effect, enchant, mult };
   // Drawn off the room's own seed too, so every tab is held to the same letters: a player who
   // switched device would otherwise be playing a different round from the one the room is on.
   const letters = sampleUnique(
@@ -96,5 +98,26 @@ export function enchantmentFor(
     count,
     randomFor(`${roomCode}:letters:${bankRound}:${theme}`)
   );
-  return { effect, enchant, letters };
+  return { effect, enchant, letters, bound: undefined, mult };
 }
+
+/** What one round's enchantment is, as the game rolls it. */
+export interface EnchantmentRoll {
+  effect: ThemeEffectId | undefined;
+  enchant: ThemeEnchantId | undefined;
+  letters: readonly LetterPair[];
+  /** The figure a length enchantment holds the answer to, absent where it asks about letters. */
+  bound: number | undefined;
+  /** The multiplier the card wears, which is what the bar shows at its head: the one number that
+   * says how hard the round's enchantment was rolled. */
+  mult: number | undefined;
+}
+
+/** A round whose theme is not enchanted: nothing carried, nothing asked, nothing drawn. */
+const NoEnchantment = {
+  effect: undefined,
+  enchant: undefined,
+  letters: NoLetters,
+  bound: undefined,
+  mult: undefined,
+};

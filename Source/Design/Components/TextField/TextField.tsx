@@ -1,7 +1,7 @@
 import styles from './TextField.module.css';
 import { useGlintVariant, type GlintVariant } from '../Glint';
 
-export type TextFieldVariant = 'Bare' | 'Filled' | 'Sent' | 'Met' | 'Unmet' | 'Underline';
+export type TextFieldVariant = 'Bare' | 'Filled' | 'Sent' | 'Unmet' | 'Underline';
 
 export interface TextFieldProps {
   variant?: TextFieldVariant;
@@ -24,6 +24,9 @@ export interface TextFieldProps {
   /** Fills the words with the round's glint instead of ink, the shine an enchanted card lays on
    * whoever it reaches. The text is the mask, so the field itself stays as bare as it was. */
   glinted?: boolean;
+  /** Why the field is closed or not, read out of the DOM for a bug this size. Named with `data-`
+   * so it is not a property of the field and cannot be mistaken for one. */
+  'data-why'?: string;
   onChange?: (value: string) => void;
 }
 

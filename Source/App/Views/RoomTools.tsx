@@ -23,7 +23,11 @@ export function RoomDebugTools({ view, enabled }: { view: GameSessionView; enabl
         <>
           <LobbyDebugTools publicState={view.publicState} onAddBot={view.addBot} />
           <TurnDebugTools publicState={view.publicState} onNextTurn={view.nextTurn} />
-          <PauseDebugTools paused={view.paused} onSetPaused={view.setPaused} />
+          {/* Holding the room is a thing done to a game in progress. In the lobby there is no
+           * clock under it to stop, and the dock there is already four buttons of settings. */}
+          {view.phase !== 'Lobby' && view.phase !== 'Connecting' && (
+            <PauseDebugTools paused={view.paused} onSetPaused={view.setPaused} />
+          )}
           <PhaseDebugTools publicState={view.publicState} onNextPhase={skip} />
         </>
       )}

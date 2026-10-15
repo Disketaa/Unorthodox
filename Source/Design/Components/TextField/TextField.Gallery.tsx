@@ -36,6 +36,8 @@ export function TextFieldGallery() {
         inputMode="numeric"
         onChange={setValue}
       />
+      <Text variant="Body">Glinted While Unmet</Text>
+      <TextField variant="Bare" value="Зачарован" glinted readOnly onChange={() => {}} />
     </Stack>
   );
 }

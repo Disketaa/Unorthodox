@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import type { ComponentChildren } from 'preact';
 import styles from './QuestionStage.module.css';
 import { ThemeLabel } from '../../Components/ThemeLabel';
-import { Banner } from '../../Components/Banner';
+import { EnchantmentBar } from '../../Components/EnchantmentBar';
 import { useSwayMotion } from '@/Design/Primitives';
 import { playSound } from '../../Sounds';
 import swayStyles from '../../Primitives/Sway/Sway.module.css';
@@ -28,6 +28,9 @@ export interface QuestionStageProps {
   /** Whether the glint is laid over that note, which is how a player can tell at a glance that
    * the enchantment is theirs rather than the round's. */
   glinted?: boolean;
+  /** The multiplier the round's enchanted card wears, worn at the head of the bar where a mark
+   * would be. Absent where the round carries no enchantment to name. */
+  mult?: number;
 }
 
 /** The round's question, arriving in the room under the bar of players. The theme it was drawn
@@ -40,6 +43,7 @@ export function QuestionStage({
   accent,
   note,
   glinted,
+  mult,
 }: QuestionStageProps) {
   // The last word count drawn, written while rendering so the frame a word lands on knows it was
   // the next one. A screen that joined the reveal late skips straight to several words, and stays
@@ -64,23 +68,29 @@ export function QuestionStage({
             </Word>
           ))}
         </span>
-        <Note note={note} glinted={glinted} />
+        <Note note={note} mult={mult} glinted={glinted} />
       </div>
     </div>
   );
 }
 
-/** The third row: what the enchantment does, read while the question is still being written
- * rather than after it, since a player reaching for the keys is reaching for them now. */
-function Note({ note, glinted }: { note: string | undefined; glinted: boolean | undefined }) {
+/** The third row: the round's enchantment, in the same bar the writing screen wears it in, so
+ * the sentence the room reads beside the question is the one it meets again under the keys. */
+function Note(props: NoteProps) {
+  const { note, mult, glinted } = props;
   if (note === undefined) return null;
   return (
     <div class={styles.Footer}>
-      <Banner variant="Muted" glinted={glinted}>
-        {note}
-      </Banner>
+      <EnchantmentBar note={note} mult={mult} glinted={glinted === true} />
     </div>
   );
+}
+
+interface NoteProps {
+  note: string | undefined;
+  /** The multiplier the round's enchanted card wears, worn at the head of the bar. */
+  mult: number | undefined;
+  glinted: boolean | undefined;
 }
 
 /** One word, held out of the page until its moment and then landing and swaying like everything

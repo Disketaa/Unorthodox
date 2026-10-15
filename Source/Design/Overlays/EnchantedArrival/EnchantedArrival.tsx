@@ -6,12 +6,12 @@ import styles from './EnchantedArrival.module.css';
 /** How long the word stands before it is taken away, in milliseconds. Long enough to be read
  * once and felt like something that happened, rather than the length of a flash: this is the
  * player being told the round has reached them, and a word they have to catch is not told. */
-const HoldMs = 1800;
+const HoldMs = 900;
 
 /** How long the word takes to fade once it has stood its beat, in milliseconds. Long enough to
  * read as leaving rather than as being cut off, short enough that it is gone before the phase
  * splash covers the screen it was drawn on. */
-const FadeMs = 250;
+const FadeMs = 125;
 
 /** How long the whole arrival lasts, in milliseconds: the word standing and then going. Exported
  * because the bar naming the enchantment waits exactly this long before it appears, and the two

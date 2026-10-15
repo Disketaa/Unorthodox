@@ -4,7 +4,8 @@ import { pressKey } from './PressKey';
 import { useSentAnswer } from './UseSentAnswer';
 import { Strings } from '@/Content';
 import { GameConfig } from '@/Game';
-import { draftCarries } from '@/Core';
+import type { LetterBound } from '@/Core';
+import { demandOf, unsent, type Demand } from './Demand';
 
 export interface AnswerInputProps {
   /** The round's question, headed over the keys: the answer is typed into this box, so the
@@ -40,6 +41,9 @@ export interface AnswerInputProps {
   /** The letters the enchantment insists on, in both layouts: marked on the keys and held
    * against the send, so the answer cannot go out without one of them. */
   requiredLetters?: ReadonlySet<string>;
+  /** The length the enchantment holds the answer to, held against the send the same way a
+   * demanded letter is. Absent where the round asks nothing about how long it is. */
+  bound?: LetterBound;
 }
 
 /** What the round is asking: the theme it was drawn from, and the question itself, which goes
@@ -106,21 +110,9 @@ function AnswerKeys({
  * will follow it rather than a box sized to guess at it. */
 const Beam = '|';
 
-/** No enchantment demanding anything, which is a round whose theme is not enchanted. */
-const NoLetters: ReadonlySet<string> = new Set();
-
-/** What the draft is worth against the round's demand: nothing is asked of it, it is written and
- * still short of the letter, or it carries the letter. An empty draft is never short — the beam
- * has not started, and calling it short would paint a fault before anything has been done. */
-function demandOf(value: string, required: ReadonlySet<string> | undefined): Demand {
-  const wanted = required ?? NoLetters;
-  if (wanted.size === 0 || value.trim().length === 0) return 'None';
-  return draftCarries(value, wanted) ? 'Met' : 'Pending';
-}
-
-/** The words in the field, yellow once sent and black again the moment anything is changed.
- * While the round is asking for a letter the draft is pink until it carries one and green once
- * it does. */
+/** The words in the field: yellow once sent, ink the rest of the time, and wearing the round's
+ * glint whenever the room will not take the draft — the same question the send key answers,
+ * said in the same breath. No pink under it: the words say so by being lit up. */
 function AnswerField({
   value,
   sent,
@@ -136,21 +128,17 @@ function AnswerField({
 }) {
   return (
     <TextField
-      variant={sent ? 'Sent' : unmet === 'None' ? 'Bare' : unmet === 'Met' ? 'Met' : 'Unmet'}
+      variant={sent ? 'Sent' : 'Bare'}
       value={value}
       placeholder={Beam}
       maxLength={GameConfig.limits.answerMaxLength}
       disabled={closed}
       readOnly
-      glinted={glinted}
+      glinted={glinted && unsent(unmet)}
       onChange={onValueChange}
     />
   );
 }
-
-/** What the round's demand makes of a draft: nothing asked, a written draft still short of the
- * letter, or one carrying it. */
-export type Demand = 'None' | 'Pending' | 'Met';
 
 /** The writing phase: the question above, the words in the middle, the keys under. The words
  * stay once sent and stay editable: a player who has sent an answer can change their mind, and
@@ -167,13 +155,10 @@ export function AnswerInput(props: AnswerInputProps) {
   );
   const { topic, theme, themeAccent, remainingMs, totalMs } = props;
   const heading = { topic, theme, themeAccent, remainingMs, totalMs };
+  const unmet = demandOf(value, requiredLetters, props.bound);
   // The same gate as an empty answer: the send key is dead until the draft is something the room
-  // will accept, and a demanded letter the draft does not carry is not that.
-  const ready = value.trim().length > 0 && draftCarries(value, requiredLetters ?? NoLetters);
-  // Three states rather than two, because an empty draft is not a draft failing the round: it is
-  // a draft that has not started, and painting the beam pink would be a fault before anything has
-  // been done. Only a written draft is pending, and only a written one carrying the letter is met.
-  const unmet = demandOf(value, requiredLetters);
+  // will accept, and a demand the draft does not meet is not that.
+  const ready = value.trim().length > 0 && !unsent(unmet);
   const field = {
     value,
     sent: clean,
@@ -189,7 +174,7 @@ export function AnswerInput(props: AnswerInputProps) {
     value,
     timeUp: closed,
     bannedLetters,
-    requiredLetters: unmet === 'Met' ? NoLetters : requiredLetters,
+    requiredLetters: unmet === 'Met' ? undefined : requiredLetters,
     onValueChange: change,
     onSubmit: send,
   };

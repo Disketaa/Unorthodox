@@ -3,7 +3,7 @@ import { WritingScreen } from '@/Screens';
 import { themeAccent } from '@/Core';
 import { useCountdown } from '../Hooks/UseCountdown';
 import { useAnswerFlush } from '../Hooks/UseAnswerFlush';
-import { enchantmentOf } from './EffectLabels';
+import { enchantmentOf, type Enchantment } from './EffectLabels';
 import { PhaseViewProps } from './LobbyView';
 import type { PublicRoom } from '@/Game';
 
@@ -29,10 +29,12 @@ function enchantmentFor(
 }
 
 /** What a round with nothing asked of this player gives the screen. */
-const NoEnchantment = {
+const NoEnchantment: Enchantment = {
   note: undefined,
   banned: new Set<string>(),
   required: new Set<string>(),
+  bound: undefined,
+  mult: undefined,
 };
 
 /** Writing: topic, timer and the answer draft, which is local UI state. */
@@ -50,19 +52,17 @@ export function WritingView({ view }: PhaseViewProps) {
   );
   const writing = view.publicState?.phase === 'Writing' ? view.publicState : undefined;
   const theme = writing?.theme;
-  const accent = theme === undefined ? undefined : themeAccent(theme);
-  const enchanted = glintedFor(view);
-  const enchantment = enchantmentFor(view, theme, writing?.spent);
   flush.publish(() => {
     if (draft.trim().length > 0) view.submitAnswer(draft);
   });
   useEffect(() => () => flush.publish(), [flush]);
+  const enchantment = enchantmentFor(view, theme, writing?.spent);
 
   return (
     <WritingScreen
       topic={writing?.topic ?? ''}
       theme={theme}
-      themeAccent={accent}
+      themeAccent={theme === undefined ? undefined : themeAccent(theme)}
       remainingMs={remainingMs}
       durationMs={view.durationMs}
       value={draft}
@@ -70,10 +70,12 @@ export function WritingView({ view }: PhaseViewProps) {
       onValueChange={setDraft}
       onSubmit={() => view.submitAnswer(draft)}
       onEditing={view.setEditing}
-      glinted={enchanted}
+      glinted={glintedFor(view)}
       enchantment={enchantment.note}
+      mult={enchantment.mult}
       bannedLetters={enchantment.banned}
       requiredLetters={enchantment.required}
+      bound={enchantment.bound}
     />
   );
 }
