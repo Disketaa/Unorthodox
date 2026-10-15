@@ -15,6 +15,8 @@ export function KeyboardGallery() {
       <Keyboard {...labels} onKeyPress={() => {}} />
       <Text variant="Caption">Disabled</Text>
       <Keyboard {...labels} disabled />
+      <Text variant="Caption">Banned</Text>
+      <Keyboard {...labels} banned={new Set(['Х', 'А', 'С', 'У'])} onKeyPress={() => {}} />
     </Stack>
   );
 }

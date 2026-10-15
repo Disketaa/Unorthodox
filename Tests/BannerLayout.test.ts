@@ -20,6 +20,9 @@ const value = /\}\s*\.Value\s*\{([^}]*)\}/;
 /** The mark's own rule, matched the same way. */
 const icon = /\}\s*\.Icon\s*\{([^}]*)\}/;
 
+/** The filled banner's own rule. */
+const fill = /\}\s*\.Fill\s*\{([^}]*)\}/;
+
 describe('the words and the value in a banner', () => {
   it('lets them shrink below their own content, or a long note widens the banner', () => {
     // A flex item's floor is its content width unless told otherwise, so a long wording
@@ -57,5 +60,23 @@ describe('the words and the value in a banner', () => {
     // The mark is the one part of the row that must not be the thing that gets cut, so it is
     // held at full width while the text takes the loss.
     expect(sheet.declaration(icon, 'flex-shrink')).toBe('0');
+  });
+});
+
+describe('a filled banner', () => {
+  it('takes the whole width of its row', () => {
+    // A column of banners carries a value each, and values that end wherever their wording does
+    // cannot be read down the edge, which is the one thing the column is for.
+    expect(sheet.declaration(fill, 'width')).toBe('100%');
+  });
+
+  it('is a block rather than inline, since a full-width box has nothing beside it', () => {
+    // `inline-flex` with `width: 100%` fills the row too, but it is still an inline box and takes
+    // a line break it does not need; the display says what the banner is, so it is set here too.
+    expect(sheet.declaration(fill, 'display')).toBe('flex');
+  });
+
+  it('is not the default, since a note is a sentence and a wider block reads as a row', () => {
+    expect(sheet.declaration(/^\s*\.Root\s*\{([^}]*)\}/m, 'width')).toBe('fit-content');
   });
 });

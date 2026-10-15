@@ -1,5 +1,5 @@
 import { Screen } from '@/Design/Primitives';
-import { Card } from '@/Design/Components';
+import { Banner, Card } from '@/Design/Components';
 import { AnswerInput } from './AnswerInput';
 
 export interface WritingScreenProps {
@@ -24,6 +24,13 @@ export interface WritingScreenProps {
   /** Whether the round's enchanted card reaches this player, which fills the words in the answer
    * field with the glint. The room's own roll says who, so it is the same on every screen. */
   glinted?: boolean;
+  /** What the round's enchantment does, named over the keys: the effect and the letters it bans.
+   * Absent where the round's theme carries no enchantment, and the bar with it. */
+  enchantment?: string;
+  /** The letters the round's enchanted card has banned, so the keys strike them through and take
+   * nothing. Off the same roll as the note above them, since a bar naming banned letters over
+   * keys that still type them is a bar that lies. */
+  bannedLetters?: ReadonlySet<string>;
 }
 
 /** Writing phase: the question, the answer field, and the keys that write it. What the room is
@@ -41,12 +48,14 @@ export function WritingScreen({
   onSubmit,
   onEditing,
   glinted,
+  enchantment,
+  bannedLetters,
 }: WritingScreenProps) {
   const timeUp = remainingMs <= 0;
-
   return (
     <Screen vertical="Bottom" width="Wide">
       <Card variant="Elevated">
+        <EnchantmentBar note={enchantment} glinted={glinted} />
         <AnswerInput
           topic={topic}
           theme={theme}
@@ -60,8 +69,20 @@ export function WritingScreen({
           onSubmit={onSubmit}
           onEditing={onEditing}
           glinted={glinted}
+          bannedLetters={bannedLetters}
         />
       </Card>
     </Screen>
+  );
+}
+
+/** The bar naming what the round's enchantment does, over the keys it takes letters away from.
+ * Absent where the round carries none, rather than drawn empty. */
+function EnchantmentBar({ note, glinted }: { note: string | undefined; glinted?: boolean }) {
+  if (note === undefined) return null;
+  return (
+    <Banner variant="Muted" glinted={glinted}>
+      {note}
+    </Banner>
   );
 }

@@ -3,7 +3,13 @@ import type { ComponentChildren } from 'preact';
 import { InfoScreen } from '@/Screens';
 import { Strings } from '@/Content';
 import { PlayerLook, assertNever } from '@/Core';
-import { PausedRoom, PhaseSplash, PhaseSplashMs, StartCountdown } from '@/Design/Overlays';
+import {
+  EnchantedArrival,
+  PausedRoom,
+  PhaseSplash,
+  PhaseSplashMs,
+  StartCountdown,
+} from '@/Design/Overlays';
 import { useDuckedMusic, useHeldMusic, useMusic, type MusicName } from '@/Design/Music';
 import { useGameSession } from './Hooks/UseGameSession';
 import { AnswerFlushProvider } from './Hooks/UseAnswerFlush';
@@ -11,6 +17,7 @@ import { RoomDebugTools } from './Views/RoomTools';
 import { useDebugToggle } from './Hooks/UseDebugToggle';
 import { usePhaseSplash } from './Hooks/UsePhaseSplash';
 import { useStartCountdown } from './Hooks/UseStartCountdown';
+import { useEnchantedArrival } from './Hooks/UseEnchantedArrival';
 import type { GameSessionView } from './Hooks/UseGameSession';
 import type { SessionPhaseName } from './Hooks/UseSessionPhase';
 import { SessionRole, BlockedReason } from './Session';
@@ -151,6 +158,7 @@ function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
   // than stopping: a track at lobby level sits on top of the count, and silence here would be the
   // room's own music going away the instant Start was pressed.
   useDuckedMusic(counting);
+  const enchanted = useEnchantedArrival(view);
   // The screen the count-in and the splash are played over: the phase the room is leaving, held
   // until the movement has covered it. A ref rather than state, because a view is a new object on
   // every render and holding one in state would re-render the room forever.
@@ -166,6 +174,11 @@ function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
       {counting && <StartCountdown veiling={veiling} count={count} />}
       {splashing && <PhaseSplash label={Strings.phaseSplash.label} />}
       {view.paused && <PausedRoom label={Strings.pause.held} />}
+      {/* Over the phase screen rather than inside it: the word is laid over the window, and a
+       * screen's own clipped, transformed box would crop it. */}
+      {!counting && !splashing && (
+        <EnchantedArrival enchanted={enchanted}>{Strings.writing.enchanted}</EnchantedArrival>
+      )}
       <PhaseScreen view={underRef.current ?? view} />
       {!counting && !splashing && <RoomDebugTools view={view} enabled={debugEnabled} />}
     </AnswerFlushProvider>

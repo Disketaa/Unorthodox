@@ -1,0 +1,172 @@
+/* The word that tells a player the round's enchanted card has reached them, over the screen it
+ * happened on. `fixed` against the window, like the countdown's own layer, so the word lands in
+ * the middle of what the player is looking at rather than the middle of one column of it. Above
+ * the paper and the rest of the room's z-indices, since it is an arrival rather than part of
+ * any one screen. It does not take the pointer: the player is answering a question while it is
+ * up, and a notice that swallowed the keys would stop the round to announce itself. */
+.Root {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+/* The room wearing the enchantment for a moment while the word is there: the same tile, over
+ * the whole window, rather than a plate behind the word. A notice that brightened only its own
+ * block would say the enchantment is a word; a wash over the page says it reached the player.
+ * Fades away rather than waiting for the word to go, since the room cannot stay lit behind a
+ * question, and one beat of it is what is wanted. */
+.Backdrop {
+  position: absolute;
+  inset: 0;
+  /* The whole wash is two beats, half of it held: one beat of light and one of it going, off
+   * the countdown's own beat rather than a length of its own, so the light lasts exactly as
+   * long as one of the numbers the room already reads time by. The length travels as a custom
+   * property because a `calc()` written inside the animation is stripped by the build. */
+  --Enchanted-Wash: calc(var(--Duration-CountTick) * 2);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  mix-blend-mode: var(--Blend-ThemeCardGlint);
+  animation: BackdropWash var(--Enchanted-Wash) linear both;
+}
+
+@keyframes BackdropWash {
+  0%,
+  50% {
+    opacity: var(--Opacity-ThemeCardGlint);
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The wash is the whole of the movement here, so there is nothing to take away but the wash
+   * itself: a player who has asked for less motion is not having a bright page put over their
+   * question, and the word still arrives to say what happened. */
+  .Backdrop {
+    display: none;
+  }
+}
+
+/* The word itself, centred on the window rather than in a block of its own: it is a beat in the
+ * middle of the screen, and a plate behind it would be a card covering the answer field. */
+.Word {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  font-family: var(--FontFamily-Display);
+  font-size: min(18vw, calc(var(--FontSize-4xl) * 2));
+  line-height: 1;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* The words wearing the round's glint rather than ink, the way the answer field does for the
+ * player it reaches: the text is the mask, so the shine is the letters and the page behind them
+ * is untouched. Full strength rather than the faint wash a card wears, since here the shine is
+ * the text. */
+.Glinted {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* The tile itself, one of three, since which one is rolled rather than fixed. */
+.GlintA {
+  background-image: var(--Texture-ThemeCardGlintA);
+}
+
+.GlintB {
+  background-image: var(--Texture-ThemeCardGlintB);
+}
+
+.GlintC {
+  background-image: var(--Texture-ThemeCardGlintC);
+}
+
+/* The arrival, then simply being there, then leaving. The word does not fade out on its own:
+ * the layer going away is what says the enchantment has said its piece, exactly as the
+ * countdown hands off on being taken away. It comes up from well under its size and overshoots,
+ * which is what reads as a pop — the spring carries it past one and back, where a straight
+ * tween to one reads as a zoom. */
+.Showing {
+  animation: NoticeArrive var(--Duration-CountTick) var(--Easing-Spring) both;
+}
+
+/* Going away by fading rather than by being taken: a word dropped out of one frame reads as a
+ * glitch, and the room is about to change phase under it, which is movement enough on its own. */
+.Leaving {
+  animation: NoticeLeave var(--Duration-Normal) var(--Easing-Decelerate) both;
+}
+
+@keyframes NoticeLeave {
+  from {
+    opacity: 1;
+    scale: 1;
+  }
+
+  to {
+    opacity: 0;
+    scale: 0.94;
+  }
+}
+
+@keyframes NoticeArrive {
+  0% {
+    scale: 0.4;
+    opacity: 0;
+  }
+
+  30% {
+    scale: 1;
+    opacity: 1;
+  }
+
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+/* The movement off, the arrival kept: what the word says is the notice, and a player who has
+ * asked for less motion still has to be told the card reached them. */
+@media (prefers-reduced-motion: reduce) {
+  .Showing {
+    animation-name: NoticeFade;
+  }
+
+  @keyframes NoticeFade {
+    0% {
+      opacity: 0;
+    }
+
+    30%,
+    100% {
+      opacity: 1;
+    }
+  }
+
+  /* The fade on the way out kept and the travel dropped: the word still has to leave, and how
+   * it goes is not what anybody asked to be spared. */
+  .Leaving {
+    animation-name: NoticeFadeOut;
+  }
+
+  @keyframes NoticeFadeOut {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0;
+    }
+  }
+}

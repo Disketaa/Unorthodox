@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import type { ComponentChildren } from 'preact';
 import styles from './QuestionStage.module.css';
 import { ThemeLabel } from '../../Components/ThemeLabel';
+import { Banner } from '../../Components/Banner';
 import { useSwayMotion } from '@/Design/Primitives';
 import { playSound } from '../../Sounds';
 import swayStyles from '../../Primitives/Sway/Sway.module.css';
@@ -21,12 +22,25 @@ export interface QuestionStageProps {
    * which theme a room is playing, and named for this overlay rather than for the room's player
    * accent: the label is the theme's, not whoever is in the room. */
   accent: { wash: string; ink: string };
+  /** The note about the round's enchantment, under the question rather than over it. Absent
+   * until the word naming it has gone: it is said to the player it concerns, not to the room. */
+  note?: string;
+  /** Whether the glint is laid over that note, which is how a player can tell at a glance that
+   * the enchantment is theirs rather than the round's. */
+  glinted?: boolean;
 }
 
 /** The round's question, arriving in the room under the bar of players. The theme it was drawn
  * from is written above it in that theme's own colour, so the room can see what it is being
  * asked about before it is asked. */
-export function QuestionStage({ words, revealed, label, accent }: QuestionStageProps) {
+export function QuestionStage({
+  words,
+  revealed,
+  label,
+  accent,
+  note,
+  glinted,
+}: QuestionStageProps) {
   // The last word count drawn, written while rendering so the frame a word lands on knows it was
   // the next one. A screen that joined the reveal late skips straight to several words, and stays
   // quiet rather than playing a chord for a sentence nobody watched being read.
@@ -50,7 +64,21 @@ export function QuestionStage({ words, revealed, label, accent }: QuestionStageP
             </Word>
           ))}
         </span>
+        <Note note={note} glinted={glinted} />
       </div>
+    </div>
+  );
+}
+
+/** The third row: what the enchantment does, read while the question is still being written
+ * rather than after it, since a player reaching for the keys is reaching for them now. */
+function Note({ note, glinted }: { note: string | undefined; glinted: boolean | undefined }) {
+  if (note === undefined) return null;
+  return (
+    <div class={styles.Footer}>
+      <Banner variant="Muted" glinted={glinted}>
+        {note}
+      </Banner>
     </div>
   );
 }

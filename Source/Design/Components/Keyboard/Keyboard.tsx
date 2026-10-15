@@ -33,6 +33,9 @@ export interface KeyboardProps {
    * which is drawn and animated only while it can: a send key that breathes on an empty draft
    * promises something it cannot do. */
   canSubmit?: boolean;
+  /** The letters the round's enchanted card has banned, struck through on the keys and taking no
+   * press. Both layouts are in the set, so a key asks one question whichever set is up. */
+  banned?: ReadonlySet<string>;
   /** Letter or one of the named keys pressed, from a tap on the keys or from the hardware
    * keyboard behind them. The layout itself holds no text, so the field being typed into stays
    * the single place a draft exists. */
@@ -88,10 +91,14 @@ function usePress(
   lang: KeyboardLang,
   chooseLang: (lang: KeyboardLang) => void,
   setPresses: (next: (current: Presses) => Presses) => void,
+  banned: ReadonlySet<string> | undefined,
   onKeyPress: ((key: KeyboardKey) => void) | undefined
 ): (key: KeyboardKey) => void {
   return useCallback(
     (key: KeyboardKey) => {
+      // A banned letter is not a key: no pop and no letter. Checked here rather than on the
+      // button, so the hardware keyboard is held to it as well.
+      if (banned?.has(key) === true) return;
       // The pop is the press, not the letter: it answers a tap on the language key and one on a
       // backspace the same as it answers a letter, and it is pitched at random so a run of typing
       // is a run of notes rather than one note repeated.
@@ -119,7 +126,7 @@ function usePress(
       }
       onKeyPress?.(key);
     },
-    [rows, lang, chooseLang, onKeyPress, setPresses]
+    [rows, lang, chooseLang, banned, onKeyPress, setPresses]
   );
 }
 
@@ -144,6 +151,7 @@ function useLayout(): [KeyboardLang, (lang: KeyboardLang) => void] {
 export function Keyboard({
   disabled = false,
   canSubmit = false,
+  banned,
   onKeyPress,
   backspaceLabel,
   spaceLabel,
@@ -156,7 +164,7 @@ export function Keyboard({
   const columns = columnsOf(rows);
   const classes = [styles.Root, styles[`Columns${columns}`]].join(' ');
   const name = useMemo(() => keyNamer(rows), [lang]);
-  const press = usePress(rows, lang, chooseLang, setPresses, onKeyPress);
+  const press = usePress(rows, lang, chooseLang, setPresses, banned, onKeyPress);
   const switchLang = useCallback(() => press(Lang.key), [press]);
   useHardwareTyping(!disabled, name, press, switchLang);
   const labels = useLabels(backspaceLabel, spaceLabel, enterLabel, langLabel);
@@ -171,6 +179,7 @@ export function Keyboard({
           disabled={disabled}
           canSubmit={canSubmit}
           presses={presses}
+          banned={banned}
           labels={labels}
           onKeyPress={press}
         />

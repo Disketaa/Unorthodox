@@ -33,6 +33,17 @@
   justify-content: center;
 }
 
+/* The note under the question, centred on it rather than on its left edge, like the theme
+ * above: both name the round around the question rather than being part of it, and a bar
+ * sharing the words' left margin would read as the next line of them. Its own row rather than a
+ * margin on the question, so the words keep the rhythm they were written out with when it
+ * arrives. */
+.Footer {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--Space-Sm);
+}
+
 /* Wrapped rather than stacked on several lines by hand, since a question is a phrase and reads
  * across the window the way it is written. The space between words is a share of the type
  * rather than a fixed length, so it keeps its hold on a phone and on a desktop. */

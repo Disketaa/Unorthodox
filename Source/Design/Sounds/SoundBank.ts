@@ -6,11 +6,12 @@ import alarmUrl from './Alarm.ogg';
 import cardUrl from './Card.ogg';
 import whooshUrl from './Whoosh.ogg';
 import breakUrl from './Break.ogg';
+import enchantUrl from './Enchant.ogg';
 import { audioContext, resumeAudio } from '../Audio/Context';
 import { muteBus } from './Mute';
 
 export type SoundName =
-  'Pop' | 'Pling' | 'Tick' | 'Alarm' | 'Card' | 'Whoosh' | 'Reveal' | 'Break';
+  'Pop' | 'Pling' | 'Tick' | 'Alarm' | 'Card' | 'Whoosh' | 'Reveal' | 'Break' | 'Enchant';
 
 export const SoundNames: readonly SoundName[] = [
   'Pop',
@@ -21,6 +22,7 @@ export const SoundNames: readonly SoundName[] = [
   'Whoosh',
   'Reveal',
   'Break',
+  'Enchant',
 ];
 
 const Sources: Record<SoundName, string> = {
@@ -32,6 +34,7 @@ const Sources: Record<SoundName, string> = {
   Whoosh: whooshUrl,
   Reveal: revealUrl,
   Break: breakUrl,
+  Enchant: enchantUrl,
 };
 
 /** Per clip, since the countdown's beat sits under the words rather than beside them: a tick at
@@ -45,6 +48,7 @@ const Volumes: Record<SoundName, number> = {
   Whoosh: 0.22,
   Reveal: 0.22,
   Break: 0.3,
+  Enchant: 0.3,
 };
 
 /** How far either side of the recorded pitch a press may land, in semitones. Wide enough that
@@ -70,6 +74,9 @@ const PitchSpreads: Record<SoundName, number> = {
   /** A board can strike up to twelve cards in a run, and twelve of one note is the same printed
    * loop the reveal would be, so this one wanders like the reveal does. */
   Break: PressPitchSpread,
+  /** Once a round, and it is the arrival itself: a clip that wandered in pitch would say the
+   * enchantment reached somebody a shade other players reached. */
+  Enchant: 0,
 };
 
 interface Voice {

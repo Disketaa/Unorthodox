@@ -16,6 +16,9 @@ export interface RowProps {
   disabled: boolean;
   canSubmit: boolean;
   presses: Readonly<Record<string, number>>;
+  /** The letters the round's enchanted card has banned, in both layouts, so a key asks one
+   * question whichever set is up. */
+  banned?: ReadonlySet<string>;
   labels: Record<'Backspace' | 'Space' | 'Enter' | 'Lang', string>;
   onKeyPress?: (key: KeyboardKey) => void;
 }
@@ -38,7 +41,7 @@ export function RowKeys(props: RowProps) {
 }
 
 /** The letters of one row, which is all the row holds when no named key belongs to it. */
-function Letters({ row, rowIndex, disabled, presses, onKeyPress }: RowProps) {
+function Letters({ row, rowIndex, disabled, banned, presses, onKeyPress }: RowProps) {
   return (
     <>
       {row.map((letter, column) => {
@@ -50,6 +53,7 @@ function Letters({ row, rowIndex, disabled, presses, onKeyPress }: RowProps) {
             keyName={letter}
             pressCount={pressCount}
             disabled={disabled}
+            banned={banned?.has(letter) === true}
             onKeyPress={onKeyPress}
           />
         );

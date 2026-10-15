@@ -57,9 +57,9 @@ const timing = {
    * though the room had not decided yet. */
   answerRevealMs: 2000,
   /** How much of the room's question is written when it first appears, before the words start
-   * arriving one at a time. Beat against the first word rather than a bare black screen, so the
-   * reveal has something to be read on. */
-  questionLeadInMs: 500,
+   * arriving one at a time. A whole second rather than half, because the question opens behind
+   * the word naming the enchantment: a shorter lead-in has the question written out under it. */
+  questionLeadInMs: 1000,
   /** How long a word takes to arrive. Beat against the length of the question rather than a
    * fixed number of words, so a three-word question and a seven-word one both read at the same
    * pace. */
@@ -109,6 +109,16 @@ const deciding = (baseMs: number, perPlayerMs: number) => ({
   // the table would otherwise quote a full house more than the game gives it.
   decidingMs: baseMs + perPlayerMs * (MaxPlayers - 1),
 });
+
+/** How many letters an enchanted card bans, by the multiplier it wears, climbing one, two, four
+ * and six out of the twelve lookalike pairs: the gentlest card costs a player a single letter
+ * and only the ×2 card takes half of the set both layouts share. */
+const BannedLetterCounts: Record<number, number> = {
+  1.25: 1,
+  1.5: 2,
+  1.75: 4,
+  2: 6,
+};
 
 export const GameConfig = {
   timing,
@@ -166,6 +176,10 @@ export const GameConfig = {
     },
     /** Multiplier values a card may wear, rolled per theme. */
     mults: [1.25, 1.5, 1.75, 2],
+    /** The bans each multiplier carries, counted in the lookalike pairs in `Core` so a ban is
+     * the same letter in both layouts. Paired with `mults` above: a multiplier with no count
+     * there bans nothing. */
+    bannedLetters: BannedLetterCounts,
   },
   limits: {
     nameMaxLength: 16,

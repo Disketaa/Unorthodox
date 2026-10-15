@@ -6,3 +6,4 @@ export * from './QuestionStage';
 export * from './PausedRoom';
 export * from './StartCountdown';
 export * from './PhaseSplash';
+export * from './EnchantedArrival';

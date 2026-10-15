@@ -120,6 +120,14 @@ export const Strings = {
     langKey: 'Сменить язык',
     /** Read out on the enter key, which sends the answer rather than typing into the field. */
     enterKey: 'Ответить',
+    /** The bar over the keys naming the round's enchantment: what it does, and the letters it
+     * bans. Both layouts' spellings of each letter, since the keys are struck in whichever set
+     * is up and the bar has to say the same thing to both. */
+    enchantment: (letters: string) => `Буквы запрещены: ${letters}`,
+    /** Said over the round to the one player its enchanted card reached. The name of what has
+     * happened rather than the effect, since the bar under it spells the effect out and a
+     * player glancing up should be told only that it is them. */
+    enchanted: 'Зачарован',
   },
   reviewing: {
     topicLabel: 'Тема',

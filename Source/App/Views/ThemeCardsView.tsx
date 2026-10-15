@@ -1,9 +1,9 @@
-import { ThemeId, ThemeModifierId, themesForRoom } from '@/Core';
+import { ThemeId, ThemeModifierId, effectOf, themesForRoom } from '@/Core';
 import { useMemo } from 'preact/hooks';
 import { useThemeSweep } from '../Hooks/UseThemeSweep';
 import { ThemeCards } from '@/Design/Components';
 import { GameConfig, multForTheme, modifiersForRound } from '@/Game';
-import { Strings } from '@/Content';
+import { effectLabelOf } from './EffectLabels';
 
 export interface ThemeCardsViewProps {
   /** The room's code, which is what the deal is rolled from. */
@@ -57,16 +57,7 @@ function labelsFor(
 ): ReadonlyMap<ThemeId, string> {
   const labels = new Map<ThemeId, string>();
   for (const theme of themes) {
-    const carried = modifiers.get(theme) ?? [];
-    const label = carried.includes('Alone')
-      ? Strings.effects.alone
-      : carried.includes('Half')
-        ? Strings.effects.half
-        : carried.includes('Laggards')
-          ? Strings.effects.laggards
-          : carried.includes('Leaders')
-            ? Strings.effects.leaders
-            : undefined;
+    const label = effectLabelOf(effectOf(modifiers.get(theme)));
     if (label !== undefined) labels.set(theme, label);
   }
   return labels;

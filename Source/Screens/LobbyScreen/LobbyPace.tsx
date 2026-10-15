@@ -57,24 +57,14 @@ export function LobbyPace({ pace, players, isHost, onPick }: LobbyPaceProps) {
       }
     >
       <Separator>{Strings.lobby.settings.params}</Separator>
-      <Stack direction="Horizontal" gap="Sm" align="Stretch" fill="Even">
-        {paces.map((option) => (
-          <Button
-            key={option}
-            variant={option === pace ? 'Primary' : 'Muted'}
-            disabled={!isHost}
-            onClick={() => onPick(option)}
-          >
-            {Strings.lobby.settings.paces[option]}
-          </Button>
-        ))}
-      </Stack>
+      <PaceChoices pace={pace} isHost={isHost} onPick={onPick} />
       <Stack gap="Sm" align="Stretch">
         {waits(pace, players).map((wait) => (
           <Banner
             key={wait.label}
             variant="Muted"
             mark="Clock"
+            fill
             value={Strings.lobby.settings.seconds(wait.ms / 1000)}
           >
             {wait.label}
@@ -82,5 +72,28 @@ export function LobbyPace({ pace, players, isHost, onPick }: LobbyPaceProps) {
         ))}
       </Stack>
     </LobbyCategory>
+  );
+}
+
+/** The two paces, side by side and each taking half the row. Its own component rather than a
+ * block inside the room's, since it is the only interactive row here and the rest is a readout. */
+function PaceChoices({
+  pace,
+  isHost,
+  onPick,
+}: Pick<LobbyPaceProps, 'pace' | 'isHost' | 'onPick'>) {
+  return (
+    <Stack direction="Horizontal" gap="Sm" align="Stretch" fill="Even">
+      {paces.map((option) => (
+        <Button
+          key={option}
+          variant={option === pace ? 'Primary' : 'Muted'}
+          disabled={!isHost}
+          onClick={() => onPick(option)}
+        >
+          {Strings.lobby.settings.paces[option]}
+        </Button>
+      ))}
+    </Stack>
   );
 }

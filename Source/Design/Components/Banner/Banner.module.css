@@ -1,11 +1,23 @@
 .Root {
-  display: flex;
+  display: inline-flex;
+  width: fit-content;
+  position: relative;
   align-items: center;
   gap: var(--Space-Sm);
   padding: var(--Space-Sm) var(--Space-Md);
   border-radius: var(--Radius-Card);
   font-size: var(--FontSize-Body);
   font-weight: 500;
+}
+
+/* A banner held to its own words by default, since a note is a sentence and a block wider than
+ * the sentence reads as something set on a row. Full width where the banner is a row in a
+ * column rather than a note: the values then line up down the edge, which is the one thing a
+ * column of figures is for. `flex` rather than `inline-flex`, since a full-width block has
+ * nothing to sit beside. */
+.Fill {
+  display: flex;
+  width: 100%;
 }
 
 .AlignStart {
@@ -124,4 +136,34 @@
 .VariantAccent {
   background: var(--Accent-Wash);
   color: var(--Color-Accent-Ink);
+}
+
+/* The glint over the banner when the round's enchanted card reaches this player. Rounded with
+ * the banner rather than squared over it: the tile is painted edge to edge, so without the
+ * radius its own corners stand out past the block's and the finish reads as a rectangle laid on
+ * top. */
+.Glint {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  mix-blend-mode: var(--Blend-ThemeCardGlint);
+  opacity: var(--Opacity-ThemeCardGlint);
+}
+
+/* The tile itself, one of three, since which one is rolled rather than fixed. */
+.GlintA {
+  background-image: var(--Texture-ThemeCardGlintA);
+}
+
+.GlintB {
+  background-image: var(--Texture-ThemeCardGlintB);
+}
+
+.GlintC {
+  background-image: var(--Texture-ThemeCardGlintC);
 }

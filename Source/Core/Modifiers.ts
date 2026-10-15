@@ -7,3 +7,10 @@ export type ThemeModifierId = 'Enchanted' | 'Alone' | 'Half' | 'Laggards' | 'Lea
  * card is enchanted and then carries one of these; the enchantment is what draws the glint and
  * the effect is who the multiplier reaches. */
 export type ThemeEffectId = 'Alone' | 'Half' | 'Laggards' | 'Leaders';
+
+/** The effect a card's modifiers carry, or undefined where it carries none. */
+export function effectOf(
+  carried: readonly ThemeModifierId[] | undefined
+): ThemeEffectId | undefined {
+  return carried?.find((id): id is ThemeEffectId => id !== 'Enchanted');
+}

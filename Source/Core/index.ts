@@ -7,3 +7,4 @@ export * from './Color';
 export * from './Accents';
 export * from './Themes';
 export * from './Modifiers';
+export * from './LetterPairs';

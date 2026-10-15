@@ -33,6 +33,9 @@ export interface AnswerInputProps {
   /** Whether the round's enchanted card reaches this player, which fills the words being written
    * with the glint. The room's own roll says who, so it is the same on every screen. */
   glinted?: boolean;
+  /** The letters the round's enchanted card has banned, in both key layouts. Carried here rather
+   * than looked up, so the keys strike through exactly the letters the bar above names. */
+  bannedLetters?: ReadonlySet<string>;
 }
 
 /** What the round is asking: the theme it was drawn from, and the question itself, which goes
@@ -70,15 +73,20 @@ function AnswerKeys({
   value,
   canSubmit,
   timeUp,
+  bannedLetters,
   onValueChange,
   onSubmit,
-}: Pick<AnswerInputProps, 'value' | 'timeUp' | 'onValueChange' | 'onSubmit'> & {
+}: Pick<
+  AnswerInputProps,
+  'value' | 'timeUp' | 'bannedLetters' | 'onValueChange' | 'onSubmit'
+> & {
   canSubmit: boolean;
 }) {
   return (
     <Keyboard
       disabled={timeUp}
       canSubmit={canSubmit}
+      banned={bannedLetters}
       backspaceLabel={Strings.writing.backspaceKey}
       spaceLabel={Strings.writing.spaceKey}
       enterLabel={Strings.writing.enterKey}
@@ -135,6 +143,7 @@ export function AnswerInput({
   onSubmit,
   onEditing,
   glinted = false,
+  bannedLetters,
 }: AnswerInputProps) {
   // A held room is not writing: the clock is stopped, so the field and the keys both close.
   const closed = timeUp || held;
@@ -155,6 +164,7 @@ export function AnswerInput({
         value={value}
         canSubmit={!closed && !clean && value.trim().length > 0}
         timeUp={closed}
+        bannedLetters={bannedLetters}
         onValueChange={change}
         onSubmit={send}
       />

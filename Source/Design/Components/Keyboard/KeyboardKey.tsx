@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'preact/hooks';
 import type { VNode } from 'preact';
 import styles from './Keyboard.module.css';
+import { useGlintVariant } from '../Glint';
 import { Lang, type KeyboardKey } from './Keyboard';
 import { useHoldRepeat } from './UseHoldRepeat';
 
@@ -17,6 +18,9 @@ export interface KeyProps {
   /** The mark class for the one key that carries a drawn icon rather than a letter, so it can be
    * masked from the key's own text colour rather than carrying a colour of its own. */
   icon?: string;
+  /** Whether the round's enchanted card has banned this letter, which strikes it through and
+   * takes the press off it. */
+  banned?: boolean;
   label?: string;
   glyph?: string;
   extra?: string;
@@ -43,12 +47,15 @@ export function Key({
   disabled,
   repeats = true,
   icon,
+  banned = false,
   label,
   glyph,
   extra,
   onKeyPress,
 }: KeyProps) {
   const hold = useKeyPress(keyName, repeats, onKeyPress);
+  const glintVariant = useGlintVariant();
+  const glint = banned ? `${styles.Glint} ${styles[`Glint${glintVariant}`]}` : '';
   const button = useRef<HTMLButtonElement>(null);
   // The pop is restarted by hand: dropping the class and putting it back on the same element is
   // what makes the animation run again, where a class that merely stays on would play once and
@@ -63,13 +70,14 @@ export function Key({
   return (
     <button
       ref={button}
-      class={keyClass(pressCount, icon, extra)}
+      class={keyClass(pressCount, icon, extra, banned)}
       type="button"
-      disabled={disabled}
+      disabled={disabled || banned}
       aria-label={label}
       {...hold}
     >
-      {icon === undefined && (glyph ?? keyName)}
+      {banned && <span class={glint} aria-hidden="true" />}
+      <span class={styles.Glyph}>{icon === undefined && (glyph ?? keyName)}</span>
       {icon !== undefined && <span class={styles.Icon} aria-hidden="true" />}
     </button>
   );
@@ -77,8 +85,14 @@ export function Key({
 
 /** The classes a key carries. The pop is not one of them: it is put on and taken off the element
  * by hand, so that a second press restarts it rather than leaving it already running. */
-function keyClass(pressCount: number, icon?: string, extra?: string): string {
-  return [styles.Key, pressCount > 0 ? styles.KeyPopped : '', icon ?? '', extra ?? '']
+function keyClass(pressCount: number, icon?: string, extra?: string, banned?: boolean): string {
+  return [
+    styles.Key,
+    pressCount > 0 ? styles.KeyPopped : '',
+    icon ?? '',
+    extra ?? '',
+    banned === true ? styles.Banned : '',
+  ]
     .filter(Boolean)
     .join(' ');
 }

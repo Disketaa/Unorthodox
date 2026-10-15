@@ -51,6 +51,8 @@
 .Key {
   flex: 0 0 var(--Key-Width);
   min-width: 0;
+  /* The glint is painted against the key's own corners, so the key is what it is clipped to. */
+  position: relative;
   height: clamp(var(--Size-TouchTarget), min(9vw, 12vh), var(--Size-KeyboardKeyHeightMax));
   display: inline-flex;
   align-items: center;
@@ -120,6 +122,59 @@
   cursor: var(--Cursor-NotAllowed);
 }
 
+/* A letter the round's enchanted card has banned. The same pink and the same strike a muted
+ * answer card wears, since both are the room being told a thing does not count — and the tokens
+ * are the answer card's own rather than a second set of colours, so the two cannot drift apart.
+ * Held at full strength rather than the half a disabled key takes, since a banned letter is not
+ * a key waiting to come back: it is out for the round. */
+.Key.Banned {
+  background: var(--Color-Feedback-Muted-Wash);
+  color: var(--Color-Feedback-Error);
+  text-decoration-line: line-through;
+  text-decoration-thickness: var(--Border-Width-AnswerCardMuted);
+  text-decoration-color: currentColor;
+  cursor: var(--Cursor-NotAllowed);
+  opacity: 1;
+}
+
+/* The glint laid over a banned key, on the same tiles the banner over the keys wears, so the
+ * set of banned letters is read as one enchantment rather than as a decoration on each key.
+ * Over the key rather than in place of its fill: the strike is the fact, the glint is the room
+ * saying so. A span of its own rather than a background-image on the key, since the key's own
+ * fill is what the strike is drawn against and a second fill would take it. */
+.Glint {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  mix-blend-mode: var(--Blend-ThemeCardGlint);
+  opacity: var(--Opacity-ThemeCardGlint);
+}
+
+.GlintA {
+  background-image: var(--Texture-ThemeCardGlintA);
+}
+
+.GlintB {
+  background-image: var(--Texture-ThemeCardGlintB);
+}
+
+.GlintC {
+  background-image: var(--Texture-ThemeCardGlintC);
+}
+
+/* The letter and the strike sit over the glint rather than under it: a strike read through a
+ * moving tile is a strike nobody can see, and the glint is a finish over the key rather than a
+ * replacement for what is on it. */
+.Glyph {
+  position: relative;
+  z-index: 2;
+}
+
 /* Backspace, enter and the language key all hold the same width, off the widest letter layout
  * rather than the one on screen, so none of them moves when the letter set changes. */
 .Action {
@@ -169,6 +224,8 @@
  * key's own text colour and disabled opacity, and reaches the mark by descendant. */
 .Icon {
   display: block;
+  position: relative;
+  z-index: 2;
   width: 1.4em;
   height: 1.4em;
   background-color: currentColor;
