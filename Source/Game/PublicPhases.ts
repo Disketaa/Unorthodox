@@ -29,7 +29,7 @@ export function room(state: HostState): PublicRoom {
     pace: state.pace,
     themes: [...state.themes],
     themeMode: state.themeMode,
-    customThemes: [...(state.customThemes ?? new Map<ThemeId, CustomTheme>()).values()].map((theme) => ({
+    customThemes: [...(state.customThemes ?? new Map<number, CustomTheme>()).values()].map((theme) => ({
       id: theme.id,
       name: theme.name,
       color: theme.color,

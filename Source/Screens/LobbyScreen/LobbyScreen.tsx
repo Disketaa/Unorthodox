@@ -1,9 +1,11 @@
 import { Screen } from '@/Design/Primitives';
 import { CharacterColor, CharacterId, PlayerId, ThemeId, ThemeMode, CustomTheme } from '@/Core';
 import { Pace, PublicPlayer } from '@/Game';
+import { useState } from 'preact/hooks';
 import { RoomCard } from './RoomCard';
 import { SettingsCard } from './SettingsCard';
 import { LookPicker } from './LookPicker';
+import { CustomThemesPopup } from './CustomThemesPopup';
 
 export interface LobbyScreenProps {
   /** This player's own name, which titles the character picker. */
@@ -20,12 +22,6 @@ export interface LobbyScreenProps {
   customThemes: readonly CustomTheme[];
   /** The host pasting in custom themes, which every client is then told. */
   onCustomThemes: (themes: readonly CustomTheme[]) => void;
-  /** Whether the paste window is open. */
-  customThemesOpen: boolean;
-  /** Opening the paste window without saving. */
-  onCustomThemesOpen: () => void;
-  /** Closing the paste window without saving. */
-  onCustomThemesClose: () => void;
   onPickLook: (character: CharacterId, color: CharacterColor) => void;
   /** Asking for a pace. The host's click changes the room; a client's is a local look at what
    * that pace would mean, and the host's choice is what comes back. */
@@ -33,6 +29,8 @@ export interface LobbyScreenProps {
   /** Asking for a different set of themes, on the same terms as the pace: the host's click
    * changes the room and a client's changes nothing. */
   onPickThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
+  /** Opening the paste window without saving. */
+  onLoadCustomThemes: () => void;
   /** The room's code. */
   roomCode: string;
   /** The players in the room. */
@@ -51,35 +49,14 @@ export interface LobbyScreenProps {
 
 /** Waiting room: room code, roster, character picker. */
 export function LobbyScreen(props: LobbyScreenProps) {
-  const {
-    roomCode,
-    players,
-    ownPlayerId,
-    ownPlayerName,
-    ownLook,
-    isHost,
-    onPickLook,
-    onStart,
-    onExit,
-    onKick,
-  } = props;
+  const { roomCode, players, ownPlayerId, ownPlayerName, ownLook, isHost, onPickLook, onStart, onExit, onKick } = props;
+  const [popupOpen, setPopupOpen] = useState(false);
   return (
     <Screen>
-      <RoomCard
-        roomCode={roomCode}
-        players={players}
-        ownPlayerId={ownPlayerId}
-        isHost={isHost}
-        onStart={onStart}
-        onExit={onExit}
-        onKick={onKick}
-        themeMode={props.themeMode}
-        themes={props.themes}
-      />
-      <SettingsCard {...props} players={players.length} />
-      {ownLook !== undefined && (
-        <LookPicker ownName={ownPlayerName} ownLook={ownLook} onPick={onPickLook} />
-      )}
+      <RoomCard roomCode={roomCode} players={players} ownPlayerId={ownPlayerId} isHost={isHost} onStart={onStart} onExit={onExit} onKick={onKick} themeMode={props.themeMode} themes={props.themes} />
+      <SettingsCard {...props} players={players.length} onLoadCustomThemes={() => setPopupOpen(true)} />
+      {ownLook !== undefined && <LookPicker ownName={ownPlayerName} ownLook={ownLook} onPick={onPickLook} />}
+      <CustomThemesPopup open={popupOpen} onClose={() => setPopupOpen(false)} onSave={(themes) => { props.onCustomThemes(themes); setPopupOpen(false); }} />
     </Screen>
   );
 }

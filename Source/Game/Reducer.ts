@@ -66,6 +66,7 @@ function isRoomAction(action: GameAction): action is RoomAction {
     case 'SET_LOOK':
     case 'SET_PACE':
     case 'SET_THEMES':
+    case 'SET_CUSTOM_THEMES':
     case 'PAUSE':
     case 'RESUME':
       return true;

@@ -2,7 +2,6 @@ import { LobbyScreen } from '@/Screens';
 import { Pace } from '@/Game';
 import type { ThemeId, ThemeMode, CustomTheme } from '@/Core';
 import { GameSessionView } from '../Hooks/UseGameSession';
-import { useState } from 'preact/hooks';
 
 export interface PhaseViewProps {
   view: GameSessionView;
@@ -28,8 +27,6 @@ export function LobbyView({ view }: PhaseViewProps) {
   // The name the host has for us, not the one typed on this tab: the character is the
   // host's to keep, so the picker is headed with what the room actually calls us.
   const ownName = players.find((player) => player.id === view.playerId)?.name ?? '';
-  // The paste window's own state: a client's press is a no-op, so only the host's tab opens it.
-  const [popupOpen, setPopupOpen] = useState(false);
   return (
     <LobbyScreen
       roomCode={view.roomCode}
@@ -39,9 +36,7 @@ export function LobbyView({ view }: PhaseViewProps) {
       themes={themes}
       customThemes={customThemes}
       onCustomThemes={view.setCustomThemes}
-      customThemesOpen={popupOpen}
-      onCustomThemesOpen={() => setPopupOpen(true)}
-      onCustomThemesClose={() => setPopupOpen(false)}
+      onLoadCustomThemes={() => {}}
       ownPlayerId={view.playerId}
       ownPlayerName={ownName}
       ownLook={view.ownLook}

@@ -13,7 +13,6 @@
   position: absolute;
   inset: 0;
   background: rgb(0 0 0 / 45%);
-  backdrop-filter: blur(2px);
 }
 
 .Panel {
@@ -29,19 +28,6 @@
   gap: var(--Space-Md);
   font-family: var(--FontFamily-Body);
   box-shadow: 0 8px 24px rgb(0 0 0 / 15%);
-}
-
-.Title {
-  margin: 0;
-  font-size: var(--FontSize-H2);
-  font-weight: 600;
-  color: var(--Color-Text-Default);
-}
-
-.Hint {
-  margin: 0;
-  font-size: var(--FontSize-Body);
-  color: var(--Color-Text-Muted);
 }
 
 .Text {
@@ -60,6 +46,7 @@
 }
 
 .Text:focus-visible {
+  outline: none;
   border-color: var(--Color-Border-Focus);
   background: var(--Color-Surface-Default);
 }
@@ -68,4 +55,44 @@
   margin: 0;
   font-size: var(--FontSize-Caption);
   color: var(--Color-Border-Error);
+}
+
+/* The color row: eight equal square tracks filling the width, same shape as the character
+ * picker's palette so the two rows line up column for column. */
+.Colors {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: var(--Space-Xs);
+  width: 100%;
+}
+
+/* One colour cell. Square by `aspect-ratio`, so the swatch stays round inside it. */
+.Choice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  min-width: 0;
+  background: var(--Color-Surface-Default);
+  border: var(--Border-Width-Default) solid var(--Color-Border-Default);
+  border-radius: var(--Radius-Md);
+  cursor: var(--Cursor-Pointer);
+  transition: border-color var(--Transition-Standard);
+}
+
+.Choice:not(.Chosen):hover {
+  border-color: var(--Color-Room-Yellow);
+  background: var(--Color-Surface-Hover);
+}
+
+.Choice:focus-visible {
+  outline: none;
+  border-color: var(--Color-Border-Focus);
+}
+
+.Chosen {
+  border-color: var(--Color-Room-Yellow);
+  background: var(--Color-Action-Ghost-Hover);
 }

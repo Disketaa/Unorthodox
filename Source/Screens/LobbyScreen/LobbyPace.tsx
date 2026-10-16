@@ -35,16 +35,10 @@ export interface LobbyPaceProps {
   /** Asking for a different way of taking themes. Only reached by the host, since a client's
    * buttons are dead and the room's pool is told to them in the public state. */
   onPickThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
-  /** The custom themes this room knows, so the popup can show them. */
-  customThemes: readonly CustomTheme[];
-  /** The host pasting in custom themes, which every client is then told. */
-  onCustomThemes: (themes: readonly CustomTheme[]) => void;
-  /** Whether the paste window is open. */
-  customThemesOpen: boolean;
   /** Opening the paste window without saving. */
-  onCustomThemesOpen: () => void;
-  /** Closing the paste window without saving. */
-  onCustomThemesClose: () => void;
+  onLoadCustomThemes: () => void;
+  /** The custom themes this room knows, so the grid can show them. */
+  customThemes: readonly CustomTheme[];
 }
 
 /** The three waits of a round, in the order a player meets them. Read from the pace rather than
@@ -100,11 +94,8 @@ export function LobbyPace({
   isHost,
   onPick,
   onPickThemes,
+  onLoadCustomThemes,
   customThemes,
-  onCustomThemes,
-  customThemesOpen,
-  onCustomThemesOpen,
-  onCustomThemesClose,
 }: LobbyPaceProps) {
   return (
     <LobbyCategory
@@ -119,11 +110,8 @@ export function LobbyPace({
         themes={themes}
         isHost={isHost}
         onPick={onPickThemes}
+        onLoadCustomThemes={onLoadCustomThemes}
         customThemes={customThemes}
-        onCustomThemes={onCustomThemes}
-        customThemesOpen={customThemesOpen}
-        onCustomThemesOpen={onCustomThemesOpen}
-        onCustomThemesClose={onCustomThemesClose}
       />
     </LobbyCategory>
   );

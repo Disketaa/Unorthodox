@@ -34,7 +34,7 @@ export interface RoomMembers {
   /** The custom themes this room knows: their names, tints and questions. Sent to every client
    * so every screen can draw the same bank, and saved to each browser's cache so they survive a
    * refresh. */
-  customThemes?: Map<ThemeId, CustomTheme>;
+  customThemes?: Map<number, CustomTheme>;
   /** How many rounds have been played in each theme. Per theme rather than one running total,
    * since the bank is the same six themes every round and each drains at its own rate. */
   themeRounds: Map<ThemeId, number>;
@@ -171,7 +171,7 @@ export function freshLobbyState(): LobbyState {
     pace: 'Standard',
     themes: [],
     themeMode: 'Random',
-    customThemes: new Map<ThemeId, CustomTheme>(),
+    customThemes: new Map<number, CustomTheme>(),
     themeRounds: new Map<ThemeId, number>(),
     paused: false,
     pausedAt: undefined,

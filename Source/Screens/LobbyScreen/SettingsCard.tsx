@@ -10,11 +10,10 @@ export interface SettingsCardProps {
   isHost: boolean;
   onPickPace: (pace: Pace) => void;
   onPickThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
+  /** Opening the paste window without saving. */
+  onLoadCustomThemes: () => void;
+  /** The custom themes this room knows, so the grid can show them. */
   customThemes: readonly CustomTheme[];
-  onCustomThemes: (themes: readonly CustomTheme[]) => void;
-  customThemesOpen: boolean;
-  onCustomThemesOpen: () => void;
-  onCustomThemesClose: () => void;
 }
 
 /** The room's own settings, on one card: pace, waits, and themes. */
@@ -28,11 +27,8 @@ export function SettingsCard(props: SettingsCardProps) {
       isHost={props.isHost}
       onPick={props.onPickPace}
       onPickThemes={props.onPickThemes}
+      onLoadCustomThemes={props.onLoadCustomThemes}
       customThemes={props.customThemes}
-      onCustomThemes={props.onCustomThemes}
-      customThemesOpen={props.customThemesOpen}
-      onCustomThemesOpen={props.onCustomThemesOpen}
-      onCustomThemesClose={props.onCustomThemesClose}
     />
   );
 }

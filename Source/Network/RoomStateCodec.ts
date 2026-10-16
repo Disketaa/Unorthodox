@@ -136,7 +136,7 @@ export interface Members {
   paused: boolean;
   pausedAt: number | undefined;
   /** The custom themes this room knows, or none where the stored room predates them. */
-  customThemes?: Map<ThemeId, CustomTheme>;
+  customThemes?: Map<number, CustomTheme>;
 }
 
 /** A stored number, or undefined where there is none to read. Null stands for a moment that has

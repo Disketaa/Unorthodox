@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { HostState } from '@/Game';
-import { ThemeId, CustomTheme } from '@/Core';
+import { CustomTheme } from '@/Core';
 import { decodeRoomState } from './RoomStateCodec';
 import { encodeRoomState } from './RoomStateEncoder';
 import { clearRoomState, freshLobby, loadRoomState, saveRoomState } from './RoomStateStore';
@@ -31,7 +31,7 @@ const writingPhase: HostState = {
   themes: [],
   themeMode: 'Random',
   themeRounds: new Map(),
-    customThemes: new Map<ThemeId, CustomTheme>(),
+    customThemes: new Map<number, CustomTheme>(),
 
   paused: false,
 
@@ -55,7 +55,7 @@ const reviewingPhase: HostState = {
   themes: [],
   themeMode: 'Random',
   themeRounds: new Map(),
-    customThemes: new Map<ThemeId, CustomTheme>(),
+    customThemes: new Map<number, CustomTheme>(),
 
   paused: false,
 
@@ -75,7 +75,7 @@ const scoresPhase: HostState = {
   themes: [],
   themeMode: 'Random',
   themeRounds: new Map(),
-    customThemes: new Map<ThemeId, CustomTheme>(),
+    customThemes: new Map<number, CustomTheme>(),
 
   paused: false,
 
@@ -92,7 +92,7 @@ const finalPhase: HostState = {
   themes: [],
   themeMode: 'Random',
   themeRounds: new Map(),
-    customThemes: new Map<ThemeId, CustomTheme>(),
+    customThemes: new Map<number, CustomTheme>(),
 
   paused: false,
 
@@ -106,7 +106,7 @@ describe('a room that outlives its tab', () => {
       ...freshLobby(),
       pace: 'Fast' as const,
       themeRounds: new Map(),
-    customThemes: new Map<ThemeId, CustomTheme>(),
+    customThemes: new Map<number, CustomTheme>(),
 
       paused: false,
 
