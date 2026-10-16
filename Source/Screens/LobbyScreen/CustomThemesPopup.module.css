@@ -57,6 +57,28 @@
   color: var(--Color-Border-Error);
 }
 
+/* Syntax-highlighted JSON tokens using the project's color palette. */
+.Key {
+  color: var(--Color-Character-Violet);
+  font-weight: 600;
+}
+
+.String {
+  color: var(--Color-Character-Coral);
+}
+
+.Number {
+  color: var(--Color-Character-Amber);
+}
+
+.Punct {
+  color: var(--Color-Text-Muted);
+}
+
+.Whitespace {
+  white-space: pre;
+}
+
 /* The color row: eight equal square tracks filling the width, same shape as the character
  * picker's palette so the two rows line up column for column. */
 .Colors {

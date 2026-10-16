@@ -11,6 +11,7 @@ import {
   parseCustomThemesJson,
 } from '@/Core';
 import { ColorSwatch } from '@/Design/Components';
+import { SyntaxHighlightedJson } from './CustomThemesPopupSyntax';
 import styles from './CustomThemesPopup.module.css';
 
 export function CustomThemesPopupBody({
@@ -51,7 +52,10 @@ export function CustomThemesPopupBody({
       <div class={styles.Panel}>
         <PopupTitle title={title} color={titleColor} />
         <ColorRow color={themes?.[0]?.color ?? 'Yellow'} onPick={pickColor} />
-        <CustomTextArea json={json} onChange={setJson} />
+        <SyntaxHighlightedJson
+          json={json}
+          onChange={setJson}
+        />
         {error !== undefined && <p class={styles.Error}>{error}</p>}
         <CustomButtons onClose={onClose} onSave={handleSave} disabled={!valid} />
       </div>
@@ -93,12 +97,6 @@ function ColorChoice({
     <button type="button" class={classes} onClick={() => onPick(name)} aria-pressed={selected} aria-label={name}>
       <ColorSwatch color={name} size="Fill" shape="Square" />
     </button>
-  );
-}
-
-function CustomTextArea({ json, onChange }: { json: string; onChange: (value: string) => void }) {
-  return (
-    <textarea class={styles.Text} value={json} onInput={(event) => onChange(event.currentTarget.value)} spellcheck={false} />
   );
 }
 
