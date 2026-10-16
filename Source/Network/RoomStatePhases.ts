@@ -63,6 +63,7 @@ function commonOf(members: Members): RoomMembers {
     affectedPlayers,
     paused,
     pausedAt,
+    customThemes,
   } = members;
   return {
     players,
@@ -71,6 +72,7 @@ function commonOf(members: Members): RoomMembers {
     pace,
     themes,
     themeMode,
+    customThemes,
     themeRounds,
     affectedPlayers,
     paused,

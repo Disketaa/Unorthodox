@@ -27,6 +27,11 @@ function mount(isHost: boolean, start: Pool) {
         themeMode={pool.mode}
         themes={pool.themes}
         isHost={isHost}
+        customThemes={[]}
+        onCustomThemes={() => {}}
+        customThemesOpen={false}
+        onCustomThemesOpen={() => {}}
+        onCustomThemesClose={() => {}}
         onPick={(mode, themes) => {
           asked.push({ mode, themes });
           pool = { mode, themes };
@@ -85,6 +90,7 @@ describe('the theme grid', () => {
     expect(
       buttons(container)
         .slice(2)
+        .filter((button) => button.textContent !== Strings.lobby.settings.loadCustomThemes)
         .map((button) => button.textContent)
     ).toEqual(named);
   });
@@ -102,7 +108,11 @@ describe('the theme grid', () => {
     row.press(random);
     expect(buttons(row.container)).toHaveLength(2);
     row.press(chosen);
-    expect(buttons(row.container).slice(2)).toHaveLength(named.length);
+    expect(
+      buttons(row.container)
+        .slice(2)
+        .filter((button) => button.textContent !== Strings.lobby.settings.loadCustomThemes)
+    ).toHaveLength(named.length);
     expect(row.pool()).toEqual({ mode: 'Chosen', themes: [named[0], named[1]] });
   });
 

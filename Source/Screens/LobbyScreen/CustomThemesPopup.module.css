@@ -1,0 +1,60 @@
+/* The window over the lobby where the host pastes custom theme JSON. A shade behind it dims
+ * the room like the pause screen, and a panel in the middle holds the text area and buttons. */
+.Root {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 100;
+}
+
+.Veil {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 25%);
+}
+
+.Panel {
+  position: relative;
+  background: var(--Color-Surface-Default);
+  border: 1px solid var(--Color-Border-Default);
+  border-radius: var(--Radius-Md);
+  padding: var(--Space-Lg);
+  width: min(90vw, 480px);
+  max-height: 85vh;
+  overflow: auto;
+  display: grid;
+  gap: var(--Space-Md);
+}
+
+.Title {
+  margin: 0;
+  font-size: var(--FontSize-Lg);
+  font-weight: 600;
+  color: var(--Color-Text-Default);
+}
+
+.Hint {
+  margin: 0;
+  font-size: var(--FontSize-Body);
+  color: var(--Color-Text-Muted);
+}
+
+.Text {
+  width: 100%;
+  font-family: var(--FontFamily-Body);
+  font-size: var(--FontSize-Mono);
+  padding: var(--Space-Sm);
+  border: 1px solid var(--Color-Border-Default);
+  border-radius: var(--Radius-Sm);
+  background: var(--Color-Surface-Hover);
+  color: var(--Color-Text-Default);
+  resize: vertical;
+  min-height: 200px;
+}
+
+.Error {
+  margin: 0;
+  font-size: var(--FontSize-Caption);
+  color: var(--Color-Border-Error);
+}

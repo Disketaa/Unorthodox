@@ -1,7 +1,8 @@
 import { LobbyScreen } from '@/Screens';
 import { Pace } from '@/Game';
-import type { ThemeId, ThemeMode } from '@/Core';
+import type { ThemeId, ThemeMode, CustomTheme } from '@/Core';
 import { GameSessionView } from '../Hooks/UseGameSession';
+import { useState } from 'preact/hooks';
 
 export interface PhaseViewProps {
   view: GameSessionView;
@@ -20,9 +21,15 @@ export function LobbyView({ view }: PhaseViewProps) {
     view.publicState?.phase === 'Lobby' ? view.publicState.themeMode : 'Random';
   const themes: readonly ThemeId[] =
     view.publicState?.phase === 'Lobby' ? view.publicState.themes : [];
+  // The custom themes this room knows, so the paste window can show them. A client that has not
+  // received the state yet reads as none.
+  const customThemes: readonly CustomTheme[] =
+    view.publicState?.phase === 'Lobby' ? view.publicState.customThemes : [];
   // The name the host has for us, not the one typed on this tab: the character is the
   // host's to keep, so the picker is headed with what the room actually calls us.
   const ownName = players.find((player) => player.id === view.playerId)?.name ?? '';
+  // The paste window's own state: a client's press is a no-op, so only the host's tab opens it.
+  const [popupOpen, setPopupOpen] = useState(false);
   return (
     <LobbyScreen
       roomCode={view.roomCode}
@@ -30,6 +37,11 @@ export function LobbyView({ view }: PhaseViewProps) {
       pace={pace}
       themeMode={themeMode}
       themes={themes}
+      customThemes={customThemes}
+      onCustomThemes={view.setCustomThemes}
+      customThemesOpen={popupOpen}
+      onCustomThemesOpen={() => setPopupOpen(true)}
+      onCustomThemesClose={() => setPopupOpen(false)}
       ownPlayerId={view.playerId}
       ownPlayerName={ownName}
       ownLook={view.ownLook}

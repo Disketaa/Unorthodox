@@ -52,6 +52,7 @@ type RoomAction = Extract<
       | 'SET_LOOK'
       | 'SET_PACE'
       | 'SET_THEMES'
+      | 'SET_CUSTOM_THEMES'
       | 'PAUSE'
       | 'RESUME';
   }

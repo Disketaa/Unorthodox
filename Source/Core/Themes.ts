@@ -4,6 +4,7 @@
 import { Accent, Accents } from './Accents';
 import { CharacterColor, CharacterColors, isCharacterColor } from './Characters';
 import { randomFor, type Random } from './Random';
+import { isKnownThemeId, themeColor } from './CustomThemes';
 
 /** A theme's name, which is its file's name. Not a union of literals: the set of themes is only
  * known once the files are read, so the registry below is what an id is checked against. */
@@ -28,9 +29,11 @@ export function isThemeMode(value: unknown): value is ThemeMode {
 /** Every theme file's text, keyed by path. Eager, so the registry is whole at module init and no
  * deal ever waits on a load: a tab that read the files in another order would deal another
  * room. */
-/** What a theme file holds: the tint it washes in, and the questions it asks. Both are the
- * author's rather than this module's, so a ninth theme needs no line of code. */
+/** What a theme file holds: the name it calls itself, the tint it washes in, and the questions
+ * it asks. All three are the author's rather than this module's, so a ninth theme needs no line
+ * of code. */
 interface ThemeFile {
+  name: string;
   color: CharacterColor;
   questions: readonly string[];
 }
@@ -46,14 +49,21 @@ const files: Record<string, string> = import.meta.glob('../Content/Themes/*.json
 function parseTheme(text: string): ThemeFile | undefined {
   const read: unknown = parseJson(text);
   if (read === undefined || !isRecord(read)) return undefined;
-  const { color, questions } = read;
-  if (!isCharacterColor(color) || !Array.isArray(questions)) return undefined;
+  const { name, color, questions } = read;
+  if (
+    typeof name !== 'string' ||
+    name.length === 0 ||
+    !isCharacterColor(color) ||
+    !Array.isArray(questions)
+  ) {
+    return undefined;
+  }
   const asked = [
     ...new Set(
       questions.filter((q): q is string => typeof q === 'string').map((q) => q.trim())
     ),
   ].filter(Boolean);
-  return asked.length > 0 ? { color, questions: asked } : undefined;
+  return asked.length > 0 ? { name, color, questions: asked } : undefined;
 }
 
 function parseJson(text: string): unknown {
@@ -75,12 +85,10 @@ function byId(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-const fileId = (path: string): string => path.slice(path.lastIndexOf('/') + 1, -5);
-
 const authored = Object.entries(files)
-  .map(([path, text]): [ThemeId, ThemeFile] | undefined => {
+  .map(([, text]): [ThemeId, ThemeFile] | undefined => {
     const theme = parseTheme(text);
-    return theme === undefined ? undefined : [fileId(path), theme];
+    return theme === undefined ? undefined : [theme.name, theme];
   })
   .filter((entry): entry is [ThemeId, ThemeFile] => entry !== undefined)
   .sort(([a], [b]) => byId(a, b));
@@ -102,13 +110,14 @@ export const ThemeColors: ReadonlyMap<ThemeId, CharacterColor> = new Map(
 export const ThemeIds: readonly ThemeId[] = [...ThemeBanks.keys()];
 
 export function isThemeId(value: unknown): value is ThemeId {
-  return typeof value === 'string' && ThemeBanks.has(value);
+  return isKnownThemeId(value);
 }
 
 /** The accent a theme washes in. A function rather than a table to index into, so the one thing
- * a caller needs is the whole accent: wash and ink belong together. */
+ * a caller needs is the whole accent: wash and ink belong together. A custom theme's tint is
+ * honoured where a file's is not. */
 export function themeAccent(theme: ThemeId): Accent {
-  const named = ThemeColors.get(theme);
+  const named = themeColor(theme);
   if (named !== undefined) return Accents[named];
   const index = Math.max(0, ThemeIds.indexOf(theme));
   const fallback = CharacterColors[index % CharacterColors.length];

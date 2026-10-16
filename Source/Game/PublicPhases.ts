@@ -1,4 +1,4 @@
-import { randomFor, shuffle, ThemeId } from '@/Core';
+import { randomFor, shuffle, ThemeId, CustomTheme } from '@/Core';
 import { marksForRoom } from './PublicMarks';
 import { declinedGroupIds } from './RoundScoring';
 import { HostState, ReviewingState } from './GameState';
@@ -29,6 +29,12 @@ export function room(state: HostState): PublicRoom {
     pace: state.pace,
     themes: [...state.themes],
     themeMode: state.themeMode,
+    customThemes: [...(state.customThemes ?? new Map<ThemeId, CustomTheme>()).values()].map((theme) => ({
+      id: theme.id,
+      name: theme.name,
+      color: theme.color,
+      questions: [...theme.questions],
+    })),
     spent: spentByTheme(state.themeRounds),
     ...(state.affectedPlayers !== undefined && state.affectedPlayers.size > 0
       ? { affectedPlayerIds: [...state.affectedPlayers] }

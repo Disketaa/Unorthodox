@@ -6,5 +6,6 @@ export * from './Random';
 export * from './Color';
 export * from './Accents';
 export * from './Themes';
+export * from './CustomThemes';
 export * from './Modifiers';
 export * from './LetterPairs';

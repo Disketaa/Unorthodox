@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { Pace, PublicState } from '@/Game';
-import { PlayerId, PlayerLook, CharacterColor, CharacterId, ThemeId } from '@/Core';
+import { PlayerId, PlayerLook, CharacterColor, CharacterId, ThemeId, CustomTheme } from '@/Core';
 import type { ThemeMode } from '@/Core';
 import { createSession } from '../SessionFactory';
 import { Session, SessionRole, BlockedReason, ConnectionHint } from '../Session';
@@ -47,6 +47,8 @@ export interface GameSessionView extends SessionPhase, BoardMarks {
   connectionHint: ConnectionHint | undefined;
   /** How many players the room holds, which the full-room refusal quotes. */
   roomLimit: number;
+  /** The custom themes this room knows, so every screen can draw them in the bank. */
+  customThemes: readonly CustomTheme[];
   /** The host removing a player from the room. */
   kickPlayer: (playerId: PlayerId) => void;
   /** This player's own character, as the host has it. Not the roll made on this device: a
@@ -57,6 +59,8 @@ export interface GameSessionView extends SessionPhase, BoardMarks {
   /** Asking for a pace or for the room's themes: both the host's alone. */
   setPace: (pace: Pace) => void;
   setThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
+  /** The host pasting in custom themes, which every client is then told. */
+  setCustomThemes: (themes: readonly CustomTheme[]) => void;
   /** Holding the room still, or letting it run again. */
   setPaused: (paused: boolean) => void;
   /** Put an invented player in the room. Only the host's, and only while debugging. */
@@ -134,8 +138,10 @@ export function useGameSession(
     blocked: session.getBlocked(),
     connectionHint: session.getConnectionHint(),
     roomLimit: session.getRoomLimit(),
+    customThemes: session.getCustomThemes(),
     kickPlayer: (playerId) => session.kick(playerId),
     ownLook,
     exitRoom,
+    setCustomThemes: (themes) => session.setCustomThemes?.(themes),
   };
 }

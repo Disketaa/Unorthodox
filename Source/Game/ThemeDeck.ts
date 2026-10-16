@@ -1,6 +1,6 @@
 /** What a theme asks, as its own deck per room. The questions are Content and how many a theme
  * is played for is a rule, so the deal belongs to neither layer alone and goes here with both. */
-import { ThemeBanks, ThemeId, randomFor, sampleUnique } from '@/Core';
+import { themeQuestions, ThemeId, randomFor, sampleUnique } from '@/Core';
 import { GameConfig } from './GameConfig';
 
 /** The questions one room plays in one theme: dealt at random from the theme's file, never
@@ -8,7 +8,7 @@ import { GameConfig } from './GameConfig';
  * nothing sent. */
 export function deckFor(roomCode: string, theme: ThemeId): string[] {
   return sampleUnique(
-    ThemeBanks.get(theme) ?? [],
+    themeQuestions(theme) ?? [],
     GameConfig.themes.roundsPerTheme,
     randomFor(`${roomCode}:${theme}`)
   );

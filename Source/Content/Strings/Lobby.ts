@@ -59,5 +59,24 @@ export const lobby = {
     musicOff: 'Выключить музыку',
     /** Turns it back on. */
     musicOn: 'Включить музыку',
+    /** The host pasting in custom themes: the button under the themes row that opens the paste
+     * window. Named for what it is rather than what it does, since a theme is a thing and the
+     * button makes it custom. */
+    customThemes: 'Кастомное',
+    /** The paste window's title, naming what goes in it. */
+    customThemesTitle: 'Кастомные темы',
+    /** The label over the text area, telling the host what to paste. */
+    customThemesPaste: 'Вставьте JSON с темами',
+    /** The button that saves the pasted themes and closes the window. */
+    customThemesSave: 'Сохранить',
+    /** The button that closes the window without saving. */
+    customThemesCancel: 'Отмена',
+    /** Shown when the pasted JSON is not a valid theme list. */
+    customThemesError: 'Неправильный JSON',
+    /** Shown when a theme has no name, no color, or no questions. */
+    customThemesInvalidTheme: 'Каждая тема нуждается в имени, цвете и вопросах',
+    /** The button under the themes row that opens the paste window, when the room has chosen its
+     * themes rather than taking the whole bank. */
+    loadCustomThemes: 'Загрузить',
   },
 } as const;

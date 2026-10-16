@@ -2,7 +2,7 @@
  * from the phases because each is a change to one player rather than a move of the room, and
  * because they exist in every phase: a refresh mid-round is joining again. */
 import { HostState } from './GameState';
-import { assertNever, isThemeId, isThemeMode, ThemeId, ThemeIds, ThemeMode } from '@/Core';
+import { assertNever, isThemeId, isThemeMode, ThemeId, ThemeIds, ThemeMode, loadCustomThemes } from '@/Core';
 import type { ActionOf, GameAction } from './GameActions';
 import { GameConfig } from './GameConfig';
 
@@ -11,7 +11,7 @@ export function handleRoster(
   state: HostState,
   action: Extract<
     GameAction,
-    { type: 'JOIN' | 'SET_ONLINE' | 'KICK' | 'SET_LOOK' | 'SET_PACE' | 'SET_THEMES' }
+    { type: 'JOIN' | 'SET_ONLINE' | 'KICK' | 'SET_LOOK' | 'SET_PACE' | 'SET_THEMES' | 'SET_CUSTOM_THEMES' }
   >
 ): HostState {
   switch (action.type) {
@@ -27,6 +27,8 @@ export function handleRoster(
       return handleSetPace(state, action);
     case 'SET_THEMES':
       return handleSetThemes(state, action);
+    case 'SET_CUSTOM_THEMES':
+      return handleSetCustomThemes(state, action);
     default:
       return assertNever(action);
   }
@@ -123,6 +125,8 @@ export function handleSetThemes(state: HostState, action: ActionOf<'SET_THEMES'>
  * what the lobby deals. Cut here rather than trusted to the buttons, so a host cannot end up
  * naming seven themes for a bank of six. Empty stays empty: the deal reads it as every theme. */
 function namedFrom(picked: readonly ThemeId[]): readonly ThemeId[] {
+  // Custom themes live in this browser's cache, so load them before checking which names are real.
+  loadCustomThemes();
   const named = picked.filter(isThemeId);
   return ThemeIds.filter((theme) => named.includes(theme)).slice(
     0,
@@ -134,4 +138,18 @@ function namedFrom(picked: readonly ThemeId[]): readonly ThemeId[] {
  * sending the room a state it would have thrown away anyway. */
 function sameThemes(a: readonly ThemeId[], b: readonly ThemeId[]): boolean {
   return a.length === b.length && a.every((theme, at) => theme === b[at]);
+}
+
+/** The host pasting in custom themes. Lobby only, since a bank already drawn cannot be redrawn.
+ * The themes are merged into the room's state so every client can draw them, and each client
+ * saves them to its own cache so they survive a refresh. */
+function handleSetCustomThemes(state: HostState, action: ActionOf<'SET_CUSTOM_THEMES'>): HostState {
+  if (state.phase !== 'Lobby') {
+    return state;
+  }
+  const themes = new Map(state.customThemes);
+  for (const theme of action.themes) {
+    themes.set(theme.id, theme);
+  }
+  return { ...state, customThemes: themes };
 }

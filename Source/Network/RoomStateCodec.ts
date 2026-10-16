@@ -3,9 +3,11 @@
  * RoomStatePhases, and the writing half is RoomStateEncoder. */
 import type { HostState, Player, Pace } from '@/Game';
 import {
+  isCustomTheme,
   isThemeId,
   isThemeMode,
   LegacyRandomThemeId,
+  type CustomTheme,
   type PlayerId,
   type ThemeId,
   type ThemeMode,
@@ -133,6 +135,8 @@ export interface Members {
    * come back into the hold rather than let a stopped clock start running behind its back. */
   paused: boolean;
   pausedAt: number | undefined;
+  /** The custom themes this room knows, or none where the stored room predates them. */
+  customThemes?: Map<ThemeId, CustomTheme>;
 }
 
 /** A stored number, or undefined where there is none to read. Null stands for a moment that has
@@ -157,7 +161,20 @@ function membersFrom(fields: Fields): Members {
     affectedPlayers: affected.length > 0 ? new Set(affected) : undefined,
     paused: fields.get('paused') === true,
     pausedAt: optionalNumber(fields.get('pausedAt')),
+    customThemes: customThemesFrom(fields),
   };
+}
+
+/** The custom themes a stored room names, or none where it predates them. */
+function customThemesFrom(fields: Fields): Map<ThemeId, CustomTheme> {
+  const raw = fields.get('customThemes');
+  if (!Array.isArray(raw)) return new Map();
+  const map = new Map<ThemeId, CustomTheme>();
+  for (const entry of raw) {
+    if (!isCustomTheme(entry)) continue;
+    map.set(entry.id, entry);
+  }
+  return map;
 }
 
 /** The state back, or undefined when what was stored is not a state we can resume. */

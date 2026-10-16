@@ -1,4 +1,4 @@
-import { PlayerId, PlayerLook, ThemeId, ThemeMode } from '@/Core';
+import { PlayerId, PlayerLook, ThemeId, ThemeMode, CustomTheme } from '@/Core';
 import { Pace } from './GameConfig';
 
 /** What the room remembers about one player: who they are, how they look, and whether they are
@@ -31,6 +31,10 @@ export interface RoomMembers {
    * one of them, since a host who has looked at the random bank and come back has not forgotten
    * what they chose. */
   themeMode: ThemeMode;
+  /** The custom themes this room knows: their names, tints and questions. Sent to every client
+   * so every screen can draw the same bank, and saved to each browser's cache so they survive a
+   * refresh. */
+  customThemes?: Map<ThemeId, CustomTheme>;
   /** How many rounds have been played in each theme. Per theme rather than one running total,
    * since the bank is the same six themes every round and each drains at its own rate. */
   themeRounds: Map<ThemeId, number>;
@@ -62,6 +66,7 @@ export function membersOf(state: HostState): RoomMembers {
     pace: state.pace,
     themes: state.themes,
     themeMode: state.themeMode,
+    customThemes: state.customThemes,
     themeRounds: state.themeRounds,
     affectedPlayers: state.affectedPlayers,
     paused: false,
@@ -166,6 +171,7 @@ export function freshLobbyState(): LobbyState {
     pace: 'Standard',
     themes: [],
     themeMode: 'Random',
+    customThemes: new Map<ThemeId, CustomTheme>(),
     themeRounds: new Map<ThemeId, number>(),
     paused: false,
     pausedAt: undefined,

@@ -1,8 +1,9 @@
-import { ThemeId, ThemeIds, ThemeMode, themeAccent } from '@/Core';
+import { ThemeId, ThemeIds, ThemeMode, themeAccent, CustomTheme } from '@/Core';
 import { Button } from '@/Design/Components';
 import { Separator, Stack } from '@/Design/Primitives';
 import { GameConfig } from '@/Game';
 import { Strings } from '@/Content';
+import { CustomThemesPopup } from './CustomThemesPopup';
 import styles from './LobbyThemes.module.css';
 
 /** How many themes a room may name at once, which is the size of the bank the lobby deals. A
@@ -30,6 +31,16 @@ export interface LobbyThemesProps {
   isHost: boolean;
   /** Asking for a different pool. Only reached by the host, since a client's buttons are dead. */
   onPick: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
+  /** The custom themes this room knows, so the popup can show them. */
+  customThemes: readonly CustomTheme[];
+  /** The host pasting in custom themes, which every client is then told. */
+  onCustomThemes: (themes: readonly CustomTheme[]) => void;
+  /** Whether the paste window is open. */
+  customThemesOpen: boolean;
+  /** Opening the paste window without saving. */
+  onCustomThemesOpen: () => void;
+  /** Closing the paste window without saving. */
+  onCustomThemesClose: () => void;
 }
 
 /** What one press on a theme means: it goes on beside the others, or comes back off. Never a
@@ -50,10 +61,81 @@ function themeLabel(mode: ThemeMode, count: number): string {
     : Strings.lobby.settings.themesChosen(count, ThemeLimit);
 }
 
+/** The two buttons under the themes rule: Random or Chosen. */
+function ModeButtons({
+  themeMode,
+  isHost,
+  onPick,
+  named,
+}: {
+  themeMode: ThemeMode;
+  isHost: boolean;
+  onPick: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
+  named: readonly ThemeId[];
+}) {
+  return (
+    <Stack direction="Horizontal" gap="Sm" align="Stretch" fill="Even">
+      {modes.map((mode) => (
+        <Button
+          key={mode}
+          variant={mode === themeMode ? 'Primary' : 'Muted'}
+          pressed={mode === themeMode}
+          disabled={!isHost}
+          onClick={() => onPick(mode, named)}
+        >
+          {Strings.lobby.settings.themeModes[mode]}
+        </Button>
+      ))}
+    </Stack>
+  );
+}
+
+/** The grid of theme cards, each wearing its own tint. */
+function ThemeGrid({
+  themeMode,
+  named,
+  isHost,
+  full,
+  onPick,
+}: {
+  themeMode: ThemeMode;
+  named: readonly ThemeId[];
+  isHost: boolean;
+  full: boolean;
+  onPick: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
+}) {
+  if (themeMode !== 'Chosen') return null;
+  return (
+    <div class={styles.Grid}>
+      {themes.map((theme) => (
+        <Button
+          key={theme}
+          class={styles.Item}
+          accent={themeAccent(theme)}
+          pressed={named.includes(theme)}
+          disabled={!isHost || (full && !named.includes(theme))}
+          onClick={() => onPick('Chosen', toggle(named, theme))}
+        >
+          {theme}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
 /** The themes a room is played from: which way it is given them, and then — only when it has
  * chosen them — every theme there is, each wearing its own tint. Under the random bank the grid
  * is not drawn at all: none of the eight is in play, and dead buttons are pressed anyway. */
-export function LobbyThemes({ themeMode, themes: named, isHost, onPick }: LobbyThemesProps) {
+export function LobbyThemes({
+  themeMode,
+  themes: named,
+  isHost,
+  onPick,
+  onCustomThemes,
+  customThemesOpen,
+  onCustomThemesOpen,
+  onCustomThemesClose,
+}: LobbyThemesProps) {
   // A full pool turns the rest of the grid dead rather than dropping one of the six to make room
   // for a seventh: the host asked for the six they named, and swapping one out for one they did
   // not is a change they never pressed for.
@@ -61,35 +143,27 @@ export function LobbyThemes({ themeMode, themes: named, isHost, onPick }: LobbyT
   return (
     <>
       <Separator>{themeLabel(themeMode, named.length)}</Separator>
-      <Stack direction="Horizontal" gap="Sm" align="Stretch" fill="Even">
-        {modes.map((mode) => (
-          <Button
-            key={mode}
-            variant={mode === themeMode ? 'Primary' : 'Muted'}
-            pressed={mode === themeMode}
-            disabled={!isHost}
-            onClick={() => onPick(mode, named)}
-          >
-            {Strings.lobby.settings.themeModes[mode]}
-          </Button>
-        ))}
-      </Stack>
+      <ModeButtons themeMode={themeMode} isHost={isHost} onPick={onPick} named={named} />
       {themeMode === 'Chosen' && (
-        <div class={styles.Grid}>
-          {themes.map((theme) => (
+        <>
+          <ThemeGrid themeMode={themeMode} named={named} isHost={isHost} full={full} onPick={onPick} />
+          <Separator>{Strings.lobby.settings.customThemes}</Separator>
+          <Stack direction="Horizontal" gap="Sm" align="Stretch" fill="Even">
             <Button
-              key={theme}
-              class={styles.Item}
-              accent={themeAccent(theme)}
-              pressed={named.includes(theme)}
-              disabled={!isHost || (full && !named.includes(theme))}
-              onClick={() => onPick('Chosen', toggle(named, theme))}
+              variant="Muted"
+              disabled={!isHost}
+              onClick={() => onCustomThemesOpen()}
             >
-              {theme}
+              {Strings.lobby.settings.loadCustomThemes}
             </Button>
-          ))}
-        </div>
+          </Stack>
+        </>
       )}
+      <CustomThemesPopup
+        open={customThemesOpen}
+        onClose={onCustomThemesClose}
+        onSave={onCustomThemes}
+      />
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { PlayerId, PlayerLook, ThemeId, isPlayerLook, isThemeId } from '@/Core';
+import { PlayerId, PlayerLook, ThemeId, isPlayerLook, isThemeId, CustomTheme, isCustomTheme } from '@/Core';
 import * as Game from '@/Game';
 
 /** Messages sent from clients to the host. `groupId` is the numeric index assigned by the
@@ -17,7 +17,10 @@ export type ClientMessage =
    * a reaction rather than a move in the round. The host still refuses one on an answer its
    * sender wrote, which nobody can be told about without telling the room. */
   | { type: 'LikeGroup'; groupId: number; playerId: PlayerId }
-  | { type: 'Sync' };
+  | { type: 'Sync' }
+  /** The host pasting in custom themes, sent to every client so every screen draws the same
+   * bank. */
+  | { type: 'SetCustomThemes'; themes: readonly CustomTheme[] };
 
 export type HostMessage =
   | {
@@ -82,6 +85,8 @@ export function isClientMessage(value: unknown): value is ClientMessage {
     case 'Sync':
       // A returning client asks the host to resend the current state.
       return true;
+    case 'SetCustomThemes':
+      return Array.isArray(record.themes) && record.themes.every(isCustomTheme);
     default:
       return false;
   }

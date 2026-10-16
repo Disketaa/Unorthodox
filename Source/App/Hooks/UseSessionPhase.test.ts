@@ -17,6 +17,7 @@ function choosing(
     pace: 'Standard',
     themes: [],
     themeMode: 'Random',
+    customThemes: [],
     spent: [],
     paused: false,
     durationMs,

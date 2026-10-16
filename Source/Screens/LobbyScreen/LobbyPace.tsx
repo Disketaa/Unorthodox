@@ -7,7 +7,7 @@ import {
   VolumeButton,
 } from '@/Design/Components';
 import { GameConfig, Pace, reviewingDurationMs } from '@/Game';
-import { ThemeId, ThemeMode } from '@/Core';
+import { ThemeId, ThemeMode, CustomTheme } from '@/Core';
 import { Strings } from '@/Content';
 import { LobbyCategory } from './LobbyCategory';
 import { LobbyThemes } from './LobbyThemes';
@@ -35,6 +35,16 @@ export interface LobbyPaceProps {
   /** Asking for a different way of taking themes. Only reached by the host, since a client's
    * buttons are dead and the room's pool is told to them in the public state. */
   onPickThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
+  /** The custom themes this room knows, so the popup can show them. */
+  customThemes: readonly CustomTheme[];
+  /** The host pasting in custom themes, which every client is then told. */
+  onCustomThemes: (themes: readonly CustomTheme[]) => void;
+  /** Whether the paste window is open. */
+  customThemesOpen: boolean;
+  /** Opening the paste window without saving. */
+  onCustomThemesOpen: () => void;
+  /** Closing the paste window without saving. */
+  onCustomThemesClose: () => void;
 }
 
 /** The three waits of a round, in the order a player meets them. Read from the pace rather than
@@ -81,9 +91,7 @@ function WaitRows({ pace, players }: Pick<LobbyPaceProps, 'pace' | 'players'>) {
   );
 }
 
-/** The room's pace, and what that pace means in seconds. A pace named "fast" says nothing, so
- * the values are the point. Drawn `disabled` for clients, never hidden. The room's themes ride
- * here rather than in a second card: a player joining is answered both on one sheet. */
+/** The room's pace, what it means in seconds, and the themes the bank is dealt from. */
 export function LobbyPace({
   pace,
   themeMode,
@@ -92,17 +100,16 @@ export function LobbyPace({
   isHost,
   onPick,
   onPickThemes,
+  customThemes,
+  onCustomThemes,
+  customThemesOpen,
+  onCustomThemesOpen,
+  onCustomThemesClose,
 }: LobbyPaceProps) {
   return (
     <LobbyCategory
       title={Strings.lobby.settings.title}
-      action={
-        <Stack direction="Horizontal" gap="Sm">
-          <FullscreenButton labels={Strings.lobby.settings} />
-          <VolumeButton labels={Strings.lobby.settings} />
-          <MusicButton labels={Strings.lobby.settings} />
-        </Stack>
-      }
+      action={<LobbyActions labels={Strings.lobby.settings} />}
     >
       <Separator>{Strings.lobby.settings.params}</Separator>
       <PaceChoices pace={pace} isHost={isHost} onPick={onPick} />
@@ -112,8 +119,34 @@ export function LobbyPace({
         themes={themes}
         isHost={isHost}
         onPick={onPickThemes}
+        customThemes={customThemes}
+        onCustomThemes={onCustomThemes}
+        customThemesOpen={customThemesOpen}
+        onCustomThemesOpen={onCustomThemesOpen}
+        onCustomThemesClose={onCustomThemesClose}
       />
     </LobbyCategory>
+  );
+}
+
+function LobbyActions({
+  labels,
+}: {
+  labels: {
+    fullscreen: string;
+    minimize: string;
+    mute: string;
+    unmute: string;
+    musicOff: string;
+    musicOn: string;
+  };
+}) {
+  return (
+    <Stack direction="Horizontal" gap="Sm">
+      <FullscreenButton labels={labels} />
+      <VolumeButton labels={labels} />
+      <MusicButton labels={labels} />
+    </Stack>
   );
 }
 

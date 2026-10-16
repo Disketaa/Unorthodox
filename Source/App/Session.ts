@@ -1,4 +1,4 @@
-import { PlayerLook, ThemeId, ThemeMode } from '@/Core';
+import { PlayerLook, ThemeId, ThemeMode, CustomTheme } from '@/Core';
 import { PublicState, Pace } from '@/Game';
 import type { ConnectionHint } from '@/Network';
 
@@ -41,6 +41,10 @@ export interface Session {
   /** The host setting how the room is given its themes. Only the host calls this, for the pace's
    * reason, and the pool travels in the public state rather than in the press. */
   setThemes(mode: ThemeMode, themes: readonly ThemeId[]): void;
+  /** The host pasting in custom themes, which every client is then told. Host only. */
+  setCustomThemes?(themes: readonly CustomTheme[]): void;
+  /** The custom themes this room knows, so every screen can draw them in the bank. */
+  getCustomThemes(): readonly CustomTheme[];
   /** Put an invented player in the room, for the host trying a room out alone. Only the host
    * calls this, and only while the console is on. The bot joins the roster like anyone else and
    * nobody is told: a client asking for a player to appear is not a thing. */
