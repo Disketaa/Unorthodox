@@ -11,25 +11,27 @@
 .Veil {
   position: absolute;
   inset: 0;
-  background: rgb(0 0 0 / 25%);
+  background: rgb(0 0 0 / 45%);
+  backdrop-filter: blur(2px);
 }
 
 .Panel {
   position: relative;
   background: var(--Color-Surface-Default);
   border: 1px solid var(--Color-Border-Default);
-  border-radius: var(--Radius-Md);
+  border-radius: var(--Radius-Card);
   padding: var(--Space-Lg);
-  width: min(90vw, 480px);
+  width: min(90vw, 520px);
   max-height: 85vh;
   overflow: auto;
   display: grid;
   gap: var(--Space-Md);
+  font-family: var(--FontFamily-Body);
 }
 
 .Title {
   margin: 0;
-  font-size: var(--FontSize-Lg);
+  font-size: var(--FontSize-H2);
   font-weight: 600;
   color: var(--Color-Text-Default);
 }
@@ -43,14 +45,21 @@
 .Text {
   width: 100%;
   font-family: var(--FontFamily-Body);
-  font-size: var(--FontSize-Mono);
-  padding: var(--Space-Sm);
-  border: 1px solid var(--Color-Border-Default);
-  border-radius: var(--Radius-Sm);
+  font-size: var(--FontSize-Md);
+  padding: var(--Space-Sm) var(--Space-Md);
+  border: 2px solid var(--Color-Border-Default);
+  border-radius: var(--Radius-Input);
   background: var(--Color-Surface-Hover);
   color: var(--Color-Text-Default);
   resize: vertical;
-  min-height: 200px;
+  min-height: 240px;
+  outline: none;
+  transition: border-color var(--Transition-Standard);
+}
+
+.Text:focus-visible {
+  border-color: var(--Color-Border-Focus);
+  background: var(--Color-Surface-Default);
 }
 
 .Error {
