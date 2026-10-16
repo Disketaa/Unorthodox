@@ -10,7 +10,6 @@ import {
   ThemeModifierId,
   randomFor,
   sampleUnique,
-  themesForRoom,
 } from '@/Core';
 import { GameConfig } from './GameConfig';
 
@@ -62,14 +61,14 @@ const NoLetters: readonly LetterPair[] = [];
 export function enchantmentFor(
   roomCode: string,
   theme: ThemeId | undefined,
-  spent: readonly { rounds: number }[] | undefined
+  spent: readonly { rounds: number }[] | undefined,
+  bank: readonly ThemeId[]
 ): EnchantmentRoll {
   if (theme === undefined) return NoEnchantment;
   // The round the bank was offered in: the pick is counted the moment it lands, so rolling
   // against the round after it would be a different set of cards.
   const bankRound = Math.max(0, roundsPlayed(spent) - 1);
-  const themes = themesForRoom(roomCode, GameConfig.themes.cardsPerLobby);
-  const carried = modifiersForRound(roomCode, themes, bankRound).get(theme);
+  const carried = modifiersForRound(roomCode, bank, bankRound).get(theme);
   if (carried?.includes('Enchanted') !== true) return NoEnchantment;
   const effect = carried.find((id): id is ThemeEffectId => id !== 'Enchanted');
   // Which of the four the card carries, rolled off the room's own seed rather than this player's:

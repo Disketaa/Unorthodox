@@ -53,9 +53,10 @@ export interface Enchantment extends EnchantmentAsk {
 export function enchantmentOf(
   roomCode: string,
   theme: ThemeId | undefined,
-  spent: PublicRoom['spent'] | undefined
+  spent: PublicRoom['spent'] | undefined,
+  bank: readonly ThemeId[]
 ): Enchantment {
-  const roll = enchantmentFor(roomCode, theme, spent ?? []);
+  const roll = enchantmentFor(roomCode, theme, spent ?? [], bank);
   const label = effectLabelOf(roll.effect);
   if (label === undefined) return { note: undefined, ...NoEnchantment, mult: undefined };
   if (

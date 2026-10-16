@@ -25,7 +25,7 @@ function enchantmentFor(
   spent: PublicRoom['spent'] | undefined
 ) {
   if (!glintedFor(view)) return NoEnchantment;
-  return enchantmentOf(view.roomCode, theme, spent);
+  return enchantmentOf(view.roomCode, theme, spent, view.bank);
 }
 
 /** What a round with nothing asked of this player gives the screen. */

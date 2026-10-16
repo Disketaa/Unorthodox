@@ -27,6 +27,9 @@ export interface IconButtonProps {
   size?: 'Small' | 'Medium';
   /** Whether the control is drawn but cannot be pressed. */
   disabled?: boolean;
+  /** Default paints the room's yellow on hover; Ghost stays transparent so only the mark shows,
+   * which is what a mark laid over a coloured editor corner wants. */
+  variant?: 'Default' | 'Ghost';
   onClick: () => void;
   /** The clip on press, or `false` to stay silent. */
   sound?: SoundName | false;
@@ -40,13 +43,14 @@ export function IconButton({
   label,
   size = 'Medium',
   disabled = false,
+  variant = 'Default',
   sound = 'Pop',
   onClick,
 }: IconButtonProps) {
   return (
     <button
       type="button"
-      class={`${styles.Root} ${styles[`Size${size}`]} ${styles[`Icon${icon}`]}`}
+      class={`${styles.Root} ${styles[`Variant${variant}`]} ${styles[`Size${size}`]} ${styles[`Icon${icon}`]}`}
       aria-label={label}
       title={label}
       disabled={disabled}

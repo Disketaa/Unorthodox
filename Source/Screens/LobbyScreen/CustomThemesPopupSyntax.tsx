@@ -1,11 +1,9 @@
-/** Syntax-highlighted JSON using the project's color tokens, with the chosen theme's tint on
- * strings. The editor is a highlighted layer under a transparent text area: the text area owns
- * the text and the caret, so an edit is never re-rendered over by the framework (which is what
- * duplicates characters in a contentEditable element). */
+/** Syntax-highlighted JSON over a transparent text area: the text area owns the text and caret,
+ * so an edit is never re-rendered over by the framework. */
 import { useRef } from 'preact/hooks';
-import { type JSX } from 'preact';
 import { IconButton } from '@/Design/Components';
 import { Strings } from '@/Content';
+import { highlightJson } from './JsonHighlight';
 import styles from './CustomThemesPopup.module.css';
 
 export interface SyntaxHighlightedJsonProps {
@@ -22,6 +20,49 @@ export interface SyntaxHighlightedJsonProps {
   label?: string;
 }
 
+function handleJsonKeyDown(event: KeyboardEvent, onChange: (next: string) => void): void {
+  if (event.key !== 'Enter') return;
+  event.preventDefault();
+  const target = event.currentTarget;
+  if (!(target instanceof HTMLTextAreaElement)) return;
+  const { value, selectionStart, selectionEnd } = target;
+  if (selectionStart === undefined || selectionEnd === undefined) return;
+  const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
+  const indent = value.slice(lineStart, selectionStart).match(/^[ \t]*/)?.[0] ?? '';
+  const next = value.slice(0, selectionStart) + '\n' + indent + value.slice(selectionEnd);
+  target.value = next;
+  const caret = selectionStart + 1 + indent.length;
+  target.setSelectionRange(caret, caret);
+  onChange(next);
+}
+
+function handleJsonInput(event: Event, onChange: (value: string) => void): void {
+  const target = event.currentTarget;
+  if (!(target instanceof HTMLTextAreaElement)) return;
+  onChange(target.value);
+}
+
+function handleJsonPaste(
+  event: ClipboardEvent,
+  onPaste: SyntaxHighlightedJsonProps['onPaste'],
+  onChange: (value: string) => void
+): void {
+  const pasted = event.clipboardData?.getData('text');
+  if (pasted === undefined) return;
+  const repaired = onPaste?.(pasted);
+  if (repaired === undefined) return;
+  event.preventDefault();
+  onChange(repaired);
+}
+
+function handleJsonScroll(event: Event, preRef: { current: HTMLPreElement | null }): void {
+  const target = event.currentTarget;
+  const pre = preRef.current;
+  if (!(target instanceof HTMLTextAreaElement) || !pre) return;
+  pre.scrollTop = target.scrollTop;
+  pre.scrollLeft = target.scrollLeft;
+}
+
 export function SyntaxHighlightedJson({
   json,
   onChange,
@@ -32,30 +73,6 @@ export function SyntaxHighlightedJson({
   label,
 }: SyntaxHighlightedJsonProps) {
   const preRef = useRef<HTMLPreElement>(null);
-
-  const handleInput = (event: Event): void => {
-    const target = event.currentTarget;
-    if (!(target instanceof HTMLTextAreaElement)) return;
-    onChange(target.value);
-  };
-
-  const handlePaste = (event: ClipboardEvent): void => {
-    const pasted = event.clipboardData?.getData('text');
-    if (pasted === undefined) return;
-    const repaired = onPaste?.(pasted);
-    if (repaired === undefined) return;
-    event.preventDefault();
-    onChange(repaired);
-  };
-
-  const handleScroll = (event: Event): void => {
-    const target = event.currentTarget;
-    const pre = preRef.current;
-    if (!(target instanceof HTMLTextAreaElement) || !pre) return;
-    pre.scrollTop = target.scrollTop;
-    pre.scrollLeft = target.scrollLeft;
-  };
-
   return (
     <div
       class={`${styles.Editor} ${invalid ? styles.Invalid : ''}`}
@@ -70,82 +87,22 @@ export function SyntaxHighlightedJson({
         wrap="off"
         spellcheck={false}
         aria-label={label}
-        onInput={handleInput}
-        onPaste={handlePaste}
-        onScroll={handleScroll}
+        onInput={(event) => handleJsonInput(event, onChange)}
+        onKeyDown={(event) => handleJsonKeyDown(event, onChange)}
+        onPaste={(event) => handleJsonPaste(event, onPaste, onChange)}
+        onScroll={(event) => handleJsonScroll(event, preRef)}
       />
-      {/* The bin, over the corner of the box: emptying it is what deletes the theme, and a host
-       * who has to select the text and hold backspace to do it is doing a chore. Above the text
-       * area rather than in it, so it cannot take a keystroke meant for the JSON. */}
       {onClear !== undefined && (
         <div class={styles.Clear}>
           <IconButton
             icon="Trash"
             size="Small"
+            variant="Ghost"
             label={Strings.lobby.settings.customThemesClear}
-            onClick={onClear}
+            onClick={onClear ?? (() => undefined)}
           />
         </div>
       )}
     </div>
   );
-}
-
-function highlightJson(json: string): JSX.Element[] {
-  // A trailing space keeps the last empty line tall, so the highlight tracks the caret down.
-  const source = json.endsWith('\n') ? `${json} ` : json;
-  const tokens: JSX.Element[] = [];
-  let i = 0;
-  while (i < source.length) {
-    const ch = source[i];
-    if (ch === '"') {
-      let j = i + 1;
-      while (j < source.length && source[j] !== '"') {
-        if (source[j] === '\\' && j + 1 < source.length) j += 2;
-        else j++;
-      }
-      const str = source.slice(i, j + 1);
-      const isKey = j + 1 < source.length && source[j + 1] === ':';
-      tokens.push(
-        <span key={i} class={isKey ? styles.Key : styles.String}>
-          {str}
-        </span>
-      );
-      i = j + 1;
-    } else if (/[0-9-]/.test(ch)) {
-      let j = i + 1;
-      while (j < source.length && /[0-9.eE+-]/.test(source[j])) j++;
-      tokens.push(
-        <span key={i} class={styles.Number}>
-          {source.slice(i, j)}
-        </span>
-      );
-      i = j;
-    } else if (
-      ch === '{' ||
-      ch === '}' ||
-      ch === '[' ||
-      ch === ']' ||
-      ch === ':' ||
-      ch === ','
-    ) {
-      tokens.push(
-        <span key={i} class={styles.Punct}>
-          {ch}
-        </span>
-      );
-      i++;
-    } else if (ch === '\n' || ch === '\r' || ch === ' ' || ch === '\t') {
-      tokens.push(
-        <span key={i} class={styles.Whitespace}>
-          {ch}
-        </span>
-      );
-      i++;
-    } else {
-      tokens.push(<span key={i}>{ch}</span>);
-      i++;
-    }
-  }
-  return tokens;
 }

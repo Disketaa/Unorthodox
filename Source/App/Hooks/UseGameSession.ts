@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'preact/hooks';
-import { Pace, PublicState } from '@/Game';
+import { useEffect, useMemo, useState } from 'preact/hooks';
+import { GameConfig, Pace, PublicState } from '@/Game';
 import {
   PlayerId,
   PlayerLook,
@@ -8,7 +8,7 @@ import {
   ThemeId,
   CustomTheme,
 } from '@/Core';
-import type { ThemeMode } from '@/Core';
+import { themePool, themesForRoom, type ThemeMode } from '@/Core';
 import { createSession } from '../SessionFactory';
 import { Session, SessionRole, BlockedReason, ConnectionHint } from '../Session';
 import { useSessionPhase, SessionPhase } from './UseSessionPhase';
@@ -56,6 +56,10 @@ export interface GameSessionView extends SessionPhase, BoardMarks {
   roomLimit: number;
   /** The custom themes this room knows, so every screen can draw them in the bank. */
   customThemes: readonly CustomTheme[];
+  /** The bank this room was offered: dealt once, from the room's own pool and its code, and
+   * given to every screen. One deal rather than one per screen, since the enchantment roll is
+   * drawn against this list and a second deal elsewhere rolls a different one. */
+  bank: readonly ThemeId[];
   /** The host removing a player from the room. */
   kickPlayer: (playerId: PlayerId) => void;
   /** This player's own character, as the host has it. Not the roll made on this device: a
@@ -129,6 +133,22 @@ export function useGameSession(
   const { marks, actions } = useRoundMarks(session, publicState, roomCode, topic);
   useRoundClocks(session, role === 'Host', phase, actions);
   const ownLook = useOwnLook(session, phase.playerLooks, onLook);
+  // The one deal of the bank this screen and the enchantment roll both read. Out of the room's own
+  // pool and its code, so every screen in the room holds the same six and the roll drawn against
+  // them is the roll the cards were marked with.
+  const bank = useMemo(
+    () =>
+      themesForRoom(
+        roomCode,
+        GameConfig.themes.cardsPerLobby,
+        themePool(
+          publicState?.themeMode ?? 'Random',
+          publicState?.themes ?? [],
+          session.getCustomThemes()
+        )
+      ),
+    [roomCode, publicState?.themeMode, publicState?.themes, session, publicState]
+  );
   return {
     ...phase,
     ...actions,
@@ -148,6 +168,7 @@ export function useGameSession(
     connectionHint: session.getConnectionHint(),
     roomLimit: session.getRoomLimit(),
     customThemes: session.getCustomThemes(),
+    bank,
     kickPlayer: (playerId) => session.kick(playerId),
     ownLook,
     exitRoom,

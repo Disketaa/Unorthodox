@@ -3,7 +3,7 @@ import { Transport } from './Transport';
 import { HostRoster, resolveLook } from './HostRoster';
 import { affectedPlayersFor, GameAction, HostState, modifiersForRound } from '@/Game';
 import { GameConfig } from '@/Game';
-import { ThemeEffectId, ThemeId, createLogger, themesForRoom } from '@/Core';
+import { ThemeEffectId, ThemeId, createLogger, themesForRoom, themePool } from '@/Core';
 import { HostPlayerId } from './HostSession';
 
 const log = createLogger('HostIncoming');
@@ -20,7 +20,10 @@ export function affectedByChoice(
   if (roomCode === undefined || state.phase !== 'Choosing') {
     return undefined;
   }
-  const themes = themesForRoom(roomCode, GameConfig.themes.cardsPerLobby);
+  const pool = themePool(state.themeMode, state.themes, [
+    ...(state.customThemes ?? []).values(),
+  ]);
+  const themes = themesForRoom(roomCode, GameConfig.themes.cardsPerLobby, pool);
   let round = 0;
   for (const count of state.themeRounds.values()) round += count;
   const carried = modifiersForRound(roomCode, themes, round).get(theme) ?? [];

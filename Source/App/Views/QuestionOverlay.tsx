@@ -33,7 +33,7 @@ export function QuestionOverlay({ view }: PhaseViewProps) {
   const arriving = enchantmentArriving(view, choosing);
   const said =
     arriving && remaining <= questionRevealMs(choosing?.question ?? '') - EnchantedArrivalMs;
-  const enchantment = enchantmentOf(view.roomCode, theme, choosing?.spent);
+  const enchantment = enchantmentOf(view.roomCode, theme, choosing?.spent, view.bank);
   return (
     <QuestionStage
       words={words}

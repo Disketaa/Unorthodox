@@ -37,6 +37,17 @@
   border-color: var(--Color-Border-Focus);
 }
 
+/* Ghost keeps the mark transparent on hover too: only the icon shows, nothing filled behind it,
+ * so a mark laid over a coloured editor corner does not punch a hole in it. */
+.VariantGhost:hover {
+  color: var(--Color-Room-Yellow);
+  background: transparent;
+}
+
+.VariantGhost:active {
+  background: transparent;
+}
+
 .SizeMedium {
   width: var(--Size-TouchTarget);
   height: var(--Size-TouchTarget);

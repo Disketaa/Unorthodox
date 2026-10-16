@@ -137,9 +137,9 @@
 
 .Text {
   position: relative;
-  min-height: 240px;
+  min-height: 40px;
   max-height: 50vh;
-  overflow: hidden;
+  overflow: auto;
   color: var(--Color-Text-Default);
   white-space: pre;
   pointer-events: none;
