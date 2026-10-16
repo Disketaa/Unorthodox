@@ -40,6 +40,8 @@ export function GameScene({
           clockOffsetMs={view.clockOffsetMs}
           onPickTheme={view.chooseTheme}
           spent={spentByTheme(view.publicState)}
+          themeMode={view.publicState?.themeMode ?? 'Random'}
+          enabledThemes={view.publicState?.themes ?? []}
         />
       )}
       {!bankOpen && <QuestionOverlay view={view} />}

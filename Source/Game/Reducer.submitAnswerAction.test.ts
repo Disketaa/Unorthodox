@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest';
+﻿import { describe, test, expect } from 'vitest';
 import { reducer } from './Reducer';
 import { HostState } from './GameState';
 
@@ -14,6 +14,8 @@ describe('reducer SUBMIT_ANSWER action', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      themes: [],
+      themeMode: 'Random',
       themeRounds: new Map(),
 
       paused: false,
@@ -40,6 +42,8 @@ describe('reducer SUBMIT_ANSWER action', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      themes: [],
+      themeMode: 'Random',
       themeRounds: new Map(),
 
       paused: false,

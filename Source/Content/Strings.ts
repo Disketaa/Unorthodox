@@ -56,6 +56,14 @@ export const Strings = {
       writing: 'Написание ответа',
       deciding: 'Просмотр ответов',
       category: 'Выбор темы',
+      /** On the rule that opens the themes the room is played from, naming what is under it and,
+       * when the room has chosen its themes, how many of them are on out of how many it may
+       * name. */
+      themes: 'Темы',
+      themesChosen: (count: number, max: number) => `Темы (${count}/${max})`,
+      /** The two ways a room can be given its themes, by the same keys as the modes themselves:
+       * the whole bank without naming any of it, or the themes named beside it. */
+      themeModes: { Random: 'Случайно', Chosen: 'Выбранное' },
       /** A wait in whole seconds, which is the only unit the buttons move in. */
       seconds: (seconds: number) => `${seconds}с`,
       /** The most a wait can come to in this room, for a round whose length follows the board:

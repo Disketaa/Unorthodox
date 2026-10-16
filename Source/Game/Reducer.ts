@@ -44,7 +44,17 @@ function isMarkAction(action: GameAction): action is MarkAction {
  * running. A guard rather than a second switch, so the flow below stays only about phases. */
 type RoomAction = Extract<
   GameAction,
-  { type: 'JOIN' | 'SET_ONLINE' | 'KICK' | 'SET_LOOK' | 'SET_PACE' | 'PAUSE' | 'RESUME' }
+  {
+    type:
+      | 'JOIN'
+      | 'SET_ONLINE'
+      | 'KICK'
+      | 'SET_LOOK'
+      | 'SET_PACE'
+      | 'SET_THEMES'
+      | 'PAUSE'
+      | 'RESUME';
+  }
 >;
 
 function isRoomAction(action: GameAction): action is RoomAction {
@@ -54,6 +64,7 @@ function isRoomAction(action: GameAction): action is RoomAction {
     case 'KICK':
     case 'SET_LOOK':
     case 'SET_PACE':
+    case 'SET_THEMES':
     case 'PAUSE':
     case 'RESUME':
       return true;

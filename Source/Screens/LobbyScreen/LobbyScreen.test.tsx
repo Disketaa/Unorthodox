@@ -17,12 +17,15 @@ function lobby(isHost: boolean, pace: Pace = 'Standard') {
       roomCode="ABCD"
       players={[]}
       pace={pace}
+      themes={[]}
+      themeMode="Random"
       ownPlayerId="p1"
       ownPlayerName="Ann"
       ownLook={{ character: look.character, color: look.color }}
       isHost={isHost}
       onPickLook={() => {}}
       onPickPace={(next) => pickedPaces.push(next)}
+      onPickThemes={() => {}}
       onStart={() => {}}
       onExit={() => {}}
       onKick={() => {}}

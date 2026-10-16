@@ -7,8 +7,10 @@ import {
   VolumeButton,
 } from '@/Design/Components';
 import { GameConfig, Pace, reviewingDurationMs } from '@/Game';
+import { ThemeId, ThemeMode } from '@/Core';
 import { Strings } from '@/Content';
 import { LobbyCategory } from './LobbyCategory';
+import { LobbyThemes } from './LobbyThemes';
 
 /** The paces, in the order they are offered: the one the room starts on first. Standard leads
  * because it is what a room is in until somebody says otherwise, and a row that led with the
@@ -18,6 +20,9 @@ const paces: readonly Pace[] = ['Standard', 'Fast'];
 export interface LobbyPaceProps {
   /** The pace the room is set to, which only the host can change. */
   pace: Pace;
+  /** Which way the room is given its themes, and the ones it has named. */
+  themeMode: ThemeMode;
+  themes: readonly ThemeId[];
   /** How many are in the room. The voting round is timed from the roster rather than from a
    * fixed figure, so a room of four is told what four players get and not what a full house
    * gets. */
@@ -27,6 +32,9 @@ export interface LobbyPaceProps {
   isHost: boolean;
   /** Asking for a pace. Only reached by the host, since a client's buttons are dead. */
   onPick: (pace: Pace) => void;
+  /** Asking for a different way of taking themes. Only reached by the host, since a client's
+   * buttons are dead and the room's pool is told to them in the public state. */
+  onPickThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
 }
 
 /** The three waits of a round, in the order a player meets them. Read from the pace rather than
@@ -41,10 +49,37 @@ function waits(pace: Pace, players: number) {
   ];
 }
 
-/** The room's pace, and what that pace means in seconds. A pace named "fast" says nothing, and a
- * fast game nobody can see the terms of is a trap rather than a choice, so the values are the
- * point. Drawn `disabled` for clients, never hidden. */
-export function LobbyPace({ pace, players, isHost, onPick }: LobbyPaceProps) {
+/** The three waits a pace decides, one row each, under the pace buttons that decide them. */
+function WaitRows({ pace, players }: Pick<LobbyPaceProps, 'pace' | 'players'>) {
+  return (
+    <Stack gap="Sm" align="Stretch">
+      {waits(pace, players).map((wait) => (
+        <Banner
+          key={wait.label}
+          variant="Muted"
+          mark="Clock"
+          fill
+          value={Strings.lobby.settings.seconds(wait.ms / 1000)}
+        >
+          {wait.label}
+        </Banner>
+      ))}
+    </Stack>
+  );
+}
+
+/** The room's pace, and what that pace means in seconds. A pace named "fast" says nothing, so
+ * the values are the point. Drawn `disabled` for clients, never hidden. The room's themes ride
+ * here rather than in a second card: a player joining is answered both on one sheet. */
+export function LobbyPace({
+  pace,
+  themeMode,
+  themes,
+  players,
+  isHost,
+  onPick,
+  onPickThemes,
+}: LobbyPaceProps) {
   return (
     <LobbyCategory
       title={Strings.lobby.settings.title}
@@ -58,19 +93,13 @@ export function LobbyPace({ pace, players, isHost, onPick }: LobbyPaceProps) {
     >
       <Separator>{Strings.lobby.settings.params}</Separator>
       <PaceChoices pace={pace} isHost={isHost} onPick={onPick} />
-      <Stack gap="Sm" align="Stretch">
-        {waits(pace, players).map((wait) => (
-          <Banner
-            key={wait.label}
-            variant="Muted"
-            mark="Clock"
-            fill
-            value={Strings.lobby.settings.seconds(wait.ms / 1000)}
-          >
-            {wait.label}
-          </Banner>
-        ))}
-      </Stack>
+      <WaitRows pace={pace} players={players} />
+      <LobbyThemes
+        themeMode={themeMode}
+        themes={themes}
+        isHost={isHost}
+        onPick={onPickThemes}
+      />
     </LobbyCategory>
   );
 }

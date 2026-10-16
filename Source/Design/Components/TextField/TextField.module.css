@@ -113,13 +113,11 @@
   border-bottom-color: var(--Color-Border-Focus);
 }
 
-/* The words wearing the round's glint, for a player the enchanted card reaches: the text is the
- * mask, so the shine is the letters. No blend and no tint underneath. An earlier version
- * multiplied the field's own colour into the tile so the words would stay readable, and it
- * worked on a desktop and did nothing on a phone: a blend inside a clipped-text background is
- * not honoured by iOS, which paints the flat colour and drops the shine. One mechanism,
- * plainly, is what every browser agrees on — the field's ink goes under the tile as a fallback
- * for a tile that has not loaded yet, and the shine is simply the tile where it has. */
+/* The words wearing the round's glint for a player the enchanted card reaches: the text is the
+ * mask, so the shine is the letters. No blend or tint underneath. An earlier version multiplied
+ * the field's colour into the tile for readability, but iOS drops the shine on a clipped-text
+ * background. One mechanism works everywhere: the field's ink falls back under the tile, and
+ * the shine is the tile where loaded. */
 .Glinted {
   background-color: var(--Color-Text-Default);
   background-size: cover;

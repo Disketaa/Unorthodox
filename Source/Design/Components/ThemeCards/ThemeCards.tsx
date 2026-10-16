@@ -122,6 +122,12 @@ function ThemeSlot({
   );
 }
 
+/** The bank's own box, which is the plain bank or the one the room has settled on: the chosen
+ * card fills it and the wash behind it is that theme's own. */
+function bankClass(settled: boolean): string {
+  return settled ? `${styles.Root} ${styles.Settled}` : styles.Root;
+}
+
 /** The themes a lobby is being offered, six cards in a bank, lying flat: the bank was once six *
  * screens in a ring facing the middle of the viewport, and the ring was measured on every
  * resize. The theme it settled on has its wash written onto the page. */
@@ -142,28 +148,29 @@ export function ThemeCards({
   // A bank with nothing to ask for is being read rather than played, so its cards are held
   // back rather than dead, and a bank the room is answering itself is being read too.
   const waiting = !settled && (picking || onPick === undefined);
+  // The bank's own figures, which every slot is told alike: one object rather than seven named
+  // per card, and a slot added later cannot be handed the room's data in a different order.
+  const shared = { roundsPerTheme, spent, modifiers, mults, effectLabels, picked, onPick };
 
   useWash(picked, bank);
 
   return (
     <div
-      class={settled ? `${styles.Root} ${styles.Settled}` : styles.Root}
+      class={bankClass(settled)}
+      // How many cards the bank has, which the grid reads to cut itself to the smaller of this
+      // and what the screen fits.
+      style={{ '--ThemeCards-Count': themes.length }}
       ref={bank}
       role="group"
     >
       {themes.map((theme, index) => (
         <ThemeSlot
+          key={theme}
           theme={theme}
           index={index}
-          roundsPerTheme={roundsPerTheme}
-          spent={spent}
-          modifiers={modifiers}
-          mults={mults}
-          effectLabels={effectLabels}
-          picked={picked}
           swept={swept}
-          onPick={onPick}
           waiting={waiting}
+          {...shared}
         />
       ))}
     </div>

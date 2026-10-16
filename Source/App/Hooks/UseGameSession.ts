@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'preact/hooks';
 import { Pace, PublicState } from '@/Game';
 import { PlayerId, PlayerLook, CharacterColor, CharacterId, ThemeId } from '@/Core';
+import type { ThemeMode } from '@/Core';
 import { createSession } from '../SessionFactory';
-import { navigate } from '../Routes';
 import { Session, SessionRole, BlockedReason, ConnectionHint } from '../Session';
 import { useSessionPhase, SessionPhase } from './UseSessionPhase';
 import { useGameActions, type GameActions } from './UseGameActions';
 import { useRoundClocks } from './UseHostPhaseTimer';
-import { useRememberLook } from './UseRememberLook';
 import {
   emptyMarks,
   hasSubmittedIn,
@@ -17,6 +16,10 @@ import {
 } from './RoundMarks';
 import { boardMarks, type BoardMarks } from './BoardMarks';
 import { loadMarks, saveMarks } from './MarksStorage';
+import { useSessionUpdates } from './UseSessionUpdates';
+import { useLocalFlags } from './UseLocalFlags';
+import { useOwnLook } from './UseOwnLook';
+import { exitRoom, readTopic, reportEditing } from './SessionUtils';
 
 /** Everything a screen is drawn from: the phase in view, the moves it can make, and what a board
  * of answers is showing — the host's mutes, the room's like counts, which of those were this
@@ -51,8 +54,9 @@ export interface GameSessionView extends SessionPhase, BoardMarks {
    * the room actually sees. */
   ownLook: PlayerLook | undefined;
   setLook: (character: CharacterId, color: CharacterColor) => void;
-  /** Asking for a pace. Only the host's changes the room; a client's is a local look. */
+  /** Asking for a pace or for the room's themes: both the host's alone. */
   setPace: (pace: Pace) => void;
+  setThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
   /** Holding the room still, or letting it run again. */
   setPaused: (paused: boolean) => void;
   /** Put an invented player in the room. Only the host's, and only while debugging. */
@@ -70,33 +74,6 @@ export interface GameSessionView extends SessionPhase, BoardMarks {
   playAgain: () => void;
   /** Leave the room and go back to the entry screen. */
   exitRoom: () => void;
-}
-
-/** Keep the component rendering when the session has news. The session is a plain object with no
- * state of its own, so a re-render is what makes new public state visible; the cleanup stops
- * the session, tearing the transport down. */
-function useSessionUpdates(
-  session: Session,
-  setVersion: (update: (version: number) => number) => void,
-  setHostLeft: (value: boolean) => void
-): void {
-  useEffect(() => {
-    session.onUpdate(() => setVersion((version) => version + 1));
-    session.onHostLeave(() => setHostLeft(true));
-    return () => session.stop();
-  }, [session]);
-}
-
-/** Leave the room, by going back to the entry route. Navigation is this app's only lever, and
- * leaving the room route unmounts the room, which tears the transport down; calling `stop` here
- * too would clear the roster unread. */
-function exitRoom(): void {
-  navigate('');
-}
-
-/** Read the topic of the phase in view, which identifies the round. */
-function readTopic(publicState: PublicState | undefined): string | null {
-  return publicState !== undefined && 'topic' in publicState ? publicState.topic : null;
 }
 
 /** The marks this player has made in a round, and the actions that make them. Each mark is
@@ -120,43 +97,6 @@ function useRoundMarks(
     (groupId) => setMarks((current) => markLiked(current, topic, groupId))
   );
   return { marks, actions };
-}
-
-/** What this browser knows that the room has not been told: that the host walked away, and that
- * a sent answer is being written over. The latter lives here because the bar drawing it is not
- * a child of the writing screen. */
-function useLocalFlags(): {
-  hostLeft: boolean;
-  editing: boolean;
-  bump: () => void;
-  setHostLeft: (v: boolean) => void;
-  markEditing: (v: boolean) => void;
-} {
-  const [hostLeft, setHostLeft] = useState(false);
-  const [editing, markEditing] = useState(false);
-  const [, setVersion] = useState(0);
-  return { hostLeft, editing, bump: () => setVersion((v) => v + 1), setHostLeft, markEditing };
-}
-
-/** Marking the seat locally and telling the room in one step, so their own bar answers on the
- * keystroke rather than a round trip later while everybody else's answers on the room's. */
-const reportEditing =
-  (mark: (v: boolean) => void, send: (v: boolean) => void) =>
-  (next: boolean): void => {
-    mark(next);
-    send(next);
-  };
-
-/** This player's own character, once the host has said which one it kept. */
-function useOwnLook(
-  session: Session,
-  looks: ReadonlyMap<PlayerId, PlayerLook>,
-  onLook: (look: PlayerLook) => void
-): PlayerLook | undefined {
-  const playerId = session.getPlayerId();
-  const own = playerId === null ? undefined : looks.get(playerId);
-  useRememberLook(own, onLook);
-  return own;
 }
 
 /** Join a room and expose one uniform view of the game for the screens. */

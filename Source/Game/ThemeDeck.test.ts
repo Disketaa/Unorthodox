@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { RandomThemeId, ThemeBanks } from '@/Core';
+import { ThemeBanks } from '@/Core';
 import { GameConfig } from './GameConfig';
 import { deckFor, questionFor } from './ThemeDeck';
 
@@ -15,7 +15,7 @@ describe('the questions one room plays in one theme', () => {
   });
 
   it('never asks the same question twice in one run of the theme', () => {
-    for (const theme of ['Еда', 'Природа', RandomThemeId]) {
+    for (const theme of ['Еда', 'Природа']) {
       const deck = deckFor('WXYZ', theme);
       expect(new Set(deck).size, theme).toBe(deck.length);
     }
@@ -39,9 +39,10 @@ describe('the questions one room plays in one theme', () => {
     }
   });
 
-  it('deals the Random theme from every theme at once', () => {
-    const union = new Set(ThemeBanks.get(RandomThemeId));
-    for (const question of deckFor('WXYZ', RandomThemeId)) expect(union).toContain(question);
+  it('has no bank drawn from every theme, since that is a mode and not a theme', () => {
+    // The random way is dealt from the pool of all eight rather than from a ninth card, so
+    // there is nothing here that would answer for it.
+    expect([...ThemeBanks.keys()].some((theme) => theme === 'Случайная')).toBe(false);
   });
 });
 

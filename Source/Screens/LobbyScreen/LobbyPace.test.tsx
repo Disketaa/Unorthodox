@@ -31,9 +31,12 @@ function mount(isHost: boolean, picked: Pace[] = []): HTMLElement {
   render(
     <LobbyPace
       pace="Standard"
+      themes={[]}
+      themeMode="Random"
       players={12}
       isHost={isHost}
       onPick={(pace) => picked.push(pace)}
+      onPickThemes={() => {}}
     />,
     container
   );

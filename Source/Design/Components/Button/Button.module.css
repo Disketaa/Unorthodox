@@ -102,3 +102,34 @@
 .VariantMuted:active:not(:disabled) {
   background: var(--Color-Surface-Active);
 }
+
+/* A button wearing its own accent rather than the room's: wash and ink come from the theme so
+ * it looks like that theme. Unpressed it is plain grey so a grid of eight reads as one control;
+ * only host-named ones take colour, making them findable at a glance. Keyed on `aria-pressed`
+ * so fill and browser state are one. Hover darkens the existing fill rather than swapping to
+ * grey: a chosen theme going grey would say the choice came off. Grey darkens via surface
+ * token, wash via itself. */
+.Accent {
+  background: var(--Color-Surface-Hover);
+  color: var(--Color-Text-Muted);
+  transition:
+    background var(--Transition-Standard),
+    color var(--Transition-Standard),
+    filter var(--Transition-Standard);
+}
+
+.Accent:hover:not(:disabled) {
+  background: var(--Color-Surface-Active);
+}
+
+.Accent[aria-pressed='true'] {
+  background: var(--Color-Accent-Wash, var(--Color-Surface-Hover));
+  color: var(--Color-Accent-Ink, var(--Color-Text-Default));
+  font-weight: 700;
+}
+
+.Accent[aria-pressed='true']:hover:not(:disabled),
+.Accent[aria-pressed='true']:active:not(:disabled) {
+  background: var(--Color-Accent-Wash, var(--Color-Surface-Hover));
+  filter: brightness(0.96);
+}

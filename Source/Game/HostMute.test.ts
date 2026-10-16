@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { reducer } from './Reducer';
 import { toPublicReviewingState } from './PublicPhases';
 import { toScoredGroups } from './RoundScoring';
@@ -21,6 +21,8 @@ function reviewing(): ReviewingState {
     cumulativeScores: new Map(),
     turnPlayerId: null,
     pace: 'Standard',
+    themes: [],
+    themeMode: 'Random',
     themeRounds: new Map(),
     paused: false,
     pausedAt: undefined,

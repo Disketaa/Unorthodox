@@ -27,6 +27,8 @@ export function room(state: HostState): PublicRoom {
   return {
     turnPlayerId: state.turnPlayerId,
     pace: state.pace,
+    themes: [...state.themes],
+    themeMode: state.themeMode,
     spent: spentByTheme(state.themeRounds),
     ...(state.affectedPlayers !== undefined && state.affectedPlayers.size > 0
       ? { affectedPlayerIds: [...state.affectedPlayers] }

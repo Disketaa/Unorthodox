@@ -159,13 +159,11 @@
   color: var(--Color-Feedback-Error);
 }
 
-/* The same bar in the room's success colour whenever it is not in its error one: a bar carrying
- * a badge is a bar naming a condition on what the player has written, and grey says the room is
- * reporting a fact while green says the player has done what it asked. Keyed on the badge
- * rather than on a prop, so the colour cannot be set on a bar that has no condition to be in.
- * `:has` is what keeps this off the rest of the game: a mute is grey wherever it is not about a
- * player's own answer, and a plain class on the banner would have to be set by hand in each of
- * those places to keep them grey. */
+/* The same bar in the room's success colour when not in error: a bar with a badge names a
+ * condition on the player's answer, and grey reports a fact while green says the player
+ * satisfied it. Keyed on the badge so colour cannot be set on a bar with no condition. `:has`
+ * keeps this off the rest of the game: a mute is grey unless about the player's own answer, and
+ * a plain class would need manual setting in each place to stay grey. */
 .Root:has(.Badge):not(.GlintOn) {
   color: var(--Color-Feedback-Success);
 }

@@ -2,7 +2,7 @@
  * side because what a phase writes is a small table, while the guards that read it back are the
  * fiddly half. */
 import type { HostState, Pace, Player, RandomPick } from '@/Game';
-import type { PlayerId, ThemeId } from '@/Core';
+import type { PlayerId, ThemeId, ThemeMode } from '@/Core';
 import { groupVotesOut } from './RoomGroupVotes';
 
 /** The phases that carry a clock, which is every phase but Lobby and Final. */
@@ -14,6 +14,8 @@ interface Members {
   scores: [PlayerId, number][];
   turnPlayerId: PlayerId | null;
   pace: Pace;
+  themes: ThemeId[];
+  themeMode: ThemeMode;
   themeRounds: [ThemeId, number][];
   affected?: PlayerId[];
 }
@@ -27,6 +29,8 @@ function membersOf(state: HostState): Members {
     scores: [...state.cumulativeScores.entries()],
     turnPlayerId: state.turnPlayerId,
     pace: state.pace,
+    themes: [...state.themes],
+    themeMode: state.themeMode,
     themeRounds: [...state.themeRounds.entries()],
     ...(state.affectedPlayers !== undefined && state.affectedPlayers.size > 0
       ? { affected: [...state.affectedPlayers] }

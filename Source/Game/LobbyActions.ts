@@ -2,15 +2,16 @@
  * from the phases because each is a change to one player rather than a move of the room, and
  * because they exist in every phase: a refresh mid-round is joining again. */
 import { HostState } from './GameState';
-import { assertNever } from '@/Core';
+import { assertNever, isThemeId, isThemeMode, ThemeId, ThemeIds, ThemeMode } from '@/Core';
 import type { ActionOf, GameAction } from './GameActions';
+import { GameConfig } from './GameConfig';
 
 /** Everything that changes one player rather than moving the room, in one entry. */
 export function handleRoster(
   state: HostState,
   action: Extract<
     GameAction,
-    { type: 'JOIN' | 'SET_ONLINE' | 'KICK' | 'SET_LOOK' | 'SET_PACE' }
+    { type: 'JOIN' | 'SET_ONLINE' | 'KICK' | 'SET_LOOK' | 'SET_PACE' | 'SET_THEMES' }
   >
 ): HostState {
   switch (action.type) {
@@ -24,6 +25,8 @@ export function handleRoster(
       return handleSetLook(state, action);
     case 'SET_PACE':
       return handleSetPace(state, action);
+    case 'SET_THEMES':
+      return handleSetThemes(state, action);
     default:
       return assertNever(action);
   }
@@ -99,4 +102,36 @@ export function handleSetPace(state: HostState, action: ActionOf<'SET_PACE'>): H
     return state;
   }
   return { ...state, pace: action.pace };
+}
+
+/** The host changing how the room is given its themes. Lobby only, for the pace's reason: a deal
+ * already drawn cannot be redrawn. The rules live here rather than in the buttons, so a state
+ * naming a dropped theme, or more than the bank holds, cannot be written at all. */
+export function handleSetThemes(state: HostState, action: ActionOf<'SET_THEMES'>): HostState {
+  if (state.phase !== 'Lobby') {
+    return state;
+  }
+  const mode: ThemeMode = isThemeMode(action.mode) ? action.mode : 'Random';
+  const themes = namedFrom(action.themes);
+  if (mode === state.themeMode && sameThemes(state.themes, themes)) {
+    return state;
+  }
+  return { ...state, themeMode: mode, themes };
+}
+
+/** The themes named, in the registry's order, kept only where this build has a bank and cut to
+ * what the lobby deals. Cut here rather than trusted to the buttons, so a host cannot end up
+ * naming seven themes for a bank of six. Empty stays empty: the deal reads it as every theme. */
+function namedFrom(picked: readonly ThemeId[]): readonly ThemeId[] {
+  const named = picked.filter(isThemeId);
+  return ThemeIds.filter((theme) => named.includes(theme)).slice(
+    0,
+    GameConfig.themes.cardsPerLobby
+  );
+}
+
+/** Whether two namings are the same, which is what stops a press that changes nothing from
+ * sending the room a state it would have thrown away anyway. */
+function sameThemes(a: readonly ThemeId[], b: readonly ThemeId[]): boolean {
+  return a.length === b.length && a.every((theme, at) => theme === b[at]);
 }

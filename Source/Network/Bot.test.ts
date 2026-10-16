@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { botAnswer, botAnswers, botJoin } from './Bot';
 import { createRandom } from '@/Core';
 import type { PlayerLook } from '@/Core';
@@ -19,6 +19,8 @@ function lobby(...names: string[]): HostState {
     cumulativeScores: new Map(),
     turnPlayerId: null,
     pace: 'Standard',
+    themes: [],
+    themeMode: 'Random',
     themeRounds: new Map(),
 
     paused: false,
@@ -67,6 +69,8 @@ describe('botJoin', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      themes: [],
+      themeMode: 'Random',
       themeRounds: new Map(),
 
       paused: false,
@@ -92,6 +96,8 @@ function writing(...seats: string[]): HostState {
     cumulativeScores: new Map(),
     turnPlayerId: null,
     pace: 'Standard',
+    themes: [],
+    themeMode: 'Random',
     themeRounds: new Map(),
 
     paused: false,

@@ -40,7 +40,7 @@
 
 /* The width the keys that are not letters hold, measured against the widest layout rather than
  * the current one. Sized from the letter width these keys resized with the letter set, so
- * backspace and the language key grew every time the answer changed language вЂ” a key that is
+ * backspace and the language key grew every time the answer changed language — a key that is
  * not a letter should not move because the letters around it did. Measured off the
  * twelve-column letter width, which is the narrower of the two, so no layout makes a named key
  * larger than the largest letter. */

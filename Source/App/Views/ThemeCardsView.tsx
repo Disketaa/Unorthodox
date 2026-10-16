@@ -1,4 +1,11 @@
-import { ThemeId, ThemeModifierId, effectOf, themesForRoom } from '@/Core';
+import {
+  ThemeId,
+  ThemeMode,
+  ThemeModifierId,
+  effectOf,
+  themePool,
+  themesForRoom,
+} from '@/Core';
 import { useMemo } from 'preact/hooks';
 import { useThemeSweep } from '../Hooks/UseThemeSweep';
 import { ThemeCards } from '@/Design/Components';
@@ -29,6 +36,11 @@ export interface ThemeCardsViewProps {
   onPickTheme: (theme: ThemeId) => void;
   /** How many rounds have been played in each theme so far, keyed the same way as `theme`. */
   spent?: ReadonlyMap<ThemeId, number>;
+  /** Which way the room is given its themes, and the ones it has named: the pool the deal is
+   * rolled from. The room's own rather than this screen's, since a client that dealt out of the
+   * whole set would hold cards the host's roll can never land on. */
+  themeMode: ThemeMode;
+  enabledThemes: readonly ThemeId[];
 }
 
 /** The themes this lobby is playing, on the game screen. Rolled from the room code rather than
@@ -93,11 +105,15 @@ export function ThemeCardsView({
   paused = false,
   onPickTheme,
   spent,
+  themeMode,
+  enabledThemes,
 }: ThemeCardsViewProps) {
-  // Held across renders: a fresh array every render is a fresh dependency for the sweep.
+  // Held across renders: a fresh array every render is a fresh dependency for the sweep. Keyed on
+  // the pool as well as the room, since the host narrowing the themes re-deals the bank.
+  const pool = useMemo(() => themePool(themeMode, enabledThemes), [themeMode, enabledThemes]);
   const themes = useMemo(
-    () => themesForRoom(roomCode, GameConfig.themes.cardsPerLobby),
-    [roomCode]
+    () => themesForRoom(roomCode, GameConfig.themes.cardsPerLobby, pool),
+    [roomCode, pool]
   );
   const { looking } = useThemeSweep(picking, themes, clockOffsetMs);
   const round = spentRounds(spent);

@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { createRandom } from './Random';
 import {
-  RandomThemeId,
+  LegacyRandomThemeId,
   ThemeBanks,
+  ThemeColors,
   ThemeIds,
   isThemeId,
   sampleUnique,
@@ -11,11 +12,10 @@ import {
 } from './Themes';
 
 describe('the themes a room is offered', () => {
-  it('is every file in the Themes folder, plus the one that is not a file', () => {
+  it('is every file in the Themes folder, and nothing else', () => {
     expect(ThemeIds.length).toBeGreaterThan(1);
-    expect(ThemeIds).toContain(RandomThemeId);
-    for (const theme of ThemeIds.filter((id) => id !== RandomThemeId)) {
-      expect(ThemeBanks.get(theme)?.length ?? 0).toBeGreaterThan(0);
+    for (const theme of ThemeIds) {
+      expect(ThemeBanks.get(theme)?.length ?? 0, theme).toBeGreaterThan(0);
     }
   });
 
@@ -25,11 +25,17 @@ describe('the themes a room is offered', () => {
     }
   });
 
-  it('sorts the authored ones the same way in every tab, since a deal is rolled off that order', () => {
-    const authored = ThemeIds.filter((id) => id !== RandomThemeId);
-    const sorted = [...authored].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-    expect(authored).toEqual(sorted);
-    expect(ThemeIds[ThemeIds.length - 1]).toBe(RandomThemeId);
+  it('sorts them the same way in every tab, since a deal is rolled off that order', () => {
+    const sorted = [...ThemeIds].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+    expect(ThemeIds).toEqual(sorted);
+  });
+
+  it('has no theme named as a way of taking them at random', () => {
+    // A bank drawn from every theme has no questions of its own, only the union of the rest, so
+    // it was a ninth card that was never one. `Random` is a mode the lobby offers, not a file.
+    expect(ThemeIds).not.toContain(LegacyRandomThemeId);
+    expect(isThemeId(LegacyRandomThemeId)).toBe(false);
+    expect(ThemeBanks.has(LegacyRandomThemeId)).toBe(false);
   });
 
   it('answers to its own name and to nothing else', () => {
@@ -44,28 +50,17 @@ describe('the themes a room is offered', () => {
     expect(new Set(themesForRoom('WXYZ', 6)).size).toBe(6);
   });
 
-  it('gives a theme that is not a file an accent like any other', () => {
-    expect(themeAccent(RandomThemeId).tint).toBeTruthy();
+  it('gives every theme an accent, from the tint its own file names', () => {
+    for (const theme of ThemeIds) {
+      expect(ThemeColors.has(theme), theme).toBe(true);
+      expect(themeAccent(theme).tint, theme).toBeTruthy();
+    }
   });
 
-  it('holds an authored question, so a bank really is the file beside it', () => {
-    const food = ThemeBanks.get('Еда');
-    expect(food?.some((q) => q.includes('Блюдо'))).toBe(true);
-  });
-});
-
-describe('the Random theme', () => {
-  it('is drawn from the rest rather than written twice', () => {
-    const union = ThemeBanks.get(RandomThemeId) ?? [];
-    const authored = [...ThemeBanks.entries()]
-      .filter(([theme]) => theme !== RandomThemeId)
-      .flatMap(([, questions]) => questions);
-    expect(union.length).toBe(new Set(authored).size);
-  });
-
-  it('holds no question twice, however many themes a question appears in', () => {
-    const union = ThemeBanks.get(RandomThemeId) ?? [];
-    expect(new Set(union).size).toBe(union.length);
+  it('holds no question twice in any bank, since a room would be asked it twice', () => {
+    for (const [theme, questions] of ThemeBanks) {
+      expect(new Set(questions).size, theme).toBe(questions.length);
+    }
   });
 });
 

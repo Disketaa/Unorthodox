@@ -6,7 +6,7 @@ import {
   toPublicChoosingState,
 } from './PublicPhases';
 import { toPublicFinalState, toPublicScoresState } from './PublicEndgame';
-import { PlayerId, PlayerLook, ThemeId, assertNever } from '@/Core';
+import { PlayerId, PlayerLook, ThemeId, ThemeMode, assertNever } from '@/Core';
 import type { RandomPick } from './GameState';
 import type { Pace } from './GameConfig';
 
@@ -29,6 +29,13 @@ export interface PublicRoom {
    * the settings card is drawn for clients too, and a card showing one pace while the room
    * plays another is worse than no card. */
   pace: Pace;
+  /** The themes the host has left switched on, which every deal is drawn from. Sent for the
+   * pace's reason and the same weight: a client that dealt its own bank out of the whole set
+   * would put six different cards on six different screens in one room. */
+  themes: ThemeId[];
+  /** Which way the room is given its themes, sent beside the names because a client that guessed
+   * it would deal a bank of six out of a pool the host never picked. */
+  themeMode: ThemeMode;
   /** How many rounds have been played in each theme, as pairs rather than a map, since this goes
    * out as plain data. On every phase because the bank is on screen through all of them. */
   spent: { theme: ThemeId; rounds: number }[];

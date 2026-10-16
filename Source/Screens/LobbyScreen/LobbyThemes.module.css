@@ -1,0 +1,19 @@
+/* The themes the room may be dealt from, two to a row. A grid rather than a wrapping row: the
+ * pace buttons above are a fixed pair and the themes are the same kind of choice, so two across
+ * reads as one control with more entries rather than as a shelf of chips. Half the card each is
+ * also what makes a long name and a short one the same size, which a row sized by its contents
+ * never does. */
+.Grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--Space-Sm);
+}
+
+/* The buttons are the cells, so a name too long for its half is truncated rather than allowed
+ * to push the row wider than the card. */
+.Item {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

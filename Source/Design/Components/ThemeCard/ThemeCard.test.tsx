@@ -105,9 +105,13 @@ describe('one theme card', () => {
     expect(themeAccent('Internet').ink).not.toBe(themeAccent('Internet').tint);
   });
 
-  it('lets two themes share a tint, since the palette holds fewer tints than themes', () => {
+  it('gives every theme a tint of its own, since the palette is that size', () => {
+    // The palette holds exactly as many tints as there are themes, and a ninth theme that was
+    // the union of all the others had no colour to be: it was a mode, not a card. Sharing a tint
+    // is what the fallback is for now, and a file that names one the palette does not have still
+    // reads rather than breaking the build.
     const used = new Set(ThemeIds.map((theme) => themeAccent(theme)));
-    expect(used.size).toBeLessThan(ThemeIds.length);
+    expect(used.size).toBe(ThemeIds.length);
   });
 });
 

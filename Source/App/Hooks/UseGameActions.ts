@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'preact/hooks';
 import { GameConfig, Pace, PublicState, questionFor } from '@/Game';
-import { CharacterColor, CharacterId, ThemeId } from '@/Core';
+import { CharacterColor, CharacterId, ThemeId, ThemeMode } from '@/Core';
 import { topicAt } from '@/Content';
 import { Session } from '../Session';
 import { navigate } from '../Routes';
@@ -24,6 +24,7 @@ export interface GameActions {
   setPaused: (paused: boolean) => void;
   setLook: (character: CharacterId, color: CharacterColor) => void;
   setPace: (pace: Pace) => void;
+  setThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
   addBot: () => void;
   nextTurn: () => void;
   submitAnswer: (text: string) => void;
@@ -131,6 +132,7 @@ export function useGameActions(
     ...useRoundFlow(session, publicState, roomCode),
     setLook: (character, color) => session.setLook({ character, color }),
     setPace: (pace) => session.setPace(pace),
+    setThemes: (mode, themes) => session.setThemes(mode, themes),
     setPaused: (paused) => session.setPaused(paused),
     addBot: () => session.addBot(),
     nextTurn: () => session.nextTurn(),

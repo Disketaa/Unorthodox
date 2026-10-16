@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest';
+﻿import { describe, test, expect } from 'vitest';
 import { reducer } from './Reducer';
 import { HostState } from './GameState';
 
@@ -20,6 +20,8 @@ describe('reducer REJECT_GROUP action', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      themes: [],
+      themeMode: 'Random',
       themeRounds: new Map(),
 
       paused: false,

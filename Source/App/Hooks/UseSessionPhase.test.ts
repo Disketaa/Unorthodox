@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { useSessionPhase } from './UseSessionPhase';
 import { GameConfig } from '@/Game';
 import type { PublicChoosingState } from '@/Game';
@@ -15,6 +15,8 @@ function choosing(
     players: [],
     turnPlayerId: null,
     pace: 'Standard',
+    themes: [],
+    themeMode: 'Random',
     spent: [],
     paused: false,
     durationMs,

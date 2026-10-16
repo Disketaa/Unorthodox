@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest';
+﻿import { describe, test, expect } from 'vitest';
 import { toPublicState } from './PublicState';
 import { HostState } from './GameState';
 
@@ -16,6 +16,8 @@ describe('toPublicState Lobby state', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      themes: [],
+      themeMode: 'Random',
       themeRounds: new Map(),
 
       paused: false,

@@ -1,4 +1,4 @@
-import { PlayerLook, ThemeId } from '@/Core';
+import { PlayerLook, ThemeId, ThemeMode } from '@/Core';
 import { PublicState, Pace } from '@/Game';
 import type { ConnectionHint } from '@/Network';
 
@@ -38,6 +38,9 @@ export interface Session {
    * is only looking at what it would mean, so this is a no-op there and the host's answer
    * arrives in the public state instead. */
   setPace(pace: Pace): void;
+  /** The host setting how the room is given its themes. Only the host calls this, for the pace's
+   * reason, and the pool travels in the public state rather than in the press. */
+  setThemes(mode: ThemeMode, themes: readonly ThemeId[]): void;
   /** Put an invented player in the room, for the host trying a room out alone. Only the host
    * calls this, and only while the console is on. The bot joins the roster like anyone else and
    * nobody is told: a client asking for a player to appear is not a thing. */

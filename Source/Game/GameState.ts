@@ -1,4 +1,4 @@
-import { PlayerId, PlayerLook, ThemeId } from '@/Core';
+import { PlayerId, PlayerLook, ThemeId, ThemeMode } from '@/Core';
 import { Pace } from './GameConfig';
 
 /** What the room remembers about one player: who they are, how they look, and whether they are
@@ -23,6 +23,14 @@ export interface RoomMembers {
    * UI, so a client is told the answer rather than guessing it from its own click. The lobby
    * buttons are drawn for clients too, to show what a pace would mean. */
   pace: Pace;
+  /** The themes the host has named, and which way the room is given them: the pool every deal is
+   * drawn from. In the state for the pace's reason, since a client that dealt its own bank
+   * would put different cards on every screen in one room. A room starts on the random bank. */
+  themes: readonly ThemeId[];
+  /** Which of the two ways the room is given its themes. Held beside the names rather than as
+   * one of them, since a host who has looked at the random bank and come back has not forgotten
+   * what they chose. */
+  themeMode: ThemeMode;
   /** How many rounds have been played in each theme. Per theme rather than one running total,
    * since the bank is the same six themes every round and each drains at its own rate. */
   themeRounds: Map<ThemeId, number>;
@@ -52,6 +60,8 @@ export function membersOf(state: HostState): RoomMembers {
     cumulativeScores: state.cumulativeScores,
     turnPlayerId: state.turnPlayerId,
     pace: state.pace,
+    themes: state.themes,
+    themeMode: state.themeMode,
     themeRounds: state.themeRounds,
     affectedPlayers: state.affectedPlayers,
     paused: false,
@@ -154,6 +164,8 @@ export function freshLobbyState(): LobbyState {
     cumulativeScores: new Map(),
     turnPlayerId: null,
     pace: 'Standard',
+    themes: [],
+    themeMode: 'Random',
     themeRounds: new Map<ThemeId, number>(),
     paused: false,
     pausedAt: undefined,

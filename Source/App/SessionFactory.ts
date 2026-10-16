@@ -33,6 +33,7 @@ function createHostSession(roomCode: string, playerName: string, look: PlayerLoo
     join: () => {},
     setLook: (look) => hostSession.setOwnLook(look),
     setPace: (pace) => hostSession.setPace(pace),
+    setThemes: (mode, themes) => hostSession.setThemes(mode, themes),
     addBot: () => hostSession.addBot(),
     submitAnswer: (text) => hostSession.submitOwnAnswer(text.trim()),
     setEditingAnswer: (editing) => hostSession.setOwnEditingAnswer(editing),
@@ -75,6 +76,9 @@ function createPlayerSession(roomCode: string, playerName: string, look: PlayerL
     // A client asking for a pace would be two people deciding the same setting, and the
     // host's is the one that counts. Pressing a button is a local look at the numbers.
     setPace: () => {},
+    // A client's theme presses are the same story: the pool is the host's to set, and a client
+    // pressing one would be narrowing the bank the whole room is about to be offered.
+    setThemes: () => {},
     // A client cannot put anybody in the room, least of all itself.
     addBot: () => {},
     submitAnswer: (text) => clientSession.submitAnswer(text.trim()),

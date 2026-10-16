@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest';
+﻿import { describe, test, expect } from 'vitest';
 import { reducer } from './Reducer';
 import { HostState, ScoresState } from './GameState';
 
@@ -18,6 +18,8 @@ describe('reducer NEXT_ROUND action', () => {
       cumulativeScores: new Map([['p1', 7]]),
       turnPlayerId: 'p1',
       pace: 'Standard',
+      themes: [],
+      themeMode: 'Random',
       themeRounds: new Map(),
 
       paused: false,
@@ -46,6 +48,8 @@ describe('reducer NEXT_ROUND action', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      themes: [],
+      themeMode: 'Random',
       themeRounds: new Map(),
 
       paused: false,
@@ -82,6 +86,8 @@ function scored(): ScoresState {
     cumulativeScores: new Map(),
     turnPlayerId: null,
     pace: 'Standard',
+    themes: [],
+    themeMode: 'Random',
     themeRounds: new Map([
       ['Nature', 2],
       ['Food', 5],

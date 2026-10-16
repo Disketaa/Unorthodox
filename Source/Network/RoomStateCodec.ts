@@ -2,7 +2,14 @@
  * shape nothing checked. The guards are here; the phase each set of fields describes is in
  * RoomStatePhases, and the writing half is RoomStateEncoder. */
 import type { HostState, Player, Pace } from '@/Game';
-import { isThemeId, type PlayerId, type ThemeId } from '@/Core';
+import {
+  isThemeId,
+  isThemeMode,
+  LegacyRandomThemeId,
+  type PlayerId,
+  type ThemeId,
+  type ThemeMode,
+} from '@/Core';
 import { phaseFrom } from './RoomStatePhases';
 
 /** Plain data as name/value pairs, so a value can be read without a cast. `Object.entries` is
@@ -71,6 +78,24 @@ export function paceFrom(fields: Fields): Pace {
   return value === 'Fast' ? 'Fast' : 'Standard';
 }
 
+/** The themes the host has named, which the resumed room deals from once it is given them by its
+ * own way. A name this build has no bank for is dropped, and a random bank an older build kept
+ * as a theme of its own reads as naming none — the random way, said in the mode. */
+export function themesFrom(fields: Fields): ThemeId[] {
+  const raw = fields.get('themes');
+  const named = (Array.isArray(raw) ? raw : []).filter(
+    (theme): theme is ThemeId => typeof theme === 'string' && theme !== LegacyRandomThemeId
+  );
+  return [...new Set(named)].filter(isThemeId);
+}
+
+/** Which way the room is given its themes, and `Random` where storage names a way this build has
+ * dropped or says nothing: a room cannot be resumed in a mode no button can be pressed for. */
+export function themeModeFrom(fields: Fields): ThemeMode {
+  const mode = fields.get('themeMode');
+  return isThemeMode(mode) ? mode : 'Random';
+}
+
 /** The theme the room settled on, or undefined when nothing is stored or what is stored is not
  * one this build has. The bank is drawn from the theme, so a theme that cannot be named is a
  * card that cannot be drawn, which is the same as no theme having been chosen. */
@@ -97,6 +122,8 @@ export interface Members {
   players: Map<PlayerId, Player>;
   turnPlayerId: PlayerId | null;
   pace: Pace;
+  themes: ThemeId[];
+  themeMode: ThemeMode;
   themeRounds: Map<ThemeId, number>;
   /** The seats the round's enchanted card reaches, or undefined where the stored room predates
    * the effect or its card carried none. A host that refreshed mid-round comes back into the
@@ -124,6 +151,8 @@ function membersFrom(fields: Fields): Members {
     players: toMap(rawPairs(fields, 'players'), isPlayer),
     turnPlayerId: turnFrom(fields),
     pace: paceFrom(fields),
+    themes: themesFrom(fields),
+    themeMode: themeModeFrom(fields),
     themeRounds: themeRoundsFrom(fields),
     affectedPlayers: affected.length > 0 ? new Set(affected) : undefined,
     paused: fields.get('paused') === true,

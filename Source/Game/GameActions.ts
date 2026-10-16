@@ -1,7 +1,7 @@
 /** Every change the room can be put through, as one union. The handlers live beside what they
  * touch: the roster in `LobbyActions.ts`, the turn in `Turns.ts`, and everything that moves the
  * room between phases in `PhaseActions.ts`. */
-import type { PlayerId, PlayerLook, ThemeId } from '@/Core';
+import type { PlayerId, PlayerLook, ThemeId, ThemeMode } from '@/Core';
 import type { Pace } from './GameConfig';
 import type { PhaseName } from './PhaseFlow';
 
@@ -11,6 +11,10 @@ export type GameAction =
   | { type: 'KICK'; playerId: PlayerId }
   | { type: 'SET_LOOK'; playerId: PlayerId; look: PlayerLook }
   | { type: 'SET_PACE'; pace: Pace }
+  /** The themes the host has named and which way the room is given them: the pool every bank is
+   * dealt from. The whole selection rather than the one theme pressed, since picking a theme is
+   * taking it out of the room. The mode rides along so one press moves the pool. */
+  | { type: 'SET_THEMES'; mode: ThemeMode; themes: readonly ThemeId[] }
   /** The lobby into the first phase of play, which chooses a theme rather than answering one. */
   | { type: 'START_GAME'; durationMs: number; startedAt: number; leadInMs?: number }
   /** The room's answer to the bank: this theme, for this round. Carries who pressed it so the

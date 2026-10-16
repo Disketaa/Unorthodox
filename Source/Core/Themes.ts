@@ -1,32 +1,72 @@
 /** The themes a room can be given, as shared vocabulary. Core for the same reason the cast is:
  * Design draws a card for one, Game asks one, and the room carries a deal of them. A theme is a
- * file in `Content/Themes`, one question a line, read here at build time. */
+ * file in `Content/Themes` naming its tint and its questions, read here at build time. */
 import { Accent, Accents } from './Accents';
-import { CharacterColor, CharacterColors } from './Characters';
+import { CharacterColor, CharacterColors, isCharacterColor } from './Characters';
 import { randomFor, type Random } from './Random';
 
 /** A theme's name, which is its file's name. Not a union of literals: the set of themes is only
  * known once the files are read, so the registry below is what an id is checked against. */
 export type ThemeId = string;
 
-/** The theme that is not a file: its bank is drawn from the rest rather than being a thing an
- * author has to keep written, so it is added after the files rather than among them. */
-export const RandomThemeId: ThemeId = 'Случайная';
+/** The name a room saved by an older build may name, back when a bank drawn from every theme was
+ * itself a theme with a card of its own. Not a theme now and not in the registry; kept so a
+ * room saved before this can still be read back as the random bank rather than refused. */
+export const LegacyRandomThemeId: ThemeId = 'Случайная';
+
+/** Which of the two ways a room is given its themes, as the lobby's buttons name them. `Random`
+ * is the whole bank without naming any of it; `Chosen` is the themes named beside it. Held
+ * apart from the names, since a host who came back to the random bank has not forgotten. */
+export type ThemeMode = 'Random' | 'Chosen';
+
+/** Whether a stored mode is one this build offers, and `Random` where it is not: a mode nobody
+ * can press is not a mode a room can be played in. */
+export function isThemeMode(value: unknown): value is ThemeMode {
+  return value === 'Random' || value === 'Chosen';
+}
 
 /** Every theme file's text, keyed by path. Eager, so the registry is whole at module init and no
  * deal ever waits on a load: a tab that read the files in another order would deal another
  * room. */
-const files: Record<string, string> = import.meta.glob('../Content/Themes/*.txt', {
+/** What a theme file holds: the tint it washes in, and the questions it asks. Both are the
+ * author's rather than this module's, so a ninth theme needs no line of code. */
+interface ThemeFile {
+  color: CharacterColor;
+  questions: readonly string[];
+}
+
+const files: Record<string, string> = import.meta.glob('../Content/Themes/*.json', {
   query: '?raw',
   import: 'default',
   eager: true,
 });
 
-/** One question a line, with the line endings, spacing and duplicates a text file brings taken
- * off. Two questions written the same are one, or a room would be asked it twice. */
-function parseBank(text: string): string[] {
-  const lines = text.replace(/^\u{FEFF}/u, '').split(/\r?\n/);
-  return [...new Set(lines.map((line) => line.trim()).filter(Boolean))];
+/** What each file says, with a file that will not parse or names no tint left empty rather than
+ * taken out of the build: a theme that cannot be read is not a theme the room can be given. */
+function parseTheme(text: string): ThemeFile | undefined {
+  const read: unknown = parseJson(text);
+  if (read === undefined || !isRecord(read)) return undefined;
+  const { color, questions } = read;
+  if (!isCharacterColor(color) || !Array.isArray(questions)) return undefined;
+  const asked = [
+    ...new Set(
+      questions.filter((q): q is string => typeof q === 'string').map((q) => q.trim())
+    ),
+  ].filter(Boolean);
+  return asked.length > 0 ? { color, questions: asked } : undefined;
+}
+
+function parseJson(text: string): unknown {
+  try {
+    const read: unknown = JSON.parse(text.replace(/^\u{FEFF}/u, ''));
+    return read;
+  } catch {
+    return undefined;
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
 }
 
 /** Sorted by plain comparison, which is the one ordering a runtime cannot localise differently:
@@ -35,45 +75,40 @@ function byId(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-const fileId = (path: string): string => path.slice(path.lastIndexOf('/') + 1, -4);
+const fileId = (path: string): string => path.slice(path.lastIndexOf('/') + 1, -5);
 
 const authored = Object.entries(files)
-  .map(([path, text]): [ThemeId, string[]] => [fileId(path), parseBank(text)])
-  .filter(([, questions]) => questions.length > 0)
+  .map(([path, text]): [ThemeId, ThemeFile] | undefined => {
+    const theme = parseTheme(text);
+    return theme === undefined ? undefined : [fileId(path), theme];
+  })
+  .filter((entry): entry is [ThemeId, ThemeFile] => entry !== undefined)
   .sort(([a], [b]) => byId(a, b));
 
-/** What each theme asks about. A theme whose file turned up empty is left out rather than dealt
- * into a room whose round could not be played. */
-export const ThemeBanks: ReadonlyMap<ThemeId, readonly string[]> = new Map([
-  ...authored,
-  [RandomThemeId, [...new Set(authored.flatMap(([, questions]) => questions))]],
-]);
+/** What each theme asks about, and the tint it washes in. A theme whose file turned up empty or
+ * unreadable is left out rather than dealt into a room whose round could not be played. */
+export const ThemeBanks: ReadonlyMap<ThemeId, readonly string[]> = new Map(
+  authored.map(([id, theme]) => [id, theme.questions])
+);
 
-/** Every theme a room can be given: the files, then the one that is not a file. */
+/** The tint each theme's file names. */
+export const ThemeColors: ReadonlyMap<ThemeId, CharacterColor> = new Map(
+  authored.map(([id, theme]) => [id, theme.color])
+);
+
+/** Every theme there is, which is every file and nothing else. A bank drawn from all of them is
+ * the random mode rather than a theme named "Случайная": it had no questions of its own, only
+ * the union of the rest, so it was a ninth card that was never one. */
 export const ThemeIds: readonly ThemeId[] = [...ThemeBanks.keys()];
 
 export function isThemeId(value: unknown): value is ThemeId {
   return typeof value === 'string' && ThemeBanks.has(value);
 }
 
-/** Tints by theme, named for the ones the room needs to hold still. Sorted index for the rest,
- * since the set is only known at runtime and a new file cannot be given a key that does not
- * exist yet. */
-const ThemeTints: Readonly<Record<string, CharacterColor>> = {
-  Видеоигры: 'Violet',
-  Природа: 'Lime',
-  Интернет: 'Sky',
-  Еда: 'Amber',
-  Музыка: 'Rose',
-  Кино: 'Coral',
-  Работа: 'Yellow',
-  Путешествия: 'Mint',
-};
-
 /** The accent a theme washes in. A function rather than a table to index into, so the one thing
  * a caller needs is the whole accent: wash and ink belong together. */
 export function themeAccent(theme: ThemeId): Accent {
-  const named = ThemeTints[theme];
+  const named = ThemeColors.get(theme);
   if (named !== undefined) return Accents[named];
   const index = Math.max(0, ThemeIds.indexOf(theme));
   const fallback = CharacterColors[index % CharacterColors.length];
@@ -101,15 +136,36 @@ function shuffle<T>(pool: T[], random: Random): T[] {
   return pool;
 }
 
-/** The themes one room is offered, rolled from its code. One function rather than each caller
- * dealing for itself: the bank has to be the same six on every screen, and the host needs the
- * same six to pick at random out of. */
-export function themesForRoom(roomCode: string, count: number): ThemeId[] {
-  return dealThemes(randomFor(roomCode), count);
+/** The themes a room may be given, given which way it is given them and which it has named. The
+ * random bank is the whole set, since it is the union of the others. A room naming none under
+ * `Chosen` is read the same way rather than as a room with nothing to play. */
+export function themePool(
+  mode: ThemeMode,
+  selection: readonly ThemeId[] | undefined
+): readonly ThemeId[] {
+  if (mode !== 'Chosen' || selection === undefined || selection.length === 0) {
+    return ThemeIds;
+  }
+  return ThemeIds.filter((id) => selection.includes(id));
 }
 
-/** The themes one lobby is offered, drawn from the whole set without repetition. The randomness
- * is injected so a deal is reproducible from its seed. */
-export function dealThemes(random: Random, count: number): ThemeId[] {
-  return sampleUnique(ThemeIds, count, random);
+/** The themes one room is offered, rolled from its code and dealt out of the pool the host has
+ * left switched on. One function rather than each caller dealing for itself: the bank has to be
+ * the same six on every screen, and the host needs the same six to pick at random out of. */
+export function themesForRoom(
+  roomCode: string,
+  count: number,
+  pool: readonly ThemeId[] = ThemeIds
+): ThemeId[] {
+  return dealThemes(randomFor(roomCode), count, pool);
+}
+
+/** The themes one lobby is offered, drawn from the pool without repetition. The randomness is
+ * injected so a deal is reproducible from its seed. */
+export function dealThemes(
+  random: Random,
+  count: number,
+  pool: readonly ThemeId[] = ThemeIds
+): ThemeId[] {
+  return sampleUnique(pool, count, random);
 }

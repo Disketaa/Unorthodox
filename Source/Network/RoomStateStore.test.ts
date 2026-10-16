@@ -27,6 +27,8 @@ const writingPhase: HostState = {
   cumulativeScores: new Map([['host', 7]]),
   turnPlayerId: null,
   pace: 'Standard',
+  themes: [],
+  themeMode: 'Random',
   themeRounds: new Map(),
 
   paused: false,
@@ -48,6 +50,8 @@ const reviewingPhase: HostState = {
   cumulativeScores: new Map([['host', 7]]),
   turnPlayerId: null,
   pace: 'Standard',
+  themes: [],
+  themeMode: 'Random',
   themeRounds: new Map(),
 
   paused: false,
@@ -65,6 +69,8 @@ const scoresPhase: HostState = {
   cumulativeScores: new Map([['host', 10]]),
   turnPlayerId: null,
   pace: 'Standard',
+  themes: [],
+  themeMode: 'Random',
   themeRounds: new Map(),
 
   paused: false,
@@ -79,6 +85,8 @@ const finalPhase: HostState = {
   cumulativeScores: new Map([['host', 10]]),
   turnPlayerId: null,
   pace: 'Standard',
+  themes: [],
+  themeMode: 'Random',
   themeRounds: new Map(),
 
   paused: false,

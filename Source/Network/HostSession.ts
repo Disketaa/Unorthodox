@@ -13,13 +13,21 @@ import {
   nextPhaseFrom,
   type FlowHost,
 } from './HostFlow';
-import { addBot, countBots, kick, nextTurn, setOwnLook, setPace } from './HostRosterActions';
+import {
+  addBot,
+  countBots,
+  kick,
+  nextTurn,
+  setOwnLook,
+  setPace,
+  setThemes,
+} from './HostRosterActions';
 import { answerBots } from './HostBots';
 import { departureOf } from './HostPresence';
 import { freshLobby } from './RoomStateStore';
 import { HostRoom } from './HostRoom';
 import * as Game from '@/Game';
-import { PlayerId, PlayerLook, ThemeId, createLogger } from '@/Core';
+import { PlayerId, PlayerLook, ThemeId, ThemeMode, createLogger } from '@/Core';
 
 const log = createLogger('HostSession');
 
@@ -129,25 +137,22 @@ export class HostSession {
     this.apply({ type: 'LIKE_GROUP', playerId: HostPlayerId, groupId });
   }
 
-  setOwnLook(look: PlayerLook): void {
-    setOwnLook(this, look);
-  }
+  /** The room's own moves rather than the round's. Each is one line here because the rule behind
+   * it is a function beside this class. Bound as fields, not methods: three lines to say one. */
 
-  setPace(pace: Game.Pace): void {
-    setPace(this, pace);
-  }
+  setOwnLook = (look: PlayerLook): void => setOwnLook(this, look);
 
-  addBot(): void {
-    addBot(this);
-  }
+  setPace = (pace: Game.Pace): void => setPace(this, pace);
 
-  kick(playerId: PlayerId): void {
-    kick(this, playerId);
-  }
+  /** How the room is given its themes, the host's alone for the pace's reason. */
+  setThemes = (mode: ThemeMode, themes: readonly ThemeId[]): void =>
+    setThemes(this, mode, themes);
 
-  nextTurn(): void {
-    nextTurn(this);
-  }
+  addBot = (): void => addBot(this);
+
+  kick = (playerId: PlayerId): void => kick(this, playerId);
+
+  nextTurn = (): void => nextTurn(this);
 
   finish(): void {
     this.apply({ type: 'FINAL' });

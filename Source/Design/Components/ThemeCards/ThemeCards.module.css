@@ -1,10 +1,16 @@
-/* Six theme cards in a bank, laid flat and filling the room they are given in both directions.
- * `1fr` on both axes, so a card is the width and height that is actually there rather than one
- * predicted from the viewport before the row was laid out. The count is a choice between widths
- * rather than a consequence of one, so it is stated: one query per count, each about the cards. */
+/* Six theme cards in a bank, laid flat and filling the room in both directions. `1fr` on both
+ * axes so a card is the actual width and height, not a viewport prediction. The count is a
+ * choice between widths: one query per count. Columns are the smaller of card count and screen
+ * fit. Stated not fixed, because a bank of one or two in a three-track row sits left with empty
+ * space — and the room asks for one theme as often as six. `min()` of two custom properties,
+ * because count is known in code and width only in a query, and neither reaches the other. */
 .Root {
+  --ThemeCards-Fit: 2;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(
+    min(var(--ThemeCards-Count, 2), var(--ThemeCards-Fit)),
+    minmax(0, 1fr)
+  );
   grid-auto-rows: minmax(0, 1fr);
   justify-content: center;
   gap: var(--Space-ThemeCardsGap);
@@ -26,7 +32,7 @@
  * `var()`: a wide screen, where six in a row read as a bank. */
 @media (min-width: 600px) {
   .Root {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    --ThemeCards-Fit: 3;
   }
 }
 
@@ -35,7 +41,7 @@
  * rows nobody looks at, where six tall cards fill the screen. */
 @media (max-width: 400px) {
   .Root {
-    grid-template-columns: minmax(0, 1fr);
+    --ThemeCards-Fit: 1;
   }
 }
 

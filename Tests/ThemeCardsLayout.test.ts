@@ -67,7 +67,12 @@ describe('the row of theme cards', () => {
     // instead, there is nothing to divide, and the whole bank collapses to nothing.
     expect(sheet.declaration(Root, 'display')).toBe('grid');
     expect(sheet.declaration(Root, 'width')).toBe('100%');
-    expect(sheet.declaration(Root, 'grid-template-columns')).toBe('repeat(2,minmax(0,1fr))');
+    // The tracks are still `1fr`, so a row of them still cannot measure itself. How many there
+    // are is the smaller of the cards and the screen: a bank of one or two cards in a three-track
+    // row would sit against the left edge with empty track beside it.
+    expect(sheet.declaration(Root, 'grid-template-columns')).toBe(
+      'repeat(min(var(--ThemeCards-Count,2),var(--ThemeCards-Fit)),minmax(0,1fr))'
+    );
   });
   it('gives every card the same width, so the six read as one bank', () => {
     // Equal tracks rather than each card taking a share of its content: six panels of different
@@ -85,9 +90,20 @@ describe('the row of theme cards', () => {
     // A card count is a choice between widths rather than a consequence of one: at every width
     // the card could be three-across-some-width or two-across-a-bigger-one, and which is wanted
     // is not a comparison `min()` and `max()` can make, since they move in opposite directions
-    // as the window narrows. So each count is stated, about the cards and not the window.
-    expect(sheet.flat).toContain('repeat(3,minmax(0,1fr))');
+    // as the window narrows. So each count is stated, about the cards and not the window — as the
+    // largest bank this screen takes, which the card count then cuts itself down to.
+    expect(sheet.declaration(Root, '--ThemeCards-Fit')).toBe('2');
+    expect(sheet.flat).toContain('--ThemeCards-Fit:3');
+    expect(sheet.flat).toContain('--ThemeCards-Fit:1');
     expect(sheet.flat).toContain('grid-template-columns:minmax(0,1fr)');
+  });
+  it('leaves a bank of one or two as a one- or two-across bank, so it sits in the middle', () => {
+    // The pool the host leaves on is smaller than the bank most rooms get, and a two-card pool in
+    // a three-track row would sit against the left edge with an empty track beside it. Cutting the
+    // tracks to the cards is the phone's one-across rule reached by another road: the card fills
+    // the room exactly as it already does there, and is not resized to suit the arithmetic.
+    expect(sheet.declares(Slot, 'display')).toBe(false);
+    expect(sheet.declares(SlotCard, 'max-width')).toBe(false);
   });
   it('restates each query threshold as a token, and one as a test', () => {
     // A query cannot hold a `var()`, so the literal has to be written out beside the token that

@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest';
+﻿import { describe, test, expect } from 'vitest';
 import { PlayerLook } from '@/Core';
 import { reducer } from './Reducer';
 import { HostState } from './GameState';
@@ -14,6 +14,8 @@ describe('reducer JOIN action', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      themes: [],
+      themeMode: 'Random',
       themeRounds: new Map(),
 
       paused: false,
@@ -41,6 +43,8 @@ describe('reducer SET_LOOK action', () => {
     cumulativeScores: new Map(),
     turnPlayerId: null,
     pace: 'Standard',
+    themes: [],
+    themeMode: 'Random',
     themeRounds: new Map(),
 
     paused: false,
@@ -74,6 +78,8 @@ describe('reducer SET_LOOK action', () => {
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
+      themes: [],
+      themeMode: 'Random',
       themeRounds: new Map(),
 
       paused: false,
