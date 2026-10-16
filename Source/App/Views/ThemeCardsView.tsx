@@ -1,15 +1,8 @@
-import {
-  ThemeId,
-  ThemeMode,
-  ThemeModifierId,
-  effectOf,
-  themePool,
-  themesForRoom,
-} from '@/Core';
+import { ThemeId, ThemeMode, ThemeModifierId, effectOf, themePool, themesForRoom } from '@/Core';
 import { useMemo } from 'preact/hooks';
 import { useThemeSweep } from '../Hooks/UseThemeSweep';
 import { ThemeCards } from '@/Design/Components';
-import { GameConfig, multForTheme, modifiersForRound } from '@/Game';
+import { GameConfig, Pace, multForTheme, modifiersForRound } from '@/Game';
 import { effectLabelOf } from './EffectLabels';
 
 export interface ThemeCardsViewProps {
@@ -41,6 +34,8 @@ export interface ThemeCardsViewProps {
    * whole set would hold cards the host's roll can never land on. */
   themeMode: ThemeMode;
   enabledThemes: readonly ThemeId[];
+  /** The pace the room plays at, which decides how many rounds each theme gets. */
+  pace: Pace;
 }
 
 /** The themes this lobby is playing, on the game screen. Rolled from the room code rather than
@@ -107,27 +102,21 @@ export function ThemeCardsView({
   spent,
   themeMode,
   enabledThemes,
+  pace,
 }: ThemeCardsViewProps) {
-  // Held across renders: a fresh array every render is a fresh dependency for the sweep. Keyed on
-  // the pool as well as the room, since the host narrowing the themes re-deals the bank.
   const pool = useMemo(() => themePool(themeMode, enabledThemes), [themeMode, enabledThemes]);
   const themes = useMemo(
     () => themesForRoom(roomCode, GameConfig.themes.cardsPerLobby, pool),
     [roomCode, pool]
   );
   const { looking } = useThemeSweep(picking, themes, clockOffsetMs);
-  const round = spentRounds(spent);
-  // The round the bank was offered in: the pick is counted the moment it lands, so rolling
-  // against the round after it would be a different set of cards.
-  const bankRound = theme !== undefined ? Math.max(0, round - 1) : round;
-  const { modifiers, mults, effectLabels } = useMemo(
-    () => bankFor(roomCode, themes, bankRound),
-    [roomCode, themes, bankRound]
-  );
+  const round = spentRounds(spent), bankRound = theme !== undefined ? Math.max(0, round - 1) : round;
+  const { modifiers, mults, effectLabels } = useMemo(() => bankFor(roomCode, themes, bankRound), [roomCode, themes, bankRound]);
+  const roundsPerTheme = pace === 'Fast' ? 5 : 10;
   return (
     <ThemeCards
       themes={themes}
-      roundsPerTheme={GameConfig.themes.roundsPerTheme}
+      roundsPerTheme={roundsPerTheme}
       spent={spent}
       modifiers={modifiers}
       mults={mults}
@@ -135,9 +124,6 @@ export function ThemeCardsView({
       picked={theme}
       picking={picking !== undefined}
       swept={looking}
-      // Asked for only where it is this player's turn, and never while the room is answering
-      // itself: the room's roll wins, because the room acts for everybody. Absent anywhere
-      // else is what holds the cards back.
       onPick={choosing && myTurn && picking === undefined && !paused ? onPickTheme : undefined}
     />
   );

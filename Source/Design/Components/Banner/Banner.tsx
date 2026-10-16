@@ -7,8 +7,8 @@ export type BannerVariant = 'Info' | 'Success' | 'Warning' | 'Error' | 'Muted' |
 export type BannerAlign = 'Start' | 'Center';
 /** The mark at the head of the banner. Info is the one that says something; Loading is the one
  * that says the same thing is still happening; Clock says the line is about a length of time
- * rather than about a state. */
-export type BannerMark = 'Info' | 'Loading' | 'Clock';
+ * rather than about a state; Question says the line is about a count of questions. */
+export type BannerMark = 'Info' | 'Loading' | 'Clock' | 'Question';
 
 export interface BannerProps {
   variant?: BannerVariant;

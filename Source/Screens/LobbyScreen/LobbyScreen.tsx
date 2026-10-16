@@ -95,6 +95,8 @@ export function LobbyScreen(props: LobbyScreenProps) {
     ownPlayerName,
     ownLook,
     isHost,
+    themeMode,
+    themes,
     onPickLook,
     onStart,
     onExit,
@@ -110,6 +112,8 @@ export function LobbyScreen(props: LobbyScreenProps) {
         onStart={onStart}
         onExit={onExit}
         onKick={onKick}
+        themeMode={themeMode}
+        themes={themes}
       />
       <SettingsCard {...props} players={players.length} />
       {ownLook !== undefined && (

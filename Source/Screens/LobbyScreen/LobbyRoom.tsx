@@ -1,5 +1,5 @@
 import { IconButton, RoomCodeBadge } from '@/Design/Components';
-import { PlayerId } from '@/Core';
+import { PlayerId, ThemeId, ThemeMode } from '@/Core';
 import { GameConfig, PublicPlayer } from '@/Game';
 import { Strings } from '@/Content';
 import { LobbyCategory } from './LobbyCategory';
@@ -16,6 +16,9 @@ export interface LobbyRoomProps {
   onExit: () => void;
   /** Only the host gets this: the room's way to remove a player. */
   onKick: (playerId: PlayerId) => void;
+  /** Which way the room is given its themes, and which ones are named. */
+  themeMode: ThemeMode;
+  themes: readonly ThemeId[];
 }
 
 /** Whether there are enough players to start. Counted from the players actually here: a seat
@@ -24,6 +27,17 @@ export interface LobbyRoomProps {
 function enoughPlayers(players: readonly PublicPlayer[]): boolean {
   const hereCount = players.filter((player) => player.isOnline).length;
   return hereCount >= GameConfig.limits.minPlayers;
+}
+
+/** Whether the room may start: enough players, and if themes are chosen, at least one of them. */
+function canStart(
+  players: readonly PublicPlayer[],
+  themeMode: ThemeMode,
+  themes: readonly ThemeId[]
+): boolean {
+  if (!enoughPlayers(players)) return false;
+  if (themeMode === 'Chosen' && themes.length === 0) return false;
+  return true;
 }
 
 /** Whether there is a seat left for one more player. Exported because the host's dock asks the
@@ -42,8 +56,10 @@ export function LobbyRoom({
   onStart,
   onExit,
   onKick,
+  themeMode,
+  themes,
 }: LobbyRoomProps) {
-  const enoughPlayersReady = enoughPlayers(players);
+  const startAllowed = canStart(players, themeMode, themes);
   return (
     <LobbyCategory
       title={<RoomCodeBadge code={roomCode} />}
@@ -51,7 +67,7 @@ export function LobbyRoom({
     >
       {/* Start sits above the roster, not under it: the roster grows as players join, and a
        * control that slides down with them is a control the host has to hunt for. */}
-      <LobbyStart enoughPlayers={enoughPlayersReady} isHost={isHost} onStart={onStart} />
+      <LobbyStart enoughPlayers={startAllowed} isHost={isHost} onStart={onStart} />
       <LobbyRoster
         players={players}
         ownPlayerId={ownPlayerId}

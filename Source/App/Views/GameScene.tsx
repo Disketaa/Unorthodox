@@ -42,6 +42,7 @@ export function GameScene({
           spent={spentByTheme(view.publicState)}
           themeMode={view.publicState?.themeMode ?? 'Random'}
           enabledThemes={view.publicState?.themes ?? []}
+          pace={view.publicState?.pace ?? 'Standard'}
         />
       )}
       {!bankOpen && <QuestionOverlay view={view} />}

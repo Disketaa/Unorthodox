@@ -65,6 +65,10 @@
   mask-image: url('../../Icons/Clock.svg');
 }
 
+.MarkQuestion {
+  mask-image: url('../../Icons/Question.svg');
+}
+
 .MarkLoading {
   mask-image: url('../../Icons/Loading.svg');
   /* A third of a turn each way, over the slow duration, easing symmetrically about the middle.
