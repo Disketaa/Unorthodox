@@ -2,7 +2,8 @@
 import { describe, it, expect } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
-import { LobbyThemes, ThemeLimit } from './LobbyThemes';
+import { LobbyThemes } from './LobbyThemes';
+import { ThemeLimit } from './ThemeGrid';
 import { ThemeId, ThemeIds, ThemeMode } from '@/Core';
 import { GameConfig } from '@/Game';
 import { Strings } from '@/Content';
@@ -27,11 +28,8 @@ function mount(isHost: boolean, start: Pool) {
         themeMode={pool.mode}
         themes={pool.themes}
         isHost={isHost}
+        onLoadCustomThemes={() => {}}
         customThemes={[]}
-        onCustomThemes={() => {}}
-        customThemesOpen={false}
-        onCustomThemesOpen={() => {}}
-        onCustomThemesClose={() => {}}
         onPick={(mode, themes) => {
           asked.push({ mode, themes });
           pool = { mode, themes };

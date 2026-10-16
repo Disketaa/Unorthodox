@@ -166,10 +166,10 @@ function membersFrom(fields: Fields): Members {
 }
 
 /** The custom themes a stored room names, or none where it predates them. */
-function customThemesFrom(fields: Fields): Map<ThemeId, CustomTheme> {
+function customThemesFrom(fields: Fields): Map<number, CustomTheme> {
   const raw = fields.get('customThemes');
   if (!Array.isArray(raw)) return new Map();
-  const map = new Map<ThemeId, CustomTheme>();
+  const map = new Map<number, CustomTheme>();
   for (const entry of raw) {
     if (!isCustomTheme(entry)) continue;
     map.set(entry.id, entry);

@@ -21,9 +21,7 @@ function lobby(isHost: boolean, pace: Pace = 'Standard') {
       themeMode="Random"
       customThemes={[]}
       onCustomThemes={() => {}}
-      customThemesOpen={false}
-      onCustomThemesOpen={() => {}}
-      onCustomThemesClose={() => {}}
+      onLoadCustomThemes={() => {}}
       ownPlayerId="p1"
       ownPlayerName="Ann"
       ownLook={{ character: look.character, color: look.color }}

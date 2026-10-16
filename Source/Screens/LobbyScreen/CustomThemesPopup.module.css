@@ -30,6 +30,13 @@
   box-shadow: 0 8px 24px rgb(0 0 0 / 15%);
 }
 
+.title {
+  font-family: var(--FontFamily-Display);
+  font-size: var(--FontSize-H1);
+  font-weight: 600;
+  color: var(--Color-Text-Default);
+}
+
 .Text {
   width: 100%;
   font-family: var(--FontFamily-Body);
@@ -60,12 +67,12 @@
 
 /* Syntax-highlighted JSON tokens using the project's color palette. */
 .Key {
-  color: var(--Color-Character-Rose);
+  color: var(--Color-Text-Muted);
   font-weight: 600;
 }
 
 .String {
-  color: var(--Color-Character-Violet);
+  color: var(--String-Color, var(--Color-Character-Violet));
 }
 
 .Number {
@@ -74,11 +81,11 @@
 }
 
 .Brace {
-  color: var(--Color-Character-Yellow);
+  color: var(--Color-Text-Muted);
 }
 
 .Bracket {
-  color: var(--Color-Character-Violet);
+  color: var(--Color-Text-Muted);
 }
 
 .Comma {

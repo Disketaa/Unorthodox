@@ -105,7 +105,7 @@ export function parseCustomThemesJson(json: string): CustomTheme[] | undefined {
   for (const entry of entries) {
     if (!isCustomTheme(entry)) return undefined;
     themes.push({
-      id: entry.id ?? nextId++,
+      id: (entry.id !== undefined && entry.id !== null) ? entry.id : nextId++,
       name: entry.name,
       color: entry.color,
       questions: entry.questions,

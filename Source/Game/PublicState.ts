@@ -6,7 +6,7 @@ import {
   toPublicChoosingState,
 } from './PublicPhases';
 import { toPublicFinalState, toPublicScoresState } from './PublicEndgame';
-import { PlayerId, PlayerLook, ThemeId, ThemeMode, CharacterColor, assertNever } from '@/Core';
+import { PlayerId, PlayerLook, ThemeId, ThemeMode, CustomTheme, assertNever } from '@/Core';
 import type { RandomPick } from './GameState';
 import type { Pace } from './GameConfig';
 
@@ -38,7 +38,7 @@ export interface PublicRoom {
   themeMode: ThemeMode;
   /** The custom themes this room knows, so every client can draw them in the bank. Sent as pairs
    * rather than a map, since this goes out as plain data. */
-  customThemes: { id: ThemeId; name: string; color: CharacterColor; questions: string[] }[];
+  customThemes: readonly CustomTheme[];
   /** How many rounds have been played in each theme, as pairs rather than a map, since this goes
    * out as plain data. On every phase because the bank is on screen through all of them. */
   spent: { theme: ThemeId; rounds: number }[];

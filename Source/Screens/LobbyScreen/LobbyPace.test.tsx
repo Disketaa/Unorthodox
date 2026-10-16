@@ -36,6 +36,7 @@ function mount(isHost: boolean, picked: Pace[] = []): HTMLElement {
       players={12}
       isHost={isHost}
       onLoadCustomThemes={() => {}}
+      customThemes={[]}
       onPick={(pace) => picked.push(pace)}
       onPickThemes={() => {}}
     />,

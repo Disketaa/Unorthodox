@@ -1,7 +1,7 @@
 /** The body of the custom themes popup: JSON text area, color row, title, and buttons. */
 import { useState } from 'preact/hooks';
 import { Button } from '@/Design/Components';
-import { Stack, Text } from '@/Design/Primitives';
+import { Stack } from '@/Design/Primitives';
 import { Strings } from '@/Content';
 import {
   CustomTheme,
@@ -39,22 +39,16 @@ export function CustomThemesPopupBody({
 
   const valid = themes !== undefined;
 
-  const pickColor = (next: CharacterColor): void => {
-    const current = parseCustomThemesJson(json);
-    if (current === undefined) return;
-    const updated = { ...current[0], color: next };
-    setJson(JSON.stringify({ ...updated, questions: updated.questions }, null, 2));
-  };
-
   return (
     <div class={styles.Root}>
       <div class={styles.Veil} onClick={onClose} />
       <div class={styles.Panel}>
         <PopupTitle title={title} color={titleColor} />
-        <ColorRow color={themes?.[0]?.color ?? 'Yellow'} onPick={pickColor} />
+        <ColorRow color={themes?.[0]?.color ?? 'Yellow'} onPick={(next) => pickColor(json, next, setJson)} />
         <SyntaxHighlightedJson
           json={json}
           onChange={setJson}
+          color={titleColor}
         />
         {error !== undefined && <p class={styles.Error}>{error}</p>}
         <CustomButtons onClose={onClose} onSave={handleSave} disabled={!valid} />
@@ -63,10 +57,30 @@ export function CustomThemesPopupBody({
   );
 }
 
-function PopupTitle({ title, color }: { title: string; color: string | undefined }) {
-  return <Text variant="Title" style={{ color }}>{title}</Text>;
+function PopupTitle({
+  title,
+  color,
+}: {
+  title: string;
+  color: string | undefined;
+}) {
+  return (
+    <span
+      class={styles.title}
+      style={{ color, fontFamily: 'var(--FontFamily-Display)', fontSize: 'var(--FontSize-H1)' }}
+    >
+      {title}
+    </span>
+  );
 }
 
+function pickColor(json: string, next: CharacterColor, setJson: (value: string) => void): void {
+  const current = parseCustomThemesJson(json);
+  if (current === undefined) return;
+  const updated = { ...current[0], color: next };
+  const newJson = JSON.stringify({ ...updated, questions: updated.questions }, null, 2);
+  setJson(newJson);
+}
 function ColorRow({
   color,
   onPick,
@@ -121,10 +135,10 @@ function CustomButtons({
  * The id is auto-assigned when saved. */
 const DefaultJson = `{
   "id": 1,
-  "name": "Custom Theme",
+  "name": "Польз. 1",
   "color": "Yellow",
   "questions": [
-    "Question 1",
-    "Question 2"
+    "Вопрос 1",
+    "Вопрос 2"
   ]
 }`;
