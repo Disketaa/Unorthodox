@@ -1,16 +1,16 @@
-import { ThemeRef, createRandom, dealThemes } from '@/Core';
+import { ThemeId, createRandom, dealThemes } from '@/Core';
 import { Stack } from '@/Design/Primitives';
 import { ThemeCards, type ThemeCardsProps } from './ThemeCards';
 
 /** Four rounds played in the theme the room just came out of, and a full bar everywhere else:
  * the bank is the same six themes every round, so this is what the second Choosing looks like. */
-function partlySpent(first: ThemeRef | undefined): Map<ThemeRef, number> {
+function partlySpent(first: ThemeId | undefined): Map<ThemeId, number> {
   return new Map(first === undefined ? [] : [[first, 4]]);
 }
 
 /** The same, with the next theme in the bank run out: a card held back and left there, since
  * nothing is ever going to come to it. */
-function withOneFinished(themes: readonly ThemeRef[], first: ThemeRef | undefined) {
+function withOneFinished(themes: readonly ThemeId[], first: ThemeId | undefined) {
   const spent = partlySpent(first);
   const second = themes[1] ?? first;
   if (second !== undefined) spent.set(second, 10);
@@ -19,7 +19,7 @@ function withOneFinished(themes: readonly ThemeRef[], first: ThemeRef | undefine
 
 /** A display mults map for the gallery: each theme gets a different multiplier so the feature is
  * visible. */
-function galleryMults(themes: readonly ThemeRef[]): Map<ThemeRef, number> {
+function galleryMults(themes: readonly ThemeId[]): Map<ThemeId, number> {
   const values = [1.25, 1.5, 1.75, 2, 1.5, 1.25];
   return new Map(themes.map((theme, i) => [theme, values[i]]));
 }
@@ -32,7 +32,7 @@ function Bank(rest: Partial<ThemeCardsProps> & Pick<ThemeCardsProps, 'themes' | 
 }
 
 export function ThemeCardsGallery() {
-  const themes: readonly ThemeRef[] = dealThemes(createRandom(7), 6);
+  const themes: readonly ThemeId[] = dealThemes(createRandom(7), 6);
   const first = themes[0];
   const spent = partlySpent(first);
   const mults = galleryMults(themes);

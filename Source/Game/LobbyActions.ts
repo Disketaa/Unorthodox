@@ -2,7 +2,16 @@
  * from the phases because each is a change to one player rather than a move of the room, and
  * because they exist in every phase: a refresh mid-round is joining again. */
 import { HostState } from './GameState';
-import { assertNever, isThemeId, isThemeMode, ThemeRef, ThemeIds, ThemeMode, loadCustomThemes, addCustomTheme } from '@/Core';
+import {
+  assertNever,
+  isThemeId,
+  isThemeMode,
+  ThemeId,
+  ThemeMode,
+  loadCustomThemes,
+  addCustomTheme,
+  removeCustomTheme,
+} from '@/Core';
 import type { ActionOf, GameAction } from './GameActions';
 import { GameConfig } from './GameConfig';
 
@@ -11,7 +20,17 @@ export function handleRoster(
   state: HostState,
   action: Extract<
     GameAction,
-    { type: 'JOIN' | 'SET_ONLINE' | 'KICK' | 'SET_LOOK' | 'SET_PACE' | 'SET_THEMES' | 'SET_CUSTOM_THEMES' }
+    {
+      type:
+        | 'JOIN'
+        | 'SET_ONLINE'
+        | 'KICK'
+        | 'SET_LOOK'
+        | 'SET_PACE'
+        | 'SET_THEMES'
+        | 'SET_CUSTOM_THEMES'
+        | 'REMOVE_CUSTOM_THEME';
+    }
   >
 ): HostState {
   switch (action.type) {
@@ -29,6 +48,8 @@ export function handleRoster(
       return handleSetThemes(state, action);
     case 'SET_CUSTOM_THEMES':
       return handleSetCustomThemes(state, action);
+    case 'REMOVE_CUSTOM_THEME':
+      return handleRemoveCustomTheme(state, action);
     default:
       return assertNever(action);
   }
@@ -40,7 +61,7 @@ function withRoster(state: HostState, players: HostState['players']): HostState 
 }
 
 /** A player taking their seat, or taking it back. A seat that already exists keeps the record
- * the room has of it вЂ” the name and the character it was given вЂ” and only comes back online, so
+ * the room has of it — the name and the character it was given — and only comes back online, so
  * a refresh cannot rename a player or repaint their face from the other end of the room. */
 export function handleJoin(state: HostState, action: ActionOf<'JOIN'>): HostState {
   const known = state.players.get(action.playerId);
@@ -121,41 +142,78 @@ export function handleSetThemes(state: HostState, action: ActionOf<'SET_THEMES'>
   return { ...state, themeMode: mode, themes };
 }
 
-/** The themes named, in the registry's order, then the host's own after them, kept only where this
- * build or this browser has the theme and cut to what the lobby deals. Cut here rather than
- * trusted to the buttons, so a host cannot end up naming seven themes for a bank of six. Empty
- * stays empty: the deal reads it as every theme. */
-function namedFrom(picked: readonly ThemeRef[]): readonly ThemeRef[] {
+/** The themes named, kept only where this build or this browser has the theme and cut to what
+ * the lobby deals. A name is real if it is a file in the registry or a theme this browser has
+ * saved, and the registry is asked first so a custom theme can never answer to a file's name.
+ * In the order the host pressed them, not the registry's, and the oldest goes rather than the
+ * newest. Both parts matter and neither is decoration. Cutting against the registry put every
+ * authored theme ahead of every pasted one, so a room that had named its full six could never
+ * name a custom theme at all — the press was dropped here and the card read as a control that
+ * does nothing. Cutting from the front rather than the back then decides which of two presses
+ * wins when there is only room for one: the one just made, since the earlier theme is still on
+ * the card and one press puts it back. Nothing downstream depends on the order, since the deal
+ * filters the pool by membership rather than by position. Cut here rather than trusted to the
+ * buttons, so a host cannot end up naming seven themes for a bank of six. Empty stays empty:
+ * the deal reads it as every theme. */
+function namedFrom(picked: readonly ThemeId[]): readonly ThemeId[] {
   // Custom themes live in this browser's cache, so load them before checking which names are real.
   const custom = loadCustomThemes();
-  const named = picked.filter(
-    (theme) => typeof theme === 'number' ? custom.has(theme) : isThemeId(theme)
-  );
-  return [...ThemeIds, ...[...custom.keys()]]
-    .filter((theme) => named.includes(theme))
-    .slice(0, GameConfig.themes.cardsPerLobby);
+  const named: ThemeId[] = [];
+  for (const theme of picked) {
+    if (named.includes(theme)) continue;
+    if (!isThemeId(theme) && !custom.has(theme)) continue;
+    named.push(theme);
+  }
+  return named.slice(-GameConfig.themes.cardsPerLobby);
 }
 
 /** Whether two namings are the same, which is what stops a press that changes nothing from
  * sending the room a state it would have thrown away anyway. */
-function sameThemes(a: readonly ThemeRef[], b: readonly ThemeRef[]): boolean {
+function sameThemes(a: readonly ThemeId[], b: readonly ThemeId[]): boolean {
   return a.length === b.length && a.every((theme, at) => theme === b[at]);
 }
 
 /** The host pasting in custom themes. Lobby only, since a bank already drawn cannot be redrawn.
  * The themes are merged into the room's state so every client can draw them, and each client
  * saves them to its own cache so they survive a refresh. */
-function handleSetCustomThemes(state: HostState, action: ActionOf<'SET_CUSTOM_THEMES'>): HostState {
+function handleSetCustomThemes(
+  state: HostState,
+  action: ActionOf<'SET_CUSTOM_THEMES'>
+): HostState {
   if (state.phase !== 'Lobby') {
     return state;
   }
   const themes = new Map(state.customThemes);
   for (const theme of action.themes) {
-    themes.set(theme.id, theme);
+    themes.set(theme.name, theme);
     // Written down here rather than only held in the room's state, because a custom theme is
-    // looked up by number in this browser's cache: the naming rules and the questions both read
-    // it from there, so a theme that lives only in the room can be neither named nor drawn.
+    // looked up by name in this browser's cache: the naming rules and the questions both read it
+    // from there, so a theme that lives only in the room can be neither named nor drawn.
     addCustomTheme(theme);
   }
   return { ...state, customThemes: themes };
+}
+
+/** One custom theme struck out, from the room and from this browser, by its name. Lobby only,
+ * for the setting's reason. Taken out of the selection as well: a theme the room no longer has
+ * cannot stay named, and a named theme the room cannot deal is a card that is in the bank and
+ * cannot be played. */
+function handleRemoveCustomTheme(
+  state: HostState,
+  action: ActionOf<'REMOVE_CUSTOM_THEME'>
+): HostState {
+  if (state.phase !== 'Lobby') {
+    return state;
+  }
+  removeCustomTheme(action.name);
+  if (!state.customThemes?.has(action.name) && !state.themes.includes(action.name)) {
+    return state;
+  }
+  return {
+    ...state,
+    customThemes: new Map(
+      [...(state.customThemes ?? new Map())].filter(([name]) => name !== action.name)
+    ),
+    themes: state.themes.filter((theme) => theme !== action.name),
+  };
 }

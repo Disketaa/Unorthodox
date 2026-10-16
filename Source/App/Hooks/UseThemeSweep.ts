@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'preact/hooks';
 import { GameConfig } from '@/Game';
 import type { RandomPick } from '@/Game';
-import { hostTimeToLocal, type ThemeRef } from '@/Core';
+import { hostTimeToLocal, type ThemeId } from '@/Core';
 import { playSound } from '@/Design/Sounds';
 
 /** One card of the sweep: which theme the room is looking at, or undefined where nothing is
  * being looked at. */
 export interface Sweep {
-  looking: ThemeRef | undefined;
+  looking: ThemeId | undefined;
 }
 
 /** How long the room rests on the card it landed on before the roll commits. A sweep that hops
@@ -40,11 +40,11 @@ function hopAt(k: number, steps: number): number {
 /** Walk the bank card by card from the first card, over the whole of it once and on to the card
  * the room's roll chose. Returns the cleanup. */
 function walkBank(
-  themes: readonly ThemeRef[],
-  target: ThemeRef,
+  themes: readonly ThemeId[],
+  target: ThemeId,
   localStart: number,
   lookMs: number,
-  onLooking: (theme: ThemeRef) => void
+  onLooking: (theme: ThemeId) => void
 ): () => void {
   const count = themes.length;
   const toTarget = themes.indexOf(target);
@@ -81,13 +81,13 @@ function walkBank(
  * room rather than starting the whole thing over. */
 export function useThemeSweep(
   picking: RandomPick | undefined,
-  themes: readonly ThemeRef[],
+  themes: readonly ThemeId[],
   clockOffsetMs: number
 ): Sweep {
   const localStart =
     picking === undefined ? 0 : hostTimeToLocal(picking.startedAt, clockOffsetMs);
   const target = picking?.theme;
-  const [looking, setLooking] = useState<ThemeRef | undefined>(undefined);
+  const [looking, setLooking] = useState<ThemeId | undefined>(undefined);
   // In its last stretch the sweep is no longer looking: it is on the card it landed on, and stays
   // there until the room commits, since a card that lifts a moment before the answer it was
   // resting on is a bank reopening under the answer.

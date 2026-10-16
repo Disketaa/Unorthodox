@@ -103,11 +103,30 @@
   background: var(--Color-Surface-Active);
 }
 
-/* The button that offers a second act rather than either of the two the panel ends with: copying
- * the prompt somewhere else, while the panel's own buttons are "leave" and "keep". The banner's
- * info blue rather than a second grey, because it is not the same act declined — it is a different
- * act, and three greys in one row would say nothing about which is which. Darkened toward the ink
- * on press and hover rather than swapped for another colour, so the button stays this blue. */
+/* The button that undoes rather than does. The same pink the room says errors in, so the one
+ * control in a panel that takes something away is the one control wearing the colour of taking
+ * away — a grey delete reads as a fourth thing to do, and this is the only one of the row whose
+ * press cannot be taken back by closing the window. Darkened toward the ink rather than swapped
+ * for another colour on hover, as the info button below. */
+.VariantError {
+  background: var(--Color-Feedback-Error);
+  color: var(--Color-Surface-Default);
+}
+
+.VariantError:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--Color-Feedback-Error) 85%, var(--Color-Text-Default));
+}
+
+.VariantError:active:not(:disabled) {
+  background: color-mix(in srgb, var(--Color-Feedback-Error) 70%, var(--Color-Text-Default));
+}
+
+/* The button that offers a second act rather than either of the two the panel ends with:
+ * copying the prompt somewhere else, while the panel's own buttons are "leave" and "keep". The
+ * banner's info blue rather than a second grey, because it is not the same act declined — it is
+ * a different act, and three greys in one row would say nothing about which is which. Darkened
+ * toward the ink on press and hover rather than swapped for another colour, so the button stays
+ * this blue. */
 .VariantInfo {
   background: var(--Color-Feedback-Info);
   color: var(--Color-Surface-Default);

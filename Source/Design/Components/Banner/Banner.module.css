@@ -107,6 +107,17 @@
   text-overflow: ellipsis;
 }
 
+/* A wording that wraps. On the text rather than on the row, so the mark stays put and the words
+ * below it run the block's full width. `anywhere` rather than `break-word` because the things
+ * that overflow a note here are parser messages, which carry long unbroken runs, and those have
+ * to break somewhere rather than push the block wider than the column it sits in. */
+.Wrap {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  overflow: visible;
+  text-overflow: clip;
+}
+
 /* The value sits at the far end of the row, and the words take the space between. `margin-left:
  * auto` rather than a `justify-content` on the block, because the block's justify is the
  * alignment variant's business and a value is never paired with a centred one. */

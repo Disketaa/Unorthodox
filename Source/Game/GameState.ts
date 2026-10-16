@@ -1,4 +1,4 @@
-import { PlayerId, PlayerLook, ThemeRef, ThemeMode, CustomTheme } from '@/Core';
+import { PlayerId, PlayerLook, ThemeId, ThemeMode, CustomTheme } from '@/Core';
 import { Pace } from './GameConfig';
 
 /** What the room remembers about one player: who they are, how they look, and whether they are
@@ -26,7 +26,7 @@ export interface RoomMembers {
   /** The themes the host has named, and which way the room is given them: the pool every deal is
    * drawn from. In the state for the pace's reason, since a client that dealt its own bank
    * would put different cards on every screen in one room. A room starts on the random bank. */
-  themes: readonly ThemeRef[];
+  themes: readonly ThemeId[];
   /** Which of the two ways the room is given its themes. Held beside the names rather than as
    * one of them, since a host who has looked at the random bank and come back has not forgotten
    * what they chose. */
@@ -34,10 +34,10 @@ export interface RoomMembers {
   /** The custom themes this room knows: their names, tints and questions. Sent to every client
    * so every screen can draw the same bank, and saved to each browser's cache so they survive a
    * refresh. */
-  customThemes?: Map<number, CustomTheme>;
+  customThemes?: Map<string, CustomTheme>;
   /** How many rounds have been played in each theme. Per theme rather than one running total,
    * since the bank is the same six themes every round and each drains at its own rate. */
-  themeRounds: Map<ThemeRef, number>;
+  themeRounds: Map<ThemeId, number>;
   /** The seats the round's enchanted card reaches. Empty where the card carried no effect, and
    * empty again the moment a new bank is offered. Optional, so an older save reads as nobody. */
   affectedPlayers?: Set<PlayerId>;
@@ -80,7 +80,7 @@ export type ChoosingState = RoomMembers & {
   startedAt: number;
   /** The theme the room settled on. The room's answer rather than one player's, so a press is
    * seen by everybody rather than by its author. Undefined while the bank is still open. */
-  theme: ThemeRef | undefined;
+  theme: ThemeId | undefined;
   /** A room that answered its own bank, and where that answer came from. The theme is held here
    * rather than in `theme` until the sweep has run, since the bank is still open on screen
    * while it plays and a card that expanded under the sweep would hide it. */
@@ -105,7 +105,7 @@ export type ChoosingState = RoomMembers & {
 /** The room's roll, landing on a theme. Carries when it started so every screen in the room runs
  * its sweep from the same moment rather than from whenever the message reached it. */
 export interface RandomPick {
-  theme: ThemeRef;
+  theme: ThemeId;
   startedAt: number;
 }
 
@@ -122,7 +122,7 @@ export type WritingState = RoomMembers & {
   /** The theme this round is being played in, carried on from the choice rather than chosen
    * again: the bank stays on screen through the round, and it can only show one of its cards as
    * the chosen one. */
-  theme: ThemeRef | undefined;
+  theme: ThemeId | undefined;
 };
 
 export type ReviewingState = RoomMembers & {
@@ -138,7 +138,7 @@ export type ReviewingState = RoomMembers & {
    * tell a like on somebody's own answer from one on anybody else's. */
   groupLikes: Map<number, Set<PlayerId>>;
   /** As in Writing: the round's theme, so the bank on screen still shows what is being played. */
-  theme: ThemeRef | undefined;
+  theme: ThemeId | undefined;
 };
 
 export type ScoresState = RoomMembers & {
@@ -147,14 +147,14 @@ export type ScoresState = RoomMembers & {
   startedAt: number;
   scores: Map<PlayerId, number>;
   /** As in Writing: the round's theme, which the bank on screen is still showing off. */
-  theme: ThemeRef | undefined;
+  theme: ThemeId | undefined;
 };
 
 export type FinalState = RoomMembers & {
   phase: 'Final';
   /** The theme the game was finally played in. The bank is on the last screen too, and a bank
    * with nothing chosen on it reads as a game that was never about anything. */
-  theme: ThemeRef | undefined;
+  theme: ThemeId | undefined;
 };
 
 export type HostState =
@@ -171,8 +171,8 @@ export function freshLobbyState(): LobbyState {
     pace: 'Standard',
     themes: [],
     themeMode: 'Random',
-    customThemes: new Map<number, CustomTheme>(),
-    themeRounds: new Map<ThemeRef, number>(),
+    customThemes: new Map<string, CustomTheme>(),
+    themeRounds: new Map<ThemeId, number>(),
     paused: false,
     pausedAt: undefined,
   };

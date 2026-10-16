@@ -36,6 +36,10 @@ export const lobby = {
      * when the room has chosen its themes, how many of them are on out of how many it may name. */
     themes: 'Темы',
     themesChosen: (count: number, max: number) => `Темы (${count}/${max})`,
+    /** The same rule over the random bank: the deal against the whole set the browser knows, so
+     * a host who has pasted themes can see that they are in the pool and how much of it they
+     * are. */
+    themesRandom: (count: number, total: number) => `Темы (${count}/${total})`,
     /** The two ways a room can be given its themes, by the same keys as the modes themselves:
      * the whole bank without naming any of it, or the themes named beside it. */
     themeModes: { Random: 'Случайно', Chosen: 'Выбранное' },
@@ -65,6 +69,18 @@ export const lobby = {
     customThemes: 'Кастомное',
     /** The paste window's title, naming what goes in it. */
     customThemesTitle: 'Кастомные темы',
+    /** The bin on the editor's corner. On a theme being edited an empty box cannot be saved as
+     * one, so it strikes the theme out; on a fresh paste it empties the field. Offered in both
+     * cases: the box holds the host's text, and emptying it is their call. */
+    customThemesClear: 'Очистить поле',
+    /** The rule over the prompt's own note and button, naming who the other half of this window
+     * is for. The theme above is written here and read from here; the prompt is for somewhere
+     * else entirely, and a rule saying so is what keeps two grey notes from reading as one. */
+    customThemesPromptSection: 'Для ИИ',
+    /** Under the title, how many questions the theme in the box carries — which is how many
+     * rounds it can be played for, since one question is dealt per round and never repeated
+     * within it. */
+    customThemesRounds: (count: number) => `Раундов: (${count})`,
     /** The label over the text area, telling the host what to paste. */
     customThemesPaste: 'Вставьте JSON с темами',
     /** The button that saves the pasted themes and closes the window. */
@@ -72,21 +88,51 @@ export const lobby = {
     /** The button that puts the prompt for this theme on the clipboard, for a host who would
      * rather have a theme written than write one out. */
     customThemesCopyPrompt: 'Копировать промпт',
+    /** The banner over that button, saying what it copies: the prompt for writing themes, for
+     * pasting into a chat. `{name}` is this theme's own name — empty where the JSON has none,
+     * which is the window saying the copy will go out with the placeholder still standing. */
+    customThemesCopyPromptHint:
+      'Копирует промпт для составления тем в буфер обмена. Вставьте его в любой ИИ-чат, и он вернёт готовый JSON. Текущая тема: {name}',
     /** Shown when the browser would not put the prompt on the clipboard. */
     customThemesCopyFailed: 'Браузер не дал скопировать промпт',
+    /** The button in the paste window that strikes the theme it was opened on out of the room. */
+    customThemesRemove: 'Удалить',
+    /** The mark on a custom theme's card, opening that theme in the paste window to change it. */
+    editCustomThemes: 'Изменить тему',
     /** The button that closes the window without saving. */
     customThemesCancel: 'Отмена',
     /** Shown when the pasted JSON is not a valid theme list. */
     customThemesError: 'Неправильный JSON',
-    /** The popup's title while the JSON in it is wrong: the window is about an error, not about a
-     * theme it cannot name yet. */
+    /** What is wrong with the JSON where it stops making sense, said in the host's terms: the
+     * fault and where it is, since a number counted from zero tells a host nothing about which
+     * line to look at. */
+    customThemesJsonProblems: {
+      UnclosedString: 'Строка не закрыта кавычкой',
+      UnclosedBracket: 'Скобка не закрыта',
+      MismatchedBracket: 'Лишняя или не та скобка',
+      TrailingComma: 'Лишняя запятая в конце',
+      MissingValue: 'После знака стоит пустое значение',
+      UnexpectedChar: 'Здесь не может быть этого символа',
+      UnexpectedEnd: 'Текст обрывается на середине',
+    } as const,
+    /** Where in the paste the fault is, as `line:column` the way an editor counts them, so a
+     * host can look straight at the place rather than counting the message out. */
+    customThemesJsonProblemAt: (line: number, column: number) => `${line}:${column}`,
+    /** The popup's title while the JSON in it is wrong: the window is about an error, not about
+     * a theme it cannot name yet. */
     customThemesErrorTitle: 'Ошибка',
     /** Shown when a theme has no name, no color, or no questions. */
     customThemesInvalidTheme: 'Каждая тема нуждается в имени, цвете и вопросах',
     /** The button under the themes row that opens the paste window, when the room has chosen its
      * themes rather than taking the whole bank. */
     loadCustomThemes: 'Загрузить',
-    /** The stem of a name for a pasted theme that arrived without one, numbered after it. */
-    customThemesDefaultName: 'Польз.',
+    /** The stem of a name for a pasted theme that arrived without one, numbered after it. Said
+     * as what the theme has rather than who wrote it: a nameless theme is nameless, and the
+     * host is only halfway through naming it. */
+    customThemesDefaultName: 'Без названия',
+    /** Shown when a custom theme carries the name of a built-in one, which it cannot: a theme is
+     * keyed by its name, so two under one name is one theme, and the built-in one would go.
+     * Three words: the title above is already Ошибка and the name is in the box being edited. */
+    customThemesNameClash: 'Имя занято',
   },
 } as const;

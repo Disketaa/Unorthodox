@@ -118,6 +118,20 @@
   mask-size: 100%;
 }
 
+/* The pencil, for the one control that opens something already there to be changed rather than
+ * something new to be written. A filled nib rather than a line, so it reads as an edit and not
+ * as a rule. */
+.IconEdit .Icon {
+  mask-image: url('../../Icons/Edit.svg');
+  mask-size: 100%;
+}
+
+/* The bin, for the one control that empties something rather than changing it. */
+.IconTrash .Icon {
+  mask-image: url('../../Icons/Trash.svg');
+  mask-size: 100%;
+}
+
 /* The dock's own marks, sized as those files are drawn. Pause and Play are a filled pair rather
  * than two drawings of one idea, so the button changes its face rather than its meaning: the
  * room is running, or it is not. */

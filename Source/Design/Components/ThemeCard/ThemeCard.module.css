@@ -351,7 +351,14 @@
   composes: Truncate from '../../Primitives/Truncate/Truncate.module.css';
   position: relative;
   z-index: 1;
-  display: flex;
+  /* A block rather than a flex row, which is what lets the cut be a cut. As a flex container
+   * the name is an anonymous flex item, and `text-overflow: ellipsis` has nothing to draw on
+   * there: the item is clipped by the box and no ellipsis appears, so a long theme name ran to
+   * the card's edge and stopped. A block is what the shared `Truncate` is written against.
+   * Centred by `align-self` and the card's own `justify-content`, in place of the `align-items`
+   * and `justify-content` this used to carry. */
+  display: block;
+  align-self: center;
   /* Not growing, which is the whole of the bar sitting under the word. This was `flex: 1`, so
    * the name took every pixel above the bar and the bar was left at the bottom of the card with
    * the word centred in whatever was left over — which looked like a centred name and a
@@ -359,8 +366,6 @@
    * center` centres the two of them together once neither grows, and the bar falls directly
    * under the name with the same gap whichever way the name is cut. */
   flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
   width: 100%;
   min-height: 0;
   font-family: var(--FontFamily-Display);

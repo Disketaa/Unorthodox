@@ -15,7 +15,9 @@ export type IconName =
   | 'VolumeOn'
   | 'VolumeOff'
   | 'MusicOn'
-  | 'MusicOff';
+  | 'MusicOff'
+  | 'Edit'
+  | 'Trash';
 export interface IconButtonProps {
   icon: IconName;
   /** What the button does, for anyone who cannot see the mark. */

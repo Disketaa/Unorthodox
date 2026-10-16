@@ -5,7 +5,7 @@ import { clientId } from './ClientIdentity';
 import { ClientInbox, isFromHost } from './ClientInbox';
 import { stallHint, StallHintMs, type ConnectionHint } from './ConnectionHint';
 import * as Game from '@/Game';
-import { PlayerLook, ThemeRef, CustomTheme, addCustomTheme, createLogger } from '@/Core';
+import { PlayerLook, ThemeId, CustomTheme, addCustomTheme, createLogger } from '@/Core';
 
 export type { BlockedReason } from './Protocol';
 
@@ -134,7 +134,7 @@ export class ClientSession {
     }
   }
 
-  chooseTheme(theme: ThemeRef): void {
+  chooseTheme(theme: ThemeId): void {
     if (this.seated('choose a theme')) {
       this.transport.sendToHost({
         type: 'ChooseTheme',
@@ -150,14 +150,24 @@ export class ClientSession {
     }
   }
 
-  getState(): Game.PublicState | undefined { return this.inbox.state; }
-  getClockOffsetMs(): number { return this.inbox.clock.offset; }
-  getPlayerId(): string | null { return this.inbox.playerId; }
-  getBlocked(): BlockedReason | undefined { return this.inbox.blocked; }
+  getState(): Game.PublicState | undefined {
+    return this.inbox.state;
+  }
+  getClockOffsetMs(): number {
+    return this.inbox.clock.offset;
+  }
+  getPlayerId(): string | null {
+    return this.inbox.playerId;
+  }
+  getBlocked(): BlockedReason | undefined {
+    return this.inbox.blocked;
+  }
   getConnectionHint(): ConnectionHint | undefined {
     return this.inbox.playerId === null ? this.connectionHint : undefined;
   }
-  getRoomLimit(): number { return this.inbox.roomLimit; }
+  getRoomLimit(): number {
+    return this.inbox.roomLimit;
+  }
   getCustomThemes(): readonly CustomTheme[] {
     const state = this.inbox.state;
     if (state === undefined || 'customThemes' in state === false) return [];

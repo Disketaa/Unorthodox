@@ -1,5 +1,5 @@
-/* The window over the lobby where the host pastes custom theme JSON. A shade behind it dims
- * the room like the pause screen, and a panel in the middle holds the text area and buttons. */
+/* The window over the lobby where the host pastes custom theme JSON. A shade behind it dims the
+ * room like the pause screen, and a panel in the middle holds the text area and buttons. */
 .Root {
   position: fixed;
   inset: 0;
@@ -21,13 +21,13 @@
   border: 1px solid var(--Color-Border-Default);
   border-radius: var(--Radius-Card);
   padding: var(--Space-Lg);
-  width: min(92vw, 1040px);
+  width: min(92vw, 620px);
   max-height: 85vh;
   overflow: auto;
   display: grid;
-  /* One column held to the panel's own width. Without the `minmax(0, …)` a grid track is sized by
-   * its content's max-content width, and the editor's highlight layer keeps its line breaks, so
-   * one long line of JSON would widen the panel instead of scrolling inside it. */
+  /* One column held to the panel's own width. Without the `minmax(0, …)` a grid track is sized
+   * by its content's max-content width, and the editor's highlight layer keeps its line breaks,
+   * so one long line of JSON would widen the panel instead of scrolling inside it. */
   grid-template-columns: minmax(0, 1fr);
   gap: var(--Space-Md);
   font-family: var(--FontFamily-Body);
@@ -35,8 +35,8 @@
 }
 
 /* The head of the panel: the theme's name on the left, and the reason it has none on the right.
- * Two columns rather than a flex row so the name takes what it needs and the reason takes what is
- * left, each capped: a long parser message wraps rather than pushing the name off the panel. */
+ * Two columns rather than a flex row so the name takes what it needs and the reason takes what
+ * is left, each capped: a long parser message wraps rather than pushing the name off the panel. */
 .Header {
   display: grid;
   grid-template-columns: minmax(0, auto) minmax(0, 1fr);
@@ -54,7 +54,17 @@
   overflow: hidden;
 }
 
+/* The theme's name, cut rather than wrapped. A pasted theme's name is the host's own words and
+ * can be a sentence; the window's own header row is one line tall, so a name that wraps would
+ * push the note beside it down and make the two disagree about which line they are on.
+ * `min-width: 0` is what lets the name shrink inside the grid track it sits in. */
 .title {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-family: var(--FontFamily-Display);
   font-size: var(--FontSize-H1);
   font-weight: 600;
@@ -80,10 +90,10 @@
   background: var(--Color-Surface-Default);
 }
 
-/* Text that is not a theme list. The wash the room's own muted feedback is painted in, so the box
- * agrees with the banner under it and with the pink everything else in this state is drawn in.
- * Held through focus, since the box being focused is not a reason to stop saying what is wrong
- * with it. */
+/* Text that is not a theme list. The wash the room's own muted feedback is painted in, so the
+ * box agrees with the banner under it and with the pink everything else in this state is drawn
+ * in. Held through focus, since the box being focused is not a reason to stop saying what is
+ * wrong with it. */
 .Editor.Invalid {
   border-color: var(--Color-Feedback-Error);
   background: var(--Color-Feedback-Muted-Wash);
@@ -92,6 +102,18 @@
 .Editor.Invalid:focus-within {
   border-color: var(--Color-Feedback-Error);
   background: var(--Color-Feedback-Muted-Wash);
+}
+
+/* The bin's corner, over the editor box's own corner. A margin in from the edge so it sits
+ * inside the border rather than on it, and above the text area so it cannot take a keystroke
+ * meant for the JSON. No background of its own: the box it sits on is already a surface, and a
+ * second one under a mark that small reads as a chip rather than as part of the box. */
+.Clear {
+  position: absolute;
+  top: var(--Space-Xs);
+  right: var(--Space-Xs);
+  z-index: 2;
+  display: flex;
 }
 
 /* Both layers must share every metric that affects text wrapping, or the caret drifts away from
@@ -128,9 +150,10 @@
   inset: 0;
   height: 100%;
   max-height: inherit;
-  /* The text area fills the editor box exactly, so the browser's grip in its corner would resize
-   * a box that has no height of its own to give: dragging it moved nothing but the grip. The box's
-   * height is the highlight layer's, and that is set in CSS like the rest of the panel. */
+  /* The text area fills the editor box exactly, so the browser's grip in its corner would
+   * resize a box that has no height of its own to give: dragging it moved nothing but the grip.
+   * The box's height is the highlight layer's, and that is set in CSS like the rest of the
+   * panel. */
   resize: none;
   outline: none;
   color: transparent;
@@ -145,15 +168,13 @@
   outline: none;
 }
 
-/* The selection is painted by the text area, which sits over the highlighted layer, so it has to
- * stay translucent: an opaque fill would hide the very text it is marking. A wash of the muted
- * ink rather than the room's yellow, so marking text never reads as a colour the editor gave
- * it. */
+/* The selection is painted by the text area, which sits over the highlighted layer, so it has
+ * to stay translucent: an opaque fill would hide the very text it is marking. A wash of the
+ * muted ink rather than the room's yellow, so marking text never reads as a colour the editor
+ * gave it. */
 .Input::selection {
   background: color-mix(in srgb, var(--Color-Text-Muted) 25%, transparent);
 }
-
-
 
 /* Syntax-highlighted JSON tokens using the project's color palette. */
 .Key {
@@ -188,4 +209,14 @@
 
 .Whitespace {
   white-space: pre;
+}
+
+/* The theme's name inside the hint banner, in the copy button's own blue. The one part of that
+ * sentence that belongs to this window rather than to the wording: everything around it is the
+ * same on every open, and the name is what changes. Wearing the colour of the button it
+ * describes ties the two together — the banner says what will be copied, the button below it is
+ * the copy. */
+.HintName {
+  color: var(--Color-Feedback-Info);
+  font-weight: 600;
 }

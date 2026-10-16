@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'preact/hooks';
 import { Pace, PublicState } from '@/Game';
-import { PlayerId, PlayerLook, CharacterColor, CharacterId, ThemeRef, CustomTheme } from '@/Core';
+import {
+  PlayerId,
+  PlayerLook,
+  CharacterColor,
+  CharacterId,
+  ThemeId,
+  CustomTheme,
+} from '@/Core';
 import type { ThemeMode } from '@/Core';
 import { createSession } from '../SessionFactory';
 import { Session, SessionRole, BlockedReason, ConnectionHint } from '../Session';
@@ -22,8 +29,8 @@ import { useOwnLook } from './UseOwnLook';
 import { exitRoom, readTopic, reportEditing } from './SessionUtils';
 
 /** Everything a screen is drawn from: the phase in view, the moves it can make, and what a board
- * of answers is showing РІР‚вЂќ the host's mutes, the room's like counts, which of those were this
- * player's own presses, and whether they wrote an answer at all. */
+ * of answers is showing РІР‚— the host's mutes, the room's like counts, which of those were
+ * this player's own presses, and whether they wrote an answer at all. */
 export interface GameSessionView extends SessionPhase, BoardMarks {
   role: SessionRole;
   isHost: boolean;
@@ -58,9 +65,11 @@ export interface GameSessionView extends SessionPhase, BoardMarks {
   setLook: (character: CharacterId, color: CharacterColor) => void;
   /** Asking for a pace or for the room's themes: both the host's alone. */
   setPace: (pace: Pace) => void;
-  setThemes: (mode: ThemeMode, themes: readonly ThemeRef[]) => void;
+  setThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
   /** The host pasting in custom themes, which every client is then told. */
   setCustomThemes: (themes: readonly CustomTheme[]) => void;
+  /** The host striking one custom theme out of the room and out of this browser. */
+  removeCustomTheme: (name: string) => void;
   /** Holding the room still, or letting it run again. */
   setPaused: (paused: boolean) => void;
   /** Put an invented player in the room. Only the host's, and only while debugging. */
@@ -69,7 +78,7 @@ export interface GameSessionView extends SessionPhase, BoardMarks {
   nextTurn: () => void;
   startGame: () => void;
   /** Answering the theme bank on this player's behalf. The room sees the answer, not the player. */
-  chooseTheme: (theme: ThemeRef) => void;
+  chooseTheme: (theme: ThemeId) => void;
   nextPhase: () => void;
   submitAnswer: (text: string) => void;
   rejectGroup: (groupId: number) => void;
@@ -143,5 +152,6 @@ export function useGameSession(
     ownLook,
     exitRoom,
     setCustomThemes: (themes) => session.setCustomThemes?.(themes),
+    removeCustomTheme: (name) => session.removeCustomTheme?.(name),
   };
 }

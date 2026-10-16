@@ -4,7 +4,7 @@
 import { Accent, Accents } from './Accents';
 import { CharacterColor, CharacterColors, isCharacterColor } from './Characters';
 import { randomFor, type Random } from './Random';
-import { isKnownThemeId, themeColor, customThemeName, type CustomTheme } from './CustomThemes';
+import { isKnownThemeId, themeColor, type CustomTheme } from './CustomThemes';
 
 /** A theme's name, which is its file's name. Not a union of literals: the set of themes is only
  * known once the files are read, so the registry below is what an id is checked against. */
@@ -113,37 +113,37 @@ export function isThemeId(value: unknown): value is ThemeId {
   return isKnownThemeId(value);
 }
 
-/** What names a theme in a room: an authored theme's id, or a custom theme's number. The two are
- * held apart where a theme is looked up in the registry — a number is never an authored theme, and
- * treating it as one would let a custom theme answer to a file's name — but everywhere a room
- * only carries a theme around, a deal, a count, a card, this is the one type. Carried as
- * `ThemeId | number` rather than folded into `ThemeId`, which is `string`: a custom theme has no
- * name to be its id, only the number it was saved under. */
-export type ThemeRef = ThemeId | number;
-
-/** Whether a value is something a room can carry as one of its themes: an authored id, or a
- * number a custom theme was saved under. A number is read as a custom theme whether or not this
- * client has that theme saved — a client that has not is shown no questions for it, which is the
- * same as a room naming a theme whose file is missing. */
-export function isThemeRef(value: unknown): value is ThemeRef {
-  return isThemeId(value) || (typeof value === 'number' && Number.isInteger(value));
+/** Whether a name is one the room already plays under, and so cannot be a new theme's. A theme
+ * is keyed by its name, so a second theme carrying one would not sit beside the first but take
+ * its place in the cache and in the room — which for a built-in name means the host loses a
+ * theme they never knew they were losing. Two things are taken: a name in the registry, and a
+ * name another custom theme already holds. `except` is the name of the theme being edited, so
+ * opening a theme to change it is not a clash with itself. One check for every place that
+ * refuses it: the paste window that writes the name, and the card in the lobby that names it. */
+export function themeNameIsTaken(
+  name: string,
+  customThemes: readonly CustomTheme[] = [],
+  except?: string
+): boolean {
+  if (ThemeIds.includes(name)) return true;
+  return customThemes.some((theme) => theme.name === name && theme.name !== except);
 }
 
-/** A theme's name as the room reads it: the file's name for an authored theme, the name the host
- * gave it for a custom one, and the bare number for a custom theme this client has not saved —
- * which is all that can be said about a theme whose text never reached this tab. */
-export function themeName(theme: ThemeRef): string {
-  if (typeof theme === 'string') return theme;
-  return customThemeName(theme) ?? String(theme);
+/** A theme's name as the room reads it. An authored theme's is its file's name; a custom theme's
+ * is the name the host gave it, which is the same string either way — so this is the identity
+ * function, kept as a name so that a screen naming a theme says `themeName(theme)` and does not
+ * reach for the field itself. */
+export function themeName(theme: ThemeId): string {
+  return theme;
 }
 
 /** The accent a theme washes in. A function rather than a table to index into, so the one thing
  * a caller needs is the whole accent: wash and ink belong together. A custom theme's tint is
  * honoured where a file's is not. */
-export function themeAccent(theme: ThemeRef): Accent {
+export function themeAccent(theme: ThemeId): Accent {
   const named = themeColor(theme);
   if (named !== undefined) return Accents[named];
-  const index = Math.max(0, ThemeIds.indexOf(theme as ThemeId));
+  const index = Math.max(0, ThemeIds.indexOf(theme));
   const fallback = CharacterColors[index % CharacterColors.length];
   return Accents[fallback ?? 'Yellow'];
 }
@@ -169,20 +169,20 @@ function shuffle<T>(pool: T[], random: Random): T[] {
   return pool;
 }
 
-/** The themes a room may be given, given which way it is given them, which it has named, and which
- * custom themes this client knows. The random bank is the whole set — authored and custom
- * together, since a custom theme is as much the room's as any file in the registry. A room naming
- * none under `Chosen` is read the same way rather than as a room with nothing to play. */
+/** The themes a room may be given, given which way it is given them, which it has named, and
+ * which custom themes this client knows. The random bank is the whole set — authored and custom
+ * together, since a custom theme is as much the room's as any file in the registry. A room
+ * naming none under `Chosen` is read the same way rather than as a room with nothing to play. */
 export function themePool(
   mode: ThemeMode,
-  selection: readonly ThemeRef[] | undefined,
+  selection: readonly ThemeId[] | undefined,
   customThemes: readonly CustomTheme[] = []
-): readonly ThemeRef[] {
-  const customIds = customThemes.map((theme) => theme.id);
+): readonly ThemeId[] {
+  const customNames = customThemes.map((theme) => theme.name);
   if (mode !== 'Chosen' || selection === undefined || selection.length === 0) {
-    return [...ThemeIds, ...customIds];
+    return [...ThemeIds, ...customNames];
   }
-  return [...ThemeIds, ...customIds].filter((theme) => selection.includes(theme));
+  return [...ThemeIds, ...customNames].filter((theme) => selection.includes(theme));
 }
 
 /** The themes one room is offered, rolled from its code and dealt out of the pool the host has
@@ -191,8 +191,8 @@ export function themePool(
 export function themesForRoom(
   roomCode: string,
   count: number,
-  pool: readonly ThemeRef[] = ThemeIds
-): ThemeRef[] {
+  pool: readonly ThemeId[] = ThemeIds
+): ThemeId[] {
   return dealThemes(randomFor(roomCode), count, pool);
 }
 
@@ -201,7 +201,7 @@ export function themesForRoom(
 export function dealThemes(
   random: Random,
   count: number,
-  pool: readonly ThemeRef[] = ThemeIds
-): ThemeRef[] {
+  pool: readonly ThemeId[] = ThemeIds
+): ThemeId[] {
   return sampleUnique(pool, count, random);
 }

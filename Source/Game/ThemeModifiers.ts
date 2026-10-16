@@ -6,7 +6,7 @@ import {
   LetterPairs,
   ThemeEffectId,
   ThemeEnchantId,
-  ThemeRef,
+  ThemeId,
   ThemeModifierId,
   randomFor,
   sampleUnique,
@@ -19,12 +19,12 @@ import { GameConfig } from './GameConfig';
  * answer and a caller should not read six empty lists to find that out. */
 export function modifiersForRound(
   roomCode: string,
-  themes: readonly ThemeRef[],
+  themes: readonly ThemeId[],
   round: number
-): ReadonlyMap<ThemeRef, readonly ThemeModifierId[]> {
+): ReadonlyMap<ThemeId, readonly ThemeModifierId[]> {
   const rule = GameConfig.themes.modifiers;
   const random = randomFor(`${roomCode}:modifiers:${round}`);
-  const enchanted = new Map<ThemeRef, readonly ThemeModifierId[]>();
+  const enchanted = new Map<ThemeId, readonly ThemeModifierId[]>();
   if (random() >= rule.chance) return enchanted;
   const count = 1 + Math.floor(random() * Math.min(rule.maxPerRound, themes.length));
   for (const theme of sampleUnique(themes, count, random)) {
@@ -38,7 +38,7 @@ export function modifiersForRound(
 }
 
 /** Multiplier rolled per theme from room/round seed. */
-export function multForTheme(roomCode: string, theme: ThemeRef, round: number): number {
+export function multForTheme(roomCode: string, theme: ThemeId, round: number): number {
   const random = randomFor(`${roomCode}:mult:${round}:${theme}`);
   return GameConfig.themes.mults[Math.floor(random() * GameConfig.themes.mults.length)];
 }
@@ -61,7 +61,7 @@ const NoLetters: readonly LetterPair[] = [];
  * length it holds the answer to. */
 export function enchantmentFor(
   roomCode: string,
-  theme: ThemeRef | undefined,
+  theme: ThemeId | undefined,
   spent: readonly { rounds: number }[] | undefined
 ): EnchantmentRoll {
   if (theme === undefined) return NoEnchantment;

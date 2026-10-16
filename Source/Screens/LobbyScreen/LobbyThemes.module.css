@@ -17,3 +17,76 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* One custom theme's cell: the card, and the mark inside it. The width the card takes is the
+ * cell's own — see below — so this holds nothing but the shrinking that lets it. */
+.Slot {
+  min-width: 0;
+}
+
+/* The pencil, inside the card it belongs to and over its end, so a custom theme carries its own
+ * way into the paste window rather than the whole column sharing one. `position: relative` on
+ * the card is what anchors it there. Held back until the cell is under the pointer or holds the
+ * keyboard, so a column of themes reads as a column of themes rather than a column of pencils;
+ * kept visible once focused, since the focus that revealed it has to be able to see it. The
+ * mark is a span and not a second button: a button inside a button is one control to the
+ * browser, and the card would take the pencil's press as its own and toggle the theme. */
+.Item {
+  position: relative;
+}
+
+/* The room left for the mark, so a name too long for its card is cut short of it rather than
+ * running underneath it. On the card rather than on the mark, because this is the card's own
+ * truncation point: the ellipsis has to land before the mark begins or the last of the name is
+ * drawn under the pencil. The space the mark actually takes — its own padding plus the icon —
+ * rather than a guess, so the cut and the mark cannot drift apart. */
+/* The card filling its cell. The cell is the wrapper, not the card — the card is an inline-flex
+ * box inside it, so without this it is sized by its own words and a long name spills across the
+ * cell beside it instead of being cut. Filling the cell is also what makes the space held back
+ * for the mark mean anything. */
+.Slot .Item {
+  width: 100%;
+  padding-right: calc(var(--Space-Sm) + var(--Space-Xs) * 2 + 1em);
+}
+
+/* The name in a box of its own, which is what lets it be cut rather than clipped. It takes the
+ * room between the card's own padding and the mark, and `min-width: 0` is what lets it shrink
+ * below its own content width to do it. */
+.ItemName {
+  composes: Truncate from '../../Design/Primitives/Truncate/Truncate.module.css';
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* Always drawn rather than held back for a hover. A mark that only appears under the pointer is
+ * a control a player has to find before they know it is there, and on a card this small the
+ * hover that would reveal it is over a target the size of a word. */
+.SlotEdit {
+  position: absolute;
+  top: 50%;
+  right: var(--Space-Sm);
+  translate: 0 -50%;
+  display: flex;
+  align-items: center;
+  padding: var(--Space-Xs);
+  border-radius: var(--Radius-Sm);
+  opacity: 0.75;
+  cursor: var(--Cursor-Pointer);
+  transition: opacity var(--Transition-Standard);
+}
+
+.Slot:hover .SlotEdit,
+.SlotEdit:focus-visible {
+  opacity: 1;
+}
+
+/* The mark painted through a mask, as every other mark in the game is, so one black silhouette
+ * serves in any colour. The path reaches across to `Design/Icons` rather than to a folder of
+ * its own: the icons live in one place and a second copy here would be one more thing to keep
+ * in step with them. */
+.SlotEditIcon {
+  width: 1em;
+  height: 1em;
+  background-color: currentColor;
+  mask: url('../../Design/Icons/Edit.svg') center / contain no-repeat;
+}

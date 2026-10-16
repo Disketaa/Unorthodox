@@ -30,6 +30,11 @@ export interface BannerProps {
    * words are on the left and the number at the far end. */
   value?: string;
   children?: ComponentChildren;
+  /** Whether the words wrap instead of ending in an ellipsis. A note is held to one line by
+   * default, since most of them are short enough to say in one; a wording that carries a
+   * sentence rather than a label asks for `wrap`, so the whole of it is read rather than its
+   * first line. */
+  wrap?: boolean;
   /** Whether the round's enchanted card reaches this player, which lays the glint over the
    * banner. */
   glinted?: boolean;
@@ -45,6 +50,7 @@ export function Banner({
   badge,
   value,
   children,
+  wrap = false,
   glinted = false,
 }: BannerProps) {
   const variantClass = useGlintVariant();
@@ -61,7 +67,7 @@ export function Banner({
         />
       )}
       {badge !== undefined && <span class={styles.Badge}>{badge}</span>}
-      <span class={styles.Text}>{children}</span>
+      <span class={`${styles.Text} ${wrap ? styles.Wrap : ''}`}>{children}</span>
       {value !== undefined && <span class={styles.Value}>{value}</span>}
     </div>
   );

@@ -1,5 +1,5 @@
 import { LobbyRoom } from './LobbyRoom';
-import { PlayerId, ThemeRef, ThemeMode } from '@/Core';
+import { PlayerId, ThemeId, ThemeMode } from '@/Core';
 import { PublicPlayer } from '@/Game';
 
 export interface RoomCardProps {
@@ -11,7 +11,7 @@ export interface RoomCardProps {
   onExit: () => void;
   onKick: (playerId: PlayerId) => void;
   themeMode: ThemeMode;
-  themes: readonly ThemeRef[];
+  themes: readonly ThemeId[];
 }
 
 export function RoomCard({

@@ -1,10 +1,19 @@
 import { LobbyScreen } from '@/Screens';
 import { Pace } from '@/Game';
-import type { ThemeRef, ThemeMode, CustomTheme } from '@/Core';
+import { savedCustomThemes, type ThemeId, type ThemeMode, type CustomTheme } from '@/Core';
 import { GameSessionView } from '../Hooks/UseGameSession';
 
 export interface PhaseViewProps {
   view: GameSessionView;
+}
+
+/** This browser's themes and the room's, keyed by name, with the room's reading winning over the
+ * local copy: they can only disagree where the room holds a theme this browser has since
+ * edited, and there the room is what the other players are holding. */
+function mergeCustomThemes(room: readonly CustomTheme[]): readonly CustomTheme[] {
+  const merged = new Map(savedCustomThemes().map((theme) => [theme.name, theme]));
+  for (const theme of room) merged.set(theme.name, theme);
+  return [...merged.values()];
 }
 
 /** Lobby: room code, roster, the character picker, and the host's Start button. */
@@ -18,12 +27,18 @@ export function LobbyView({ view }: PhaseViewProps) {
   // the random bank, which is the whole set and so is what it would have been given anyway.
   const themeMode: ThemeMode =
     view.publicState?.phase === 'Lobby' ? view.publicState.themeMode : 'Random';
-  const themes: readonly ThemeRef[] =
+  const themes: readonly ThemeId[] =
     view.publicState?.phase === 'Lobby' ? view.publicState.themes : [];
-  // The custom themes this room knows, so the paste window can show them. A client that has not
-  // received the state yet reads as none.
-  const customThemes: readonly CustomTheme[] =
-    view.publicState?.phase === 'Lobby' ? view.publicState.customThemes : [];
+  // The custom themes, read from this browser's own cache and not from the room's state: a
+  // theme is written down when it is pasted, so a host's themes outlive both the browser and the
+  // room. The room's own are merged in, so joining another's room shows what that room has.
+  // is written down when the host pastes it, so the host's themes are still here after the browser
+  // is closed and a fresh room is opened — a room only ever tells a client about the themes this
+  // room is playing. The room's own are merged in so that a host who joins a room from another
+  // browser sees what that room has, without either list hiding the other.
+  const customThemes: readonly CustomTheme[] = mergeCustomThemes(
+    view.publicState?.phase === 'Lobby' ? view.publicState.customThemes : []
+  );
   // The name the host has for us, not the one typed on this tab: the character is the
   // host's to keep, so the picker is headed with what the room actually calls us.
   const ownName = players.find((player) => player.id === view.playerId)?.name ?? '';
@@ -36,6 +51,7 @@ export function LobbyView({ view }: PhaseViewProps) {
       themes={themes}
       customThemes={customThemes}
       onCustomThemes={view.setCustomThemes}
+      onRemoveCustomTheme={view.removeCustomTheme}
       onLoadCustomThemes={() => {}}
       ownPlayerId={view.playerId}
       ownPlayerName={ownName}

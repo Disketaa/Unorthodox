@@ -1,4 +1,12 @@
-import { PlayerId, PlayerLook, ThemeId, isPlayerLook, isThemeId, CustomTheme, isCustomTheme } from '@/Core';
+import {
+  PlayerId,
+  PlayerLook,
+  ThemeId,
+  isPlayerLook,
+  isThemeId,
+  CustomTheme,
+  isCustomTheme,
+} from '@/Core';
 import * as Game from '@/Game';
 
 /** Messages sent from clients to the host. `groupId` is the numeric index assigned by the

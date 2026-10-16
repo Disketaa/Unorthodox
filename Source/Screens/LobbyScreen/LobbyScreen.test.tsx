@@ -22,6 +22,7 @@ function lobby(isHost: boolean, pace: Pace = 'Standard') {
       customThemes={[]}
       onCustomThemes={() => {}}
       onLoadCustomThemes={() => {}}
+      onRemoveCustomTheme={() => {}}
       ownPlayerId="p1"
       ownPlayerName="Ann"
       ownLook={{ character: look.character, color: look.color }}

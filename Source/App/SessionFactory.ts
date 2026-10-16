@@ -35,6 +35,7 @@ function createHostSession(roomCode: string, playerName: string, look: PlayerLoo
     setPace: (pace) => hostSession.setPace(pace),
     setThemes: (mode, themes) => hostSession.setThemes(mode, themes),
     setCustomThemes: (themes) => hostSession.setCustomThemes(themes),
+    removeCustomTheme: (id) => hostSession.removeCustomTheme(id),
     getCustomThemes: () => hostSession.getCustomThemes(),
     addBot: () => hostSession.addBot(),
     submitAnswer: (text) => hostSession.submitOwnAnswer(text.trim()),

@@ -2,19 +2,19 @@
 import { describe, it, expect } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
-import { createRandom, dealThemes, ThemeRef } from '@/Core';
+import { createRandom, dealThemes, ThemeId } from '@/Core';
 import { ThemeCards } from './ThemeCards';
 
-const themes: readonly ThemeRef[] = dealThemes(createRandom(7), 6);
+const themes: readonly ThemeId[] = dealThemes(createRandom(7), 6);
 /** Four rounds already played in the first theme dealt, and a full bar on the rest. */
-const spent = new Map<ThemeRef, number>();
+const spent = new Map<ThemeId, number>();
 const first = themes[0];
 if (first !== undefined) spent.set(first, 4);
 
 /** Mount a bank and hand back the cards as the browser sees them. */
 function mount(props: {
-  onPick?: (theme: ThemeRef) => void;
-  picked?: ThemeRef;
+  onPick?: (theme: ThemeId) => void;
+  picked?: ThemeId;
 }): HTMLButtonElement[] {
   const container = document.createElement('div');
   document.body.appendChild(container);

@@ -3,7 +3,7 @@ import { playSound, type SoundName } from '../../Sounds';
 import type { Accent } from '@/Core';
 import styles from './Button.module.css';
 
-export type ButtonVariant = 'Primary' | 'Secondary' | 'Ghost' | 'Muted' | 'Info';
+export type ButtonVariant = 'Primary' | 'Secondary' | 'Ghost' | 'Muted' | 'Info' | 'Error';
 export type ButtonSize = 'Small' | 'Medium' | 'Large';
 
 export interface ButtonProps {

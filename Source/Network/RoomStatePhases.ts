@@ -2,7 +2,7 @@
  * Its own file because reading a phase and guarding its fields are two different jobs, and only
  * one of them changes when a phase gains a field. */
 import type { HostState, RandomPick, RoomMembers } from '@/Game';
-import { isThemeId, type ThemeRef } from '@/Core';
+import { isThemeId, type ThemeId } from '@/Core';
 import { toGroupVotes } from './RoomGroupVotes';
 
 /** The marks a board of answers carries when a room is restored mid-round: which cards were
@@ -125,7 +125,7 @@ function choosingFrom(
 }
 
 /** The scores phase, which carries the round's own points beside the running totals. */
-function scoresFrom(fields: Fields, members: Members, theme: ThemeRef | undefined): HostState {
+function scoresFrom(fields: Fields, members: Members, theme: ThemeId | undefined): HostState {
   return {
     phase: 'Scores',
     ...clockOf(fields),

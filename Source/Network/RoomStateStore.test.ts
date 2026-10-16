@@ -31,7 +31,7 @@ const writingPhase: HostState = {
   themes: [],
   themeMode: 'Random',
   themeRounds: new Map(),
-    customThemes: new Map<number, CustomTheme>(),
+  customThemes: new Map<string, CustomTheme>(),
 
   paused: false,
 
@@ -55,7 +55,7 @@ const reviewingPhase: HostState = {
   themes: [],
   themeMode: 'Random',
   themeRounds: new Map(),
-    customThemes: new Map<number, CustomTheme>(),
+  customThemes: new Map<string, CustomTheme>(),
 
   paused: false,
 
@@ -75,7 +75,7 @@ const scoresPhase: HostState = {
   themes: [],
   themeMode: 'Random',
   themeRounds: new Map(),
-    customThemes: new Map<number, CustomTheme>(),
+  customThemes: new Map<string, CustomTheme>(),
 
   paused: false,
 
@@ -92,7 +92,7 @@ const finalPhase: HostState = {
   themes: [],
   themeMode: 'Random',
   themeRounds: new Map(),
-    customThemes: new Map<number, CustomTheme>(),
+  customThemes: new Map<string, CustomTheme>(),
 
   paused: false,
 
@@ -106,7 +106,7 @@ describe('a room that outlives its tab', () => {
       ...freshLobby(),
       pace: 'Fast' as const,
       themeRounds: new Map(),
-    customThemes: new Map<number, CustomTheme>(),
+      customThemes: new Map<string, CustomTheme>(),
 
       paused: false,
 

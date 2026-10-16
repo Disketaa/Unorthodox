@@ -1,17 +1,19 @@
 import { LobbyPace } from './LobbyPace';
-import { ThemeRef, ThemeMode, CustomTheme } from '@/Core';
+import { ThemeId, ThemeMode, CustomTheme } from '@/Core';
 import { Pace } from '@/Game';
 
 export interface SettingsCardProps {
   pace: Pace;
   themeMode: ThemeMode;
-  themes: readonly ThemeRef[];
+  themes: readonly ThemeId[];
   players: number;
   isHost: boolean;
   onPickPace: (pace: Pace) => void;
-  onPickThemes: (mode: ThemeMode, themes: readonly ThemeRef[]) => void;
+  onPickThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
   /** Opening the paste window without saving. */
   onLoadCustomThemes: () => void;
+  /** Opening the paste window on one custom theme, to change it. */
+  onEditCustomThemes: (theme: CustomTheme, clash?: string) => void;
   /** The custom themes this room knows, so the grid can show them. */
   customThemes: readonly CustomTheme[];
 }
@@ -28,6 +30,7 @@ export function SettingsCard(props: SettingsCardProps) {
       onPick={props.onPickPace}
       onPickThemes={props.onPickThemes}
       onLoadCustomThemes={props.onLoadCustomThemes}
+      onEditCustomThemes={props.onEditCustomThemes}
       customThemes={props.customThemes}
     />
   );

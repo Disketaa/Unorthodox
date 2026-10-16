@@ -1,4 +1,10 @@
-import { ThemeEffectId, ThemeEnchantId, lettersOf, type LetterBound, type ThemeRef } from '@/Core';
+import {
+  ThemeEffectId,
+  ThemeEnchantId,
+  lettersOf,
+  type LetterBound,
+  type ThemeId,
+} from '@/Core';
 import { Strings } from '@/Content';
 import { enchantmentFor } from '@/Game';
 import type { PublicRoom } from '@/Game';
@@ -46,7 +52,7 @@ export interface Enchantment extends EnchantmentAsk {
  * stage and the writing phase name the same enchantment. */
 export function enchantmentOf(
   roomCode: string,
-  theme: ThemeRef | undefined,
+  theme: ThemeId | undefined,
   spent: PublicRoom['spent'] | undefined
 ): Enchantment {
   const roll = enchantmentFor(roomCode, theme, spent ?? []);

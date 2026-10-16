@@ -1,5 +1,5 @@
 import { IconButton, RoomCodeBadge } from '@/Design/Components';
-import { PlayerId, ThemeRef, ThemeMode } from '@/Core';
+import { PlayerId, ThemeId, ThemeMode } from '@/Core';
 import { GameConfig, PublicPlayer } from '@/Game';
 import { Strings } from '@/Content';
 import { LobbyCategory } from './LobbyCategory';
@@ -18,7 +18,7 @@ export interface LobbyRoomProps {
   onKick: (playerId: PlayerId) => void;
   /** Which way the room is given its themes, and which ones are named. */
   themeMode: ThemeMode;
-  themes: readonly ThemeRef[];
+  themes: readonly ThemeId[];
 }
 
 /** Whether there are enough players to start. Counted from the players actually here: a seat
@@ -33,7 +33,7 @@ function enoughPlayers(players: readonly PublicPlayer[]): boolean {
 function canStart(
   players: readonly PublicPlayer[],
   themeMode: ThemeMode,
-  themes: readonly ThemeRef[]
+  themes: readonly ThemeId[]
 ): boolean {
   if (!enoughPlayers(players)) return false;
   if (themeMode === 'Chosen' && themes.length === 0) return false;

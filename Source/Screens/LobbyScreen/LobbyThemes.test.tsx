@@ -4,19 +4,19 @@ import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { LobbyThemes } from './LobbyThemes';
 import { ThemeLimit } from './ThemeGrid';
-import { ThemeRef, ThemeIds, ThemeMode } from '@/Core';
+import { ThemeId, ThemeIds, ThemeMode } from '@/Core';
 import { GameConfig } from '@/Game';
 import { Strings } from '@/Content';
 
 /** The themes the grid offers, in the order it offers them. */
-const named: readonly ThemeRef[] = [...ThemeIds];
+const named: readonly ThemeId[] = [...ThemeIds];
 
 /** One way of taking themes and the names that go with it, which is what a press asks for. */
-type Pool = { mode: ThemeMode; themes: readonly ThemeRef[] };
+type Pool = { mode: ThemeMode; themes: readonly ThemeId[] };
 
-/** The grid as one role sees it. A press is answered here the way the room answers one РІР‚вЂќ the
- * host's action comes back down as the new pool РІР‚вЂќ since the grid holds no state of its own and
- * a second press is made against whatever the first one was given. */
+/** The grid as one role sees it. A press is answered here the way the room answers one РІР‚— the
+ * host's action comes back down as the new pool РІР‚— since the grid holds no state of its own
+ * and a second press is made against whatever the first one was given. */
 function mount(isHost: boolean, start: Pool) {
   let pool = start;
   const asked: Pool[] = [];
@@ -29,6 +29,7 @@ function mount(isHost: boolean, start: Pool) {
         themes={pool.themes}
         isHost={isHost}
         onLoadCustomThemes={() => {}}
+        onEditCustomThemes={() => {}}
         customThemes={[]}
         onPick={(mode, themes) => {
           asked.push({ mode, themes });
@@ -45,7 +46,7 @@ function mount(isHost: boolean, start: Pool) {
     asked,
     // The pool the room has, once its own answer has come back.
     pool: () => pool,
-    press: (label: ThemeRef) => act(() => buttonFor(container, label).click()),
+    press: (label: ThemeId) => act(() => buttonFor(container, label).click()),
   };
 }
 
@@ -57,7 +58,7 @@ function buttons(container: HTMLElement): HTMLButtonElement[] {
 }
 
 /** The button with a given name on it: a theme, or one of the two ways. */
-function buttonFor(container: HTMLElement, label: ThemeRef): HTMLButtonElement {
+function buttonFor(container: HTMLElement, label: ThemeId): HTMLButtonElement {
   const found = buttons(container).find((button) => button.textContent === String(label));
   if (found === undefined) throw new Error(`no button reading ${label}`);
   return found;

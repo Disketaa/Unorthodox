@@ -4,12 +4,17 @@
  * duplicates characters in a contentEditable element). */
 import { useRef } from 'preact/hooks';
 import { type JSX } from 'preact';
+import { IconButton } from '@/Design/Components';
+import { Strings } from '@/Content';
 import styles from './CustomThemesPopup.module.css';
 
 export interface SyntaxHighlightedJsonProps {
   json: string;
   onChange: (value: string) => void;
   onPaste?: (text: string) => string | undefined;
+  /** Emptying the box in one press, which is how a theme is struck out. Absent where there is
+   * nothing in the box to empty. */
+  onClear?: () => void;
   color?: string;
   /** Whether the text in the box is not a theme list, which washes the box in the feedback pink
    * rather than only saying so in the banner below it. */
@@ -21,6 +26,7 @@ export function SyntaxHighlightedJson({
   json,
   onChange,
   onPaste,
+  onClear,
   color,
   invalid = false,
   label,
@@ -51,7 +57,10 @@ export function SyntaxHighlightedJson({
   };
 
   return (
-    <div class={`${styles.Editor} ${invalid ? styles.Invalid : ''}`} style={{ '--String-Color': color }}>
+    <div
+      class={`${styles.Editor} ${invalid ? styles.Invalid : ''}`}
+      style={{ '--String-Color': color }}
+    >
       <pre ref={preRef} class={styles.Text} aria-hidden="true">
         {highlightJson(json)}
       </pre>
@@ -65,6 +74,19 @@ export function SyntaxHighlightedJson({
         onPaste={handlePaste}
         onScroll={handleScroll}
       />
+      {/* The bin, over the corner of the box: emptying it is what deletes the theme, and a host
+       * who has to select the text and hold backspace to do it is doing a chore. Above the text
+       * area rather than in it, so it cannot take a keystroke meant for the JSON. */}
+      {onClear !== undefined && (
+        <div class={styles.Clear}>
+          <IconButton
+            icon="Trash"
+            size="Small"
+            label={Strings.lobby.settings.customThemesClear}
+            onClick={onClear}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -93,13 +115,32 @@ function highlightJson(json: string): JSX.Element[] {
     } else if (/[0-9-]/.test(ch)) {
       let j = i + 1;
       while (j < source.length && /[0-9.eE+-]/.test(source[j])) j++;
-      tokens.push(<span key={i} class={styles.Number}>{source.slice(i, j)}</span>);
+      tokens.push(
+        <span key={i} class={styles.Number}>
+          {source.slice(i, j)}
+        </span>
+      );
       i = j;
-    } else if (ch === '{' || ch === '}' || ch === '[' || ch === ']' || ch === ':' || ch === ',') {
-      tokens.push(<span key={i} class={styles.Punct}>{ch}</span>);
+    } else if (
+      ch === '{' ||
+      ch === '}' ||
+      ch === '[' ||
+      ch === ']' ||
+      ch === ':' ||
+      ch === ','
+    ) {
+      tokens.push(
+        <span key={i} class={styles.Punct}>
+          {ch}
+        </span>
+      );
       i++;
     } else if (ch === '\n' || ch === '\r' || ch === ' ' || ch === '\t') {
-      tokens.push(<span key={i} class={styles.Whitespace}>{ch}</span>);
+      tokens.push(
+        <span key={i} class={styles.Whitespace}>
+          {ch}
+        </span>
+      );
       i++;
     } else {
       tokens.push(<span key={i}>{ch}</span>);

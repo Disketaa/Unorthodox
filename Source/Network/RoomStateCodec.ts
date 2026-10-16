@@ -4,12 +4,12 @@
 import type { HostState, Player, Pace } from '@/Game';
 import {
   isCustomTheme,
-  isThemeRef,
+  isThemeId,
   isThemeMode,
   LegacyRandomThemeId,
   type CustomTheme,
   type PlayerId,
-  type ThemeRef,
+  type ThemeId,
   type ThemeMode,
 } from '@/Core';
 import { phaseFrom } from './RoomStatePhases';
@@ -63,12 +63,12 @@ export const isPlayer = (value: unknown): value is Player =>
 
 /** The rounds played in each theme, keyed by theme. The key is guarded as well as the count: a
  * count filed under a name this build has no card for is a count nothing can ever read. */
-export function themeRoundsFrom(fields: Fields): Map<ThemeRef, number> {
-  const counts = new Map<ThemeRef, number>();
+export function themeRoundsFrom(fields: Fields): Map<ThemeId, number> {
+  const counts = new Map<ThemeId, number>();
   for (const pair of rawPairs(fields, 'themeRounds')) {
     if (!Array.isArray(pair) || pair.length !== 2) continue;
     const [theme, count] = pair;
-    if (isThemeRef(theme) && isNumber(count)) counts.set(theme, count);
+    if (isThemeId(theme) && isNumber(count)) counts.set(theme, count);
   }
   return counts;
 }
@@ -82,12 +82,14 @@ export function paceFrom(fields: Fields): Pace {
 
 /** The themes the host has named, which the resumed room deals from once it is given them by its
  * own way. A name this build has no bank for is dropped, and a random bank an older build kept
- * as a theme of its own reads as naming none вЂ” the random way, said in the mode. */
-export function themesFrom(fields: Fields): ThemeRef[] {
+ * as a theme of its own reads as naming none — the random way, said in the mode. Strings only,
+ * as before custom themes existed: a room saved while they were numbered stores numbers in
+ * here, and a number is not a name, so such a room resumes on the random bank — everything it
+ * can play. */
+export function themesFrom(fields: Fields): ThemeId[] {
   const raw = fields.get('themes');
   const named = (Array.isArray(raw) ? raw : []).filter(
-    (theme): theme is ThemeRef =>
-      (typeof theme === 'string' && theme !== LegacyRandomThemeId) || typeof theme === 'number'
+    (theme): theme is ThemeId => typeof theme === 'string' && theme !== LegacyRandomThemeId
   );
   return [...new Set(named)];
 }
@@ -102,9 +104,9 @@ export function themeModeFrom(fields: Fields): ThemeMode {
 /** The theme the room settled on, or undefined when nothing is stored or what is stored is not
  * one this build has. The bank is drawn from the theme, so a theme that cannot be named is a
  * card that cannot be drawn, which is the same as no theme having been chosen. */
-export function themeFrom(fields: Fields): ThemeRef | undefined {
+export function themeFrom(fields: Fields): ThemeId | undefined {
   const value = fields.get('theme');
-  return isThemeRef(value) ? value : undefined;
+  return isThemeId(value) ? value : undefined;
 }
 
 /** The clock every timed phase carries, counted from the host that started it. */
@@ -125,9 +127,9 @@ export interface Members {
   players: Map<PlayerId, Player>;
   turnPlayerId: PlayerId | null;
   pace: Pace;
-  themes: ThemeRef[];
+  themes: ThemeId[];
   themeMode: ThemeMode;
-  themeRounds: Map<ThemeRef, number>;
+  themeRounds: Map<ThemeId, number>;
   /** The seats the round's enchanted card reaches, or undefined where the stored room predates
    * the effect or its card carried none. A host that refreshed mid-round comes back into the
    * same spread rather than losing it off the bar. */
@@ -137,7 +139,7 @@ export interface Members {
   paused: boolean;
   pausedAt: number | undefined;
   /** The custom themes this room knows, or none where the stored room predates them. */
-  customThemes?: Map<number, CustomTheme>;
+  customThemes?: Map<string, CustomTheme>;
 }
 
 /** A stored number, or undefined where there is none to read. Null stands for a moment that has
@@ -166,14 +168,20 @@ function membersFrom(fields: Fields): Members {
   };
 }
 
-/** The custom themes a stored room names, or none where it predates them. */
-function customThemesFrom(fields: Fields): Map<number, CustomTheme> {
+/** The custom themes a stored room names, or none where it predates them. Rebuilt rather than
+ * spread, so a save written by a build that still numbered themes is read as the theme it
+ * describes rather than as one carrying a field nothing looks at any more. */
+function customThemesFrom(fields: Fields): Map<string, CustomTheme> {
   const raw = fields.get('customThemes');
   if (!Array.isArray(raw)) return new Map();
-  const map = new Map<number, CustomTheme>();
+  const map = new Map<string, CustomTheme>();
   for (const entry of raw) {
     if (!isCustomTheme(entry)) continue;
-    map.set(entry.id, entry);
+    map.set(entry.name, {
+      name: entry.name,
+      color: entry.color,
+      questions: entry.questions,
+    });
   }
   return map;
 }

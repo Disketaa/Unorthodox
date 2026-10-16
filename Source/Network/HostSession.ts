@@ -27,7 +27,15 @@ import { departureOf } from './HostPresence';
 import { freshLobby } from './RoomStateStore';
 import { HostRoom } from './HostRoom';
 import * as Game from '@/Game';
-import { PlayerId, PlayerLook, ThemeRef, ThemeMode, CustomTheme, createLogger } from '@/Core';
+import {
+  PlayerId,
+  PlayerLook,
+  ThemeId,
+  ThemeMode,
+  CustomTheme,
+  savedCustomThemes,
+  createLogger,
+} from '@/Core';
 const log = createLogger('HostSession');
 export const HostPlayerId: PlayerId = 'host';
 export class HostSession {
@@ -45,6 +53,14 @@ export class HostSession {
     this.roomCode = roomCode;
     const restored = this.room.open(roomCode) ?? freshLobby();
     this.room.commit(restored);
+    // This browser's own custom themes into the room it is hosting. They were written down when
+    // they were pasted, so a host has them whether this room was just opened or was restored from
+    // storage — and a room only deals out of the themes it holds, so without this the host's
+    // pasted themes sat in the lobby's grid and never in a bank. Merged with whatever the room
+    // already had, since a resumed room knows the themes its players were last sent.
+    const known = [...(restored.customThemes?.values() ?? []), ...savedCustomThemes()];
+    if (known.length > 0)
+      this.room.commit({ ...restored, customThemes: new Map(known.map((t) => [t.name, t])) });
     this.room.roster.addHost(HostPlayerId, hostName);
     this.room.roster.restore([...restored.players.entries()]);
     this.apply({ type: 'JOIN', playerId: HostPlayerId, name: hostName, look });
@@ -83,7 +99,7 @@ export class HostSession {
   setOwnEditingAnswer(editing: boolean): void {
     this.apply({ type: 'EDITING_ANSWER', playerId: HostPlayerId, editing });
   }
-  chooseTheme(theme: ThemeRef): void {
+  chooseTheme(theme: ThemeId): void {
     chooseThemeFrom(this.flow, this.roomCode, theme, HostPlayerId);
   }
   rejectOwnGroup(groupId: number): void {
@@ -94,12 +110,16 @@ export class HostSession {
   }
   setOwnLook = (look: PlayerLook): void => setOwnLook(this, look);
   setPace = (pace: Game.Pace): void => setPace(this, pace);
-  setThemes = (mode: ThemeMode, themes: readonly ThemeRef[]): void =>
+  setThemes = (mode: ThemeMode, themes: readonly ThemeId[]): void =>
     setThemes(this, mode, themes);
   setCustomThemes = (themes: readonly CustomTheme[]): void =>
     this.apply({ type: 'SET_CUSTOM_THEMES', themes });
+  removeCustomTheme = (name: string): void => this.apply({ type: 'REMOVE_CUSTOM_THEME', name });
   getCustomThemes(): readonly CustomTheme[] {
-    const state = this.room.getState(); return state === undefined || state.customThemes === undefined ? [] : [...state.customThemes.values()];
+    const state = this.room.getState();
+    return state === undefined || state.customThemes === undefined
+      ? []
+      : [...state.customThemes.values()];
   }
   addBot = (): void => addBot(this);
   kick = (playerId: PlayerId): void => kick(this, playerId);
@@ -134,10 +154,22 @@ export class HostSession {
   nextPhase(topic: string): void {
     nextPhaseFrom(this.flow, topic);
   }
-  get roster() { return this.room.roster; }
-  get transport(): Transport { return this.room.wire; }
-  botCount(): number { return this.botsAdded; }
-  countBot(): void { this.botsAdded += 1; }
-  onUpdate(listener: () => void): void { this.room.onUpdate(listener); }
-  getState(): Game.HostState | undefined { return this.room.getState(); }
+  get roster() {
+    return this.room.roster;
+  }
+  get transport(): Transport {
+    return this.room.wire;
+  }
+  botCount(): number {
+    return this.botsAdded;
+  }
+  countBot(): void {
+    this.botsAdded += 1;
+  }
+  onUpdate(listener: () => void): void {
+    this.room.onUpdate(listener);
+  }
+  getState(): Game.HostState | undefined {
+    return this.room.getState();
+  }
 }

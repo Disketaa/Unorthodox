@@ -1,9 +1,7 @@
-/** The prompt a host hands to an assistant to have a theme written for them. Kept as a file of
- * its own rather than as a string among the interface wording, because it is not said on screen
- * and it is long: it is copied out, pasted somewhere, and edited by whoever runs it.
- *
- * `{ТЕМА}` is where the theme goes. It is left standing when there is no theme to put there, so
- * the host sees what is still to fill in rather than a prompt with a hole in it. */
+/** The prompt a host hands to an assistant to have a theme written for them. A file of its own
+ * rather than a string among the interface wording: it is never said on screen, it is copied
+ * out and run elsewhere. `{ТЕМА}` is where the theme goes, and is left standing where there is
+ * no theme, so the host sees what is still to fill in. */
 export const ThemePromptTemplate = `Ты придумываешь задания для party-игры «Нестандартненько».
 
 ПРАВИЛА ИГРЫ
@@ -111,9 +109,9 @@ Coral, Amber, Yellow, Lime, Mint, Sky, Violet, Rose
   ]
 }`;
 
-/** The prompt with the theme's name put in, or with the placeholder left standing when there is no
- * name to put there. Every occurrence is filled, not only the first: the same word stands in the
- * task line and again in each of the example searches. */
+/** The prompt with the theme's name put in, or with the placeholder left standing when there is
+ * no name to put there. Every occurrence is filled, not only the first: the same word stands in
+ * the task line and again in each of the example searches. */
 export function themePrompt(theme: string | undefined): string {
   const name = theme?.trim();
   return name === undefined || name.length === 0
