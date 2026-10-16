@@ -27,7 +27,7 @@ import { departureOf } from './HostPresence';
 import { freshLobby } from './RoomStateStore';
 import { HostRoom } from './HostRoom';
 import * as Game from '@/Game';
-import { PlayerId, PlayerLook, ThemeId, ThemeMode, CustomTheme, createLogger } from '@/Core';
+import { PlayerId, PlayerLook, ThemeRef, ThemeMode, CustomTheme, createLogger } from '@/Core';
 const log = createLogger('HostSession');
 export const HostPlayerId: PlayerId = 'host';
 export class HostSession {
@@ -83,7 +83,7 @@ export class HostSession {
   setOwnEditingAnswer(editing: boolean): void {
     this.apply({ type: 'EDITING_ANSWER', playerId: HostPlayerId, editing });
   }
-  chooseTheme(theme: ThemeId): void {
+  chooseTheme(theme: ThemeRef): void {
     chooseThemeFrom(this.flow, this.roomCode, theme, HostPlayerId);
   }
   rejectOwnGroup(groupId: number): void {
@@ -94,7 +94,7 @@ export class HostSession {
   }
   setOwnLook = (look: PlayerLook): void => setOwnLook(this, look);
   setPace = (pace: Game.Pace): void => setPace(this, pace);
-  setThemes = (mode: ThemeMode, themes: readonly ThemeId[]): void =>
+  setThemes = (mode: ThemeMode, themes: readonly ThemeRef[]): void =>
     setThemes(this, mode, themes);
   setCustomThemes = (themes: readonly CustomTheme[]): void =>
     this.apply({ type: 'SET_CUSTOM_THEMES', themes });

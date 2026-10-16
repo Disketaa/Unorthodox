@@ -7,7 +7,7 @@ import {
   VolumeButton,
 } from '@/Design/Components';
 import { GameConfig, Pace, reviewingDurationMs } from '@/Game';
-import { ThemeId, ThemeMode, CustomTheme } from '@/Core';
+import { ThemeRef, ThemeMode, CustomTheme } from '@/Core';
 import { Strings } from '@/Content';
 import { LobbyCategory } from './LobbyCategory';
 import { LobbyThemes } from './LobbyThemes';
@@ -22,7 +22,7 @@ export interface LobbyPaceProps {
   pace: Pace;
   /** Which way the room is given its themes, and the ones it has named. */
   themeMode: ThemeMode;
-  themes: readonly ThemeId[];
+  themes: readonly ThemeRef[];
   /** How many are in the room. The voting round is timed from the roster rather than from a
    * fixed figure, so a room of four is told what four players get and not what a full house
    * gets. */
@@ -34,7 +34,7 @@ export interface LobbyPaceProps {
   onPick: (pace: Pace) => void;
   /** Asking for a different way of taking themes. Only reached by the host, since a client's
    * buttons are dead and the room's pool is told to them in the public state. */
-  onPickThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
+  onPickThemes: (mode: ThemeMode, themes: readonly ThemeRef[]) => void;
   /** Opening the paste window without saving. */
   onLoadCustomThemes: () => void;
   /** The custom themes this room knows, so the grid can show them. */

@@ -4,12 +4,12 @@
 import type { HostState, Player, Pace } from '@/Game';
 import {
   isCustomTheme,
-  isThemeId,
+  isThemeRef,
   isThemeMode,
   LegacyRandomThemeId,
   type CustomTheme,
   type PlayerId,
-  type ThemeId,
+  type ThemeRef,
   type ThemeMode,
 } from '@/Core';
 import { phaseFrom } from './RoomStatePhases';
@@ -63,12 +63,12 @@ export const isPlayer = (value: unknown): value is Player =>
 
 /** The rounds played in each theme, keyed by theme. The key is guarded as well as the count: a
  * count filed under a name this build has no card for is a count nothing can ever read. */
-export function themeRoundsFrom(fields: Fields): Map<ThemeId, number> {
-  const counts = new Map<ThemeId, number>();
+export function themeRoundsFrom(fields: Fields): Map<ThemeRef, number> {
+  const counts = new Map<ThemeRef, number>();
   for (const pair of rawPairs(fields, 'themeRounds')) {
     if (!Array.isArray(pair) || pair.length !== 2) continue;
     const [theme, count] = pair;
-    if (isThemeId(theme) && isNumber(count)) counts.set(theme, count);
+    if (isThemeRef(theme) && isNumber(count)) counts.set(theme, count);
   }
   return counts;
 }
@@ -82,13 +82,14 @@ export function paceFrom(fields: Fields): Pace {
 
 /** The themes the host has named, which the resumed room deals from once it is given them by its
  * own way. A name this build has no bank for is dropped, and a random bank an older build kept
- * as a theme of its own reads as naming none — the random way, said in the mode. */
-export function themesFrom(fields: Fields): ThemeId[] {
+ * as a theme of its own reads as naming none вЂ” the random way, said in the mode. */
+export function themesFrom(fields: Fields): ThemeRef[] {
   const raw = fields.get('themes');
   const named = (Array.isArray(raw) ? raw : []).filter(
-    (theme): theme is ThemeId => typeof theme === 'string' && theme !== LegacyRandomThemeId
+    (theme): theme is ThemeRef =>
+      (typeof theme === 'string' && theme !== LegacyRandomThemeId) || typeof theme === 'number'
   );
-  return [...new Set(named)].filter(isThemeId);
+  return [...new Set(named)];
 }
 
 /** Which way the room is given its themes, and `Random` where storage names a way this build has
@@ -101,9 +102,9 @@ export function themeModeFrom(fields: Fields): ThemeMode {
 /** The theme the room settled on, or undefined when nothing is stored or what is stored is not
  * one this build has. The bank is drawn from the theme, so a theme that cannot be named is a
  * card that cannot be drawn, which is the same as no theme having been chosen. */
-export function themeFrom(fields: Fields): ThemeId | undefined {
+export function themeFrom(fields: Fields): ThemeRef | undefined {
   const value = fields.get('theme');
-  return isThemeId(value) ? value : undefined;
+  return isThemeRef(value) ? value : undefined;
 }
 
 /** The clock every timed phase carries, counted from the host that started it. */
@@ -124,9 +125,9 @@ export interface Members {
   players: Map<PlayerId, Player>;
   turnPlayerId: PlayerId | null;
   pace: Pace;
-  themes: ThemeId[];
+  themes: ThemeRef[];
   themeMode: ThemeMode;
-  themeRounds: Map<ThemeId, number>;
+  themeRounds: Map<ThemeRef, number>;
   /** The seats the round's enchanted card reaches, or undefined where the stored room predates
    * the effect or its card carried none. A host that refreshed mid-round comes back into the
    * same spread rather than losing it off the bar. */

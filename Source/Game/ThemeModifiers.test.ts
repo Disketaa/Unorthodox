@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { dealThemes, randomFor, type ThemeId } from '@/Core';
+import { dealThemes, randomFor, type ThemeRef } from '@/Core';
 import { GameConfig } from './GameConfig';
 import { modifiersForRound } from './ThemeModifiers';
 
@@ -8,7 +8,7 @@ const bank = dealThemes(randomFor('ABCD'), GameConfig.themes.cardsPerLobby);
 /** The rooms a deal is not shared between, so a property read over one of them is not a property
  * of a single arrangement. */
 const codes = ['ABCD', 'WXYZ', 'QWER', 'ASDF', 'JKLP', 'TYUI', 'GHBN', 'VFRT'];
-const keys = (modifiers: ReadonlyMap<ThemeId, readonly string[]>) => [...modifiers.keys()];
+const keys = (modifiers: ReadonlyMap<ThemeRef, readonly string[]>) => [...modifiers.keys()];
 
 describe('what a round puts on the bank', () => {
   it('gives one room the same enchantments on another device in it', () => {

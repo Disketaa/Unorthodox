@@ -1,7 +1,7 @@
 /** Every change the room can be put through, as one union. The handlers live beside what they
  * touch: the roster in `LobbyActions.ts`, the turn in `Turns.ts`, and everything that moves the
  * room between phases in `PhaseActions.ts`. */
-import type { PlayerId, PlayerLook, ThemeId, ThemeMode, CustomTheme } from '@/Core';
+import type { PlayerId, PlayerLook, ThemeRef, ThemeMode, CustomTheme } from '@/Core';
 import type { Pace } from './GameConfig';
 import type { PhaseName } from './PhaseFlow';
 
@@ -14,7 +14,7 @@ export type GameAction =
   /** The themes the host has named and which way the room is given them: the pool every bank is
    * dealt from. The whole selection rather than the one theme pressed, since picking a theme is
    * taking it out of the room. The mode rides along so one press moves the pool. */
-  | { type: 'SET_THEMES'; mode: ThemeMode; themes: readonly ThemeId[] }
+  | { type: 'SET_THEMES'; mode: ThemeMode; themes: readonly ThemeRef[] }
   /** The custom themes this room knows: their names, tints and questions. The host pastes them
    * in and every client is told, so every screen draws the same bank. */
   | { type: 'SET_CUSTOM_THEMES'; themes: readonly CustomTheme[] }
@@ -26,14 +26,14 @@ export type GameAction =
   | {
       type: 'CHOOSE_THEME';
       playerId: PlayerId;
-      theme: ThemeId;
+      theme: ThemeRef;
       at: number;
       affectedPlayers?: PlayerId[];
     }
   /** Nobody answered the bank before its clock ran out, so the room is answering it. Carries the
    * theme rather than rolling one here, since the reducer is the rule and not the dice. The
    * answer is held back until `RESOLVE_RANDOM_PICK`, which is what gives the sweep its length. */
-  | { type: 'START_RANDOM_PICK'; theme: ThemeId; startedAt: number }
+  | { type: 'START_RANDOM_PICK'; theme: ThemeRef; startedAt: number }
   /** The room's roll commits, once the sweep has run. No player to name: the room chose it, not
    * one of the seats. Carries the seats the card's effect reaches, worked out by the host. */
   | { type: 'RESOLVE_RANDOM_PICK'; at: number; affectedPlayers?: PlayerId[] }

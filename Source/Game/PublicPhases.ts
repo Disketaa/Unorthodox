@@ -1,4 +1,4 @@
-import { randomFor, shuffle, ThemeId, CustomTheme } from '@/Core';
+import { randomFor, shuffle, ThemeRef, CustomTheme } from '@/Core';
 import { marksForRoom } from './PublicMarks';
 import { declinedGroupIds } from './RoundScoring';
 import { HostState, ReviewingState } from './GameState';
@@ -46,7 +46,7 @@ export function room(state: HostState): PublicRoom {
 
 /** The rounds already played in each theme, as pairs rather than a map, since this goes out as
  * plain data and a Map does not survive being sent any more than a field set to undefined does. */
-function spentByTheme(themeRounds: ReadonlyMap<ThemeId, number>): PublicRoom['spent'] {
+function spentByTheme(themeRounds: ReadonlyMap<ThemeRef, number>): PublicRoom['spent'] {
   const spent: PublicRoom['spent'] = [];
   themeRounds.forEach((rounds, theme) => spent.push({ theme, rounds }));
   return spent;
@@ -83,7 +83,7 @@ export function toPublicChoosingState(state: HostState): PublicChoosingState {
 /** The theme every phase after the choice carries, since the bank is on screen through all of
  * them. A spread rather than a named field on each phase, so a phase added without one still
  * sends the card the room pressed. */
-export function themeOf(state: HostState): { theme?: ThemeId } {
+export function themeOf(state: HostState): { theme?: ThemeRef } {
   return state.phase === 'Lobby' || state.theme === undefined ? {} : { theme: state.theme };
 }
 

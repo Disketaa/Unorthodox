@@ -1,4 +1,4 @@
-import { ThemeId, ThemeModifierId, themeAccent } from '@/Core';
+import { ThemeRef, ThemeModifierId, themeAccent, themeName } from '@/Core';
 import { useEffect, useRef } from 'preact/hooks';
 import type { RefObject } from 'preact';
 import { Pop } from '@/Design/Primitives';
@@ -7,42 +7,42 @@ import styles from './ThemeCards.module.css';
 
 export interface ThemeCardsProps {
   /** The themes this lobby was dealt, in the order they are shown. */
-  themes: readonly ThemeId[];
+  themes: readonly ThemeRef[];
   /** Asking for a theme. Left out where nothing is being chosen, which is every phase but
    * Choosing, and on the cards of a player who is not the one whose turn it is. */
-  onPick?: (theme: ThemeId) => void;
+  onPick?: (theme: ThemeRef) => void;
   /** How many rounds each theme is played for, from the game's own rules. */
   roundsPerTheme: number;
   /** The theme the room settled on, which expands to fill the bank. The room's answer, read off
    * the state every client is sent rather than kept per screen, so a press opens the same card
    * in every browser in the room at the same moment. */
-  picked?: ThemeId;
+  picked?: ThemeRef;
   /** Whether the room is answering its own bank, and which card it is looking at. The roll is on
    * the room rather than on any screen, so this is drawn from what every client was sent. */
   picking?: boolean;
   /** The card the room's roll is on, drawn as though the pointer were on it. Undefined outside a
    * roll, and held on the card the roll landed on through its last stretch. */
-  swept?: ThemeId;
+  swept?: ThemeRef;
   /** How many rounds have been played in each theme. A count per theme rather than one number
    * for the bank, because the bank is the same six themes every round and each drains on its
    * own. */
-  spent?: ReadonlyMap<ThemeId, number>;
+  spent?: ReadonlyMap<ThemeRef, number>;
   /** What this round has put on the bank's cards, by theme. Absent wherever the round rolled no
    * modifiers at all, which is one of the answers the roll can give. */
-  modifiers?: ReadonlyMap<ThemeId, readonly ThemeModifierId[]>;
+  modifiers?: ReadonlyMap<ThemeRef, readonly ThemeModifierId[]>;
   /** The multiplier on each card, by theme. Rolled from the room and the round rather than sent,
    * so a client cannot hand a card a number the host did not roll. */
-  mults?: ReadonlyMap<ThemeId, number>;
+  mults?: ReadonlyMap<ThemeRef, number>;
   /** What each card's effect is called, by theme. Passed in rather than read here, since the
    * words are the content's and a card is drawn in Design. */
-  effectLabels?: ReadonlyMap<ThemeId, string>;
+  effectLabels?: ReadonlyMap<ThemeRef, string>;
 }
 
 /** Raised over `--Pop-Stagger`, which is sized for a row of characters standing close: six large
  * cards at it arrive as one movement rather than a wave. */
 const SlotStagger = '40ms';
 
-function slotClass(theme: ThemeId, picked: ThemeId | undefined): string {
+function slotClass(theme: ThemeRef, picked: ThemeRef | undefined): string {
   if (theme === picked) return `${styles.Slot} ${styles.Chosen}`;
   if (picked !== undefined) return `${styles.Slot} ${styles.Gone}`;
   return styles.Slot;
@@ -51,7 +51,7 @@ function slotClass(theme: ThemeId, picked: ThemeId | undefined): string {
 /** The wash of the theme the room settled on, written onto the page behind everything and onto
  * the bank itself. An effect rather than a render-time write, since it is the page rather than
  * this component that changes, and it is undone on the way out. */
-function useWash(picked: ThemeId | undefined, bank: RefObject<HTMLDivElement>): void {
+function useWash(picked: ThemeRef | undefined, bank: RefObject<HTMLDivElement>): void {
   useEffect(() => {
     if (picked === undefined) {
       return;
@@ -69,9 +69,9 @@ type SlotProps = Pick<
   ThemeCardsProps,
   'roundsPerTheme' | 'spent' | 'modifiers' | 'mults' | 'effectLabels' | 'picked' | 'onPick'
 > & {
-  theme: ThemeId;
+  theme: ThemeRef;
   index: number;
-  swept: ThemeId | undefined;
+  swept: ThemeRef | undefined;
   waiting: boolean;
 };
 
@@ -93,7 +93,7 @@ function ThemeSlot({
 }: SlotProps) {
   const chosen = theme === picked;
   // The round being played is counted against the theme already but has not been played, and
-  // showing it spent drains the chosen card on the very press that expands it — a theme on its
+  // showing it spent drains the chosen card on the very press that expands it РІР‚вЂќ a theme on its
   // last round comes up greyed while still being answered. It catches up on the next bank.
   const played = Math.max(0, (spent?.get(theme) ?? 0) - (chosen ? 1 : 0));
   return (
@@ -104,7 +104,7 @@ function ThemeSlot({
       <Pop trigger={theme} index={index} stagger={SlotStagger}>
         <ThemeCard
           theme={theme}
-          name={theme}
+          name={themeName(theme)}
           index={index + 1}
           rounds={roundsPerTheme}
           spent={played}

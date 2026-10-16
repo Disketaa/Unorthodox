@@ -4,15 +4,15 @@ import { ThemeCard } from './ThemeCard';
 export function ThemeCardGallery() {
   return (
     <Stack direction="Horizontal" gap="Md" align="Stretch">
-      <ThemeCard theme="VideoGames" name="Видеоигры" />
+      <ThemeCard theme="VideoGames" name="Р’РёРґРµРѕРёРіСЂС‹" />
       {/* Held back but still under the pointer: another player's turn. */}
-      <ThemeCard theme="Nature" name="Природа" waiting />
+      <ThemeCard theme="Nature" name="РџСЂРёСЂРѕРґР°" waiting />
       {/* Pressed out of every hover, which is the room having answered. */}
-      <ThemeCard theme="Music" name="Музыка" locked />
+      <ThemeCard theme="Music" name="РњСѓР·С‹РєР°" locked />
       {/* Carrying what the round put on it: the glint laid over the grain. */}
-      <ThemeCard theme="Food" name="Еда" modifiers={['Enchanted']} />
+      <ThemeCard theme="Food" name="Р•РґР°" modifiers={['Enchanted']} />
       {/* Carrying what the room rolled: the multiplier in the corner, in the room's yellow. */}
-      <ThemeCard theme="Travel" name="Путешествия" mult={1.5} />
+      <ThemeCard theme="Travel" name="РџСѓС‚РµС€РµСЃС‚РІРёСЏ" mult={1.5} />
     </Stack>
   );
 }

@@ -1,5 +1,5 @@
 import { Screen } from '@/Design/Primitives';
-import { CharacterColor, CharacterId, PlayerId, ThemeId, ThemeMode, CustomTheme } from '@/Core';
+import { CharacterColor, CharacterId, PlayerId, ThemeRef, ThemeMode, CustomTheme } from '@/Core';
 import { Pace, PublicPlayer } from '@/Game';
 import { useState } from 'preact/hooks';
 import { RoomCard } from './RoomCard';
@@ -17,7 +17,7 @@ export interface LobbyScreenProps {
   /** The themes the host has named, and which way the room is given them, which only the host
    * can change. */
   themeMode: ThemeMode;
-  themes: readonly ThemeId[];
+  themes: readonly ThemeRef[];
   /** The custom themes this room knows, so the popup can show them. */
   customThemes: readonly CustomTheme[];
   /** The host pasting in custom themes, which every client is then told. */
@@ -28,7 +28,7 @@ export interface LobbyScreenProps {
   onPickPace: (pace: Pace) => void;
   /** Asking for a different set of themes, on the same terms as the pace: the host's click
    * changes the room and a client's changes nothing. */
-  onPickThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
+  onPickThemes: (mode: ThemeMode, themes: readonly ThemeRef[]) => void;
   /** Opening the paste window without saving. */
   onLoadCustomThemes: () => void;
   /** The room's code. */

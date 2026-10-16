@@ -1,4 +1,4 @@
-import { ThemeId, ThemeIds, ThemeMode, CustomTheme, Accents, themeAccent } from '@/Core';
+import { ThemeRef, ThemeIds, ThemeMode, CustomTheme, Accents, themeAccent } from '@/Core';
 import { Button } from '@/Design/Components';
 import { Stack } from '@/Design/Primitives';
 import { GameConfig } from '@/Game';
@@ -18,19 +18,21 @@ const modes: readonly ThemeMode[] = ['Random', 'Chosen'];
 /** The themes the grid offers, in the registry's order, which is the one order every tab reaches
  * the same way. Every theme there is, since a bank drawn from all of them is the random mode
  * above rather than a ninth card. */
-const authoredThemes: readonly ThemeId[] = [...ThemeIds];
+const authoredThemes: readonly ThemeRef[] = [...ThemeIds];
 
 /** What one press on a theme means: it goes on beside the others, or comes back off. Never a
- * switch of mode — naming a theme is a thing the host does on the way to `Chosen`, and a press
- * that turned the random bank off behind their back would be a mode they did not choose. */
-function toggle(named: readonly ThemeId[], pressed: ThemeId): readonly ThemeId[] {
+ * switch of mode вЂ” naming a theme is a thing the host does on the way to `Chosen`, and a press
+ * that turned the random bank off behind their back would be a mode they did not choose. Written
+ * over refs rather than ids alone so a custom theme, which has a number and no id, toggles by the
+ * same press as an authored one. */
+function toggle(named: readonly ThemeRef[], pressed: ThemeRef): readonly ThemeRef[] {
   return named.includes(pressed)
     ? named.filter((theme) => theme !== pressed)
     : [...named, pressed];
 }
 
 /** The rule over the themes, saying how many are on out of how many the room may name. The
- * random pool has no count worth quoting — it is every theme — so it is named plainly, and the
+ * random pool has no count worth quoting вЂ” it is every theme вЂ” so it is named plainly, and the
  * two buttons under it are what say which way the room is being given them. */
 function themeLabel(mode: ThemeMode, count: number): string {
   return mode === 'Random'
@@ -47,8 +49,8 @@ function ModeButtons({
 }: {
   themeMode: ThemeMode;
   isHost: boolean;
-  onPick: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
-  named: readonly ThemeId[];
+  onPick: (mode: ThemeMode, themes: readonly ThemeRef[]) => void;
+  named: readonly ThemeRef[];
 }) {
   return (
     <Stack direction="Horizontal" gap="Sm" align="Stretch" fill="Even">
@@ -67,38 +69,36 @@ function ModeButtons({
   );
 }
 
-/** The grid of theme cards, each wearing its own tint. Authored themes come from the registry,
- * custom themes come from the host's paste. Both wear their own tint. */
+/** The grid of authored theme cards, each wearing its own tint, from the registry. The host's
+ * pasted themes are not in it: they have their own grid under their own rule, because they are
+ * not chosen out of a bank вЂ” they are already in. */
 function ThemeGrid({
   themeMode,
   named,
-  customThemes,
   isHost,
   full,
   onPick,
 }: {
   themeMode: ThemeMode;
-  named: readonly ThemeId[];
-  customThemes: readonly CustomTheme[];
+  named: readonly ThemeRef[];
   isHost: boolean;
   full: boolean;
-  onPick: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
+  onPick: (mode: ThemeMode, themes: readonly ThemeRef[]) => void;
 }) {
   if (themeMode !== 'Chosen') return null;
   return (
     <div class={styles.Grid}>
       {authoredGrid(named, isHost, full, onPick)}
-      {customGrid(customThemes, isHost, full)}
     </div>
   );
 }
 
 /** The authored themes from the registry, each wearing its own tint. */
 function authoredGrid(
-  named: readonly ThemeId[],
+  named: readonly ThemeRef[],
   isHost: boolean,
   full: boolean,
-  onPick: (mode: ThemeMode, themes: readonly ThemeId[]) => void,
+  onPick: (mode: ThemeMode, themes: readonly ThemeRef[]) => void,
 ) {
   return authoredThemes.map((theme) => (
     <Button
@@ -114,24 +114,41 @@ function authoredGrid(
   ));
 }
 
-/** The custom themes from the host's paste, each wearing its own tint. Always pressed. */
-function customGrid(
-  customThemes: readonly CustomTheme[],
-  isHost: boolean,
-  full: boolean,
-) {
-  return customThemes.map((theme) => (
-    <Button
-      key={theme.id}
-      class={styles.Item}
-      accent={Accents[theme.color]}
-      pressed
-      disabled={!isHost || full}
-      onClick={() => {}}
-    >
-      {theme.name}
-    </Button>
-  ));
+/** The custom themes from the host's paste, in their own grid under their own rule rather than in
+ * the bank above. Each wears its own tint, and each is always pressed: a pasted theme is not one
+ * the host picked off a row, it is one they wrote and brought, so there is nothing to press. It
+ * is drawn as pressed anyway, since a card in this panel that reads as off would say the room is
+ * not playing it, and it is. */
+function CustomThemeGrid({
+  customThemes,
+  named,
+  isHost,
+  full,
+  onPick,
+}: {
+  customThemes: readonly CustomTheme[];
+  named: readonly ThemeRef[];
+  isHost: boolean;
+  full: boolean;
+  onPick: (mode: ThemeMode, themes: readonly ThemeRef[]) => void;
+}) {
+  if (customThemes.length === 0) return null;
+  return (
+    <div class={styles.Grid}>
+      {customThemes.map((theme) => (
+        <Button
+          key={theme.id}
+          class={styles.Item}
+          accent={Accents[theme.color]}
+          pressed={named.includes(theme.id)}
+          disabled={!isHost || (full && !named.includes(theme.id))}
+          onClick={() => onPick('Chosen', toggle(named, theme.id))}
+        >
+          {theme.name}
+        </Button>
+      ))}
+    </div>
+  );
 }
 
-export { modes, authoredThemes, toggle, themeLabel, ModeButtons, ThemeGrid };
+export { modes, authoredThemes, toggle, themeLabel, ModeButtons, ThemeGrid, CustomThemeGrid };

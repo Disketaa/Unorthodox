@@ -49,7 +49,7 @@ export function WritingScreen(props: WritingScreenProps) {
   const { durationMs, remainingMs, enchantment, ...shared } = props;
   const timeUp = remainingMs <= 0;
   const input = { ...shared, remainingMs, totalMs: durationMs, timeUp };
-  // The bar says the requirement is not met yet, in every sense of it — including an empty draft,
+  // The bar says the requirement is not met yet, in every sense of it Р В Р’В Р вЂ™Р’В Р В Р’В Р Р†Р вЂљР’В Р В Р’В Р вЂ™Р’В Р В Р вЂ Р В РІР‚С™Р РЋРІвЂћСћР В Р’В Р В РІР‚В Р В Р’В Р Р†Р вЂљРЎв„ўР В Р Р‹Р РЋРЎв„ў including an empty draft,
   // since nothing written is no answer and the bar is the only place that can be said out loud.
   // The words go pink only when a draft is wrong, since an unfinished one is not a fault.
   const unmet = demandOf(shared.value, shared.requiredLetters, shared.bound);

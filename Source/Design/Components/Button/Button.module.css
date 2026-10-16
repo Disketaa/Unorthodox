@@ -103,6 +103,24 @@
   background: var(--Color-Surface-Active);
 }
 
+/* The button that offers a second act rather than either of the two the panel ends with: copying
+ * the prompt somewhere else, while the panel's own buttons are "leave" and "keep". The banner's
+ * info blue rather than a second grey, because it is not the same act declined — it is a different
+ * act, and three greys in one row would say nothing about which is which. Darkened toward the ink
+ * on press and hover rather than swapped for another colour, so the button stays this blue. */
+.VariantInfo {
+  background: var(--Color-Feedback-Info);
+  color: var(--Color-Surface-Default);
+}
+
+.VariantInfo:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--Color-Feedback-Info) 85%, var(--Color-Text-Default));
+}
+
+.VariantInfo:active:not(:disabled) {
+  background: color-mix(in srgb, var(--Color-Feedback-Info) 70%, var(--Color-Text-Default));
+}
+
 /* A button wearing its own accent rather than the room's: wash and ink come from the theme so
  * it looks like that theme. Unpressed it is plain grey so a grid of eight reads as one control;
  * only host-named ones take colour, making them findable at a glance. Keyed on `aria-pressed`

@@ -643,7 +643,7 @@ describe('the deal', () => {
     const deal = dealThemes(createRandom(11), GameConfig.themes.cardsPerLobby);
     expect(deal).toHaveLength(GameConfig.themes.cardsPerLobby);
     expect(new Set(deal).size).toBe(deal.length);
-    expect(deal.every((theme) => ThemeIds.includes(theme))).toBe(true);
+    expect(deal.every((theme) => typeof theme === 'string' && ThemeIds.includes(theme))).toBe(true);
   });
   it('never offers more themes than exist', () => {
     const deal = dealThemes(createRandom(3), ThemeIds.length + 5);

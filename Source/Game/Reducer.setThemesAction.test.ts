@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { reducer } from './Reducer';
 import { freshLobbyState, type HostState, type LobbyState } from './GameState';
-import { isThemeMode, ThemeId, ThemeIds, ThemeMode } from '@/Core';
+import { isThemeMode, ThemeRef, ThemeIds, ThemeMode } from '@/Core';
 import { GameConfig } from './GameConfig';
 
 /** The themes the room may name, in the registry's order. */
-const named: readonly ThemeId[] = [...ThemeIds];
+const named: readonly ThemeRef[] = [...ThemeIds];
 
 /** The lobby the room is in, or the test stops: every one of these is about what the room may do
  * before the first round, and a state that is not a lobby cannot answer that. Narrowing rather
@@ -32,7 +32,7 @@ function seated(): LobbyState {
   );
 }
 
-function choose(state: LobbyState, mode: ThemeMode, themes: readonly ThemeId[]): LobbyState {
+function choose(state: LobbyState, mode: ThemeMode, themes: readonly ThemeRef[]): LobbyState {
   return lobbyState(reducer(state, { type: 'SET_THEMES', mode, themes }));
 }
 
@@ -47,7 +47,7 @@ describe('reducer SET_THEMES action', () => {
     expect(lobby().themes).toEqual([]);
   });
 
-  it('takes the themes the host named, in the registry’s order', () => {
+  it('takes the themes the host named, in the registryвЂ™s order', () => {
     const state = choose(lobby(), 'Chosen', [named[3], named[0]]);
     expect(state).toMatchObject({ themeMode: 'Chosen', themes: [named[0], named[3]] });
   });
@@ -78,15 +78,15 @@ describe('reducer SET_THEMES action', () => {
   });
 
   it('drops a theme this build has no bank for', () => {
-    const state = choose(lobby(), 'Chosen', [named[0], 'НетТакой']);
+    const state = choose(lobby(), 'Chosen', [named[0], 'РќРµС‚РўР°РєРѕР№']);
     expect(state.themes).toEqual([named[0]]);
   });
 
   it('reads an unrecognised mode as the random bank, since no button offers it', () => {
     // The guard rather than the reducer, because a mode off the union cannot be built as an
-    // action without a cast — and the guard is the one thing the reducer and the stored room
+    // action without a cast вЂ” and the guard is the one thing the reducer and the stored room
     // both go through, so this is where the rule actually lives.
-    expect(isThemeMode('Всё')).toBe(false);
+    expect(isThemeMode('Р’СЃС‘')).toBe(false);
     expect(isThemeMode('Chosen')).toBe(true);
   });
 

@@ -2,7 +2,7 @@
  * from the phases because each is a change to one player rather than a move of the room, and
  * because they exist in every phase: a refresh mid-round is joining again. */
 import { HostState } from './GameState';
-import { assertNever, isThemeId, isThemeMode, ThemeId, ThemeIds, ThemeMode, loadCustomThemes } from '@/Core';
+import { assertNever, isThemeId, isThemeMode, ThemeRef, ThemeIds, ThemeMode, loadCustomThemes, addCustomTheme } from '@/Core';
 import type { ActionOf, GameAction } from './GameActions';
 import { GameConfig } from './GameConfig';
 
@@ -40,7 +40,7 @@ function withRoster(state: HostState, players: HostState['players']): HostState 
 }
 
 /** A player taking their seat, or taking it back. A seat that already exists keeps the record
- * the room has of it — the name and the character it was given — and only comes back online, so
+ * the room has of it вЂ” the name and the character it was given вЂ” and only comes back online, so
  * a refresh cannot rename a player or repaint their face from the other end of the room. */
 export function handleJoin(state: HostState, action: ActionOf<'JOIN'>): HostState {
   const known = state.players.get(action.playerId);
@@ -121,22 +121,24 @@ export function handleSetThemes(state: HostState, action: ActionOf<'SET_THEMES'>
   return { ...state, themeMode: mode, themes };
 }
 
-/** The themes named, in the registry's order, kept only where this build has a bank and cut to
- * what the lobby deals. Cut here rather than trusted to the buttons, so a host cannot end up
- * naming seven themes for a bank of six. Empty stays empty: the deal reads it as every theme. */
-function namedFrom(picked: readonly ThemeId[]): readonly ThemeId[] {
+/** The themes named, in the registry's order, then the host's own after them, kept only where this
+ * build or this browser has the theme and cut to what the lobby deals. Cut here rather than
+ * trusted to the buttons, so a host cannot end up naming seven themes for a bank of six. Empty
+ * stays empty: the deal reads it as every theme. */
+function namedFrom(picked: readonly ThemeRef[]): readonly ThemeRef[] {
   // Custom themes live in this browser's cache, so load them before checking which names are real.
-  loadCustomThemes();
-  const named = picked.filter(isThemeId);
-  return ThemeIds.filter((theme) => named.includes(theme)).slice(
-    0,
-    GameConfig.themes.cardsPerLobby
+  const custom = loadCustomThemes();
+  const named = picked.filter(
+    (theme) => typeof theme === 'number' ? custom.has(theme) : isThemeId(theme)
   );
+  return [...ThemeIds, ...[...custom.keys()]]
+    .filter((theme) => named.includes(theme))
+    .slice(0, GameConfig.themes.cardsPerLobby);
 }
 
 /** Whether two namings are the same, which is what stops a press that changes nothing from
  * sending the room a state it would have thrown away anyway. */
-function sameThemes(a: readonly ThemeId[], b: readonly ThemeId[]): boolean {
+function sameThemes(a: readonly ThemeRef[], b: readonly ThemeRef[]): boolean {
   return a.length === b.length && a.every((theme, at) => theme === b[at]);
 }
 
@@ -150,6 +152,10 @@ function handleSetCustomThemes(state: HostState, action: ActionOf<'SET_CUSTOM_TH
   const themes = new Map(state.customThemes);
   for (const theme of action.themes) {
     themes.set(theme.id, theme);
+    // Written down here rather than only held in the room's state, because a custom theme is
+    // looked up by number in this browser's cache: the naming rules and the questions both read
+    // it from there, so a theme that lives only in the room can be neither named nor drawn.
+    addCustomTheme(theme);
   }
   return { ...state, customThemes: themes };
 }

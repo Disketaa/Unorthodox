@@ -4,18 +4,18 @@ import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { LobbyThemes } from './LobbyThemes';
 import { ThemeLimit } from './ThemeGrid';
-import { ThemeId, ThemeIds, ThemeMode } from '@/Core';
+import { ThemeRef, ThemeIds, ThemeMode } from '@/Core';
 import { GameConfig } from '@/Game';
 import { Strings } from '@/Content';
 
 /** The themes the grid offers, in the order it offers them. */
-const named: readonly ThemeId[] = [...ThemeIds];
+const named: readonly ThemeRef[] = [...ThemeIds];
 
 /** One way of taking themes and the names that go with it, which is what a press asks for. */
-type Pool = { mode: ThemeMode; themes: readonly ThemeId[] };
+type Pool = { mode: ThemeMode; themes: readonly ThemeRef[] };
 
-/** The grid as one role sees it. A press is answered here the way the room answers one — the
- * host's action comes back down as the new pool — since the grid holds no state of its own and
+/** The grid as one role sees it. A press is answered here the way the room answers one РІР‚вЂќ the
+ * host's action comes back down as the new pool РІР‚вЂќ since the grid holds no state of its own and
  * a second press is made against whatever the first one was given. */
 function mount(isHost: boolean, start: Pool) {
   let pool = start;
@@ -45,7 +45,7 @@ function mount(isHost: boolean, start: Pool) {
     asked,
     // The pool the room has, once its own answer has come back.
     pool: () => pool,
-    press: (label: string) => act(() => buttonFor(container, label).click()),
+    press: (label: ThemeRef) => act(() => buttonFor(container, label).click()),
   };
 }
 
@@ -57,8 +57,8 @@ function buttons(container: HTMLElement): HTMLButtonElement[] {
 }
 
 /** The button with a given name on it: a theme, or one of the two ways. */
-function buttonFor(container: HTMLElement, label: string): HTMLButtonElement {
-  const found = buttons(container).find((button) => button.textContent === label);
+function buttonFor(container: HTMLElement, label: ThemeRef): HTMLButtonElement {
+  const found = buttons(container).find((button) => button.textContent === String(label));
   if (found === undefined) throw new Error(`no button reading ${label}`);
   return found;
 }
@@ -98,7 +98,7 @@ describe('the theme grid', () => {
     // them does nothing, and the host will press one anyway to see what happens.
     const { container } = mount(true, { mode: 'Random', themes: [] });
     expect(buttons(container)).toHaveLength(2);
-    named.forEach((theme) => expect(container.textContent).not.toContain(theme));
+    named.forEach((theme) => expect(container.textContent).not.toContain(String(theme)));
   });
 
   it('brings the themes back when the room turns to choosing, and does not lose them', () => {

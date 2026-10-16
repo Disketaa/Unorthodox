@@ -1,5 +1,5 @@
 import * as Game from '@/Game';
-import { createLogger, type PlayerId, type Random, type ThemeId } from '@/Core';
+import { createLogger, type PlayerId, type Random, type ThemeRef } from '@/Core';
 import { affectedByChoice } from './HostIncoming';
 import { drawableTheme } from './HostThemePool';
 
@@ -89,7 +89,7 @@ export function resolveRandomPick(
 export function chooseTheme(
   state: Game.HostState | undefined,
   roomCode: string | undefined,
-  theme: ThemeId,
+  theme: ThemeRef,
   playerId: PlayerId
 ): Game.HostState {
   if (state === undefined) return Game.freshLobbyState();

@@ -111,7 +111,7 @@ function AnswerKeys({
 const Beam = '|';
 
 /** The words in the field: yellow once sent, ink the rest of the time, and wearing the round's
- * glint whenever the room will not take the draft — the same question the send key answers,
+ * glint whenever the room will not take the draft РІР‚вЂќ the same question the send key answers,
  * said in the same breath. No pink under it: the words say so by being lit up. */
 function AnswerField({
   value,

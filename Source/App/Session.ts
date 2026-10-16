@@ -1,4 +1,4 @@
-import { PlayerLook, ThemeId, ThemeMode, CustomTheme } from '@/Core';
+import { PlayerLook, ThemeRef, ThemeMode, CustomTheme } from '@/Core';
 import { PublicState, Pace } from '@/Game';
 import type { ConnectionHint } from '@/Network';
 
@@ -40,7 +40,7 @@ export interface Session {
   setPace(pace: Pace): void;
   /** The host setting how the room is given its themes. Only the host calls this, for the pace's
    * reason, and the pool travels in the public state rather than in the press. */
-  setThemes(mode: ThemeMode, themes: readonly ThemeId[]): void;
+  setThemes(mode: ThemeMode, themes: readonly ThemeRef[]): void;
   /** The host pasting in custom themes, which every client is then told. Host only. */
   setCustomThemes?(themes: readonly CustomTheme[]): void;
   /** The custom themes this room knows, so every screen can draw them in the bank. */
@@ -69,7 +69,7 @@ export interface Session {
   revealQuestion(question: string): void;
   /** Answer the theme bank on this player's behalf. Refused by the host from anybody but the
    * player whose turn it is. */
-  chooseTheme(theme: ThemeId): void;
+  chooseTheme(theme: ThemeRef): void;
   /** Only the host calls this: the bank closed with nothing pressed, so the room answers it. */
   startRandomPick(): void;
   /** Only the host calls this: the sweep is over and the room's roll commits. */

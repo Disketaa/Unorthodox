@@ -1,15 +1,15 @@
 import { LobbyPace } from './LobbyPace';
-import { ThemeId, ThemeMode, CustomTheme } from '@/Core';
+import { ThemeRef, ThemeMode, CustomTheme } from '@/Core';
 import { Pace } from '@/Game';
 
 export interface SettingsCardProps {
   pace: Pace;
   themeMode: ThemeMode;
-  themes: readonly ThemeId[];
+  themes: readonly ThemeRef[];
   players: number;
   isHost: boolean;
   onPickPace: (pace: Pace) => void;
-  onPickThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
+  onPickThemes: (mode: ThemeMode, themes: readonly ThemeRef[]) => void;
   /** Opening the paste window without saving. */
   onLoadCustomThemes: () => void;
   /** The custom themes this room knows, so the grid can show them. */

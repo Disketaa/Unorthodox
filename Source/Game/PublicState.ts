@@ -6,7 +6,7 @@ import {
   toPublicChoosingState,
 } from './PublicPhases';
 import { toPublicFinalState, toPublicScoresState } from './PublicEndgame';
-import { PlayerId, PlayerLook, ThemeId, ThemeMode, CustomTheme, assertNever } from '@/Core';
+import { PlayerId, PlayerLook, ThemeRef, ThemeMode, CustomTheme, assertNever } from '@/Core';
 import type { RandomPick } from './GameState';
 import type { Pace } from './GameConfig';
 
@@ -32,7 +32,7 @@ export interface PublicRoom {
   /** The themes the host has left switched on, which every deal is drawn from. Sent for the
    * pace's reason and the same weight: a client that dealt its own bank out of the whole set
    * would put six different cards on six different screens in one room. */
-  themes: ThemeId[];
+  themes: ThemeRef[];
   /** Which way the room is given its themes, sent beside the names because a client that guessed
    * it would deal a bank of six out of a pool the host never picked. */
   themeMode: ThemeMode;
@@ -41,7 +41,7 @@ export interface PublicRoom {
   customThemes: readonly CustomTheme[];
   /** How many rounds have been played in each theme, as pairs rather than a map, since this goes
    * out as plain data. On every phase because the bank is on screen through all of them. */
-  spent: { theme: ThemeId; rounds: number }[];
+  spent: { theme: ThemeRef; rounds: number }[];
   /** The seats the round's enchanted card reaches, drawn as a glint on the bar of players.
    * Optional, so a host that sends none reads as nobody reached. */
   affectedPlayerIds?: PlayerId[];
@@ -67,7 +67,7 @@ export type PublicChoosingState = PublicRoom & {
   /** The theme the room has settled on, once a card has been pressed. Absent while the bank is
    * still being offered. On the wire rather than decided per client, so every screen in the
    * room expands the same card at the same moment. */
-  theme?: ThemeId;
+  theme?: ThemeRef;
   /** The room answering its own bank, once the clock ran out with nothing pressed. Sent with the
    * moment it started rather than only the answer, so every screen sweeps for the same length
    * and lands on the same card. */
@@ -100,7 +100,7 @@ export type PublicWritingState = PublicRoom & {
    * older host sends neither, and a room that cannot say is read as nobody editing. */
   editingIds?: PlayerId[];
   players: PublicPlayer[];
-  theme?: ThemeId;
+  theme?: ThemeRef;
 };
 
 export type PublicReviewingState = PublicRoom & {
@@ -126,7 +126,7 @@ export type PublicReviewingState = PublicRoom & {
    * be saying who read it, on a board played by people who cannot see who wrote what. Optional
    * like the list above, so a round nobody liked anything in carries no field. */
   likeCounts?: { groupId: number; count: number }[];
-  theme?: ThemeId;
+  theme?: ThemeRef;
 };
 
 export type PublicScoresState = PublicRoom & {
@@ -137,7 +137,7 @@ export type PublicScoresState = PublicRoom & {
   scores: { id: PlayerId; score: number }[];
   /** The round total per player, which is what the bar of players shows. */
   cumulative: { id: PlayerId; score: number }[];
-  theme?: ThemeId;
+  theme?: ThemeRef;
 };
 
 export type PublicFinalState = PublicRoom & {
@@ -145,7 +145,7 @@ export type PublicFinalState = PublicRoom & {
   durationMs: number;
   players: PublicPlayer[];
   scores: { id: PlayerId; score: number }[];
-  theme?: ThemeId;
+  theme?: ThemeRef;
 };
 
 export type PublicState =

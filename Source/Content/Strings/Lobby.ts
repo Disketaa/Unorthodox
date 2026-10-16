@@ -69,14 +69,24 @@ export const lobby = {
     customThemesPaste: 'Вставьте JSON с темами',
     /** The button that saves the pasted themes and closes the window. */
     customThemesSave: 'Сохранить',
+    /** The button that puts the prompt for this theme on the clipboard, for a host who would
+     * rather have a theme written than write one out. */
+    customThemesCopyPrompt: 'Копировать промпт',
+    /** Shown when the browser would not put the prompt on the clipboard. */
+    customThemesCopyFailed: 'Браузер не дал скопировать промпт',
     /** The button that closes the window without saving. */
     customThemesCancel: 'Отмена',
     /** Shown when the pasted JSON is not a valid theme list. */
     customThemesError: 'Неправильный JSON',
+    /** The popup's title while the JSON in it is wrong: the window is about an error, not about a
+     * theme it cannot name yet. */
+    customThemesErrorTitle: 'Ошибка',
     /** Shown when a theme has no name, no color, or no questions. */
     customThemesInvalidTheme: 'Каждая тема нуждается в имени, цвете и вопросах',
     /** The button under the themes row that opens the paste window, when the room has chosen its
      * themes rather than taking the whole bank. */
     loadCustomThemes: 'Загрузить',
+    /** The stem of a name for a pasted theme that arrived without one, numbered after it. */
+    customThemesDefaultName: 'Польз.',
   },
 } as const;

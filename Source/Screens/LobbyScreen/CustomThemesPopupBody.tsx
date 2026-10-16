@@ -1,16 +1,17 @@
 /** The body of the custom themes popup: JSON text area, color row, title, and buttons. */
 import { useState } from 'preact/hooks';
-import { Button } from '@/Design/Components';
+import { Banner, Button } from '@/Design/Components';
 import { Stack } from '@/Design/Primitives';
-import { Strings } from '@/Content';
+import { Strings, themePrompt } from '@/Content';
 import {
   CustomTheme,
   Accents,
-  CharacterColors,
-  type CharacterColor,
+  normalizeCustomThemesJson,
   parseCustomThemesJson,
+  customThemesJsonError,
+  hasJsonFence,
+  type CustomThemesError,
 } from '@/Core';
-import { ColorSwatch } from '@/Design/Components';
 import { SyntaxHighlightedJson } from './CustomThemesPopupSyntax';
 import styles from './CustomThemesPopup.module.css';
 
@@ -22,39 +23,106 @@ export function CustomThemesPopupBody({
   onSave: (themes: readonly CustomTheme[]) => void;
 }) {
   const [json, setJson] = useState(DefaultJson);
-  const [error, setError] = useState<string | undefined>();
+  const [copyFailed, setCopyFailed] = useState(false);
 
   const themes = parseCustomThemesJson(json);
-  const title = themes?.[0]?.name ?? Strings.lobby.settings.customThemesTitle;
-  const titleColor = themes?.[0]?.color ? Accents[themes[0].color].tint : undefined;
+  // A theme with no valid JSON behind it has no name to show, so the window says what it is
+  // instead: the error, in the error's own colour.
+  const invalid = themes === undefined;
+  const title = invalid
+    ? Strings.lobby.settings.customThemesErrorTitle
+    : (themes[0]?.name ?? Strings.lobby.settings.customThemesTitle);
+  const titleColor = invalid
+    ? 'var(--Color-Feedback-Error)'
+    : (themes[0]?.color ? Accents[themes[0].color].tint : undefined);
+
+  const repair = (text: string): string | undefined =>
+    parseCustomThemesJson(text) === undefined
+      ? normalizeCustomThemesJson(text, Strings.lobby.settings.customThemesDefaultName)
+      : undefined;
+
+  const handlePaste = (text: string): string | undefined =>
+    // A fence is taken off even when the JSON inside it is already fine, so the box shows the
+    // theme rather than the backticks it was copied with.
+    hasJsonFence(text) ? normalizeCustomThemesJson(text, Strings.lobby.settings.customThemesDefaultName) : repair(text);
 
   const handleSave = (): void => {
-    setError(undefined);
     if (themes === undefined) {
-      setError(Strings.lobby.settings.customThemesInvalidTheme);
+      const repaired = repair(json);
+      const rescued = repaired === undefined ? undefined : parseCustomThemesJson(repaired);
+      // Repair and save in one go, so a host who typed a near miss does not have to press the
+      // button twice to find out whether it took. The banner already says why it would not take.
+      if (repaired === undefined || rescued === undefined) return;
+      setJson(repaired);
+      onSave(rescued);
       return;
     }
     onSave(themes);
   };
 
   const valid = themes !== undefined;
+  // The banner reads the text rather than the save button, so the host is told what is wrong
+  // while they are fixing it, not after they have gone looking for it.
+  const error = errorText(customThemesJsonError(json));
+
+  // The prompt is copied with the theme's name already in it when there is one, so the host pastes
+  // it somewhere and gets a prompt about their theme rather than a prompt with a blank in it.
+  const handleCopyPrompt = async (): Promise<void> => {
+    setCopyFailed(false);
+    try {
+      await navigator.clipboard.writeText(themePrompt(themes?.[0]?.name));
+    } catch {
+      setCopyFailed(true);
+    }
+  };
 
   return (
     <div class={styles.Root}>
       <div class={styles.Veil} onClick={onClose} />
       <div class={styles.Panel}>
-        <PopupTitle title={title} color={titleColor} />
-        <ColorRow color={themes?.[0]?.color ?? 'Yellow'} onPick={(next) => pickColor(json, next, setJson)} />
+        <div class={styles.Header}>
+          <PopupTitle title={title} color={titleColor} />
+          {error !== undefined && (
+            <div class={styles.HeaderNote}>
+              <Banner variant="Error" fill>
+                {error}
+              </Banner>
+            </div>
+          )}
+          {copyFailed && (
+            <div class={styles.HeaderNote}>
+              <Banner variant="Error" fill>
+                {Strings.lobby.settings.customThemesCopyFailed}
+              </Banner>
+            </div>
+          )}
+        </div>
         <SyntaxHighlightedJson
           json={json}
           onChange={setJson}
+          onPaste={handlePaste}
           color={titleColor}
+          invalid={!valid}
+          label={Strings.lobby.settings.customThemes}
         />
-        {error !== undefined && <p class={styles.Error}>{error}</p>}
-        <CustomButtons onClose={onClose} onSave={handleSave} disabled={!valid} />
+        <CustomButtons
+          onClose={onClose}
+          onSave={handleSave}
+          onCopyPrompt={() => void handleCopyPrompt()}
+          disabled={!valid}
+        />
       </div>
     </div>
   );
+}
+
+/** The banner's wording. A syntax error keeps the parser's own message, which points at the
+ * character and the line; a shape error is the requirement stated. */
+function errorText(problem: CustomThemesError | undefined): string | undefined {
+  if (problem === undefined) return undefined;
+  return problem.kind === 'syntax'
+    ? `${Strings.lobby.settings.customThemesError}: ${problem.message}`
+    : Strings.lobby.settings.customThemesInvalidTheme;
 }
 
 function PopupTitle({
@@ -74,57 +142,22 @@ function PopupTitle({
   );
 }
 
-function pickColor(json: string, next: CharacterColor, setJson: (value: string) => void): void {
-  const current = parseCustomThemesJson(json);
-  if (current === undefined) return;
-  const updated = { ...current[0], color: next };
-  const newJson = JSON.stringify({ ...updated, questions: updated.questions }, null, 2);
-  setJson(newJson);
-}
-function ColorRow({
-  color,
-  onPick,
-}: {
-  color: CharacterColor;
-  onPick: (color: CharacterColor) => void;
-}) {
-  return (
-    <div class={styles.Colors} role="group">
-      {CharacterColors.map((name) => (
-        <ColorChoice key={name} name={name} selected={name === color} onPick={onPick} />
-      ))}
-    </div>
-  );
-}
-
-function ColorChoice({
-  name,
-  selected,
-  onPick,
-}: {
-  name: CharacterColor;
-  selected: boolean;
-  onPick: (color: CharacterColor) => void;
-}) {
-  const classes = selected ? `${styles.Choice} ${styles.Chosen}` : styles.Choice;
-  return (
-    <button type="button" class={classes} onClick={() => onPick(name)} aria-pressed={selected} aria-label={name}>
-      <ColorSwatch color={name} size="Fill" shape="Square" />
-    </button>
-  );
-}
-
 function CustomButtons({
   onClose,
   onSave,
+  onCopyPrompt,
   disabled,
 }: {
   onClose: () => void;
   onSave: () => void;
+  onCopyPrompt: () => void;
   disabled: boolean;
 }) {
   return (
-    <Stack direction="Horizontal" gap="Sm" align="End" justify="End">
+    <Stack direction="Horizontal" gap="Sm" align="Stretch" fill="Even">
+      <Button variant="Info" onClick={onCopyPrompt}>
+        {Strings.lobby.settings.customThemesCopyPrompt}
+      </Button>
       <Button variant="Muted" onClick={onClose}>{Strings.lobby.settings.customThemesCancel}</Button>
       <Button variant="Primary" disabled={disabled} onClick={onSave}>{Strings.lobby.settings.customThemesSave}</Button>
     </Stack>

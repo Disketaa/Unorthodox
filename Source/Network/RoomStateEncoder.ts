@@ -2,7 +2,7 @@
  * side because what a phase writes is a small table, while the guards that read it back are the
  * fiddly half. */
 import type { HostState, Pace, Player, RandomPick } from '@/Game';
-import type { PlayerId, ThemeId, ThemeMode } from '@/Core';
+import type { PlayerId, ThemeRef, ThemeMode } from '@/Core';
 import { groupVotesOut } from './RoomGroupVotes';
 
 /** The phases that carry a clock, which is every phase but Lobby and Final. */
@@ -14,9 +14,9 @@ interface Members {
   scores: [PlayerId, number][];
   turnPlayerId: PlayerId | null;
   pace: Pace;
-  themes: ThemeId[];
+  themes: ThemeRef[];
   themeMode: ThemeMode;
-  themeRounds: [ThemeId, number][];
+  themeRounds: [ThemeRef, number][];
   affected?: PlayerId[];
 }
 
@@ -53,7 +53,7 @@ function topicOf(state: Extract<HostState, { phase: 'Writing' | 'Reviewing' }>) 
 
 /** The theme the room settled on, which every phase after the choice carries. Omitted rather
  * than written as null where there is none, so a resumed room and a fresh one read the same. */
-function themeOf(state: HostState): { theme?: ThemeId } {
+function themeOf(state: HostState): { theme?: ThemeRef } {
   return state.phase === 'Lobby' || state.theme === undefined ? {} : { theme: state.theme };
 }
 

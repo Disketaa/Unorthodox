@@ -3,7 +3,7 @@
  * passed in, so a phase cannot be entered at a length the table does not give it. */
 import * as Game from '@/Game';
 import type { HostState } from '@/Game';
-import type { PlayerId, ThemeId } from '@/Core';
+import type { PlayerId, ThemeRef } from '@/Core';
 import {
   startGame,
   startWriting,
@@ -83,7 +83,7 @@ export function resolveRandomPickFrom(host: FlowHost, roomCode: string): void {
 export function chooseThemeFrom(
   host: FlowHost,
   roomCode: string,
-  theme: ThemeId,
+  theme: ThemeRef,
   playerId: PlayerId
 ): void {
   const state = host.getState();
@@ -91,8 +91,8 @@ export function chooseThemeFrom(
   host.commit(chooseTheme(state, roomCode, theme, playerId));
 }
 
-/** How long the reviewing round runs for the room: a floor for being in it at all — five seconds
- * briskly, ten slowly — and five more for every player after the first. Read here rather than
+/** How long the reviewing round runs for the room: a floor for being in it at all вЂ” five seconds
+ * briskly, ten slowly вЂ” and five more for every player after the first. Read here rather than
  * off the phase table, which has one figure per pace where the room needs one per room size. */
 function reviewingMs(state: HostState): number {
   if (state.phase !== 'Writing') return Game.phaseDurationMs('Reviewing', state.pace);

@@ -1,4 +1,4 @@
-import { ThemeId, ThemeModifierId, themeAccent } from '@/Core';
+import { ThemeRef, ThemeModifierId, themeAccent } from '@/Core';
 import { useCallback } from 'preact/hooks';
 import { useSwayMotion } from '@/Design/Primitives';
 import { playSound } from '../../Sounds';
@@ -7,7 +7,7 @@ import { CardFace } from './ThemeCardFace';
 import styles from './ThemeCard.module.css';
 
 export interface ThemeCardProps {
-  theme: ThemeId;
+  theme: ThemeRef;
   /** The theme's name in this player's language. */
   name: string;
   /** How many rounds this theme is played for. On the card rather than read from the game rules,
@@ -32,7 +32,7 @@ export interface ThemeCardProps {
    * the content here, since a card is drawn in Design and the words are the content's. */
   effectLabel?: string;
   /** Asking for this theme. Nothing is decided yet, so nothing acts on it yet. */
-  onPick?: (theme: ThemeId) => void;
+  onPick?: (theme: ThemeRef) => void;
   /** Whether the card idles. On by default, since a still card is the odd one out; off for a
    * gallery row or anything already moving. */
   moving?: boolean;
@@ -44,7 +44,7 @@ export interface ThemeCardProps {
    * out. */
   chosen?: boolean;
   /** Whether the room's own roll is on this card, which is drawn exactly as a pointer on it
-   * would draw it — same wash, same opened name, same mark. Anything less reads as the room
+   * would draw it вЂ” same wash, same opened name, same mark. Anything less reads as the room
    * glancing at the bank rather than the room looking at it. */
   swept?: boolean;
   /** Whether the card has stopped taking presses, because the room has already answered. Every
@@ -57,7 +57,7 @@ export interface ThemeCardProps {
 
 /** The card's own place in the turn of the blink, as places from the first, so the wave is one
  * value per card rather than six cards handed six delays. */
-function writeTheme(node: HTMLElement | null | undefined, theme: ThemeId, index: number) {
+function writeTheme(node: HTMLElement | null | undefined, theme: ThemeRef, index: number) {
   if (node == null) return;
   const accent = themeAccent(theme);
   node.style.setProperty('--ThemeCard-Wash', accent.wash);
@@ -89,7 +89,7 @@ function cardClasses(
  * after it, which showed the card for a frame in the fallbacks and then recoloured it. */
 function useCardRef(
   motion: { current: HTMLButtonElement | null },
-  theme: ThemeId,
+  theme: ThemeRef,
   index: number
 ) {
   return useCallback(
@@ -126,8 +126,8 @@ export function ThemeCard(props: ThemeCardProps) {
 /** Pressing a card the room is still offering. A card that is waiting, spent or already swept
  * takes the press and does nothing with it, since the room is not asking about it. */
 function pressCard(
-  theme: ThemeId,
-  onPick: ((theme: ThemeId) => void) | undefined,
+  theme: ThemeRef,
+  onPick: ((theme: ThemeRef) => void) | undefined,
   blocked: boolean
 ) {
   if (blocked) return;

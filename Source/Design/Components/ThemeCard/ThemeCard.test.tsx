@@ -3,11 +3,11 @@ import { describe, it, expect } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { ThemeCard } from './ThemeCard';
-import { Accents, ThemeId, ThemeIds, themeAccent } from '@/Core';
+import { Accents, ThemeRef, ThemeIds, themeAccent } from '@/Core';
 
 /** The card as one role sees it, mounted with its effects flushed. */
 function card(
-  theme: ThemeId = 'Internet',
+  theme: ThemeRef = 'Internet',
   index?: number,
   waiting = false,
   spent?: number,
@@ -23,7 +23,7 @@ function card(
     render(
       <ThemeCard
         theme={theme}
-        name="Интернет"
+        name="Р ВР Р…РЎвЂљР ВµРЎР‚Р Р…Р ВµРЎвЂљ"
         index={index}
         waiting={waiting}
         spent={spent}
@@ -55,21 +55,21 @@ describe('one theme card', () => {
 
   it('hides every decoration on the card, so the name is all that is announced', () => {
     // The number is a mark on the panel, not part of its name, and read out as one the theme
-    // would be announced as "one, интернет". The corner roll, the grain and the tick row
+    // would be announced as "one, Р С‘Р Р…РЎвЂљР ВµРЎР‚Р Р…Р ВµРЎвЂљ". The corner roll, the grain and the tick row
     // carry nothing at all, and ten ticks read out as a burst of punctuation. All of them are
-    // `aria-hidden`, so what the DOM still holds is not what is read — the name is the only
+    // `aria-hidden`, so what the DOM still holds is not what is read РІР‚вЂќ the name is the only
     // thing on the card that is.
     const { container, mark } = card();
     expect(mark?.getAttribute('aria-hidden')).toBe('true');
     const hidden = [...container.querySelectorAll('[aria-hidden="true"]')];
     expect(hidden).toHaveLength(4);
     expect(hidden.map((node) => node.textContent).join('')).toBe('1');
-    expect(container.textContent).toBe('1Интернет');
+    expect(container.textContent).toBe('1Р ВР Р…РЎвЂљР ВµРЎР‚Р Р…Р ВµРЎвЂљ');
   });
 
   it("carries the room's roll in the corner, as the player sees it", () => {
     // The roll is the one thing on the card that says what the room's roll is rather than which
-    // theme the card is — the name says that, and six rolls are six cards. Taken from the room
+    // theme the card is РІР‚вЂќ the name says that, and six rolls are six cards. Taken from the room
     // rather than from the catalogue, so it is the same on every screen in it. A card with no
     // roll is plain and shows nothing, which is a real answer rather than a card wearing a
     // number that belongs to no round.
@@ -128,12 +128,12 @@ describe("a card that is not this player's to press", () => {
   });
 
   it('does not pick, so a press on a card of another player goes nowhere', () => {
-    const picked: string[] = [];
+    const picked: ThemeRef[] = [];
     const container = document.createElement('div');
     document.body.appendChild(container);
     act(() => {
       render(
-        <ThemeCard theme="Nature" name="Природа" waiting onPick={(t) => picked.push(t)} />,
+        <ThemeCard theme="Nature" name="Р СџРЎР‚Р С‘РЎР‚Р С•Р Т‘Р В°" waiting onPick={(t) => picked.push(t)} />,
         container
       );
     });
@@ -148,12 +148,12 @@ describe("a card that is not this player's to press", () => {
   });
 
   it('picks when the turn comes round, off the same card', () => {
-    const picked: string[] = [];
+    const picked: ThemeRef[] = [];
     const container = document.createElement('div');
     document.body.appendChild(container);
     act(() => {
       render(
-        <ThemeCard theme="Nature" name="Природа" onPick={(t) => picked.push(t)} />,
+        <ThemeCard theme="Nature" name="Р СџРЎР‚Р С‘РЎР‚Р С•Р Т‘Р В°" onPick={(t) => picked.push(t)} />,
         container
       );
     });
@@ -180,7 +180,7 @@ describe('a card whose theme has nothing left', () => {
     expect(card('Internet', 1, false, 9).button.className).not.toContain('Waiting');
   });
 
-  it('is muted and refused even when the turn is this player’s', () => {
+  it('is muted and refused even when the turn is this playerРІР‚в„ўs', () => {
     // The turn says whose card to press, not whether the theme has anything left to give.
     expect(card('Internet', 1, false, 10, 10).button.className).toContain('SpentOut');
     expect(card('Internet', 1, false, 10, 10).button.getAttribute('aria-disabled')).toBe(
@@ -189,12 +189,12 @@ describe('a card whose theme has nothing left', () => {
   });
 
   it('takes no press, so the room cannot play a theme it has finished', () => {
-    const picked: string[] = [];
+    const picked: ThemeRef[] = [];
     const container = document.createElement('div');
     document.body.appendChild(container);
     act(() => {
       render(
-        <ThemeCard theme="Nature" name="Природа" spent={10} onPick={(t) => picked.push(t)} />,
+        <ThemeCard theme="Nature" name="Р СџРЎР‚Р С‘РЎР‚Р С•Р Т‘Р В°" spent={10} onPick={(t) => picked.push(t)} />,
         container
       );
     });
@@ -214,18 +214,18 @@ describe("the card the room's own roll is on", () => {
     const swept = document.createElement('div');
     document.body.appendChild(swept);
     act(() => {
-      render(<ThemeCard theme="Nature" name="Природа" swept />, swept);
+      render(<ThemeCard theme="Nature" name="Р СџРЎР‚Р С‘РЎР‚Р С•Р Т‘Р В°" swept />, swept);
     });
     expect(swept.querySelector('button')?.className).toContain('Swept');
   });
 
   it('takes no press, since the room is the seat choosing here rather than this one', () => {
-    const picked: string[] = [];
+    const picked: ThemeRef[] = [];
     const container = document.createElement('div');
     document.body.appendChild(container);
     act(() => {
       render(
-        <ThemeCard theme="Nature" name="Природа" swept onPick={(t) => picked.push(t)} />,
+        <ThemeCard theme="Nature" name="Р СџРЎР‚Р С‘РЎР‚Р С•Р Т‘Р В°" swept onPick={(t) => picked.push(t)} />,
         container
       );
     });
@@ -248,7 +248,7 @@ describe('a card the round has enchanted', () => {
     const shine = document.createElement('div');
     document.body.appendChild(shine);
     act(() => {
-      render(<ThemeCard theme="Еда" name="Еда" modifiers={['Enchanted']} />, shine);
+      render(<ThemeCard theme="Р вЂўР Т‘Р В°" name="Р вЂўР Т‘Р В°" modifiers={['Enchanted']} />, shine);
     });
     expect(shine.querySelector('[class*="Glint"]')).not.toBeNull();
     expect(card().container.querySelector('[class*="Glint"]')).toBeNull();
@@ -260,7 +260,7 @@ describe('a card the round has enchanted', () => {
     const shine = document.createElement('div');
     document.body.appendChild(shine);
     act(() => {
-      render(<ThemeCard theme="Еда" name="Еда" modifiers={['Enchanted']} />, shine);
+      render(<ThemeCard theme="Р вЂўР Т‘Р В°" name="Р вЂўР Т‘Р В°" modifiers={['Enchanted']} />, shine);
     });
     const glint = shine.querySelector('[class*="Glint"]');
     expect(glint?.getAttribute('aria-hidden')).toBe('true');
@@ -274,7 +274,7 @@ describe('a card the round has enchanted', () => {
       const host = document.createElement('div');
       document.body.appendChild(host);
       act(() => {
-        render(<ThemeCard theme="Еда" name="Еда" {...props} />, host);
+        render(<ThemeCard theme="Р вЂўР Т‘Р В°" name="Р вЂўР Т‘Р В°" {...props} />, host);
       });
       return host.querySelector('button')?.className;
     };

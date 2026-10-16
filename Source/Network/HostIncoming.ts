@@ -3,7 +3,7 @@ import { Transport } from './Transport';
 import { HostRoster, resolveLook } from './HostRoster';
 import { affectedPlayersFor, GameAction, HostState, modifiersForRound } from '@/Game';
 import { GameConfig } from '@/Game';
-import { ThemeEffectId, ThemeId, createLogger, themesForRoom } from '@/Core';
+import { ThemeEffectId, ThemeRef, createLogger, themesForRoom } from '@/Core';
 import { HostPlayerId } from './HostSession';
 
 const log = createLogger('HostIncoming');
@@ -14,7 +14,7 @@ const log = createLogger('HostIncoming');
 export function affectedByChoice(
   state: HostState,
   roomCode: string | undefined,
-  theme: ThemeId,
+  theme: ThemeRef,
   chooserId: string
 ): string[] | undefined {
   if (roomCode === undefined || state.phase !== 'Choosing') {

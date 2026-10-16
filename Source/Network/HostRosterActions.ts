@@ -1,7 +1,7 @@
 /** What the host does to the roster rather than to the state: a look, a pace, a seat taken away,
  * a seat invented. Split out of the session so the file that owns the phase flow owns none of
  * the seating, and each of these reads as the one thing it changes. */
-import { PlayerId, PlayerLook, createLogger, type ThemeId, type ThemeMode } from '@/Core';
+import { PlayerId, PlayerLook, createLogger, type ThemeRef, type ThemeMode } from '@/Core';
 import type { GameAction, HostState, Pace } from '@/Game';
 import type { HostRoster } from './HostRoster';
 import type { Transport } from './Transport';
@@ -36,7 +36,7 @@ export function setPace(host: RosterHost, pace: Pace): void {
 }
 
 /** The host setting how the room is given its themes, which every client is then told. */
-export function setThemes(host: RosterHost, mode: ThemeMode, themes: readonly ThemeId[]): void {
+export function setThemes(host: RosterHost, mode: ThemeMode, themes: readonly ThemeRef[]): void {
   host.apply({ type: 'SET_THEMES', mode, themes });
 }
 

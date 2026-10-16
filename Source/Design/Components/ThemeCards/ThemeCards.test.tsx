@@ -2,19 +2,19 @@
 import { describe, it, expect } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
-import { createRandom, dealThemes, ThemeId } from '@/Core';
+import { createRandom, dealThemes, ThemeRef } from '@/Core';
 import { ThemeCards } from './ThemeCards';
 
-const themes: readonly ThemeId[] = dealThemes(createRandom(7), 6);
+const themes: readonly ThemeRef[] = dealThemes(createRandom(7), 6);
 /** Four rounds already played in the first theme dealt, and a full bar on the rest. */
-const spent = new Map<ThemeId, number>();
+const spent = new Map<ThemeRef, number>();
 const first = themes[0];
 if (first !== undefined) spent.set(first, 4);
 
 /** Mount a bank and hand back the cards as the browser sees them. */
 function mount(props: {
-  onPick?: (theme: ThemeId) => void;
-  picked?: ThemeId;
+  onPick?: (theme: ThemeRef) => void;
+  picked?: ThemeRef;
 }): HTMLButtonElement[] {
   const container = document.createElement('div');
   document.body.appendChild(container);
@@ -28,7 +28,7 @@ function mount(props: {
 }
 
 describe('a bank nobody may press', () => {
-  it('holds its cards back on a turn that is not this player’s', () => {
+  it('holds its cards back on a turn that is not this playerРІР‚в„ўs', () => {
     // No `onPick` and nothing chosen: the bank is open and this is not your seat. Held back
     // rather than dead, since the room is watching whose turn it is come round.
     expect(mount({})[0]?.className).toContain('Waiting');

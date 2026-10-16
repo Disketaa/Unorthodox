@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'preact/hooks';
 import { GameConfig, Pace, PublicState, questionFor } from '@/Game';
-import { CharacterColor, CharacterId, ThemeId, ThemeMode } from '@/Core';
+import { CharacterColor, CharacterId, ThemeRef, ThemeMode } from '@/Core';
 import { topicAt } from '@/Content';
 import { Session } from '../Session';
 import { navigate } from '../Routes';
@@ -9,7 +9,7 @@ export interface GameActions {
   startGame: () => void;
   /** Answering the theme bank. The room's answer rather than this screen's, so the picked card
    * opens in every browser at once. Refused by the host from anybody but the player on turn. */
-  chooseTheme: (theme: ThemeId) => void;
+  chooseTheme: (theme: ThemeRef) => void;
   nextRound: () => void;
   /** Wherever the phase table says goes next, for the host's dock. An unanswered bank is the one
    * phase the table's move would break, since Writing with nothing pressed on it has no topic,
@@ -24,7 +24,7 @@ export interface GameActions {
   setPaused: (paused: boolean) => void;
   setLook: (character: CharacterId, color: CharacterColor) => void;
   setPace: (pace: Pace) => void;
-  setThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
+  setThemes: (mode: ThemeMode, themes: readonly ThemeRef[]) => void;
   addBot: () => void;
   nextTurn: () => void;
   submitAnswer: (text: string) => void;
@@ -83,7 +83,7 @@ function useRoundFlow(
   }, [session]);
 
   const chooseTheme = useCallback(
-    (theme: ThemeId) => {
+    (theme: ThemeRef) => {
       session.chooseTheme(theme);
     },
     [session]

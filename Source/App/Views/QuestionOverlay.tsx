@@ -1,6 +1,6 @@
 import { EnchantedArrivalMs, QuestionStage } from '@/Design/Overlays';
 import { questionRevealMs, questionWords } from '@/Game';
-import { themeAccent } from '@/Core';
+import { themeAccent, themeName } from '@/Core';
 import { useQuestionReveal } from '../Hooks/UseQuestionReveal';
 import { useQuestionRemaining } from '../Hooks/UseQuestionRemaining';
 import { enchantmentOf } from './EffectLabels';
@@ -38,7 +38,7 @@ export function QuestionOverlay({ view }: PhaseViewProps) {
     <QuestionStage
       words={words}
       revealed={revealed}
-      label={theme}
+      label={themeName(theme)}
       accent={themeAccent(theme)}
       // Off entirely before the word has gone rather than drawn dark and brought in: nobody ever
       // sees the bar before the thing it belongs to has been said.

@@ -1,124 +1,89 @@
 /** Syntax-highlighted JSON using the project's color tokens, with the chosen theme's tint on
- * strings. The text area is contentEditable, so the cursor position is saved before each
- * re-render and restored after, otherwise typing duplicates characters. */
-import { useEffect, useRef } from 'preact/hooks';
+ * strings. The editor is a highlighted layer under a transparent text area: the text area owns
+ * the text and the caret, so an edit is never re-rendered over by the framework (which is what
+ * duplicates characters in a contentEditable element). */
+import { useRef } from 'preact/hooks';
 import { type JSX } from 'preact';
 import styles from './CustomThemesPopup.module.css';
 
 export interface SyntaxHighlightedJsonProps {
   json: string;
   onChange: (value: string) => void;
+  onPaste?: (text: string) => string | undefined;
   color?: string;
+  /** Whether the text in the box is not a theme list, which washes the box in the feedback pink
+   * rather than only saying so in the banner below it. */
+  invalid?: boolean;
+  label?: string;
 }
 
-export function SyntaxHighlightedJson({ json, onChange, color }: SyntaxHighlightedJsonProps) {
+export function SyntaxHighlightedJson({
+  json,
+  onChange,
+  onPaste,
+  color,
+  invalid = false,
+  label,
+}: SyntaxHighlightedJsonProps) {
   const preRef = useRef<HTMLPreElement>(null);
-  const selRef = useRef<{ anchor: number; focus: number } | null>(null);
 
   const handleInput = (event: Event): void => {
     const target = event.currentTarget;
-    if (!(target instanceof Element)) return;
-    captureSelection(preRef, selRef);
-    onChange(target.textContent ?? '');
+    if (!(target instanceof HTMLTextAreaElement)) return;
+    onChange(target.value);
   };
 
-  useEffect(() => {
-    applySelection(preRef, selRef);
-  });
+  const handlePaste = (event: ClipboardEvent): void => {
+    const pasted = event.clipboardData?.getData('text');
+    if (pasted === undefined) return;
+    const repaired = onPaste?.(pasted);
+    if (repaired === undefined) return;
+    event.preventDefault();
+    onChange(repaired);
+  };
+
+  const handleScroll = (event: Event): void => {
+    const target = event.currentTarget;
+    const pre = preRef.current;
+    if (!(target instanceof HTMLTextAreaElement) || !pre) return;
+    pre.scrollTop = target.scrollTop;
+    pre.scrollLeft = target.scrollLeft;
+  };
 
   return (
-    <pre
-      ref={preRef}
-      class={styles.Text}
-      contentEditable
-      spellcheck={false}
-      style={{ '--String-Color': color }}
-      onInput={handleInput}
-    >
-      {highlightJson(json)}
-    </pre>
+    <div class={`${styles.Editor} ${invalid ? styles.Invalid : ''}`} style={{ '--String-Color': color }}>
+      <pre ref={preRef} class={styles.Text} aria-hidden="true">
+        {highlightJson(json)}
+      </pre>
+      <textarea
+        class={styles.Input}
+        value={json}
+        wrap="off"
+        spellcheck={false}
+        aria-label={label}
+        onInput={handleInput}
+        onPaste={handlePaste}
+        onScroll={handleScroll}
+      />
+    </div>
   );
 }
 
-function captureSelection(
-  preRef: { current: HTMLPreElement | null },
-  selRef: { current: { anchor: number; focus: number } | null },
-): void {
-  const sel = window.getSelection();
-  if (!sel?.rangeCount || !preRef.current) return;
-  const range = sel.getRangeAt(0);
-  const root = preRef.current;
-  let charIndex = 0;
-  let anchor = -1;
-  let focus = -1;
-  const walk = (node: Node): boolean => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      const len = node.textContent?.length ?? 0;
-      if (anchor === -1 && node === range.startContainer) anchor = charIndex + range.startOffset;
-      if (focus === -1 && node === range.endContainer) focus = charIndex + range.endOffset;
-      charIndex += len;
-      return anchor !== -1 && focus !== -1;
-    }
-    for (let i = 0; i < node.childNodes.length; i++) {
-      if (walk(node.childNodes[i])) return true;
-    }
-    return false;
-  };
-  walk(root);
-  if (anchor !== -1 && focus !== -1) selRef.current = { anchor, focus };
-}
-
-function applySelection(
-  preRef: { current: HTMLPreElement | null },
-  selRef: { current: { anchor: number; focus: number } | null },
-): void {
-  if (!selRef.current || !preRef.current) return;
-  const { anchor, focus } = selRef.current;
-  const root = preRef.current;
-  const sel = window.getSelection();
-  if (!sel) return;
-  sel.removeAllRanges();
-  const range = document.createRange();
-  let charIndex = 0;
-  let foundAnchor = false;
-  let foundFocus = false;
-  const walk = (node: Node): boolean => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      const len = node.textContent?.length ?? 0;
-      if (!foundAnchor && charIndex + len >= anchor) {
-        range.setStart(node, anchor - charIndex);
-        foundAnchor = true;
-      }
-      if (!foundFocus && charIndex + len >= focus) {
-        range.setEnd(node, focus - charIndex);
-        foundFocus = true;
-      }
-      charIndex += len;
-      return foundAnchor && foundFocus;
-    }
-    for (let i = 0; i < node.childNodes.length; i++) {
-      if (walk(node.childNodes[i])) return true;
-    }
-    return false;
-  };
-  walk(root);
-  sel.addRange(range);
-  selRef.current = null;
-}
-
 function highlightJson(json: string): JSX.Element[] {
+  // A trailing space keeps the last empty line tall, so the highlight tracks the caret down.
+  const source = json.endsWith('\n') ? `${json} ` : json;
   const tokens: JSX.Element[] = [];
   let i = 0;
-  while (i < json.length) {
-    const ch = json[i];
+  while (i < source.length) {
+    const ch = source[i];
     if (ch === '"') {
       let j = i + 1;
-      while (j < json.length && json[j] !== '"') {
-        if (json[j] === '\\' && j + 1 < json.length) j += 2;
+      while (j < source.length && source[j] !== '"') {
+        if (source[j] === '\\' && j + 1 < source.length) j += 2;
         else j++;
       }
-      const str = json.slice(i, j + 1);
-      const isKey = j + 1 < json.length && json[j + 1] === ':';
+      const str = source.slice(i, j + 1);
+      const isKey = j + 1 < source.length && source[j + 1] === ':';
       tokens.push(
         <span key={i} class={isKey ? styles.Key : styles.String}>
           {str}
@@ -127,8 +92,8 @@ function highlightJson(json: string): JSX.Element[] {
       i = j + 1;
     } else if (/[0-9-]/.test(ch)) {
       let j = i + 1;
-      while (j < json.length && /[0-9.eE+-]/.test(json[j])) j++;
-      tokens.push(<span key={i} class={styles.Number}>{json.slice(i, j)}</span>);
+      while (j < source.length && /[0-9.eE+-]/.test(source[j])) j++;
+      tokens.push(<span key={i} class={styles.Number}>{source.slice(i, j)}</span>);
       i = j;
     } else if (ch === '{' || ch === '}' || ch === '[' || ch === ']' || ch === ':' || ch === ',') {
       tokens.push(<span key={i} class={styles.Punct}>{ch}</span>);

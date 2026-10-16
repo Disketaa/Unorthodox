@@ -21,13 +21,37 @@
   border: 1px solid var(--Color-Border-Default);
   border-radius: var(--Radius-Card);
   padding: var(--Space-Lg);
-  width: min(90vw, 520px);
+  width: min(92vw, 1040px);
   max-height: 85vh;
   overflow: auto;
   display: grid;
+  /* One column held to the panel's own width. Without the `minmax(0, …)` a grid track is sized by
+   * its content's max-content width, and the editor's highlight layer keeps its line breaks, so
+   * one long line of JSON would widen the panel instead of scrolling inside it. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--Space-Md);
   font-family: var(--FontFamily-Body);
   box-shadow: 0 8px 24px rgb(0 0 0 / 15%);
+}
+
+/* The head of the panel: the theme's name on the left, and the reason it has none on the right.
+ * Two columns rather than a flex row so the name takes what it needs and the reason takes what is
+ * left, each capped: a long parser message wraps rather than pushing the name off the panel. */
+.Header {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--Space-Md);
+}
+
+/* The note's cell. `overflow: hidden` so a wording longer than the column is cut at the cell
+ * rather than pushing the panel wider and bringing out a scrollbar; the banner inside already
+ * truncates its own words with an ellipsis, so what is lost is the tail of a long message. */
+.HeaderNote {
+  justify-self: end;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .title {
@@ -37,33 +61,99 @@
   color: var(--Color-Text-Default);
 }
 
-.Text {
+/* The editor is two stacked layers sharing one box: the highlighted JSON underneath and a
+ * transparent text area on top that owns the text, the caret, and every edit. Keeping the text
+ * in a real text area means the framework never re-renders over a user edit, so typing cannot
+ * duplicate characters. */
+.Editor {
+  position: relative;
   width: 100%;
-  font-family: var(--FontFamily-Body);
-  font-size: var(--FontSize-Md);
-  font-weight: 600;
-  padding: var(--Space-Sm) var(--Space-Md);
+  min-width: 0;
   border: 2px solid var(--Color-Border-Default);
   border-radius: var(--Radius-Input);
   background: var(--Color-Surface-Hover);
-  color: var(--Color-Text-Default);
-  resize: vertical;
-  min-height: 240px;
-  outline: none;
   transition: border-color var(--Transition-Standard);
 }
 
-.Text:focus-visible {
-  outline: none;
+.Editor:focus-within {
   border-color: var(--Color-Border-Focus);
   background: var(--Color-Surface-Default);
 }
 
-.Error {
-  margin: 0;
-  font-size: var(--FontSize-Caption);
-  color: var(--Color-Border-Error);
+/* Text that is not a theme list. The wash the room's own muted feedback is painted in, so the box
+ * agrees with the banner under it and with the pink everything else in this state is drawn in.
+ * Held through focus, since the box being focused is not a reason to stop saying what is wrong
+ * with it. */
+.Editor.Invalid {
+  border-color: var(--Color-Feedback-Error);
+  background: var(--Color-Feedback-Muted-Wash);
 }
+
+.Editor.Invalid:focus-within {
+  border-color: var(--Color-Feedback-Error);
+  background: var(--Color-Feedback-Muted-Wash);
+}
+
+/* Both layers must share every metric that affects text wrapping, or the caret drifts away from
+ * the glyphs under it. */
+.Text,
+.Input {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  font-family: var(--FontFamily-Body);
+  font-size: var(--FontSize-Md);
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: normal;
+  tab-size: 2;
+  padding: var(--Space-Sm) var(--Space-Md);
+  border: none;
+  background: transparent;
+  overflow: auto;
+}
+
+.Text {
+  position: relative;
+  min-height: 240px;
+  max-height: 50vh;
+  overflow: hidden;
+  color: var(--Color-Text-Default);
+  white-space: pre;
+  pointer-events: none;
+}
+
+.Input {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  max-height: inherit;
+  /* The text area fills the editor box exactly, so the browser's grip in its corner would resize
+   * a box that has no height of its own to give: dragging it moved nothing but the grip. The box's
+   * height is the highlight layer's, and that is set in CSS like the rest of the panel. */
+  resize: none;
+  outline: none;
+  color: transparent;
+  caret-color: var(--Color-Text-Default);
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+/* The editor box already paints the focus ring on itself, so the reset's ring on the text area
+ * would be a second outline around the same field. */
+.Input:focus-visible {
+  outline: none;
+}
+
+/* The selection is painted by the text area, which sits over the highlighted layer, so it has to
+ * stay translucent: an opaque fill would hide the very text it is marking. A wash of the muted
+ * ink rather than the room's yellow, so marking text never reads as a colour the editor gave
+ * it. */
+.Input::selection {
+  background: color-mix(in srgb, var(--Color-Text-Muted) 25%, transparent);
+}
+
+
 
 /* Syntax-highlighted JSON tokens using the project's color palette. */
 .Key {
@@ -98,44 +188,4 @@
 
 .Whitespace {
   white-space: pre;
-}
-
-/* The color row: eight equal square tracks filling the width, same shape as the character
- * picker's palette so the two rows line up column for column. */
-.Colors {
-  display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: var(--Space-Xs);
-  width: 100%;
-}
-
-/* One colour cell. Square by `aspect-ratio`, so the swatch stays round inside it. */
-.Choice {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  aspect-ratio: 1;
-  padding: 0;
-  min-width: 0;
-  background: var(--Color-Surface-Default);
-  border: var(--Border-Width-Default) solid var(--Color-Border-Default);
-  border-radius: var(--Radius-Md);
-  cursor: var(--Cursor-Pointer);
-  transition: border-color var(--Transition-Standard);
-}
-
-.Choice:not(.Chosen):hover {
-  border-color: var(--Color-Room-Yellow);
-  background: var(--Color-Surface-Hover);
-}
-
-.Choice:focus-visible {
-  outline: none;
-  border-color: var(--Color-Border-Focus);
-}
-
-.Chosen {
-  border-color: var(--Color-Room-Yellow);
-  background: var(--Color-Action-Ghost-Hover);
 }

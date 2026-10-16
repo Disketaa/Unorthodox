@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { WritingScreen } from '@/Screens';
-import { themeAccent } from '@/Core';
+import { themeAccent, themeName, type ThemeRef } from '@/Core';
 import { useCountdown } from '../Hooks/UseCountdown';
 import { useAnswerFlush } from '../Hooks/UseAnswerFlush';
 import { enchantmentOf, type Enchantment } from './EffectLabels';
@@ -21,7 +21,7 @@ function glintedFor(view: PhaseViewProps['view']): boolean {
  * bar and the marked keys stay off their screen rather than showing a round they are not in. */
 function enchantmentFor(
   view: PhaseViewProps['view'],
-  theme: string | undefined,
+  theme: ThemeRef | undefined,
   spent: PublicRoom['spent'] | undefined
 ) {
   if (!glintedFor(view)) return NoEnchantment;
@@ -61,7 +61,7 @@ export function WritingView({ view }: PhaseViewProps) {
   return (
     <WritingScreen
       topic={writing?.topic ?? ''}
-      theme={theme}
+      theme={theme === undefined ? undefined : themeName(theme)}
       themeAccent={theme === undefined ? undefined : themeAccent(theme)}
       remainingMs={remainingMs}
       durationMs={view.durationMs}

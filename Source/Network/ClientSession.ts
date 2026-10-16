@@ -5,7 +5,7 @@ import { clientId } from './ClientIdentity';
 import { ClientInbox, isFromHost } from './ClientInbox';
 import { stallHint, StallHintMs, type ConnectionHint } from './ConnectionHint';
 import * as Game from '@/Game';
-import { PlayerLook, ThemeId, CustomTheme, createLogger } from '@/Core';
+import { PlayerLook, ThemeRef, CustomTheme, addCustomTheme, createLogger } from '@/Core';
 
 export type { BlockedReason } from './Protocol';
 
@@ -134,7 +134,7 @@ export class ClientSession {
     }
   }
 
-  chooseTheme(theme: ThemeId): void {
+  chooseTheme(theme: ThemeRef): void {
     if (this.seated('choose a theme')) {
       this.transport.sendToHost({
         type: 'ChooseTheme',
@@ -161,6 +161,10 @@ export class ClientSession {
   getCustomThemes(): readonly CustomTheme[] {
     const state = this.inbox.state;
     if (state === undefined || 'customThemes' in state === false) return [];
+    // Saved as they arrive, not only read out of the room's state: a custom theme's name and its
+    // questions are looked up in this browser's cache, so a client that never writes them down
+    // would show a card numbered rather than named, and could draw no questions for it at all.
+    for (const theme of state.customThemes) addCustomTheme(theme);
     return state.customThemes;
   }
 }

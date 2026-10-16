@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { Pace, PublicState } from '@/Game';
-import { PlayerId, PlayerLook, CharacterColor, CharacterId, ThemeId, CustomTheme } from '@/Core';
+import { PlayerId, PlayerLook, CharacterColor, CharacterId, ThemeRef, CustomTheme } from '@/Core';
 import type { ThemeMode } from '@/Core';
 import { createSession } from '../SessionFactory';
 import { Session, SessionRole, BlockedReason, ConnectionHint } from '../Session';
@@ -22,7 +22,7 @@ import { useOwnLook } from './UseOwnLook';
 import { exitRoom, readTopic, reportEditing } from './SessionUtils';
 
 /** Everything a screen is drawn from: the phase in view, the moves it can make, and what a board
- * of answers is showing — the host's mutes, the room's like counts, which of those were this
+ * of answers is showing РІР‚вЂќ the host's mutes, the room's like counts, which of those were this
  * player's own presses, and whether they wrote an answer at all. */
 export interface GameSessionView extends SessionPhase, BoardMarks {
   role: SessionRole;
@@ -58,7 +58,7 @@ export interface GameSessionView extends SessionPhase, BoardMarks {
   setLook: (character: CharacterId, color: CharacterColor) => void;
   /** Asking for a pace or for the room's themes: both the host's alone. */
   setPace: (pace: Pace) => void;
-  setThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
+  setThemes: (mode: ThemeMode, themes: readonly ThemeRef[]) => void;
   /** The host pasting in custom themes, which every client is then told. */
   setCustomThemes: (themes: readonly CustomTheme[]) => void;
   /** Holding the room still, or letting it run again. */
@@ -69,7 +69,7 @@ export interface GameSessionView extends SessionPhase, BoardMarks {
   nextTurn: () => void;
   startGame: () => void;
   /** Answering the theme bank on this player's behalf. The room sees the answer, not the player. */
-  chooseTheme: (theme: ThemeId) => void;
+  chooseTheme: (theme: ThemeRef) => void;
   nextPhase: () => void;
   submitAnswer: (text: string) => void;
   rejectGroup: (groupId: number) => void;

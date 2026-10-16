@@ -1,6 +1,6 @@
 import { LobbyScreen } from '@/Screens';
 import { Pace } from '@/Game';
-import type { ThemeId, ThemeMode, CustomTheme } from '@/Core';
+import type { ThemeRef, ThemeMode, CustomTheme } from '@/Core';
 import { GameSessionView } from '../Hooks/UseGameSession';
 
 export interface PhaseViewProps {
@@ -18,7 +18,7 @@ export function LobbyView({ view }: PhaseViewProps) {
   // the random bank, which is the whole set and so is what it would have been given anyway.
   const themeMode: ThemeMode =
     view.publicState?.phase === 'Lobby' ? view.publicState.themeMode : 'Random';
-  const themes: readonly ThemeId[] =
+  const themes: readonly ThemeRef[] =
     view.publicState?.phase === 'Lobby' ? view.publicState.themes : [];
   // The custom themes this room knows, so the paste window can show them. A client that has not
   // received the state yet reads as none.

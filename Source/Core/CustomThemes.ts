@@ -67,6 +67,13 @@ export function themeQuestions(id: ThemeId | number): readonly string[] | undefi
   return ThemeBanks.get(id);
 }
 
+/** The name a custom theme was saved under, or undefined where this client has never seen that
+ * number. Read from the cache, so a client that has not been sent the theme cannot draw a card for
+ * it and is shown the number instead of somebody else's name for it. */
+export function customThemeName(id: number): string | undefined {
+  return loadCustomThemes().get(id)?.name;
+}
+
 /** The tint a theme washes in, whether from a file or a custom paste. */
 export function themeColor(id: ThemeId | number): CharacterColor | undefined {
   if (typeof id === 'number') {
@@ -95,7 +102,7 @@ export function isCustomTheme(value: unknown): value is CustomTheme {
 export function parseCustomThemesJson(json: string): CustomTheme[] | undefined {
   let read: unknown;
   try {
-    read = JSON.parse(json);
+    read = JSON.parse(unwrapJsonFence(json));
   } catch {
     return undefined;
   }
@@ -123,4 +130,81 @@ function isCustomThemeRecord(record: Record<string, unknown>): boolean {
     record.questions.every((q): q is string => typeof q === 'string') &&
     record.questions.length > 0
   );
+}
+
+/** Take the fence off a paste that carries one. Copying JSON out of a chat or a readme brings the
+ * triple backticks and the language tag with it, and those are not part of the theme — the host
+ * is not asking for them and the parser cannot read them. Only a fence with a closing fence is
+ * taken off, so text that merely starts with backticks is left alone rather than losing whatever
+ * follows. */
+function unwrapJsonFence(json: string): string {
+  const text = json.trim();
+  const opening = /^```[a-zA-Z]*\r?\n/.exec(text);
+  if (opening === null) return text;
+  const rest = text.slice(opening[0].length);
+  const closing = rest.lastIndexOf('```');
+  if (closing === -1) return text;
+  return rest.slice(0, closing).trim();
+}
+
+/** Whether a paste carries a code fence, so the editor can put the unwrapped text in the box
+ * rather than leaving the host to look at their own backticks. */
+export function hasJsonFence(json: string): boolean {
+  return unwrapJsonFence(json) !== json.trim();
+}
+
+/** Why a paste is not a theme list. A syntax error carries the JSON parser's own message, which
+ * names the character it choked on and where — that is the text the host needs to find the typo,
+ * so it is passed through rather than replaced with one of our own. A shape error is ours, and
+ * carries no message: the popup words it. Kept as a pair rather than a string so that no wording
+ * lives in `Core`. */
+export type CustomThemesError = { kind: 'syntax'; message: string } | { kind: 'shape' };
+
+/** What is wrong with pasted JSON, or undefined where it is a valid theme list. */
+export function customThemesJsonError(json: string): CustomThemesError | undefined {
+  try {
+    JSON.parse(unwrapJsonFence(json));
+  } catch (error) {
+    return { kind: 'syntax', message: error instanceof Error ? error.message : String(error) };
+  }
+  return parseCustomThemesJson(json) === undefined ? { kind: 'shape' } : undefined;
+}
+
+/** Repair a paste that is nearly a theme list but not one yet, and hand it back pretty printed.
+ * A host copying a theme out of somewhere gets whatever shape it was stored in: one line, no
+ * name, no tint. None of that is a reason to refuse the questions. Only the questions are
+ * treated as load bearing — without them there is no theme, and guessing at questions would be
+ * inventing the host's game. A missing name and a missing tint are filled in, `defaultName` is
+ * numbered for as many themes as came in, and the id is auto-assigned as it is on a clean
+ * parse. Returns undefined where the text is too far from a theme list to repair. */
+export function normalizeCustomThemesJson(json: string, defaultName: string): string | undefined {
+  let read: unknown;
+  try {
+    read = JSON.parse(unwrapJsonFence(json));
+  } catch {
+    return undefined;
+  }
+  const entries: unknown[] = Array.isArray(read) ? read : [read];
+  const themes: CustomTheme[] = [];
+  let nextId = 1;
+  for (const [index, entry] of entries.entries()) {
+    if (typeof entry !== 'object' || entry === null) return undefined;
+    const record: Record<string, unknown> = { ...entry };
+    const questions = Array.isArray(record.questions)
+      ? record.questions.filter((q): q is string => typeof q === 'string' && q.length > 0)
+      : [];
+    if (questions.length === 0) return undefined;
+    const name =
+      typeof record.name === 'string' && record.name.length > 0
+        ? record.name
+        : `${defaultName} ${index + 1}`;
+    themes.push({
+      id: typeof record.id === 'number' ? record.id : nextId++,
+      name,
+      color: isCharacterColor(record.color) ? record.color : 'Yellow',
+      questions,
+    });
+  }
+  if (themes.length === 0) return undefined;
+  return JSON.stringify(themes, null, 2);
 }
