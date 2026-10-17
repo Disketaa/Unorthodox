@@ -4,6 +4,8 @@ import { useRef } from 'preact/hooks';
 import { IconButton } from '@/Design/Components';
 import { Strings } from '@/Content';
 import { highlightJson } from './JsonHighlight';
+import { applyJsonEnter } from './JsonEnterHandler';
+import { applyJsonBackspace, placeCaret } from './JsonCaret';
 import styles from './CustomThemesPopup.module.css';
 
 export interface SyntaxHighlightedJsonProps {
@@ -20,20 +22,33 @@ export interface SyntaxHighlightedJsonProps {
   label?: string;
 }
 
+/** Enter and Backspace both edit the text as a whole rather than letting the browser insert a
+ * character: the box is JSON, and both keys mean something in JSON that is not a character. */
 function handleJsonKeyDown(event: KeyboardEvent, onChange: (next: string) => void): void {
-  if (event.key !== 'Enter') return;
+  if (event.key !== 'Enter' && event.key !== 'Backspace') return;
   event.preventDefault();
   const target = event.currentTarget;
   if (!(target instanceof HTMLTextAreaElement)) return;
   const { value, selectionStart, selectionEnd } = target;
   if (selectionStart === undefined || selectionEnd === undefined) return;
-  const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
-  const indent = value.slice(lineStart, selectionStart).match(/^[ \t]*/)?.[0] ?? '';
-  const next = value.slice(0, selectionStart) + '\n' + indent + value.slice(selectionEnd);
-  target.value = next;
-  const caret = selectionStart + 1 + indent.length;
+  const { text, caret } =
+    event.key === 'Enter'
+      ? applyJsonEnter(value, selectionStart, selectionEnd)
+      : applyJsonBackspace(value, selectionStart, selectionEnd);
+  target.value = text;
   target.setSelectionRange(caret, caret);
-  onChange(next);
+  onChange(text);
+}
+
+/** A click, so that landing on an empty string lands inside it. Read after the browser has put
+ * the caret where the click asked, and only when the click did not drag a selection. */
+function handleJsonClick(event: MouseEvent): void {
+  const target = event.currentTarget;
+  if (!(target instanceof HTMLTextAreaElement)) return;
+  if (target.selectionStart !== target.selectionEnd) return;
+  const caret = placeCaret(target.value, target.selectionStart ?? 0);
+  if (caret === target.selectionStart) return;
+  target.setSelectionRange(caret, caret);
 }
 
 function handleJsonInput(event: Event, onChange: (value: string) => void): void {
@@ -104,6 +119,7 @@ export function SyntaxHighlightedJson({
         aria-label={label}
         onInput={(event) => handleJsonInput(event, onChange)}
         onKeyDown={(event) => handleJsonKeyDown(event, onChange)}
+        onClick={(event) => handleJsonClick(event)}
         onPaste={(event) => handleJsonPaste(event, onPaste, onChange)}
         onScroll={(event) => handleJsonScroll(event, preRef)}
       />
