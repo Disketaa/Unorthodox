@@ -113,13 +113,8 @@ export function isThemeId(value: unknown): value is ThemeId {
   return isKnownThemeId(value);
 }
 
-/** Whether a name is one the room already plays under, and so cannot be a new theme's. A theme
- * is keyed by its name, so a second theme carrying one would not sit beside the first but take
- * its place in the cache and in the room — which for a built-in name means the host loses a
- * theme they never knew they were losing. Two things are taken: a name in the registry, and a
- * name another custom theme already holds. `except` is the name of the theme being edited, so
- * opening a theme to change it is not a clash with itself. One check for every place that
- * refuses it: the paste window that writes the name, and the card in the lobby that names it. */
+/** Whether a name is one the room already plays under, and so cannot be a new theme's. Refuses
+ * it: the paste window that writes the name, and the card in the lobby that names it. */
 export function themeNameIsTaken(
   name: string,
   customThemes: readonly CustomTheme[] = [],
@@ -129,10 +124,7 @@ export function themeNameIsTaken(
   return customThemes.some((theme) => theme.name === name && theme.name !== except);
 }
 
-/** A theme's name as the room reads it. An authored theme's is its file's name; a custom theme's
- * is the name the host gave it, which is the same string either way — so this is the identity
- * function, kept as a name so that a screen naming a theme says `themeName(theme)` and does not
- * reach for the field itself. */
+/** A theme's name as the room reads it. */
 export function themeName(theme: ThemeId): string {
   return theme;
 }
@@ -171,8 +163,7 @@ function shuffle<T>(pool: T[], random: Random): T[] {
 
 /** The themes a room may be given, given which way it is given them, which it has named, and
  * which custom themes this client knows. The random bank is the whole set — authored and custom
- * together, since a custom theme is as much the room's as any file in the registry. A room
- * naming none under `Chosen` is read the same way rather than as a room with nothing to play. */
+ * together, since a custom theme is as much the room's as any file in the registry. */
 export function themePool(
   mode: ThemeMode,
   selection: readonly ThemeId[] | undefined,

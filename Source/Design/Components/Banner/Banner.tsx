@@ -30,10 +30,7 @@ export interface BannerProps {
    * words are on the left and the number at the far end. */
   value?: string;
   children?: ComponentChildren;
-  /** Whether the words wrap instead of ending in an ellipsis. A note is held to one line by
-   * default, since most of them are short enough to say in one; a wording that carries a
-   * sentence rather than a label asks for `wrap`, so the whole of it is read rather than its
-   * first line. */
+  /** Whether the words wrap instead of ending in an ellipsis. */
   wrap?: boolean;
   /** Whether the round's enchanted card reaches this player, which lays the glint over the
    * banner. */

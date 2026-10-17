@@ -145,16 +145,13 @@ export function handleSetThemes(state: HostState, action: ActionOf<'SET_THEMES'>
 /** The themes named, kept only where this build or this browser has the theme and cut to what
  * the lobby deals. A name is real if it is a file in the registry or a theme this browser has
  * saved, and the registry is asked first so a custom theme can never answer to a file's name.
- * In the order the host pressed them, not the registry's, and the oldest goes rather than the
- * newest. Both parts matter and neither is decoration. Cutting against the registry put every
- * authored theme ahead of every pasted one, so a room that had named its full six could never
- * name a custom theme at all — the press was dropped here and the card read as a control that
- * does nothing. Cutting from the front rather than the back then decides which of two presses
- * wins when there is only room for one: the one just made, since the earlier theme is still on
- * the card and one press puts it back. Nothing downstream depends on the order, since the deal
- * filters the pool by membership rather than by position. Cut here rather than trusted to the
- * buttons, so a host cannot end up naming seven themes for a bank of six. Empty stays empty:
- * the deal reads it as every theme. */
+ * Won't name a custom theme at all — the press was dropped here and the card read as a control
+ * that does nothing. Cutting from the front rather than the back then decides which of two
+ * presses wins when there is only room for one: the one just made, since the earlier theme is
+ * still on the card and one press puts it back. Nothing downstream depends on the order, since
+ * the deal filters the pool by membership rather than by position. Cut here rather than
+ * trusted to the buttons, so a host cannot end up naming seven themes for a bank of six. Empty
+ * stays empty: the deal reads it as every theme. */
 function namedFrom(picked: readonly ThemeId[]): readonly ThemeId[] {
   // Custom themes live in this browser's cache, so load them before checking which names are real.
   const custom = loadCustomThemes();

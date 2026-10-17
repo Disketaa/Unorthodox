@@ -98,8 +98,6 @@ function ThemeSlot({
   const played = Math.max(0, (spent?.get(theme) ?? 0) - (chosen ? 1 : 0));
   // How many rounds this theme can actually be played for: the fewer of what the pace allows and
   // what the theme has questions for, since a round is dealt one question and never repeats one.
-  // A theme whose questions this client has not been sent reads as the full count, so an empty
-  // meter never says a theme is over before it began.
   const asked = themeQuestions(theme)?.length;
   const rounds = asked === undefined ? roundsPerTheme : Math.min(roundsPerTheme, asked);
   return (

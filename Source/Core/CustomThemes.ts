@@ -117,9 +117,6 @@ export function parseCustomThemesJson(json: string): CustomTheme[] | undefined {
   // Names already met inside this paste. Not the browser's saved themes: a name already saved
   // is a theme being replaced, which is what the edit window does every time it saves. Only two
   // themes in one paste sharing a name is refused — those land on each other.
-  // name that is already saved is a theme being replaced — that is what the edit window does
-  // every time it saves — and only two themes in the same paste sharing one name is refused,
-  // since those would land on each other with nothing to say which won.
   const seen = new Set<string>();
   for (const entry of entries) {
     if (!isCustomTheme(entry)) return undefined;
@@ -158,12 +155,9 @@ function unwrapJsonFence(json: string): string {
   return rest.slice(0, closing).trim();
 }
 
-/** Take off the comma a paste leaves in front of a closing bracket. It is the one piece of
- * broken JSON that comes from copying rather than from typing: text copied out of a chat, a
- * document or a spreadsheet's list formatting habitually ends its last entry with a comma, and
- * JSON has no comma there. Reading is done by hand rather than by rewriting through a parse,
- * since the text being repaired is by definition the text the parser could not read; strings
- * are stepped over, so a comma inside a question's own wording is left alone. */
+/** Take off the comma a paste leaves before a closing bracket. It comes from copying rather
+ * than typing: a chat or spreadsheet ends its last entry with a comma, and JSON has no comma
+ * there. Strings are stepped over, so a comma inside a question's wording is left alone. */
 function stripTrailingCommas(text: string): string {
   let out = '';
   let inString = false;
@@ -202,10 +196,8 @@ export function hasJsonFence(json: string): boolean {
 }
 
 /** Where a paste stops making sense, and why. Carried as a reason and a place rather than as a
- * sentence: the wording of it belongs to the interface, so no user-facing text lives in `Core`.
- * The reason is a named thing rather than a code so that the popup can say what happened in
- * words a host can act on, and the line and column are counted from one so they can be found in
- * the box above the message. */
+ * sentence: the wording belongs to the interface, so no user-facing text lives in `Core`. The
+ * reason is a named thing so the popup can say what happened in words a host can act on. */
 export type JsonSyntaxProblem = {
   reason:
     | 'UnclosedString'
@@ -230,10 +222,7 @@ export type CustomThemesError =
 /** Walk the JSON by hand and say where it first stops making sense. The parser itself would only
  * say so in the browser's own words — "Unexpected end of JSON input", or a position counted
  * from zero that means nothing to a host looking at their paste — so the structure is read here
- * instead and the first thing that cannot be is named. Deliberately not a parser: it looks only
- * for the faults a paste actually arrives with, and anything it passes over that `JSON.parse`
- * still refuses falls back to the parser's own message rather than being guessed at. Returns
- * undefined where the text holds together, which is the common case and costs one pass. */
+ * instead and the first thing that cannot be is named. */
 function findJsonSyntaxProblem(text: string): JsonSyntaxProblem | undefined {
   // Where each bracket was opened, so a closing one can be matched against it and the line can be
   // pointed at the bracket left hanging rather than at the end of the paste.
@@ -388,14 +377,8 @@ export function customThemesJsonError(json: string): CustomThemesError | undefin
 
 /** Repair a paste that is nearly a theme list but not one yet, and hand it back pretty printed.
  * A host copying a theme out of somewhere gets whatever shape it was stored in: one line, no
- * name, no tint. None of that is a reason to refuse the questions. Only the questions are
- * treated as load bearing — without them there is no theme, and guessing at questions would be
- * inventing the host's game. A missing name and a missing tint are filled in, `defaultName` is
- * numbered for as many themes as came in, and a leftover `id` in an older paste is dropped
- * rather than carried: the name is what a theme is keyed by now. Returns undefined where the
- * text is too far from a theme list to repair, and where two of them would repair to the same
- * name. A comma left standing in front of a closing bracket is repaired too: it is the one
- * piece of broken JSON that arrives from copying rather than from typing. */
+ * name, no tint. Only the questions are treated as load bearing — without them there is no
+ * theme, and guessing at questions would be inventing the host's game. */
 export function normalizeCustomThemesJson(
   json: string,
   defaultName: string

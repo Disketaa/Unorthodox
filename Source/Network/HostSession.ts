@@ -56,8 +56,7 @@ export class HostSession {
     // This browser's own custom themes into the room it is hosting. They were written down when
     // they were pasted, so a host has them whether this room was just opened or was restored from
     // storage — and a room only deals out of the themes it holds, so without this the host's
-    // pasted themes sat in the lobby's grid and never in a bank. Merged with whatever the room
-    // already had, since a resumed room knows the themes its players were last sent.
+    // pasted themes sat in the lobby's grid and never in a bank.
     const known = [...(restored.customThemes?.values() ?? []), ...savedCustomThemes()];
     if (known.length > 0)
       this.room.commit({ ...restored, customThemes: new Map(known.map((t) => [t.name, t])) });

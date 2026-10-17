@@ -22,9 +22,7 @@ const authoredThemes: readonly ThemeId[] = [...ThemeIds];
 
 /** What one press on a theme means: it goes on beside the others, or comes back off. Never a
  * switch of mode — naming a theme is a thing the host does on the way to `Chosen`, and a press
- * that turned the random bank off behind their back would be a mode they did not choose.
- * Written over refs rather than ids alone so a custom theme, which has a number and no id,
- * toggles by the same press as an authored one. */
+ * that turned the random bank off behind their back would be a mode they did not choose. */
 function toggle(named: readonly ThemeId[], pressed: ThemeId): readonly ThemeId[] {
   return named.includes(pressed)
     ? named.filter((theme) => theme !== pressed)

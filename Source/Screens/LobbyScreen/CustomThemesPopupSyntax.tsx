@@ -63,6 +63,21 @@ function handleJsonScroll(event: Event, preRef: { current: HTMLPreElement | null
   pre.scrollLeft = target.scrollLeft;
 }
 
+function ClearButton({ onClear }: { onClear?: () => void }) {
+  if (onClear === undefined) return null;
+  return (
+    <div class={styles.Clear}>
+      <IconButton
+        icon="Trash"
+        size="Small"
+        variant="Ghost"
+        label={Strings.lobby.settings.customThemesClear}
+        onClick={onClear ?? (() => undefined)}
+      />
+    </div>
+  );
+}
+
 export function SyntaxHighlightedJson({
   json,
   onChange,
@@ -92,17 +107,7 @@ export function SyntaxHighlightedJson({
         onPaste={(event) => handleJsonPaste(event, onPaste, onChange)}
         onScroll={(event) => handleJsonScroll(event, preRef)}
       />
-      {onClear !== undefined && (
-        <div class={styles.Clear}>
-          <IconButton
-            icon="Trash"
-            size="Small"
-            variant="Ghost"
-            label={Strings.lobby.settings.customThemesClear}
-            onClick={onClear ?? (() => undefined)}
-          />
-        </div>
-      )}
+      <ClearButton onClear={onClear} />
     </div>
   );
 }
