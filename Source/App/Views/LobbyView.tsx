@@ -31,8 +31,7 @@ export function LobbyView({ view }: PhaseViewProps) {
     view.publicState?.phase === 'Lobby' ? view.publicState.themes : [];
   // The custom themes, read from this browser's own cache and not from the room's state: a
   // theme is written down when it is pasted, so a host's themes outlive both the browser and
-  // the room. The room's own are merged in, so joining another's room shows what that room
-  // has.
+  // the room. The room's own are merged in.
   const customThemes: readonly CustomTheme[] = mergeCustomThemes(
     view.publicState?.phase === 'Lobby' ? view.publicState.customThemes : []
   );

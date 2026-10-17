@@ -228,7 +228,7 @@ describe("the card the room's own roll is on", () => {
     const swept = document.createElement('div');
     document.body.appendChild(swept);
     act(() => {
-      render(<ThemeCard theme="Nature" name="Р СџРЎР‚Р С‘РЎР‚Р С•Р Т‘Р В°" swept />, swept);
+      render(<ThemeCard theme="Nature" name="Nature" swept />, swept);
     });
     expect(swept.querySelector('button')?.className).toContain('Swept');
   });
@@ -267,10 +267,7 @@ describe('a card the round has enchanted', () => {
     const shine = document.createElement('div');
     document.body.appendChild(shine);
     act(() => {
-      render(
-        <ThemeCard theme="Р вЂўР Т‘Р В°" name="Р вЂўР Т‘Р В°" modifiers={['Enchanted']} />,
-        shine
-      );
+      render(<ThemeCard theme="Nature" name="Nature" modifiers={['Enchanted']} />, shine);
     });
     expect(shine.querySelector('[class*="Glint"]')).not.toBeNull();
     expect(card().container.querySelector('[class*="Glint"]')).toBeNull();
@@ -282,10 +279,7 @@ describe('a card the round has enchanted', () => {
     const shine = document.createElement('div');
     document.body.appendChild(shine);
     act(() => {
-      render(
-        <ThemeCard theme="Р вЂўР Т‘Р В°" name="Р вЂўР Т‘Р В°" modifiers={['Enchanted']} />,
-        shine
-      );
+      render(<ThemeCard theme="Nature" name="Nature" modifiers={['Enchanted']} />, shine);
     });
     const glint = shine.querySelector('[class*="Glint"]');
     expect(glint?.getAttribute('aria-hidden')).toBe('true');
@@ -299,7 +293,7 @@ describe('a card the round has enchanted', () => {
       const host = document.createElement('div');
       document.body.appendChild(host);
       act(() => {
-        render(<ThemeCard theme="Р вЂўР Т‘Р В°" name="Р вЂўР Т‘Р В°" {...props} />, host);
+        render(<ThemeCard theme="Nature" name="Nature" {...props} />, host);
       });
       return host.querySelector('button')?.className;
     };

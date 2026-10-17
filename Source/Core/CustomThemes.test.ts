@@ -4,8 +4,8 @@ import {
   normalizeCustomThemesJson,
   parseCustomThemesJson,
   customThemesJsonError,
-  hasJsonFence,
-} from './CustomThemes';
+} from './CustomThemeJson';
+import { hasJsonFence } from './JsonPaste';
 
 describe('a pasted theme list', () => {
   it('reads a theme with a name, a tint and questions', () => {

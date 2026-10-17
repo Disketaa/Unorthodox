@@ -1,9 +1,10 @@
-import { ThemeId, ThemeIds, ThemeMode, CustomTheme, Accents, themeAccent } from '@/Core';
+import { ThemeId, ThemeIds, ThemeMode, CustomTheme, themeAccent } from '@/Core';
 import { Button } from '@/Design/Components';
 import { Stack } from '@/Design/Primitives';
 import { GameConfig } from '@/Game';
 import { Strings } from '@/Content';
 import styles from './LobbyThemes.module.css';
+import { CustomThemeCard } from './CustomThemeCard';
 
 /** How many themes a room may name at once, which is the size of the bank the lobby deals. A
  * pool larger than the deal is a pool the room is only ever choosing between, so the figure is
@@ -20,19 +21,9 @@ const modes: readonly ThemeMode[] = ['Random', 'Chosen'];
  * above rather than a ninth card. */
 const authoredThemes: readonly ThemeId[] = [...ThemeIds];
 
-/** What one press on a theme means: it goes on beside the others, or comes back off. Never a
- * switch of mode — naming a theme is a thing the host does on the way to `Chosen`, and a press
- * that turned the random bank off behind their back would be a mode they did not choose. */
-function toggle(named: readonly ThemeId[], pressed: ThemeId): readonly ThemeId[] {
-  return named.includes(pressed)
-    ? named.filter((theme) => theme !== pressed)
-    : [...named, pressed];
-}
-
 /** The rule over the themes, saying how many are on out of how many the room may name. The
- * random bank quotes the deal against the whole set rather than saying nothing: the set is
- * every theme the browser knows, authored and pasted together, so the figure moves when a host
- * pastes one and is the number that says how likely a pasted theme is to come up. */
+ * random bank quotes the deal against the whole set, which moves when a host pastes one and so
+ * says how likely a pasted theme is to come up. */
 function themeLabel(mode: ThemeMode, count: number, total: number): string {
   return mode === 'Random'
     ? Strings.lobby.settings.themesRandom(ThemeLimit, total)
@@ -69,51 +60,42 @@ function ModeButtons({
 }
 
 /** The grid of authored theme cards, each wearing its own tint, from the registry. The host's
- * pasted themes are not in it: they have their own grid under their own rule, because they are
- * not chosen out of a bank — they are already in. */
+ * pasted themes are not in it: they are already in rather than chosen out of a bank. What a
+ * press means is worked out by the caller, so a card here is a tint, a state and a press. */
 function ThemeGrid({
   themeMode,
   named,
   isHost,
   full,
-  onPick,
+  pick,
 }: {
   themeMode: ThemeMode;
   named: readonly ThemeId[];
   isHost: boolean;
   full: boolean;
-  onPick: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
+  pick: (theme: ThemeId) => void;
 }) {
   if (themeMode !== 'Chosen') return null;
-  return <div class={styles.Grid}>{authoredGrid(named, isHost, full, onPick)}</div>;
-}
-
-/** The authored themes from the registry, each wearing its own tint. */
-function authoredGrid(
-  named: readonly ThemeId[],
-  isHost: boolean,
-  full: boolean,
-  onPick: (mode: ThemeMode, themes: readonly ThemeId[]) => void
-) {
-  return authoredThemes.map((theme) => (
-    <Button
-      key={theme}
-      class={styles.Item}
-      accent={themeAccent(theme)}
-      pressed={named.includes(theme)}
-      disabled={!isHost || (full && !named.includes(theme))}
-      onClick={() => onPick('Chosen', toggle(named, theme))}
-    >
-      {theme}
-    </Button>
-  ));
+  return (
+    <div class={styles.Grid}>
+      {authoredThemes.map((theme) => (
+        <Button
+          key={theme}
+          class={styles.Item}
+          accent={themeAccent(theme)}
+          pressed={named.includes(theme)}
+          disabled={!isHost || (full && !named.includes(theme))}
+          onClick={() => pick(theme)}
+        >
+          {theme}
+        </Button>
+      ))}
+    </div>
+  );
 }
 
 /** The custom themes from the host's paste, in their own grid under their own rule rather than
- * in the bank above. Each wears its own tint, and each is always pressed: a pasted theme is not
- * one the host picked off a row, it is one they wrote and brought, so there is nothing to
- * press. It is drawn as pressed anyway, since a card in this panel that reads as off would say
- * the room is not playing it, and it is. */
+ * in the bank above. */
 function CustomThemeGrid({
   customThemes,
   named,
@@ -133,48 +115,18 @@ function CustomThemeGrid({
   return (
     <div class={styles.Grid}>
       {customThemes.map((theme) => (
-        <div key={theme.name} class={styles.Slot}>
-          <Button
-            class={styles.Item}
-            accent={Accents[theme.color]}
-            pressed={named.includes(theme.name)}
-            disabled={!isHost || (full && !named.includes(theme.name))}
-            onClick={() => onPickCustom(theme)}
-          >
-            {/* The name in a span of its own: the card is a flex row, and a flex row has no ellipsis
-             * — the text in it is an anonymous item that is clipped rather than cut, so a long
-             * name ran to the card's edge. A box of its own is what truncation needs. */}
-            <span class={styles.ItemName}>{theme.name}</span>
-            {/* The mark inside the card, as a span rather than a second button: a button inside a
-             * button is one control to the browser, so the card would swallow the pencil's press
-             * and toggle the theme on every click meant to change it. A span with the button role
-             * on it keeps the card one press and the pencil another, and stops its own press from
-             * reaching the card. */}
-            <span
-              class={styles.SlotEdit}
-              role="button"
-              tabIndex={isHost ? 0 : -1}
-              aria-label={Strings.lobby.settings.editCustomThemes}
-              onClick={(event) => {
-                event.stopPropagation();
-                if (!isHost) return;
-                onEdit(theme);
-              }}
-              onKeyDown={(event) => {
-                if (event.key !== 'Enter' && event.key !== ' ') return;
-                event.preventDefault();
-                event.stopPropagation();
-                if (!isHost) return;
-                onEdit(theme);
-              }}
-            >
-              <span class={styles.SlotEditIcon} aria-hidden="true" />
-            </span>
-          </Button>
-        </div>
+        <CustomThemeCard
+          key={theme.name}
+          theme={theme}
+          named={named}
+          isHost={isHost}
+          full={full}
+          onPickCustom={onPickCustom}
+          onEdit={onEdit}
+        />
       ))}
     </div>
   );
 }
 
-export { modes, authoredThemes, toggle, themeLabel, ModeButtons, ThemeGrid, CustomThemeGrid };
+export { modes, authoredThemes, themeLabel, ModeButtons, ThemeGrid, CustomThemeGrid };

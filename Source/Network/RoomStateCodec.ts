@@ -81,11 +81,8 @@ export function paceFrom(fields: Fields): Pace {
 }
 
 /** The themes the host has named, which the resumed room deals from once it is given them by its
- * own way. A name this build has no bank for is dropped, and a random bank an older build kept
- * as a theme of its own reads as naming none — the random way, said in the mode. Strings only,
- * as before custom themes existed: a room saved while they were numbered stores numbers in
- * here, and a number is not a name, so such a room resumes on the random bank — everything it
- * can play. */
+ * own way. A name this build has no bank for is dropped. Strings only, as before custom themes
+ * existed: a room saved while they were numbered resumes on the random bank. */
 export function themesFrom(fields: Fields): ThemeId[] {
   const raw = fields.get('themes');
   const named = (Array.isArray(raw) ? raw : []).filter(

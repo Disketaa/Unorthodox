@@ -101,6 +101,37 @@ function bankFor(
   };
 }
 
+/** The bank this room is playing, and what the room has done to it: the themes offered, the
+ * round each modifier counts for, and the theme the sweep is looking at. Worked out here so the
+ * view below is only about handing the bank its props. */
+function useBank(
+  roomCode: string,
+  themeMode: ThemeMode,
+  enabledThemes: readonly ThemeId[],
+  customThemes: readonly CustomTheme[] | undefined,
+  spent: ReadonlyMap<ThemeId, number> | undefined,
+  theme: ThemeId | undefined,
+  picking: { theme: ThemeId; startedAt: number } | undefined,
+  clockOffsetMs: number
+) {
+  const pool = useMemo(
+    () => themePool(themeMode, enabledThemes, customThemes ?? []),
+    [themeMode, enabledThemes, customThemes]
+  );
+  const themes = useMemo(
+    () => themesForRoom(roomCode, GameConfig.themes.cardsPerLobby, pool),
+    [roomCode, pool]
+  );
+  const { looking } = useThemeSweep(picking, themes, clockOffsetMs);
+  const round = spentRounds(spent);
+  const bankRound = theme !== undefined ? Math.max(0, round - 1) : round;
+  const bank = useMemo(
+    () => bankFor(roomCode, themes, bankRound),
+    [roomCode, themes, bankRound]
+  );
+  return { themes, looking, ...bank };
+}
+
 export function ThemeCardsView({
   roomCode,
   choosing,
@@ -116,33 +147,27 @@ export function ThemeCardsView({
   customThemes,
   pace,
 }: ThemeCardsViewProps) {
-  const pool = useMemo(
-    () => themePool(themeMode, enabledThemes, customThemes ?? []),
-    [themeMode, enabledThemes, customThemes]
+  const bank = useBank(
+    roomCode,
+    themeMode,
+    enabledThemes,
+    customThemes,
+    spent,
+    theme,
+    picking,
+    clockOffsetMs
   );
-  const themes = useMemo(
-    () => themesForRoom(roomCode, GameConfig.themes.cardsPerLobby, pool),
-    [roomCode, pool]
-  );
-  const { looking } = useThemeSweep(picking, themes, clockOffsetMs);
-  const round = spentRounds(spent),
-    bankRound = theme !== undefined ? Math.max(0, round - 1) : round;
-  const { modifiers, mults, effectLabels } = useMemo(
-    () => bankFor(roomCode, themes, bankRound),
-    [roomCode, themes, bankRound]
-  );
-  const roundsPerTheme = pace === 'Fast' ? 5 : 10;
   return (
     <ThemeCards
-      themes={themes}
-      roundsPerTheme={roundsPerTheme}
+      themes={bank.themes}
+      roundsPerTheme={pace === 'Fast' ? 5 : 10}
       spent={spent}
-      modifiers={modifiers}
-      mults={mults}
-      effectLabels={effectLabels}
+      modifiers={bank.modifiers}
+      mults={bank.mults}
+      effectLabels={bank.effectLabels}
       picked={theme}
       picking={picking !== undefined}
-      swept={looking}
+      swept={bank.looking}
       onPick={choosing && myTurn && picking === undefined && !paused ? onPickTheme : undefined}
     />
   );

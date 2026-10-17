@@ -7,5 +7,8 @@ export * from './Color';
 export * from './Accents';
 export * from './Themes';
 export * from './CustomThemes';
+export * from './CustomThemeJson';
+export * from './JsonPaste';
+export * from './JsonSyntax';
 export * from './Modifiers';
 export * from './LetterPairs';

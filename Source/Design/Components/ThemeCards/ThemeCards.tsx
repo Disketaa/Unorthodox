@@ -96,10 +96,6 @@ function ThemeSlot({
   // showing it spent drains the chosen card on the very press that expands it — a theme on its
   // last round comes up greyed while still being answered. It catches up on the next bank.
   const played = Math.max(0, (spent?.get(theme) ?? 0) - (chosen ? 1 : 0));
-  // How many rounds this theme can actually be played for: the fewer of what the pace allows and
-  // what the theme has questions for, since a round is dealt one question and never repeats one.
-  const asked = themeQuestions(theme)?.length;
-  const rounds = asked === undefined ? roundsPerTheme : Math.min(roundsPerTheme, asked);
   return (
     <div class={slotClass(theme, picked)} key={theme}>
       {/* The same arrival the characters have, keyed on the theme so a bank that is dealt a new
@@ -110,7 +106,7 @@ function ThemeSlot({
           theme={theme}
           name={themeName(theme)}
           index={index + 1}
-          rounds={rounds}
+          rounds={playableRounds(theme, roundsPerTheme)}
           spent={played}
           modifiers={modifiers?.get(theme)}
           mult={mults?.get(theme)}
@@ -124,6 +120,13 @@ function ThemeSlot({
       </Pop>
     </div>
   );
+}
+
+/** How many rounds a theme can actually be played for: the fewer of what the pace allows and
+ * what the theme has questions for, since a round is dealt one question and never repeats one. */
+function playableRounds(theme: ThemeId, roundsPerTheme: number): number {
+  const asked = themeQuestions(theme)?.length;
+  return asked === undefined ? roundsPerTheme : Math.min(roundsPerTheme, asked);
 }
 
 /** The bank's own box, which is the plain bank or the one the room has settled on: the chosen

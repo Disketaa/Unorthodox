@@ -1,12 +1,11 @@
 import { Screen } from '@/Design/Primitives';
 import { CharacterColor, CharacterId, PlayerId, ThemeId, ThemeMode, CustomTheme } from '@/Core';
 import { Pace, PublicPlayer } from '@/Game';
-import { useState } from 'preact/hooks';
-import { Strings } from '@/Content';
 import { RoomCard } from './RoomCard';
 import { SettingsCard } from './SettingsCard';
 import { LookPicker } from './LookPicker';
 import { CustomThemesPopup } from './CustomThemesPopup';
+import { useCustomThemesPopup } from './UseCustomThemesPopup';
 
 export interface LobbyScreenProps {
   /** This player's own name, which titles the character picker. */
@@ -34,7 +33,6 @@ export interface LobbyScreenProps {
   onPickThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
   /** Opening the paste window without saving. */
   onLoadCustomThemes: () => void;
-  /** The room's code. */
   roomCode: string;
   /** The players in the room. */
   players: readonly PublicPlayer[];
@@ -52,96 +50,41 @@ export interface LobbyScreenProps {
 
 /** Waiting room: room code, roster, character picker. */
 export function LobbyScreen(props: LobbyScreenProps) {
-  const {
-    roomCode,
-    players,
-    ownPlayerId,
-    ownPlayerName,
-    ownLook,
-    isHost,
-    onPickLook,
-    onStart,
-    onExit,
-    onKick,
-  } = props;
-  const [popupOpen, setPopupOpen] = useState(false);
-  // What the window opens on. Absent is the empty template, for adding; set to a theme's own JSON,
-  // for changing that theme. Held as the text itself rather than as a flag about which it was, so
-  // the body is handed exactly what it should show and there is one way to close it.
-  const [popupJson, setPopupJson] = useState<string | undefined>(undefined);
-  // The theme the window was opened on, kept beside the text so the window can offer to strike
-  // out exactly the one it is showing rather than whatever happens to be in the box.
-  const [popupTheme, setPopupTheme] = useState<CustomTheme | undefined>(undefined);
-  // What the window is opened saying, where the press that opened it was refused. It is about the
-  // name in the box rather than about the JSON's shape, so the body keeps it until the text is
-  // touched and then goes back to reading the text itself.
-  const [popupProblem, setPopupProblem] = useState<string | undefined>(undefined);
-  const closePopup = (): void => {
-    setPopupOpen(false);
-    setPopupJson(undefined);
-    setPopupTheme(undefined);
-    setPopupProblem(undefined);
-  };
+  const popup = useCustomThemesPopup(props.onRemoveCustomTheme, props.onCustomThemes);
   return (
     <Screen>
       <RoomCard
-        roomCode={roomCode}
-        players={players}
-        ownPlayerId={ownPlayerId}
-        isHost={isHost}
-        onStart={onStart}
-        onExit={onExit}
-        onKick={onKick}
+        roomCode={props.roomCode}
+        players={props.players}
+        ownPlayerId={props.ownPlayerId}
+        isHost={props.isHost}
+        onStart={props.onStart}
+        onExit={props.onExit}
+        onKick={props.onKick}
         themeMode={props.themeMode}
         themes={props.themes}
       />
       <SettingsCard
         {...props}
-        players={players.length}
-        onLoadCustomThemes={() => {
-          setPopupJson(undefined);
-          setPopupTheme(undefined);
-          setPopupProblem(undefined);
-          setPopupOpen(true);
-        }}
-        onEditCustomThemes={(theme, clash) => {
-          setPopupJson(JSON.stringify(theme, null, 2));
-          setPopupTheme(theme);
-          setPopupProblem(
-            clash === undefined ? undefined : Strings.lobby.settings.customThemesNameClash
-          );
-          setPopupOpen(true);
-        }}
+        players={props.players.length}
+        onLoadCustomThemes={popup.openBlank}
+        onEditCustomThemes={popup.openOn}
       />
-      {ownLook !== undefined && (
-        <LookPicker ownName={ownPlayerName} ownLook={ownLook} onPick={onPickLook} />
+      {props.ownLook !== undefined && (
+        <LookPicker
+          ownName={props.ownPlayerName}
+          ownLook={props.ownLook}
+          onPick={props.onPickLook}
+        />
       )}
       <CustomThemesPopup
-        open={popupOpen}
-        json={popupJson}
-        problem={popupProblem}
-        themeName={popupTheme?.name}
-        onClose={closePopup}
-        onDelete={
-          popupTheme === undefined
-            ? undefined
-            : () => {
-                props.onRemoveCustomTheme(popupTheme.name);
-                closePopup();
-              }
-        }
-        onSave={(themes) => {
-          // Saving a theme whose name the host changed is a rename rather than an addition: the
-          // name is what the theme is keyed by, so the old one is struck out as the new one goes
-          // in, or the room would end up holding both the theme as it was and the theme as it is
-          // now, under two names, with the host having written only one.
-          if (popupTheme !== undefined) {
-            const renamed = themes.some((theme) => theme.name !== popupTheme.name);
-            if (renamed) props.onRemoveCustomTheme(popupTheme.name);
-          }
-          props.onCustomThemes(themes);
-          closePopup();
-        }}
+        open={popup.open}
+        json={popup.json}
+        problem={popup.problem}
+        themeName={popup.themeName}
+        onClose={popup.close}
+        onDelete={popup.remove}
+        onSave={popup.save}
       />
     </Screen>
   );

@@ -5,7 +5,9 @@ import { clientId } from './ClientIdentity';
 import { ClientInbox, isFromHost } from './ClientInbox';
 import { stallHint, StallHintMs, type ConnectionHint } from './ConnectionHint';
 import * as Game from '@/Game';
-import { PlayerLook, ThemeId, CustomTheme, addCustomTheme, createLogger } from '@/Core';
+import { ClientSender } from './ClientSender';
+import { customThemesOf } from './ClientThemeCache';
+import { PlayerLook, ThemeId, CustomTheme, createLogger } from '@/Core';
 
 export type { BlockedReason } from './Protocol';
 
@@ -35,7 +37,10 @@ export class ClientSession {
       }
     });
     this.inbox = inbox;
+    this.sender = new ClientSender(transport, () => this.inbox.playerId);
   }
+
+  private readonly sender: ClientSender;
 
   private readonly inbox: ClientInbox;
 
@@ -87,67 +92,31 @@ export class ClientSession {
   }
 
   setLook(look: PlayerLook): void {
-    if (this.inbox.playerId === null) {
-      log('warn', 'cannot set a look before receiving a playerId');
-      return;
-    }
-    this.transport.sendToHost({ type: 'SetLook', playerId: this.inbox.playerId, look });
-  }
-
-  private seated(action: string): boolean {
-    if (this.inbox.playerId !== null) return true;
-    log('warn', `cannot ${action} before receiving a playerId`);
-    return false;
+    this.sender.setLook(look);
   }
 
   setEditingAnswer(editing: boolean): void {
-    if (this.seated('write answer')) {
-      this.transport.sendToHost({
-        type: 'EditingAnswer',
-        editing,
-        playerId: this.inbox.playerId,
-      });
-    }
+    this.sender.setEditingAnswer(editing);
   }
 
   submitAnswer(text: string): void {
-    if (this.seated('submit answer')) {
-      this.transport.sendToHost({
-        type: 'SubmitAnswer',
-        text,
-        playerId: this.inbox.playerId,
-      });
-    }
+    this.sender.submitAnswer(text);
   }
 
   rejectGroup(groupId: number): void {
-    this.sendMark('RejectGroup', groupId, 'reject group');
+    this.sender.sendMark('RejectGroup', groupId, 'reject group');
   }
 
   likeGroup(groupId: number): void {
-    this.sendMark('LikeGroup', groupId, 'like an answer');
-  }
-
-  private sendMark(type: 'RejectGroup' | 'LikeGroup', groupId: number, action: string): void {
-    if (this.seated(action)) {
-      this.transport.sendToHost({ type, groupId, playerId: this.inbox.playerId });
-    }
+    this.sender.sendMark('LikeGroup', groupId, 'like an answer');
   }
 
   chooseTheme(theme: ThemeId): void {
-    if (this.seated('choose a theme')) {
-      this.transport.sendToHost({
-        type: 'ChooseTheme',
-        theme,
-        playerId: this.inbox.playerId,
-      });
-    }
+    this.sender.chooseTheme(theme);
   }
 
   sendCustomThemes(themes: readonly CustomTheme[]): void {
-    if (this.seated('paste custom themes')) {
-      this.transport.sendToHost({ type: 'SetCustomThemes', themes });
-    }
+    this.sender.sendCustomThemes(themes);
   }
 
   getState(): Game.PublicState | undefined {
@@ -169,12 +138,6 @@ export class ClientSession {
     return this.inbox.roomLimit;
   }
   getCustomThemes(): readonly CustomTheme[] {
-    const state = this.inbox.state;
-    if (state === undefined || 'customThemes' in state === false) return [];
-    // Saved as they arrive, not only read out of the room's state: a custom theme's name and its
-    // questions are looked up in this browser's cache, so a client that never writes them down
-    // would show a card numbered rather than named, and could draw no questions for it at all.
-    for (const theme of state.customThemes) addCustomTheme(theme);
-    return state.customThemes;
+    return customThemesOf(this.inbox.state);
   }
 }

@@ -1,75 +1,40 @@
 import { Transport } from './Transport';
 import { HostInbox } from './HostInbox';
-import {
-  startGameFrom,
-  startWritingFrom,
-  revealQuestionFrom,
-  startRandomPickFrom,
-  resolveRandomPickFrom,
-  chooseThemeFrom,
-  setPausedFrom,
-  endReviewingFrom,
-  nextRoundFrom,
-  nextPhaseFrom,
-  type FlowHost,
-} from './HostFlow';
-import {
-  addBot,
-  countBots,
-  kick,
-  nextTurn,
-  setOwnLook,
-  setPace,
-  setThemes,
-} from './HostRosterActions';
+import { hostFlowMoves, type HostFlowMoves } from './HostFlowMoves';
+import type { FlowHost } from './HostFlow';
+import { addBot, kick, nextTurn, setOwnLook, setPace, setThemes } from './HostRosterActions';
 import { answerBots } from './HostBots';
-import { departureOf } from './HostPresence';
-import { freshLobby } from './RoomStateStore';
+import { openHostRoom, type HostRoomOpener } from './HostRoomOpen';
 import { HostRoom } from './HostRoom';
 import * as Game from '@/Game';
-import {
-  PlayerId,
-  PlayerLook,
-  ThemeId,
-  ThemeMode,
-  CustomTheme,
-  savedCustomThemes,
-  createLogger,
-} from '@/Core';
+import { PlayerId, PlayerLook, ThemeId, ThemeMode, CustomTheme, createLogger } from '@/Core';
 const log = createLogger('HostSession');
 export const HostPlayerId: PlayerId = 'host';
-export class HostSession {
-  private readonly room: HostRoom;
+export class HostSession implements HostFlowMoves, HostRoomOpener {
+  /** The room this session is hosting: its state, its roster, and the wire it is on. */
+  readonly room: HostRoom;
   private readonly inbox: HostInbox;
+  /** The room's own moves between phases, written down once in `HostFlowMoves`. */
+  private readonly moves: HostFlowMoves;
   private botsAdded = 0;
   private roomCode = '';
   constructor(transport: Transport) {
     this.room = new HostRoom(transport);
     this.inbox = new HostInbox(transport, this.room, (action) => this.apply(action));
+    this.moves = hostFlowMoves(
+      () => this.flow,
+      () => this.roomCode,
+      HostPlayerId
+    );
     this.inbox.listen();
+  }
+  botsRestored(count: number): void {
+    this.botsAdded = count;
   }
   start(roomCode: string, hostName: string, look: PlayerLook): void {
     log('info', 'starting host session', roomCode, hostName);
     this.roomCode = roomCode;
-    const restored = this.room.open(roomCode) ?? freshLobby();
-    this.room.commit(restored);
-    // This browser's own custom themes into the room it is hosting. They were written down when
-    // they were pasted, so a host has them whether this room was just opened or was restored from
-    // storage — and a room only deals out of the themes it holds, so without this the host's
-    // pasted themes sat in the lobby's grid and never in a bank.
-    const known = [...(restored.customThemes?.values() ?? []), ...savedCustomThemes()];
-    if (known.length > 0)
-      this.room.commit({ ...restored, customThemes: new Map(known.map((t) => [t.name, t])) });
-    this.room.roster.addHost(HostPlayerId, hostName);
-    this.room.roster.restore([...restored.players.entries()]);
-    this.apply({ type: 'JOIN', playerId: HostPlayerId, name: hostName, look });
-    this.botsAdded = countBots(restored);
-    this.transport.setPlayerId(HostPlayerId);
-    this.transport.start(roomCode, hostName, true);
-    this.transport.onPeerLeave((peerId) => {
-      const departure = departureOf(peerId, this.room.roster);
-      if (departure !== undefined) this.apply(departure);
-    });
+    openHostRoom(this, roomCode, hostName, look, HostPlayerId);
   }
   stop(): void {
     log('info', 'stopping host session');
@@ -99,7 +64,7 @@ export class HostSession {
     this.apply({ type: 'EDITING_ANSWER', playerId: HostPlayerId, editing });
   }
   chooseTheme(theme: ThemeId): void {
-    chooseThemeFrom(this.flow, this.roomCode, theme, HostPlayerId);
+    this.moves.chooseTheme(theme);
   }
   rejectOwnGroup(groupId: number): void {
     this.apply({ type: 'REJECT_GROUP', playerId: HostPlayerId, groupId });
@@ -127,31 +92,31 @@ export class HostSession {
     this.apply({ type: 'FINAL' });
   }
   startGame(): void {
-    startGameFrom(this.flow);
+    this.moves.startGame();
   }
   startWriting(topic: string): void {
-    startWritingFrom(this.flow, topic);
+    this.moves.startWriting(topic);
   }
   revealQuestion(question: string): void {
-    revealQuestionFrom(this.flow, question);
+    this.moves.revealQuestion(question);
   }
   startRandomPick(): void {
-    startRandomPickFrom(this.flow, this.roomCode);
+    this.moves.startRandomPick();
   }
   resolveRandomPick(): void {
-    resolveRandomPickFrom(this.flow, this.roomCode);
+    this.moves.resolveRandomPick();
   }
   setPaused(paused: boolean): void {
-    setPausedFrom(this.flow, paused);
+    this.moves.setPaused(paused);
   }
   endReviewing(durationMs: number): void {
-    endReviewingFrom(this.flow, durationMs);
+    this.moves.endReviewing(durationMs);
   }
   nextRound(): void {
-    nextRoundFrom(this.flow);
+    this.moves.nextRound();
   }
   nextPhase(topic: string): void {
-    nextPhaseFrom(this.flow, topic);
+    this.moves.nextPhase(topic);
   }
   get roster() {
     return this.room.roster;

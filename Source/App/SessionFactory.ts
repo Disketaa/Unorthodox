@@ -1,114 +1,11 @@
-import { ClientSession, HostPlayerId, HostSession, TrysteroTransport } from '@/Network';
-import { GameConfig, toPublicState } from '@/Game';
 import { PlayerLook } from '@/Core';
 import { Session, SessionRole } from './Session';
+import { createHostSession } from './HostSessionFactory';
+import { createPlayerSession } from './PlayerSessionFactory';
 
-/** The room as the host's own screens are shown it: the same projection every client is sent,
- * since the host is in the room and reads the same board they do. */
-function publicStateOf(hostSession: HostSession) {
-  return () => {
-    const state = hostSession.getState();
-    return state === undefined ? undefined : toPublicState(state);
-  };
-}
-
-function createHostSession(roomCode: string, playerName: string, look: PlayerLook): Session {
-  const hostSession = new HostSession(new TrysteroTransport());
-  hostSession.start(roomCode, playerName, look);
-
-  return {
-    role: 'Host',
-    getPublicState: publicStateOf(hostSession),
-    getPlayerId: () => HostPlayerId,
-    // The host is the clock source, so it has no skew to correct for.
-    getClockOffsetMs: () => 0,
-    onUpdate: (listener) => hostSession.onUpdate(listener),
-    onHostLeave: () => {},
-    // The host is the name in the room, so nothing can collide with it.
-    getBlocked: () => undefined,
-    // A host opens the room it is answering, so it is never the one waiting to be found.
-    getConnectionHint: () => undefined,
-    // The host cannot be refused a seat, so it has no room limit to quote.
-    getRoomLimit: () => GameConfig.limits.maxPlayers,
-    join: () => {},
-    setLook: (look) => hostSession.setOwnLook(look),
-    setPace: (pace) => hostSession.setPace(pace),
-    setThemes: (mode, themes) => hostSession.setThemes(mode, themes),
-    setCustomThemes: (themes) => hostSession.setCustomThemes(themes),
-    removeCustomTheme: (id) => hostSession.removeCustomTheme(id),
-    getCustomThemes: () => hostSession.getCustomThemes(),
-    addBot: () => hostSession.addBot(),
-    submitAnswer: (text) => hostSession.submitOwnAnswer(text.trim()),
-    setEditingAnswer: (editing) => hostSession.setOwnEditingAnswer(editing),
-    rejectGroup: (groupId) => hostSession.rejectOwnGroup(groupId),
-    likeGroup: (groupId) => hostSession.likeOwnGroup(groupId),
-    nextTurn: () => hostSession.nextTurn(),
-    startGame: () => hostSession.startGame(),
-    startWriting: (topic) => hostSession.startWriting(topic),
-    revealQuestion: (question) => hostSession.revealQuestion(question),
-    chooseTheme: (theme) => hostSession.chooseTheme(theme),
-    startRandomPick: () => hostSession.startRandomPick(),
-    resolveRandomPick: () => hostSession.resolveRandomPick(),
-    setPaused: (paused) => hostSession.setPaused(paused),
-    endReviewing: (durationMs) => hostSession.endReviewing(durationMs),
-    nextRound: () => hostSession.nextRound(),
-    nextPhase: (topic) => hostSession.nextPhase(topic),
-    finish: () => hostSession.finish(),
-    kick: (playerId) => hostSession.kick(playerId),
-    stop: () => hostSession.stop(),
-  };
-}
-
-function createPlayerSession(roomCode: string, playerName: string, look: PlayerLook): Session {
-  const clientSession = new ClientSession(new TrysteroTransport());
-  clientSession.start(roomCode, playerName);
-  clientSession.join(playerName.trim(), look);
-  return {
-    role: 'Player',
-    getPublicState: () => clientSession.getState(),
-    getPlayerId: () => clientSession.getPlayerId(),
-    getClockOffsetMs: () => clientSession.getClockOffsetMs(),
-    onUpdate: (listener) => clientSession.onUpdate(listener),
-    onHostLeave: (listener) => clientSession.onHostLeave(listener),
-    getBlocked: () => clientSession.getBlocked(),
-    getConnectionHint: () => clientSession.getConnectionHint(),
-    getRoomLimit: () => clientSession.getRoomLimit(),
-    join: () => {},
-    setLook: (look) => clientSession.setLook(look),
-    // A client's pace press is a local look only; the host's pace is the one that counts.
-    setPace: () => {},
-    // A client's theme presses are the same story: the pool is the host's to set, and a client
-    // pressing one would be narrowing the bank the whole room is about to be offered.
-    setThemes: () => {},
-    getCustomThemes: () => clientSession.getCustomThemes(),
-    // A client cannot put anybody in the room, least of all itself.
-    addBot: () => {},
-    submitAnswer: (text) => clientSession.submitAnswer(text.trim()),
-    setEditingAnswer: (editing) => clientSession.setEditingAnswer(editing),
-    rejectGroup: (groupId) => clientSession.rejectGroup(groupId),
-    likeGroup: (groupId) => clientSession.likeGroup(groupId),
-    nextTurn: () => {},
-    startGame: () => {},
-    // A client asking for a phase change would be every player steering the room, so none of the
-    // round flow exists here. What arrives instead is whatever the host decides.
-    startWriting: () => {},
-    revealQuestion: () => {},
-    // Unlike the phase flow, which is the host's alone, choosing a theme is a move every player
-    // makes when it reaches round to them. The host still refuses a press from the wrong seat.
-    chooseTheme: (theme) => clientSession.chooseTheme(theme),
-    startRandomPick: () => {},
-    resolveRandomPick: () => {},
-    setPaused: () => {},
-    endReviewing: () => {},
-    nextRound: () => {},
-    nextPhase: () => {},
-    finish: () => {},
-    kick: () => {},
-    stop: () => clientSession.stop(),
-  };
-}
-
-/** Build the session for a room. The host owns the game state, a client mirrors it. */
+/** Build the session for a room. The host owns the game state, a client mirrors it. The two
+ * roles are built apart from each other in their own files, since a role is a long list of
+ * methods each one either forwards or refuses. */
 export function createSession(
   role: SessionRole,
   roomCode: string,

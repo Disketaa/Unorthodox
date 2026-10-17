@@ -1,7 +1,6 @@
 /** The prompt a host hands to an assistant to have a theme written for them. A file of its own
  * rather than a string among the interface wording: it is never said on screen, it is copied
- * out and run elsewhere. `{ТЕМА}` is where the theme goes, and is left standing where there is
- * no theme, so the host sees what is still to fill in. */
+ * out and run elsewhere. `{ТЕМА}` is where the theme goes, left standing when there is none. */
 export const ThemePromptTemplate = `Ты придумываешь задания для party-игры «Нестандартненько».
 
 ПРАВИЛА ИГРЫ

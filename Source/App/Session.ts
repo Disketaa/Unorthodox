@@ -45,8 +45,6 @@ export interface Session {
   setCustomThemes?(themes: readonly CustomTheme[]): void;
   /** The host striking one custom theme out of the room and out of this browser. Host only. */
   removeCustomTheme?(name: string): void;
-  /** The host striking one custom theme out of the room and out of this browser. Host only. */
-  removeCustomTheme?(name: string): void;
   /** The custom themes this room knows, so every screen can draw them in the bank. */
   getCustomThemes(): readonly CustomTheme[];
   /** Put an invented player in the room, for the host trying a room out alone. Only the host
