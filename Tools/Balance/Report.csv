@@ -1,0 +1,191 @@
+shape,formula,players,rounds,mean,median,p10,p90,max,spread,speedSharePercent,likesSharePercent,meanMargin,medianMargin,tieRatePercent,nearTieRatePercent,deadSeatRate,zeroRoundRate
+Legacy,unique 3 / pair 1 / three or more 0,2,30,55.96,59,35,77,86,42,100,0.00,4.25,3,26.00,26.00,0.0000,0.0485
+Legacy,unique 3 / pair 1 / three or more 0,2,60,110.28,89,72,152,163,80,100,0.00,6.74,6,9.50,9.50,0.0000,0.0491
+Legacy,unique 3 / pair 1 / three or more 0,4,30,38.89,30,12,71,84,59,100,0.00,21.41,13,3.00,7.50,0.0025,0.3938
+Legacy,unique 3 / pair 1 / three or more 0,4,60,78.28,61,23,139,162,116,100,0.00,42.09,17,0.50,4.00,0.0000,0.3995
+Legacy,unique 3 / pair 1 / three or more 0,6,30,34.90,25,5,68,81,63,100,0.00,12.82,7,4.00,11.00,0.0175,0.5175
+Legacy,unique 3 / pair 1 / three or more 0,6,60,66.40,39,13,133,166,120,100,0.00,21.74,10,3.00,9.50,0.0083,0.5439
+Legacy,unique 3 / pair 1 / three or more 0,8,30,33.05,21,4,66,81,62,100,0.00,8.45,5,8.50,21.00,0.0381,0.5611
+Legacy,unique 3 / pair 1 / three or more 0,8,60,64.76,37,9,129,153,120,100,0.00,12.80,7,6.00,12.50,0.0288,0.5692
+Legacy,unique 3 / pair 1 / three or more 0,12,30,30.79,19,4,61,78,57,100,0.00,4.92,3,9.00,25.50,0.0725,0.5875
+Legacy,unique 3 / pair 1 / three or more 0,12,60,62.10,35,12,120,147,108,100,0.00,6.32,5,4.50,18.50,0.0633,0.5838
+Linear / SpeedOnly,speed x time left, (speed x mult) + likes,2,30,274.36,254,77,512,659,435,98.1,1.90,56.56,37,1.00,3.00,0.0000,0.4969
+Linear / SpeedOnly,speed x time left, (speed x mult) + likes,2,60,518.03,337,154,984,1149,830,98.1,1.90,99.89,74,1.50,2.50,0.0000,0.5096
+Linear / SpeedOnly,speed x time left, (speed x mult) + likes,4,30,205.07,123,28,461,719,433,95.7,4.30,167.63,131,0.00,0.50,0.0500,0.6185
+Linear / SpeedOnly,speed x time left, (speed x mult) + likes,4,60,412.18,236,64,894,1208,830,95.7,4.30,308.94,254,0.00,0.50,0.0275,0.6141
+Linear / SpeedOnly,speed x time left, (speed x mult) + likes,6,30,204.67,132,12,450,599,438,93.9,6.10,108.83,72,1.50,2.00,0.0967,0.6276
+Linear / SpeedOnly,speed x time left, (speed x mult) + likes,6,60,395.26,221,24,900,1139,876,94,6.00,197.13,125,1.00,1.00,0.0750,0.6448
+Linear / SpeedOnly,speed x time left, (speed x mult) + likes,8,30,200.37,132,0,438,587,438,92.2,7.80,82.44,59,1.00,3.00,0.1019,0.6399
+Linear / SpeedOnly,speed x time left, (speed x mult) + likes,8,60,394.56,233,15,860,1111,845,92.3,7.70,125.88,78,0.00,1.00,0.0919,0.6473
+Linear / SpeedOnly,speed x time left, (speed x mult) + likes,12,30,194.59,133,14,413,591,399,89.5,10.50,51.52,42,1.00,3.00,0.0912,0.6656
+Linear / SpeedOnly,speed x time left, (speed x mult) + likes,12,60,392.03,241,61,813,1240,752,89.5,10.50,75.87,58,0.50,3.00,0.0808,0.6635
+Linear / Whole,speed x time left, (speed + likes) x mult,2,30,276.41,256,77,515,661,438,98.1,1.90,56.84,38,0.50,2.50,0.0000,0.4969
+Linear / Whole,speed x time left, (speed + likes) x mult,2,60,521.79,339,155,992,1157,837,98.1,1.90,100.30,73,0.00,2.50,0.0000,0.5096
+Linear / Whole,speed x time left, (speed + likes) x mult,4,30,208.31,126,28,469,727,441,95.8,4.20,170.04,134,0.00,0.50,0.0500,0.6185
+Linear / Whole,speed x time left, (speed + likes) x mult,4,60,418.70,240,66,906,1223,840,95.8,4.20,313.60,250,0.00,1.00,0.0275,0.6141
+Linear / Whole,speed x time left, (speed + likes) x mult,6,30,209.25,133,12,458,615,446,94,6.00,111.17,74,1.50,2.50,0.0967,0.6276
+Linear / Whole,speed x time left, (speed + likes) x mult,6,60,404.31,227,26,919,1166,893,94.1,5.90,199.74,132,0.00,0.00,0.0750,0.6448
+Linear / Whole,speed x time left, (speed + likes) x mult,8,30,206.22,136,0,451,609,451,92.4,7.60,84.80,62,1.00,3.50,0.1019,0.6399
+Linear / Whole,speed x time left, (speed + likes) x mult,8,60,405.92,240,16,885,1148,869,92.5,7.50,129.07,79,0.50,2.00,0.0919,0.6473
+Linear / Whole,speed x time left, (speed + likes) x mult,12,30,202.38,139,15,429,619,414,89.9,10.10,53.14,42,1.00,2.50,0.0912,0.6656
+Linear / Whole,speed x time left, (speed + likes) x mult,12,60,407.50,248,62,846,1308,784,89.9,10.10,79.44,61,0.50,2.00,0.0808,0.6635
+Linear / LikesOnly,speed x time left, speed + (likes x mult),2,30,201.71,200,59,375,454,316,97.4,2.60,40.02,28,0.50,3.50,0.0000,0.4969
+Linear / LikesOnly,speed x time left, speed + (likes x mult),2,60,382.19,246,113,723,811,610,97.4,2.60,72.44,52,0.00,2.50,0.0000,0.5096
+Linear / LikesOnly,speed x time left, speed + (likes x mult),4,30,155.13,95,19,345,470,326,94.4,5.60,124.70,105,0.50,2.50,0.0500,0.6185
+Linear / LikesOnly,speed x time left, speed + (likes x mult),4,60,311.39,179,48,677,888,629,94.3,5.70,232.22,160,0.50,0.50,0.0275,0.6141
+Linear / LikesOnly,speed x time left, speed + (likes x mult),6,30,157.28,101,10,345,451,335,92.1,7.90,81.88,54,1.00,1.50,0.0967,0.6276
+Linear / LikesOnly,speed x time left, speed + (likes x mult),6,60,302.11,167,19,685,897,666,92.1,7.90,150.47,93,0.50,1.00,0.0750,0.6448
+Linear / LikesOnly,speed x time left, speed + (likes x mult),8,30,155.71,101,0,335,436,335,89.9,10.10,62.66,43,1.00,2.00,0.1019,0.6399
+Linear / LikesOnly,speed x time left, speed + (likes x mult),8,60,307.01,181,14,666,867,652,90,10.00,98.47,66,0.50,1.50,0.0919,0.6473
+Linear / LikesOnly,speed x time left, speed + (likes x mult),12,30,154.72,103,12,328,469,316,86.7,13.30,40.63,30,0.50,3.00,0.0912,0.6656
+Linear / LikesOnly,speed x time left, speed + (likes x mult),12,60,311.63,186,48,642,932,594,86.8,13.20,60.22,47,0.00,2.00,0.0808,0.6635
+Soft / SpeedOnly,speed x time left to the power 1.5, (speed x mult) + likes,2,30,232.16,196,59,457,590,398,97.7,2.30,63.38,41,1.00,3.50,0.0000,0.4969
+Soft / SpeedOnly,speed x time left to the power 1.5, (speed x mult) + likes,2,60,433.29,308,118,865,1008,747,97.7,2.30,111.31,76,1.00,2.50,0.0000,0.5096
+Soft / SpeedOnly,speed x time left to the power 1.5, (speed x mult) + likes,4,30,172.77,105,22,404,657,382,94.9,5.10,152.59,127,0.00,1.00,0.0500,0.6185
+Soft / SpeedOnly,speed x time left to the power 1.5, (speed x mult) + likes,4,60,345.41,207,52,781,1098,729,94.9,5.10,272.12,218,0.00,1.00,0.0275,0.6141
+Soft / SpeedOnly,speed x time left to the power 1.5, (speed x mult) + likes,6,30,173.13,116,9,399,545,390,92.8,7.20,103.67,73,1.00,2.50,0.0967,0.6276
+Soft / SpeedOnly,speed x time left to the power 1.5, (speed x mult) + likes,6,60,335.09,189,20,794,1001,774,92.9,7.10,192.24,138,0.00,0.50,0.0750,0.6448
+Soft / SpeedOnly,speed x time left to the power 1.5, (speed x mult) + likes,8,30,169.22,114,0,386,539,386,90.7,9.30,83.39,64,1.00,1.00,0.1019,0.6399
+Soft / SpeedOnly,speed x time left to the power 1.5, (speed x mult) + likes,8,60,334.29,205,12,756,1007,744,90.9,9.10,128.21,87,0.50,1.00,0.0919,0.6473
+Soft / SpeedOnly,speed x time left to the power 1.5, (speed x mult) + likes,12,30,166.31,116,11,365,537,354,87.7,12.30,53.53,47,1.00,3.00,0.0912,0.6656
+Soft / SpeedOnly,speed x time left to the power 1.5, (speed x mult) + likes,12,60,334.73,210,46,720,1105,674,87.7,12.30,78.69,61,0.50,1.50,0.0808,0.6635
+Soft / Whole,speed x time left to the power 1.5, (speed + likes) x mult,2,30,234.22,198,60,459,593,399,97.7,2.30,63.53,41,0.50,2.50,0.0000,0.4969
+Soft / Whole,speed x time left to the power 1.5, (speed + likes) x mult,2,60,437.05,311,120,869,1016,749,97.7,2.30,111.41,76,0.00,1.00,0.0000,0.5096
+Soft / Whole,speed x time left to the power 1.5, (speed + likes) x mult,4,30,175.97,107,22,411,666,389,95,5.00,154.82,126,0.00,0.50,0.0500,0.6185
+Soft / Whole,speed x time left to the power 1.5, (speed + likes) x mult,4,60,351.94,211,54,795,1115,741,95,5.00,276.67,226,0.00,0.50,0.0275,0.6141
+Soft / Whole,speed x time left to the power 1.5, (speed + likes) x mult,6,30,177.69,120,9,406,564,397,93,7.00,105.94,76,0.50,1.00,0.0967,0.6276
+Soft / Whole,speed x time left to the power 1.5, (speed + likes) x mult,6,60,344.14,193,21,811,1031,790,93.1,6.90,194.74,131,0.50,0.50,0.0750,0.6448
+Soft / Whole,speed x time left to the power 1.5, (speed + likes) x mult,8,30,175.05,119,0,396,559,396,91.1,8.90,85.58,68,0.50,2.00,0.1019,0.6399
+Soft / Whole,speed x time left to the power 1.5, (speed + likes) x mult,8,60,345.68,211,12,778,1032,766,91.2,8.80,131.44,87,1.00,1.00,0.0919,0.6473
+Soft / Whole,speed x time left to the power 1.5, (speed + likes) x mult,12,30,174.07,121,11,383,562,372,88.2,11.80,54.59,47,0.50,2.50,0.0912,0.6656
+Soft / Whole,speed x time left to the power 1.5, (speed + likes) x mult,12,60,350.20,219,51,749,1169,698,88.2,11.80,81.63,63,1.00,1.50,0.0808,0.6635
+Soft / LikesOnly,speed x time left to the power 1.5, speed + (likes x mult),2,30,171.25,150,45,331,412,286,96.9,3.10,44.69,29,2.00,4.00,0.0000,0.4969
+Soft / LikesOnly,speed x time left to the power 1.5, speed + (likes x mult),2,60,320.80,216,89,640,716,551,96.9,3.10,80.51,54,1.00,2.50,0.0000,0.5096
+Soft / LikesOnly,speed x time left to the power 1.5, speed + (likes x mult),4,30,131.47,79,17,303,435,286,93.3,6.70,114.03,96,0.50,1.50,0.0500,0.6185
+Soft / LikesOnly,speed x time left to the power 1.5, speed + (likes x mult),4,60,262.80,158,38,594,813,556,93.3,6.70,205.54,176,0.00,0.50,0.0275,0.6141
+Soft / LikesOnly,speed x time left to the power 1.5, speed + (likes x mult),6,30,134.18,89,7,305,407,298,90.7,9.30,78.47,59,1.00,3.50,0.0967,0.6276
+Soft / LikesOnly,speed x time left to the power 1.5, speed + (likes x mult),6,60,258.51,145,17,608,789,591,90.8,9.20,146.60,91,1.00,1.50,0.0750,0.6448
+Soft / LikesOnly,speed x time left to the power 1.5, speed + (likes x mult),8,30,133.01,87,0,294,401,294,88.2,11.80,62.31,49,0.00,2.00,0.1019,0.6399
+Soft / LikesOnly,speed x time left to the power 1.5, speed + (likes x mult),8,60,262.99,158,11,588,771,577,88.4,11.60,99.62,65,1.50,1.50,0.0919,0.6473
+Soft / LikesOnly,speed x time left to the power 1.5, speed + (likes x mult),12,30,134.12,92,9,291,428,282,84.7,15.30,41.37,32,1.50,3.50,0.0912,0.6656
+Soft / LikesOnly,speed x time left to the power 1.5, speed + (likes x mult),12,60,270.02,166,39,575,847,536,84.8,15.20,61.18,45,1.00,2.50,0.0808,0.6635
+Steep / SpeedOnly,speed x time left squared, (speed x mult) + likes,2,30,199.39,156,48,409,530,361,97.4,2.60,67.22,42,0.50,1.00,0.0000,0.4969
+Steep / SpeedOnly,speed x time left squared, (speed x mult) + likes,2,60,368.36,280,93,768,896,675,97.3,2.70,116.14,75,0.00,1.50,0.0000,0.5096
+Steep / SpeedOnly,speed x time left squared, (speed x mult) + likes,4,30,147.88,91,17,359,602,342,94.1,5.90,140.06,112,0.00,0.50,0.0500,0.6185
+Steep / SpeedOnly,speed x time left squared, (speed x mult) + likes,4,60,294.46,183,42,696,1009,654,94,6.00,242.38,181,0.00,0.00,0.0275,0.6141
+Steep / SpeedOnly,speed x time left squared, (speed x mult) + likes,6,30,148.73,103,6,353,499,347,91.6,8.40,98.53,74,0.00,1.50,0.0967,0.6276
+Steep / SpeedOnly,speed x time left squared, (speed x mult) + likes,6,60,288.67,165,16,705,895,689,91.7,8.30,185.18,131,0.00,0.00,0.0750,0.6448
+Steep / SpeedOnly,speed x time left squared, (speed x mult) + likes,8,30,145.34,102,0,339,500,339,89.2,10.80,81.83,63,0.50,1.50,0.1019,0.6399
+Steep / SpeedOnly,speed x time left squared, (speed x mult) + likes,8,60,287.90,182,9,671,937,662,89.4,10.60,128.47,91,0.50,1.00,0.0919,0.6473
+Steep / SpeedOnly,speed x time left squared, (speed x mult) + likes,12,30,144.43,102,8,327,488,319,85.8,14.20,54.41,47,0.50,2.00,0.0912,0.6656
+Steep / SpeedOnly,speed x time left squared, (speed x mult) + likes,12,60,290.53,187,38,646,992,608,85.8,14.20,78.52,59,0.00,2.50,0.0808,0.6635
+Steep / Whole,speed x time left squared, (speed + likes) x mult,2,30,201.47,158,48,410,534,362,97.4,2.60,67.43,42,1.00,1.50,0.0000,0.4969
+Steep / Whole,speed x time left squared, (speed + likes) x mult,2,60,372.17,282,93,775,903,682,97.3,2.70,116.20,76,0.00,1.50,0.0000,0.5096
+Steep / Whole,speed x time left squared, (speed + likes) x mult,4,30,151.11,93,18,363,609,345,94.2,5.80,142.44,111,0.00,0.00,0.0500,0.6185
+Steep / Whole,speed x time left squared, (speed + likes) x mult,4,60,301.00,185,44,706,1019,662,94.1,5.90,246.99,186,0.50,0.50,0.0275,0.6141
+Steep / Whole,speed x time left squared, (speed + likes) x mult,6,30,153.34,105,6,362,516,356,91.9,8.10,100.72,79,0.00,0.00,0.0967,0.6276
+Steep / Whole,speed x time left squared, (speed + likes) x mult,6,60,297.70,170,17,725,925,708,92,8.00,187.44,130,1.00,1.50,0.0750,0.6448
+Steep / Whole,speed x time left squared, (speed + likes) x mult,8,30,151.21,105,0,352,519,352,89.6,10.40,84.39,69,1.00,2.50,0.1019,0.6399
+Steep / Whole,speed x time left squared, (speed + likes) x mult,8,60,299.25,189,10,694,959,684,89.8,10.20,131.53,92,1.00,2.00,0.0919,0.6473
+Steep / Whole,speed x time left squared, (speed + likes) x mult,12,30,152.20,108,9,342,516,333,86.5,13.50,55.41,46,0.00,1.50,0.0912,0.6656
+Steep / Whole,speed x time left squared, (speed + likes) x mult,12,60,306.00,196,41,670,1055,629,86.5,13.50,81.88,62,0.50,2.00,0.0808,0.6635
+Steep / LikesOnly,speed x time left squared, speed + (likes x mult),2,30,147.62,116,36,295,377,259,96.4,3.60,47.48,32,0.00,1.50,0.0000,0.4969
+Steep / LikesOnly,speed x time left squared, speed + (likes x mult),2,60,273.67,196,72,569,640,497,96.4,3.60,83.98,54,0.00,1.00,0.0000,0.5096
+Steep / LikesOnly,speed x time left squared, speed + (likes x mult),4,30,113.35,69,14,272,399,258,92.3,7.70,104.90,84,0.50,1.00,0.0500,0.6185
+Steep / LikesOnly,speed x time left squared, speed + (likes x mult),4,60,225.71,141,32,531,741,499,92.1,7.90,183.66,143,1.50,3.00,0.0275,0.6141
+Steep / LikesOnly,speed x time left squared, speed + (likes x mult),6,30,116.48,80,6,271,372,265,89.3,10.70,74.77,58,1.00,3.00,0.0967,0.6276
+Steep / LikesOnly,speed x time left squared, speed + (likes x mult),6,60,224.80,129,14,544,704,530,89.4,10.60,141.45,97,0.00,0.00,0.0750,0.6448
+Steep / LikesOnly,speed x time left squared, speed + (likes x mult),8,30,115.69,77,0,264,371,264,86.5,13.50,61.59,47,0.50,2.50,0.1019,0.6399
+Steep / LikesOnly,speed x time left squared, speed + (likes x mult),8,60,229.26,141,9,526,714,517,86.7,13.30,99.75,69,0.00,1.00,0.0919,0.6473
+Steep / LikesOnly,speed x time left squared, speed + (likes x mult),12,30,118.22,82,8,265,395,257,82.6,17.40,41.55,33,2.00,4.50,0.0912,0.6656
+Steep / LikesOnly,speed x time left squared, speed + (likes x mult),12,60,237.88,150,32,520,773,488,82.7,17.30,61.73,47,1.00,1.00,0.0808,0.6635
+Banded / SpeedOnly,20 / 10 / 5 over thirds of the clock, (speed x mult) + likes,2,30,304.93,280,85,567,713,482,98.3,1.70,67.94,43,0.00,1.00,0.0000,0.4969
+Banded / SpeedOnly,20 / 10 / 5 over thirds of the clock, (speed x mult) + likes,2,60,577.09,389,171,1095,1316,924,98.3,1.70,115.39,78,0.00,1.00,0.0000,0.5096
+Banded / SpeedOnly,20 / 10 / 5 over thirds of the clock, (speed x mult) + likes,4,30,227.58,136,31,512,808,481,96.2,3.80,188.18,156,0.00,0.50,0.0500,0.6185
+Banded / SpeedOnly,20 / 10 / 5 over thirds of the clock, (speed x mult) + likes,4,60,458.97,266,71,998,1373,927,96.1,3.90,340.36,290,1.00,1.50,0.0275,0.6141
+Banded / SpeedOnly,20 / 10 / 5 over thirds of the clock, (speed x mult) + likes,6,30,226.40,148,11,501,679,490,94.5,5.50,123.42,85,0.00,1.00,0.0967,0.6276
+Banded / SpeedOnly,20 / 10 / 5 over thirds of the clock, (speed x mult) + likes,6,60,437.48,243,26,1004,1247,978,94.5,5.50,223.74,143,1.00,1.00,0.0750,0.6448
+Banded / SpeedOnly,20 / 10 / 5 over thirds of the clock, (speed x mult) + likes,8,30,221.52,148,0,488,647,488,92.9,7.10,91.41,65,2.50,3.50,0.1019,0.6399
+Banded / SpeedOnly,20 / 10 / 5 over thirds of the clock, (speed x mult) + likes,8,60,437.89,260,16,954,1257,938,93,7.00,139.78,88,0.50,1.00,0.0919,0.6473
+Banded / SpeedOnly,20 / 10 / 5 over thirds of the clock, (speed x mult) + likes,12,30,214.69,146,13,462,658,449,90.4,9.60,58.59,46,0.00,0.50,0.0912,0.6656
+Banded / SpeedOnly,20 / 10 / 5 over thirds of the clock, (speed x mult) + likes,12,60,432.73,264,64,903,1345,839,90.5,9.50,85.06,63,0.00,0.50,0.0808,0.6635
+Banded / Whole,20 / 10 / 5 over thirds of the clock, (speed + likes) x mult,2,30,307.01,284,85,570,717,485,98.3,1.70,68.33,43,0.00,0.50,0.0000,0.4969
+Banded / Whole,20 / 10 / 5 over thirds of the clock, (speed + likes) x mult,2,60,580.87,393,174,1103,1324,929,98.3,1.70,115.86,76,0.00,1.00,0.0000,0.5096
+Banded / Whole,20 / 10 / 5 over thirds of the clock, (speed + likes) x mult,4,30,230.81,138,31,518,819,487,96.2,3.80,190.81,156,0.00,0.00,0.0500,0.6185
+Banded / Whole,20 / 10 / 5 over thirds of the clock, (speed + likes) x mult,4,60,465.58,270,73,1010,1391,937,96.2,3.80,345.20,303,0.50,1.00,0.0275,0.6141
+Banded / Whole,20 / 10 / 5 over thirds of the clock, (speed + likes) x mult,6,30,231.01,151,11,512,694,501,94.6,5.40,126.28,88,1.00,1.00,0.0967,0.6276
+Banded / Whole,20 / 10 / 5 over thirds of the clock, (speed + likes) x mult,6,60,446.67,249,28,1025,1274,997,94.7,5.30,226.99,144,0.00,1.00,0.0750,0.6448
+Banded / Whole,20 / 10 / 5 over thirds of the clock, (speed + likes) x mult,8,30,227.38,151,0,501,664,501,93.1,6.90,94.10,67,1.00,1.00,0.1019,0.6399
+Banded / Whole,20 / 10 / 5 over thirds of the clock, (speed + likes) x mult,8,60,449.34,268,16,979,1294,963,93.2,6.80,143.94,91,0.50,0.50,0.0919,0.6473
+Banded / Whole,20 / 10 / 5 over thirds of the clock, (speed + likes) x mult,12,30,222.46,152,14,478,683,464,90.8,9.20,60.38,47,0.50,0.50,0.0912,0.6656
+Banded / Whole,20 / 10 / 5 over thirds of the clock, (speed + likes) x mult,12,60,448.27,275,68,936,1411,868,90.8,9.20,88.78,66,0.50,2.50,0.0808,0.6635
+Banded / LikesOnly,20 / 10 / 5 over thirds of the clock, speed + (likes x mult),2,30,223.43,213,63,418,502,355,97.6,2.40,47.88,31,0.50,1.50,0.0000,0.4969
+Banded / LikesOnly,20 / 10 / 5 over thirds of the clock, speed + (likes x mult),2,60,424.24,272,126,803,930,677,97.6,2.40,83.45,58,0.00,1.00,0.0000,0.5096
+Banded / LikesOnly,20 / 10 / 5 over thirds of the clock, speed + (likes x mult),4,30,171.59,100,22,384,529,362,94.9,5.10,140.31,114,0.00,0.50,0.0500,0.6185
+Banded / LikesOnly,20 / 10 / 5 over thirds of the clock, speed + (likes x mult),4,60,345.27,201,49,749,998,700,94.9,5.10,255.34,190,0.50,2.00,0.0275,0.6141
+Banded / LikesOnly,20 / 10 / 5 over thirds of the clock, speed + (likes x mult),6,30,173.32,113,10,382,509,372,92.8,7.20,92.13,65,1.00,2.00,0.0967,0.6276
+Banded / LikesOnly,20 / 10 / 5 over thirds of the clock, speed + (likes x mult),6,60,333.28,184,23,756,982,733,92.8,7.20,169.63,100,0.00,1.50,0.0750,0.6448
+Banded / LikesOnly,20 / 10 / 5 over thirds of the clock, speed + (likes x mult),8,30,171.33,112,0,373,494,373,90.9,9.10,69.11,49,0.50,3.00,0.1019,0.6399
+Banded / LikesOnly,20 / 10 / 5 over thirds of the clock, speed + (likes x mult),8,60,339.15,202,14,737,966,723,91,9.00,108.38,73,1.00,1.00,0.0919,0.6473
+Banded / LikesOnly,20 / 10 / 5 over thirds of the clock, speed + (likes x mult),12,30,169.58,113,12,361,517,349,87.9,12.10,45.04,36,0.50,2.50,0.0912,0.6656
+Banded / LikesOnly,20 / 10 / 5 over thirds of the clock, speed + (likes x mult),12,60,341.79,206,52,708,997,656,88,12.00,67.82,55,1.00,2.50,0.0808,0.6635
+Rooted / SpeedOnly,speed x root of time left, (speed x mult) + likes,2,30,329.76,335,100,593,740,493,98.4,1.60,46.46,36,1.50,3.50,0.0000,0.4969
+Rooted / SpeedOnly,speed x root of time left, (speed x mult) + likes,2,60,630.13,411,197,1130,1321,933,98.4,1.60,79.63,70,1.00,2.50,0.0000,0.5096
+Rooted / SpeedOnly,speed x root of time left, (speed x mult) + likes,4,30,247.87,149,33,539,792,506,96.5,3.50,186.63,133,0.00,0.50,0.0500,0.6185
+Rooted / SpeedOnly,speed x root of time left, (speed x mult) + likes,4,60,501.15,283,80,1041,1347,961,96.5,3.50,354.68,220,0.50,0.50,0.0275,0.6141
+Rooted / SpeedOnly,speed x root of time left, (speed x mult) + likes,6,30,246.53,153,16,519,677,503,94.9,5.10,114.78,79,1.00,3.00,0.0967,0.6276
+Rooted / SpeedOnly,speed x root of time left, (speed x mult) + likes,6,60,474.56,261,28,1031,1318,1003,95,5.00,200.14,100,0.00,0.50,0.0750,0.6448
+Rooted / SpeedOnly,speed x root of time left, (speed x mult) + likes,8,30,241.78,155,0,515,646,515,93.5,6.50,78.67,47,1.50,2.00,0.1019,0.6399
+Rooted / SpeedOnly,speed x root of time left, (speed x mult) + likes,8,60,474.43,272,20,996,1258,976,93.6,6.40,120.40,74,0.00,0.50,0.0919,0.6473
+Rooted / SpeedOnly,speed x root of time left, (speed x mult) + likes,12,30,232.03,156,18,480,659,462,91.2,8.80,50.67,43,0.00,0.50,0.0912,0.6656
+Rooted / SpeedOnly,speed x root of time left, (speed x mult) + likes,12,60,467.48,280,75,936,1413,861,91.2,8.80,74.06,52,1.50,1.50,0.0808,0.6635
+Rooted / Whole,speed x root of time left, (speed + likes) x mult,2,30,331.81,336,101,599,745,498,98.4,1.60,46.80,36,2.00,3.50,0.0000,0.4969
+Rooted / Whole,speed x root of time left, (speed + likes) x mult,2,60,633.96,413,198,1138,1331,940,98.4,1.60,80.22,69,1.00,2.00,0.0000,0.5096
+Rooted / Whole,speed x root of time left, (speed + likes) x mult,4,30,251.06,151,34,543,802,509,96.5,3.50,188.91,134,0.00,1.50,0.0500,0.6185
+Rooted / Whole,speed x root of time left, (speed + likes) x mult,4,60,507.71,287,81,1056,1358,975,96.5,3.50,359.05,216,0.00,0.00,0.0275,0.6141
+Rooted / Whole,speed x root of time left, (speed + likes) x mult,6,30,251.17,157,16,529,689,513,95,5.00,116.89,81,0.00,1.00,0.0967,0.6276
+Rooted / Whole,speed x root of time left, (speed + likes) x mult,6,60,483.57,265,29,1049,1347,1020,95.1,4.90,202.68,104,0.00,1.50,0.0750,0.6448
+Rooted / Whole,speed x root of time left, (speed + likes) x mult,8,30,247.65,157,0,526,666,526,93.7,6.30,81.23,47,0.50,4.00,0.1019,0.6399
+Rooted / Whole,speed x root of time left, (speed + likes) x mult,8,60,485.77,280,20,1019,1296,999,93.7,6.30,123.39,74,0.50,1.50,0.0919,0.6473
+Rooted / Whole,speed x root of time left, (speed + likes) x mult,12,30,239.81,163,18,497,685,479,91.4,8.60,52.95,43,1.00,2.00,0.0912,0.6656
+Rooted / Whole,speed x root of time left, (speed + likes) x mult,12,60,482.93,289,79,970,1479,891,91.5,8.50,78.31,58,0.00,0.50,0.0808,0.6635
+Rooted / LikesOnly,speed x root of time left, speed + (likes x mult),2,30,241.61,272,73,430,509,357,97.8,2.20,33.13,26,1.00,3.00,0.0000,0.4969
+Rooted / LikesOnly,speed x root of time left, speed + (likes x mult),2,60,463.59,292,149,829,935,680,97.8,2.20,57.70,47,0.00,1.00,0.0000,0.5096
+Rooted / LikesOnly,speed x root of time left, speed + (likes x mult),4,30,186.38,114,22,400,515,378,95.3,4.70,138.59,90,0.00,1.50,0.0500,0.6185
+Rooted / LikesOnly,speed x root of time left, speed + (likes x mult),4,60,376.13,216,60,781,978,721,95.3,4.70,264.37,143,0.00,1.50,0.0275,0.6141
+Rooted / LikesOnly,speed x root of time left, speed + (likes x mult),6,30,187.69,115,15,393,503,378,93.4,6.60,85.43,55,0.00,1.50,0.0967,0.6276
+Rooted / LikesOnly,speed x root of time left, speed + (likes x mult),6,60,359.74,195,21,784,1032,763,93.4,6.60,152.80,79,0.50,2.00,0.0750,0.6448
+Rooted / LikesOnly,speed x root of time left, speed + (likes x mult),8,30,185.89,117,0,389,498,389,91.6,8.40,61.06,36,0.50,1.50,0.1019,0.6399
+Rooted / LikesOnly,speed x root of time left, speed + (likes x mult),8,60,365.26,208,18,765,970,747,91.6,8.40,93.00,58,1.00,1.50,0.0919,0.6473
+Rooted / LikesOnly,speed x root of time left, speed + (likes x mult),12,30,181.94,121,16,374,518,358,88.7,11.30,39.74,28,0.50,3.50,0.0912,0.6656
+Rooted / LikesOnly,speed x root of time left, speed + (likes x mult),12,60,366.49,214,60,733,1038,673,88.8,11.20,58.96,47,1.00,2.00,0.0808,0.6635
+Threshold / SpeedOnly,20 for the first quarter, then falling to 0, (speed x mult) + likes,2,30,342.48,335,99,622,786,523,98.5,1.50,58.87,43,0.00,2.50,0.0000,0.4969
+Threshold / SpeedOnly,20 for the first quarter, then falling to 0, (speed x mult) + likes,2,60,650.98,424,200,1198,1396,998,98.5,1.50,106.19,78,0.50,0.50,0.0000,0.5096
+Threshold / SpeedOnly,20 for the first quarter, then falling to 0, (speed x mult) + likes,4,30,255.93,154,36,565,848,529,96.6,3.40,200.78,152,0.00,0.50,0.0500,0.6185
+Threshold / SpeedOnly,20 for the first quarter, then falling to 0, (speed x mult) + likes,4,60,516.02,294,81,1096,1427,1015,96.6,3.40,375.10,237,0.00,0.00,0.0275,0.6141
+Threshold / SpeedOnly,20 for the first quarter, then falling to 0, (speed x mult) + likes,6,30,254.56,160,15,547,715,532,95.1,4.90,128.36,86,0.00,0.00,0.0967,0.6276
+Threshold / SpeedOnly,20 for the first quarter, then falling to 0, (speed x mult) + likes,6,60,490.82,272,29,1089,1388,1060,95.1,4.90,225.54,128,0.00,0.00,0.0750,0.6448
+Threshold / SpeedOnly,20 for the first quarter, then falling to 0, (speed x mult) + likes,8,30,249.00,162,0,536,695,536,93.7,6.30,89.72,55,1.00,1.00,0.1019,0.6399
+Threshold / SpeedOnly,20 for the first quarter, then falling to 0, (speed x mult) + likes,8,60,489.67,283,19,1048,1345,1029,93.8,6.20,140.73,85,0.00,0.00,0.0919,0.6473
+Threshold / SpeedOnly,20 for the first quarter, then falling to 0, (speed x mult) + likes,12,30,239.43,161,18,505,698,487,91.4,8.60,54.80,44,1.00,1.00,0.0912,0.6656
+Threshold / SpeedOnly,20 for the first quarter, then falling to 0, (speed x mult) + likes,12,60,483.09,288,76,985,1490,909,91.5,8.50,83.09,60,0.50,1.50,0.0808,0.6635
+Threshold / Whole,20 for the first quarter, then falling to 0, (speed + likes) x mult,2,30,344.63,337,99,628,790,529,98.5,1.50,59.30,43,1.50,3.00,0.0000,0.4969
+Threshold / Whole,20 for the first quarter, then falling to 0, (speed + likes) x mult,2,60,655.02,425,202,1206,1408,1004,98.5,1.50,106.59,80,0.00,0.50,0.0000,0.5096
+Threshold / Whole,20 for the first quarter, then falling to 0, (speed + likes) x mult,4,30,259.37,157,37,571,859,534,96.6,3.40,203.46,155,0.50,1.50,0.0500,0.6185
+Threshold / Whole,20 for the first quarter, then falling to 0, (speed + likes) x mult,4,60,522.92,299,83,1107,1445,1024,96.6,3.40,380.19,242,0.00,1.00,0.0275,0.6141
+Threshold / Whole,20 for the first quarter, then falling to 0, (speed + likes) x mult,6,30,259.40,164,16,556,731,540,95.2,4.80,131.17,94,0.00,0.00,0.0967,0.6276
+Threshold / Whole,20 for the first quarter, then falling to 0, (speed + likes) x mult,6,60,500.38,277,30,1112,1416,1082,95.2,4.80,228.47,132,0.50,0.50,0.0750,0.6448
+Threshold / Whole,20 for the first quarter, then falling to 0, (speed + likes) x mult,8,30,255.10,164,0,550,713,550,93.9,6.10,92.52,59,2.00,3.50,0.1019,0.6399
+Threshold / Whole,20 for the first quarter, then falling to 0, (speed + likes) x mult,8,60,501.55,291,20,1072,1380,1052,93.9,6.10,144.17,89,0.00,0.00,0.0919,0.6473
+Threshold / Whole,20 for the first quarter, then falling to 0, (speed + likes) x mult,12,30,247.46,168,18,522,724,504,91.7,8.30,56.92,44,1.00,2.50,0.0912,0.6656
+Threshold / Whole,20 for the first quarter, then falling to 0, (speed + likes) x mult,12,60,499.12,297,78,1017,1560,939,91.8,8.20,87.63,64,1.00,2.00,0.0808,0.6635
+Threshold / LikesOnly,20 for the first quarter, then falling to 0, speed + (likes x mult),2,30,251.07,260,75,452,542,377,97.9,2.10,41.58,28,0.50,2.00,0.0000,0.4969
+Threshold / LikesOnly,20 for the first quarter, then falling to 0, speed + (likes x mult),2,60,478.94,310,145,875,999,730,97.9,2.10,76.87,55,1.00,2.00,0.0000,0.5096
+Threshold / LikesOnly,20 for the first quarter, then falling to 0, speed + (likes x mult),4,30,192.51,118,22,420,554,398,95.5,4.50,149.56,118,0.00,1.00,0.0500,0.6185
+Threshold / LikesOnly,20 for the first quarter, then falling to 0, speed + (likes x mult),4,60,387.26,224,58,824,1041,766,95.4,4.60,280.30,165,0.50,1.00,0.0275,0.6141
+Threshold / LikesOnly,20 for the first quarter, then falling to 0, speed + (likes x mult),6,30,193.81,122,13,415,537,402,93.6,6.40,95.23,63,0.50,1.50,0.0967,0.6276
+Threshold / LikesOnly,20 for the first quarter, then falling to 0, speed + (likes x mult),6,60,372.01,205,23,829,1086,806,93.6,6.40,172.00,96,0.00,1.00,0.0750,0.6448
+Threshold / LikesOnly,20 for the first quarter, then falling to 0, speed + (likes x mult),8,30,191.28,123,0,406,527,406,91.8,8.20,69.19,44,0.00,0.50,0.1019,0.6399
+Threshold / LikesOnly,20 for the first quarter, then falling to 0, speed + (likes x mult),8,60,376.80,218,18,804,1028,786,91.9,8.10,108.47,71,0.00,0.00,0.0919,0.6473
+Threshold / LikesOnly,20 for the first quarter, then falling to 0, speed + (likes x mult),12,30,187.58,125,15,393,550,378,89.1,10.90,43.45,32,0.50,3.50,0.0912,0.6656
+Threshold / LikesOnly,20 for the first quarter, then falling to 0, speed + (likes x mult),12,60,378.37,223,59,768,1089,709,89.1,10.90,66.44,54,1.00,1.50,0.0808,0.6635
