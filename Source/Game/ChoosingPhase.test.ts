@@ -112,6 +112,7 @@ describe('the Choosing phase', () => {
       type: 'SUBMIT_ANSWER',
       playerId: 'p1',
       text: 'An answer',
+      at: 3000,
     });
     const scored = reducer(answered, {
       type: 'START_REVIEWING',

@@ -1,7 +1,13 @@
 import { ClientMessage } from './Protocol';
 import { Transport } from './Transport';
 import { HostRoster, resolveLook } from './HostRoster';
-import { affectedPlayersFor, GameAction, HostState, modifiersForRound } from '@/Game';
+import {
+  affectedPlayersFor,
+  GameAction,
+  HostState,
+  modifiersForRound,
+  multForTheme,
+} from '@/Game';
 import { GameConfig } from '@/Game';
 import { ThemeEffectId, ThemeId, createLogger, themesForRoom, themePool } from '@/Core';
 import { HostPlayerId } from './HostSession';
@@ -45,6 +51,22 @@ export function affectedByChoice(
     `${roomCode}:effect:${round}:${theme}`
   );
   return [...affected];
+}
+
+/** What multiplier the chosen card wears, or 1 where the round's card carried none. Rolled from
+ * the same roll `affectedByChoice` reads, so the card's effect and its multiplier are one
+ * card's two halves and cannot come from two different deals. */
+export function multByChoice(
+  state: HostState,
+  roomCode: string | undefined,
+  theme: ThemeId | undefined
+): number {
+  if (roomCode === undefined || theme === undefined) {
+    return 1;
+  }
+  let round = 0;
+  for (const count of state.themeRounds.values()) round += count;
+  return multForTheme(roomCode, theme, round);
 }
 
 /** What the host needs to turn one message from a client into a change of state. */
@@ -103,6 +125,20 @@ function joinAction(context: IncomingContext): GameAction | undefined {
   return { type: 'JOIN', playerId, name: message.name, look };
 }
 
+/** One answer, stamped on arrival. The host's clock, not the player's claim about pressing send:
+ * the whole speed bonus is measured off it, and a client that could set it would set it to
+ * zero. */
+function submitAnswerAction(
+  message: Extract<ClientMessage, { type: 'SubmitAnswer' }>
+): GameAction {
+  return {
+    type: 'SUBMIT_ANSWER',
+    playerId: message.playerId,
+    text: message.text,
+    at: Date.now(),
+  };
+}
+
 /** The game action a client message asks for, or undefined if it asks for none. A join is the
  * only message that can be refused, and refusing it is a message of its own rather than a
  * change of state, which is why the transport is in here. */
@@ -129,7 +165,7 @@ export function toAction(context: IncomingContext): GameAction | undefined {
         ),
       };
     case 'SubmitAnswer':
-      return { type: 'SUBMIT_ANSWER', playerId: message.playerId, text: message.text };
+      return submitAnswerAction(message);
     case 'EditingAnswer':
       return { type: 'EDITING_ANSWER', playerId: message.playerId, editing: message.editing };
     case 'RejectGroup':

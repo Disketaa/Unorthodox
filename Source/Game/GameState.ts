@@ -115,6 +115,12 @@ export type WritingState = RoomMembers & {
   durationMs: number;
   startedAt: number;
   answers: Map<PlayerId, string>;
+  /** When each answer reached the host, which is the whole of the speed bonus. Beside the
+   * answers rather than inside them. No time means sent on the first tick, so a room that
+   * cannot say when does not lose the points for it. */
+  answerTimes?: Map<PlayerId, number>;
+  /** The multiplier the round's card wears, or absent where it carried none. */
+  mult?: number;
   /** Who among those who have answered is writing over the one they sent. Beside the answers
    * rather than by dropping them from it, so a player who changes their mind and runs out of
    * time still counts as having answered. Optional: a room saved before this reads as nobody. */
@@ -131,6 +137,10 @@ export type ReviewingState = RoomMembers & {
   durationMs: number;
   startedAt: number;
   answers: Map<PlayerId, string>;
+  /** As in Writing. The round is scored from here, and the bar shows the running total while it
+   * is still open. */
+  answerTimes?: Map<PlayerId, number>;
+  mult?: number;
   /** groupId -> the playerIds who voted that group not suitable */
   groupRejections: Map<number, Set<PlayerId>>;
   /** groupId -> the playerIds who liked that group's answer, held per round like the rejections

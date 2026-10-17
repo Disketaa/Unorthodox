@@ -58,11 +58,15 @@ export function revealQuestionFrom(host: FlowHost, question: string): void {
   host.commit(revealQuestion(state, question));
 }
 
-/** Start a round: out of the theme choice and into answering it. */
-export function startWritingFrom(host: FlowHost, topic: string): void {
+/** Start a round: out of the theme choice and into answering it. The room's code rides along
+ * because the card the room has just chosen carries the round's multiplier, and that is rolled
+ * from the code rather than kept anywhere. */
+export function startWritingFrom(host: FlowHost, roomCode: string, topic: string): void {
   const state = host.getState();
   if (state === undefined) return;
-  host.commit(startWriting(state, topic, Game.phaseDurationMs('Writing', state.pace)));
+  host.commit(
+    startWriting(state, roomCode, topic, Game.phaseDurationMs('Writing', state.pace))
+  );
 }
 
 /** The bank closed with nothing pressed on it, so the room is answering its own. */

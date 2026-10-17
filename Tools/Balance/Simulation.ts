@@ -14,8 +14,8 @@ interface Card {
 }
 
 /** One seat's game. The profile is drawn once and kept for the whole room: a player who always
- * answers late and never copies is a fact about them, and re-rolling it every round would flatten
- * the very spread the strategy tables are here to measure. */
+ * answers late and never copies is a fact about them, and re-rolling it every round would
+ * flatten the very spread the strategy tables are here to measure. */
 interface Seat {
   profile: ProfileName;
   writerBias: number;
@@ -116,9 +116,9 @@ function headOf(board: readonly (Card | null)[]): Card | undefined {
   return best;
 }
 
-/** The board for one round, one entry per seat and a hole where a seat never answered. Duplicates
- * fall out of the copying and the bank rather than being written in, so a big room duplicates for
- * the reason a big room duplicates. */
+/** The board for one round, one entry per seat and a hole where a seat never answered.
+ * Duplicates fall out of the copying and the bank rather than being written in, so a big room
+ * duplicates for the reason a big room duplicates. */
 function writeBoard(
   random: Random,
   params: BalanceParams,
@@ -161,8 +161,8 @@ function writeBoard(
   return board;
 }
 
-/** How many of the other seats liked an answer. Popularity sets how like a like is at all,
- * so the room's opinion and the room's collisions are the same curve seen twice. */
+/** How many of the other seats liked an answer. Popularity sets how like a like is at all, so
+ * the room's opinion and the room's collisions are the same curve seen twice. */
 function likeCount(random: Random, params: BalanceParams, weight: number, playerCount: number): number {
   let likes = 0;
   for (let other = 1; other < playerCount; other += 1) {
@@ -196,11 +196,10 @@ function groupBoard(board: readonly (Card | null)[]): BoardGroup[] {
 
 /** Who an enchantment reaches this round, as the multiplier each seat actually wears. The seats
  * it does not reach are neither slowed down nor multiplied: a card whose constraint and whose
- * multiplier are the same card cannot be one without the other.
- *
- * `Leader` hands the round to whoever is already ahead, which is a reward for the lead rather than
- * a way back into it. `Laggards` is the catch-up, and it works by closing the field. `Self` is one
- * seat, picked at random here because the room's chooser is not modelled. */
+ * multiplier are the same card cannot be one without the other. `Leader` hands the round to
+ * whoever is already ahead, which is a reward for the lead rather than a way back into it.
+ * `Laggards` is the catch-up, and it works by closing the field. `Self` is one seat, picked at
+ * random here because the room's chooser is not modelled. */
 function multsBySeat(
   random: Random,
   params: BalanceParams,
@@ -235,8 +234,8 @@ function multsBySeat(
   return chosen.map((reached) => (reached ? mult : 1));
 }
 
-/** Round-level points, split into the speed part and the like part so a table can say how much of
- * the room's total came from being quick and how much from being liked. */
+/** Round-level points, split into the speed part and the like part so a table can say how much
+ * of the room's total came from being quick and how much from being liked. */
 export interface RoundSplit {
   fromSpeed: number;
   fromLikes: number;
@@ -308,8 +307,9 @@ function scoreRound(
   return { split: { fromSpeed, fromLikes, points: fromSpeed + fromLikes }, mult };
 }
 
-/** Ranked seat indexes after one round, best first. Ties broken by seat order, which is arbitrary
- * and left so: a tie is a tie, and pretending otherwise would invent a lead that was not there. */
+/** Ranked seat indexes after one round, best first. Ties broken by seat order, which is
+ * arbitrary and left so: a tie is a tie, and pretending otherwise would invent a lead that was
+ * not there. */
 function ranking(totals: readonly number[]): number[] {
   return totals
     .map((total, seat) => ({ total, seat }))

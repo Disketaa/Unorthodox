@@ -48,8 +48,19 @@ export type GameAction =
   /** The room into a round, once the question has been read. Carries the topic rather than
    * reading one from a catalogue, since what a theme asks about is the content's business and
    * not the state's. */
-  | { type: 'START_WRITING'; topic: string; durationMs: number; startedAt: number }
-  | { type: 'SUBMIT_ANSWER'; playerId: PlayerId; text: string }
+  | {
+      type: 'START_WRITING';
+      topic: string;
+      durationMs: number;
+      startedAt: number;
+      /** What the chosen card wears, which the host worked out from the room's roll to draw it.
+       * Carried in rather than rolled here, since the reducer is the rule and not the dice. */
+      mult?: number;
+    }
+  /** One answer, and when the host received it. The host's moment of arrival rather than the
+   * player's claim about pressing send: a speed bonus measured off a client is a bonus anybody
+   * can ask for twice. */
+  | { type: 'SUBMIT_ANSWER'; playerId: PlayerId; text: string; at: number }
   /** A player writing over an answer they already sent, so their seat goes back to work in the
    * room rather than only in their own browser. Takes no text, since an answer nobody has
    * finished sending is not something the room is allowed to read. */

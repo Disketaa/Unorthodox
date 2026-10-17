@@ -92,9 +92,9 @@ function runOne(
   };
 }
 
-/** The banks worth a row: a narrow one where the room keeps colliding and a wide one where almost
- * every answer is unique, with the skew between those two crossed over the room sizes that decide
- * whether a collision is likely at all. */
+/** The banks worth a row: a narrow one where the room keeps colliding and a wide one where
+ * almost every answer is unique, with the skew between those two crossed over the room sizes
+ * that decide whether a collision is likely at all. */
 const Banks = [16, 32, 64, 128];
 const Skews = [0.6, 0.9, 1.3];
 

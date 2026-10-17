@@ -1,6 +1,6 @@
-import { randomFor, shuffle, ThemeId, CustomTheme } from '@/Core';
+import { randomFor, shuffle, ThemeId, CustomTheme, PlayerId } from '@/Core';
 import { marksForRoom } from './PublicMarks';
-import { declinedGroupIds } from './RoundScoring';
+import { declinedGroupIds, scoreRound } from './RoundScoring';
 import { HostState, ReviewingState } from './GameState';
 import { groupAnswersWithPlayers } from './Grouping';
 import type {
@@ -151,6 +151,16 @@ export function toPublicReviewingState(state: HostState): PublicReviewingState {
     players: publicPlayers(state),
     groups,
     ...marksForRoom(state, declinedGroupIds(state)),
+    cumulative: totalsForReview(state),
     ...themeOf(state),
   };
+}
+
+/** The running total per player, as pairs rather than a map, since this goes out as plain data.
+ * Worked out by the scorer that will settle the round, so the total a room watches climb is the
+ * total it is scored with. */
+function totalsForReview(state: ReviewingState): { id: PlayerId; score: number }[] {
+  const totals: { id: PlayerId; score: number }[] = [];
+  scoreRound(state).cumulativeScores.forEach((score, id) => totals.push({ id, score }));
+  return totals;
 }

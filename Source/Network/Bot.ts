@@ -118,12 +118,16 @@ function word(random: Random): string {
 /** The answer each bot in the room still owes, for a round that has just opened. A bot that has
  * already answered is left out, so a host that answers late does not have its seat written over
  * a second time by a move nobody pressed. */
-export function botAnswers(state: HostState, random: Random): ActionOf<'SUBMIT_ANSWER'>[] {
+export function botAnswers(
+  state: HostState,
+  random: Random,
+  at: number = Date.now()
+): ActionOf<'SUBMIT_ANSWER'>[] {
   if (state.phase !== 'Writing') return [];
   const actions: ActionOf<'SUBMIT_ANSWER'>[] = [];
   for (const playerId of state.players.keys()) {
     if (botNumber(playerId) === 0 || state.answers.has(playerId)) continue;
-    actions.push({ type: 'SUBMIT_ANSWER', playerId, text: botAnswer(random) });
+    actions.push({ type: 'SUBMIT_ANSWER', playerId, text: botAnswer(random), at });
   }
   return actions;
 }

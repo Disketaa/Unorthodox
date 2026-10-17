@@ -1,5 +1,5 @@
-﻿/** Deterministic randomness for the balance runs. Seeded, so two formulas meet the same rooms:
- * a table that moved because the dice did is worse than no table, and one that moved because the
+/** Deterministic randomness for the balance runs. Seeded, so two formulas meet the same rooms: a
+ * table that moved because the dice did is worse than no table, and one that moved because the
  * numbers did is the only kind worth reading. */
 export class Random {
   private state: number;
@@ -32,8 +32,8 @@ export class Random {
   }
 }
 
-/** How many distinct seeds a configuration needs, mixed so two rooms from one run do not share
- * a stream. */
+/** How many distinct seeds a configuration needs, mixed so two rooms from one run do not share a
+ * stream. */
 export function seedOf(base: number, ...parts: number[]): number {
   let seed = base >>> 0;
   for (const part of parts) {

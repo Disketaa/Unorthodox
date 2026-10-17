@@ -1,6 +1,6 @@
 import * as Game from '@/Game';
 import { createLogger, type PlayerId, type Random, type ThemeId } from '@/Core';
-import { affectedByChoice } from './HostIncoming';
+import { affectedByChoice, multByChoice } from './HostIncoming';
 import { drawableTheme } from './HostThemePool';
 
 const log = createLogger('HostPhases');
@@ -39,6 +39,7 @@ export function revealQuestion(
 
 export function startWriting(
   state: Game.HostState | undefined,
+  roomCode: string | undefined,
   topic: string,
   durationMs: number
 ): Game.HostState {
@@ -51,6 +52,7 @@ export function startWriting(
     topic,
     durationMs,
     startedAt: Date.now(),
+    mult: multByChoice(state, roomCode, state.theme),
   });
 }
 

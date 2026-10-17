@@ -16,8 +16,8 @@ export const Profiles: readonly ProfileName[] = [
 ];
 
 /** The share of the room playing each profile. Both mixes are asked for by name in the report,
- * because the interesting question is not "what does a copier earn" but "what does a copier earn
- * in a room where copiers are common", and that second number only exists at a given mix. */
+ * because the interesting question is not "what does a copier earn" but "what does a copier
+ * earn in a room where copiers are common", and that second number only exists at a given mix. */
 export interface StrategyMix {
   uniqueFast: number;
   uniqueSlow: number;

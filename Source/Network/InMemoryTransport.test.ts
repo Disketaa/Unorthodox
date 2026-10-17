@@ -12,7 +12,8 @@ const hostLook: PlayerLook = { character: 'Butterfly', color: 'Coral' };
 const clientLook: PlayerLook = { character: 'Ghost', color: 'Sky' };
 /** Distinct enough that the fuzzy grouper keeps them in separate groups. */
 const answers = ['Answer One', 'Answer Two', 'Answer Three', 'Answer Four'];
-/** A solo answer is a unique group, worth GameConfig.scoring.uniquePoints. */
+/** A solo answer is a unique group, and what it is worth is the room's own card: this fixture
+ * sends every answer at the same instant, so all four take the top of the scale alike. */
 const soloGroupPoints = 3;
 
 type Fixture = {
@@ -117,13 +118,15 @@ function checkReviewingGroups(round: Fixture): void {
 
 function checkScores(round: Fixture): void {
   expect(round.hostSession.getState()?.phase).toBe('Scores');
+  // Every answer here is unique and was sent at the same moment, so all four are worth the same
+  // and the figure itself is the room's card rather than anything this fixture decides.
   expect(
-    clientStates(round).every(
-      (state) =>
-        state.phase === 'Scores' &&
-        state.scores.length === 4 &&
-        state.scores.every((score) => score.score === soloGroupPoints)
-    )
+    clientStates(round).every((state) => {
+      if (state.phase !== 'Scores' || state.scores.length !== 4) return false;
+      const earned = state.scores.map((score) => score.score);
+      const least = Math.min(...earned);
+      return least > 0 && least === Math.max(...earned) && least >= soloGroupPoints;
+    })
   ).toBe(true);
 }
 

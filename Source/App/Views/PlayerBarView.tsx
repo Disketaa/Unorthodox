@@ -1,7 +1,7 @@
 import { PlayerBar, type PlayerBarEntry } from '@/Design/Components';
 import { lookFor } from '@/Screens';
 import type { PlayerId } from '@/Core';
-import type { PublicReviewingState } from '@/Game';
+import type { PublicReviewingState, PublicState } from '@/Game';
 import { useRef } from 'preact/hooks';
 import { useReveal, type RevealState } from '../Hooks/UseReveal';
 import type { PhaseViewProps } from './LobbyView';
@@ -23,11 +23,13 @@ function boardOf(view: PhaseViewProps['view']): BarBoard | undefined {
   return state?.phase === 'Reviewing' ? state : undefined;
 }
 
-/** Every player's running total, read from whichever phase carries them. Only Scores and Final
- * send a score at all — a room in the lobby or mid-round has nothing settled to show — so every
- * other phase reads as zero rather than as missing. */
-function readScores(view: PhaseViewProps['view']): ReadonlyMap<PlayerId, number> {
-  const state = view.publicState;
+/** Every player's running total, read from whichever phase carries them. Reviewing sends the
+ * round's own, worked out by the host as the board stands, so a seat shows a real number while
+ * the round is still open. The phases before that have nothing and read as zero. */
+export function readScores(state: PublicState | undefined): ReadonlyMap<PlayerId, number> {
+  if (state?.phase === 'Reviewing') {
+    return new Map((state.cumulative ?? []).map((row) => [row.id, row.score]));
+  }
   if (state?.phase === 'Scores') {
     return new Map(state.cumulative.map((row) => [row.id, row.score]));
   }
@@ -104,7 +106,7 @@ function usePresses(board: BarBoard | undefined): Map<PlayerId, number> {
 /** The bar across the top of a game. In roster order, which is the order the room has held since
  * the lobby: a seat that moves about between phases is a seat nobody can find themselves in. */
 export function PlayerBarView({ view }: PhaseViewProps) {
-  const scores = readScores(view);
+  const scores = readScores(view.publicState);
   const choosing = view.publicState?.phase === 'Choosing' ? view.publicState : undefined;
   // The turn outlives the round that used it, so the mark belongs only to where the room is
   // actually waiting on it: an open bank. Once the bank is answered the phase is still Choosing,

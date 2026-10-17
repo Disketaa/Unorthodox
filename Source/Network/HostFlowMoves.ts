@@ -37,7 +37,7 @@ export function hostFlowMoves(
 ): HostFlowMoves {
   return {
     startGame: () => startGameFrom(flow()),
-    startWriting: (topic) => startWritingFrom(flow(), topic),
+    startWriting: (topic) => startWritingFrom(flow(), roomCode(), topic),
     revealQuestion: (question) => revealQuestionFrom(flow(), question),
     chooseTheme: (theme) => chooseThemeFrom(flow(), roomCode(), theme, playerId),
     startRandomPick: () => startRandomPickFrom(flow(), roomCode()),

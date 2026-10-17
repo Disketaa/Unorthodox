@@ -23,7 +23,12 @@ describe('reducer SUBMIT_ANSWER action', () => {
       pausedAt: undefined,
       theme: undefined,
     };
-    state = reducer(state, { type: 'SUBMIT_ANSWER', playerId: 'p1', text: 'Answer1' });
+    state = reducer(state, {
+      type: 'SUBMIT_ANSWER',
+      playerId: 'p1',
+      text: 'Answer1',
+      at: 4000,
+    });
     if (state.phase === 'Writing') {
       // After checking phase, TypeScript should narrow the type to WritingState
       expect(state.answers.size).toBe(1);
@@ -51,7 +56,12 @@ describe('reducer SUBMIT_ANSWER action', () => {
       pausedAt: undefined,
       theme: undefined,
     };
-    state = reducer(state, { type: 'SUBMIT_ANSWER', playerId: 'p1', text: 'Answer2' });
+    state = reducer(state, {
+      type: 'SUBMIT_ANSWER',
+      playerId: 'p1',
+      text: 'Answer2',
+      at: 9000,
+    });
     if (state.phase === 'Writing') {
       // After checking phase, TypeScript should narrow the type to WritingState
       expect(state.answers.size).toBe(1);

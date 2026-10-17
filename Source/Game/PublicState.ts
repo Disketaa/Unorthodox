@@ -126,6 +126,10 @@ export type PublicReviewingState = PublicRoom & {
    * be saying who read it, on a board played by people who cannot see who wrote what. Optional
    * like the list above, so a round nobody liked anything in carries no field. */
   likeCounts?: { groupId: number; count: number }[];
+  /** Every player's running total, from the board as it stands, sent while the round is still
+   * open so the bar shows who is ahead before the round is scored. The host's figure, since a
+   * client scoring the round itself would show a different number from every other screen. */
+  cumulative?: { id: PlayerId; score: number }[];
   theme?: ThemeId;
 };
 

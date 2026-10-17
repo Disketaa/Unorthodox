@@ -1,7 +1,8 @@
 import { PlayerId } from '@/Core';
 import { ReviewingState } from './GameState';
 import { groupAnswersWithPlayers } from './Grouping';
-import { calculateRoundScores } from './Scoring';
+import { calculateRoundScores, scoreCard } from './Scoring';
+import type { CardScore } from './Scoring';
 import { GameConfig } from './GameConfig';
 
 /** One group as the scorer sees it: who wrote it, and whether it was rejected. */
@@ -41,17 +42,66 @@ export function toScoredGroups(state: ReviewingState): ScoredGroup[] {
   }));
 }
 
+/** The share of the writing clock one player's answer took, clamped to the phase. A player with
+ * no recorded time is read as having sent it on the first tick, which keeps a room that cannot
+ * time an answer from losing the points for it. */
+export function speedShareOf(
+  state: Pick<ReviewingState, 'startedAt' | 'durationMs' | 'answerTimes'>,
+  playerId: PlayerId
+): number {
+  const at = state.answerTimes?.get(playerId) ?? state.startedAt;
+  const spent = at - state.startedAt;
+  return Math.min(1, Math.max(0, spent / Math.max(1, state.durationMs)));
+}
+
+/** One card as the scorer reads it: how many wrote it, whether the host struck it out, how early
+ * it was sent, how many liked it and what the round's card wears. */
+export function toCardScore(
+  state: ReviewingState,
+  group: { playerIds: PlayerId[]; groupId: number }
+): CardScore {
+  const author = group.playerIds[0];
+  return {
+    groupSize: group.playerIds.length,
+    isRejected: state.groupRejections.has(group.groupId),
+    speedShare: author === undefined ? 0 : speedShareOf(state, author),
+    likes: state.groupLikes.get(group.groupId)?.size ?? 0,
+    mult: state.mult ?? 1,
+  };
+}
+
+/** The round's cards, in the shape the scorer takes, so nothing about a card is read twice. */
+export function toScoredCards(state: ReviewingState): {
+  playerIds: PlayerId[];
+  card: CardScore;
+}[] {
+  return groupAnswersWithPlayers(state.answers).map((group) => ({
+    playerIds: group.playerIds,
+    card: toCardScore(state, group),
+  }));
+}
+
 /** Points for this round, with the running totals carried forward. Returns both, so the caller
  * does not have to add the round onto the totals by hand and risk losing a player who scored
- * nothing. */
+ * nothing, and so the room can be shown the same running total while the round is still open. */
 export function scoreRound(state: ReviewingState): {
   roundScores: Map<PlayerId, number>;
   cumulativeScores: Map<PlayerId, number>;
+  fromSpeed: number;
+  fromLikes: number;
 } {
-  const roundScores = calculateRoundScores(toScoredGroups(state), GameConfig);
+  const cards = toScoredCards(state);
+  const roundScores = calculateRoundScores(cards, GameConfig);
   const cumulativeScores = new Map(state.cumulativeScores);
-  for (const [playerId, score] of roundScores) {
-    cumulativeScores.set(playerId, (cumulativeScores.get(playerId) ?? 0) + score);
+  let fromSpeed = 0;
+  let fromLikes = 0;
+  for (const { playerIds, card } of cards) {
+    const share = scoreCard(card, GameConfig);
+    fromSpeed += share.fromSpeed * playerIds.length;
+    fromLikes += share.fromLikes * playerIds.length;
+    for (const playerId of playerIds) {
+      cumulativeScores.set(playerId, (cumulativeScores.get(playerId) ?? 0) + share.points);
+    }
   }
-  return { roundScores, cumulativeScores };
+  return { roundScores, cumulativeScores, fromSpeed, fromLikes };
 }

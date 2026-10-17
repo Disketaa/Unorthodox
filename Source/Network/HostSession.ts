@@ -58,7 +58,7 @@ export class HostSession implements HostFlowMoves, HostRoomOpener {
     answerBots(this);
   }
   submitOwnAnswer(text: string): void {
-    this.apply({ type: 'SUBMIT_ANSWER', playerId: HostPlayerId, text });
+    this.apply({ type: 'SUBMIT_ANSWER', playerId: HostPlayerId, text, at: Date.now() });
   }
   setOwnEditingAnswer(editing: boolean): void {
     this.apply({ type: 'EDITING_ANSWER', playerId: HostPlayerId, editing });

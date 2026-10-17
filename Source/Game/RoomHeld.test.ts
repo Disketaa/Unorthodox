@@ -98,6 +98,7 @@ describe('a room held still', () => {
         type: 'SUBMIT_ANSWER',
         playerId: 'p1',
         text: 'An answer',
+        at: 6000,
       })
     ).toBe(paused);
     expect(reducer(paused, { type: 'NEXT_ROUND', durationMs: 20_000, startedAt: 9000 })).toBe(

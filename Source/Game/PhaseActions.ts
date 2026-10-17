@@ -91,6 +91,8 @@ export function handleStartWriting(
     durationMs: action.durationMs,
     startedAt: action.startedAt,
     answers: new Map<PlayerId, string>(),
+    answerTimes: new Map<PlayerId, number>(),
+    mult: action.mult ?? 1,
     theme: state.theme,
     // Handed on as the round starts, which is the only place it can be handed: choosing a theme is
     // the one thing a turn limits, so a turn that never moved would leave every player after the
@@ -108,12 +110,17 @@ export function handleSubmitAnswer(
   }
   const answers = new Map(state.answers);
   answers.set(action.playerId, action.text);
+  // Written over, so it is the later of the two moments that counts: a player who changes their
+  // mind has spent the time again, and a round that timed only the first press would pay them for
+  // an answer they had already thrown away.
+  const answerTimes = new Map(state.answerTimes ?? []);
+  answerTimes.set(action.playerId, action.at);
   // An answer that has just been sent is not one being written over. Taken off here rather than
   // only on the way out of editing, since the two travel as separate messages and a seat must not
   // be left marked at work over an answer the room is already holding.
   const editing = new Set(state.editing ?? []);
   editing.delete(action.playerId);
-  return { ...state, answers, editing };
+  return { ...state, answers, answerTimes, editing };
 }
 
 export function handleStartReviewing(

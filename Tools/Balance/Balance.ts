@@ -25,8 +25,8 @@ import { writeFileSync } from 'node:fs';
 
 
 
-/** The shapes to run. `--shapes=Bonus` runs every curve and placement; `--shapes=Legacy` runs the
- * game as it stands today. Nothing given means all of them. */
+/** The shapes to run. `--shapes=Bonus` runs every curve and placement; `--shapes=Legacy` runs
+ * the game as it stands today. Nothing given means all of them. */
 function selectedFormulas(): Formula[] {
   const arg = process.argv.find((value) => value.startsWith('--shapes='));
   const all = allFormulas();

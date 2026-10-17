@@ -168,6 +168,7 @@ describe('botAnswers', () => {
       type: 'SUBMIT_ANSWER',
       playerId: 'bot1',
       text: 'уже',
+      at: 1000,
     });
     expect(botAnswers(answered, seeded())).toEqual([]);
   });

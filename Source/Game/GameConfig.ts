@@ -154,9 +154,21 @@ export const GameConfig = {
       voteMs: timing.revealVoteMs / 2,
     },
   } satisfies Record<Pace, PaceTimings>,
+  /** What a card is worth. A unique answer is paid for how early it was sent and how many likes
+   * it drew; a duplicated one is paid a flat rate. These numbers come out of `Tools/Balance`. */
   scoring: {
-    uniquePoints: 3,
+    /** What an answer sent on the first tick is worth, before the card's multiplier. */
+    speedMaxPoints: 20,
+    /** How hard the scale leans on being early. One and a half sits between a straight line and
+     * a square: enough that writing fast is a skill, gentle enough that the last third of the
+     * clock still pays for the thinking. */
+    speedExponent: 1.5,
+    /** What one like is worth. Never multiplied: a like is the room's opinion and the card's
+     * multiplier is the room's luck. */
+    likePoints: 1,
+    /** What an answer somebody else already wrote is worth, carried by the card's multiplier. */
     pairPoints: 1,
+    /** Three or more wrote the same thing. Nothing, and always nothing. */
     commonPoints: 0,
   },
   /** How two answers are decided to be the same: the edits a word may be apart by its length,
@@ -184,8 +196,9 @@ export const GameConfig = {
      * and the number of topics the theme answers for. Ten because the game is five rounds and
      * two themes to a round fills it. */
     roundsPerTheme: 10,
-    /** Options for rounds per theme that the host can choose in the lobby. */
-    roundsPerThemeOptions: [3, 5, 10] as const,
+    /** Options for rounds per theme the host can pick in the lobby. Five is the floor: at three,
+     * what one good round pays is more than the whole gap between first and second at the end. */
+    roundsPerThemeOptions: [5, 10] as const,
     /** What a round's bank may carry on top of its six themes: how likely it is to enchant
      * anything, and how many cards it may reach. A cap rather than a count, since a bank where
      * every card is enchanted has nothing left to choose between. */
@@ -216,7 +229,9 @@ export const GameConfig = {
      * written the wrong game. */
     answerMaxLength: 20,
     roomCodeLength: 4,
-    minPlayers: 2,
+    /** Three, not two: in a room of two the winner takes so little that the pair finish level in
+     * one game in eight, and one name on the final screen is the whole point of the scoring. */
+    minPlayers: 3,
     maxPlayers: MaxPlayers,
   },
 };

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { seatPulses, struckWriters, type BarBoard } from './PlayerBarView';
+import { readScores, seatPulses, struckWriters, type BarBoard } from './PlayerBarView';
+import type { PublicState } from '@/Game';
 import type { RevealState } from '../Hooks/UseReveal';
 
 const everyoneNamed: RevealState = {
@@ -113,5 +114,60 @@ describe('the bar taking players off as their faces land', () => {
 
   it('has nothing to say in any phase but the review', () => {
     expect(struckWriters(undefined, new Set(), everyoneNamed).size).toBe(0);
+  });
+});
+
+/** One round's board as the wire carries it, with the running total the host has sent. */
+function reviewingRoom(cumulative: { id: string; score: number }[]): PublicState {
+  return {
+    phase: 'Reviewing',
+    topic: 'a topic',
+    durationMs: 1000,
+    startedAt: 0,
+    turnPlayerId: null,
+    pace: 'Standard',
+    themes: [],
+    themeMode: 'Random',
+    customThemes: [],
+    spent: [],
+    paused: false,
+    players: [],
+    groups: [],
+    cumulative,
+  };
+}
+
+describe('the number a seat shows under the pointer', () => {
+  it('shows the round so far while the round is still open', () => {
+    // The case that was a zero. A player hovers their own seat to find out where they stand, and a
+    // bar that answered zero until the Scores screen was a bar that had nothing to say for a whole
+    // phase of the game.
+    const scores = readScores(reviewingRoom([{ id: 'p1', score: 47 }]));
+    expect(scores.get('p1')).toBe(47);
+  });
+
+  it('shows the settled total once the round has been scored', () => {
+    const scores = readScores({
+      phase: 'Scores',
+      durationMs: 1000,
+      startedAt: 0,
+      turnPlayerId: null,
+      pace: 'Standard',
+      themes: [],
+      themeMode: 'Random',
+      customThemes: [],
+      spent: [],
+      paused: false,
+      players: [],
+      scores: [{ id: 'p1', score: 12 }],
+      cumulative: [{ id: 'p1', score: 59 }],
+    });
+    expect(scores.get('p1')).toBe(59);
+  });
+
+  it('shows nothing at all before the first round has been scored', () => {
+    // A phase with no score in it is not a phase whose score is zero, and the difference is the
+    // whole reason the bar can say which of the two it is looking at.
+    expect(readScores(reviewingRoom([])).size).toBe(0);
   });
 });

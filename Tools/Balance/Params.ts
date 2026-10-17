@@ -1,4 +1,4 @@
-﻿/** Who an enchantment reaches. The card's cost and its multiplier are the same card, so the two
+/** Who an enchantment reaches. The card's cost and its multiplier are the same card, so the two
  * always travel together: a seat the enchantment does not reach is neither slowed down nor
  * multiplied. */
 export type Targeting = 'All' | 'Leader' | 'Laggards' | 'Self' | 'Random';
@@ -31,17 +31,19 @@ export interface BalanceParams {
   muteRate: number;
   /** How alike two answers are drawn to be: the chance that the next player repeats an answer
    * already on the board rather than writing something of their own. Rises with the room, which
-   * is the whole difficulty of a big room and the reason 2 and 12 are the two ends worth having. */
+   * is the whole difficulty of a big room and the reason 2 and 12 are the two ends worth
+   * having. */
   echoRate: number;
   /** How hard a seat whose profile says Copy actually goes for the board's most popular answer.
-   * Far higher than `echoRate`: a player who has decided to copy is not copying by accident, and
-   * a third of their attempts landing is not the strategy the tables are here to judge. */
+   * Far higher than `echoRate`: a player who has decided to copy is not copying by accident,
+   * and a third of their attempts landing is not the strategy the tables are here to judge. */
   copyRate: number;
   /** How steeply the popular answers are popular. Low is a flat board where almost everything is
    * unique; high is one answer everybody writes, which is a board nobody scores on. */
   popularitySkew: number;
-  /** How many distinct answers a round is drawn from, before the room collides with itself. Small
-   * enough that collisions are common, since a bank of a thousand answers never duplicates. */
+  /** How many distinct answers a round is drawn from, before the room collides with itself.
+   * Small enough that collisions are common, since a bank of a thousand answers never
+   * duplicates. */
   answerBankSize: number;
   /** The top of the speed scale, in points, before any multiplier. Every curve below is a way of
    * spending this budget, so the tables compare shapes rather than sizes. */
@@ -53,9 +55,9 @@ export interface BalanceParams {
   /** Points one like is worth. Flat, and the same whether the answer was fast or slow. */
   pointsPerLike: number;
   /** Whether the speed points are made whole before the multiplier is applied. Off, the total is
-   *  rounded once at the end and the biggest multiplier comes out short of its number, because a
-   * rounding error of half a point is a lot against seven. On, x2 is x2 and the card can promise
-   * it. */
+   * rounded once at the end and the biggest multiplier comes out short of its number, because a
+   * rounding error of half a point is a lot against seven. On, x2 is x2 and the card can
+   * promise it. */
   roundSpeedBeforeMult: boolean;
   /** What an enchantment costs the writer: the share of the writing clock a banned or demanded
    * letter takes out of the room's clock. This is the other half of a card, and it is the only

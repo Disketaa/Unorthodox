@@ -43,6 +43,7 @@ function writing(): HostState {
     type: 'SUBMIT_ANSWER',
     playerId: 'p1',
     text: 'два слова',
+    at: 30_000,
   });
   const end = reducer(answered, { type: 'START_REVIEWING', startedAt: 1, durationMs: 90_000 });
   return reducer(end, { type: 'END_REVIEWING', startedAt: 2, durationMs: 15_000 });
