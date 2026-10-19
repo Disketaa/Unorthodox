@@ -69,6 +69,8 @@ export interface GameSessionView extends SessionPhase, BoardMarks {
   /** Answering the theme bank on this player's behalf. The room sees the answer, not the player. */
   chooseTheme: (theme: ThemeId) => void;
   nextPhase: () => void;
+  /** The phase the room is in begun again from the top, for the host's dock. */
+  reloadPhase: () => void;
   submitAnswer: (text: string) => void;
   rejectGroup: (groupId: number) => void;
   likeGroup: (groupId: number) => void;

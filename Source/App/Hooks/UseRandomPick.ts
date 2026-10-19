@@ -1,7 +1,7 @@
 import { useEffect } from 'preact/hooks';
 import { GameConfig, isPhaseName, isTimedPhase, phaseGraceMs, questionRevealMs } from '@/Game';
-import type { Pace, RandomPick } from '@/Game';
-import { phaseAfterCycling, phaseDurationMs } from '@/Game/PhaseFlow';
+import type { RandomPick } from '@/Game';
+import { phaseAfterCycling } from '@/Game/PhaseFlow';
 import { Session } from '../Session';
 import type { SessionPhase } from './UseSessionPhase';
 
@@ -135,7 +135,6 @@ export function useAnswersIn(
   name: string,
   submittedCount: number,
   playerCount: number,
-  pace: Pace | undefined,
   held = false
 ): void {
   useEffect(() => {
@@ -146,7 +145,9 @@ export function useAnswersIn(
       playerCount > 0 &&
       submittedCount >= playerCount
     ) {
-      session.endReviewing(phaseDurationMs(phaseAfterCycling('Writing'), pace ?? 'Standard'));
+      // The reviewing round's length is worked out by the host from the room, not passed in here:
+      // it is a function of how many people answered, and this browser does not know that.
+      session.endReviewing();
     }
-  }, [isHost, name, submittedCount, playerCount, session, pace, held]);
+  }, [isHost, name, submittedCount, playerCount, session, held]);
 }

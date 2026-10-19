@@ -8,6 +8,8 @@ export * from './ThemeEffects';
 export * from './Normalization';
 export * from './Grouping';
 export * from './Scoring';
+export * from './ScoreCount';
+export * from './RoundScoring';
 export * from './GameActions';
 export * from './LobbyActions';
 export * from './Pause';

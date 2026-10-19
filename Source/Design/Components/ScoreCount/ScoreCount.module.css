@@ -1,0 +1,96 @@
+/* One line of a card being paid: the step's name underneath, and above it the running total
+ * with whatever this step added set beside it. A row rather than a block, so a card's worth
+ * reads as one line climbing rather than as a column of separate figures. */
+.Root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.Figure {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--Space-Xs);
+}
+
+/* The figure itself, sized as the answer it stands in place of rather than as a display
+ * heading: the same share of the card's width, the same face and the same leading, since a card
+ * is either being read or being paid and the swap should not change its shape. Tabular figures
+ * because the number changes several times a second: proportional digits make the row jump
+ * sideways on every step, and a figure that shuffles while it is read is hard to read. */
+.Value {
+  font-family: var(--FontFamily-Display);
+  font-size: calc(var(--Size-AnswerCardWidth) * 0.22);
+  font-weight: bold;
+  line-height: 1.15;
+  color: inherit;
+  min-width: 1ch;
+  font-variant-numeric: tabular-nums;
+}
+
+/* What this step is adding, shown in the figure's place while the figure waits for it. Sized
+ * off the card like everything else on it, and in the figure's own face: it is standing in for
+ * the figure rather than being a caption under it, so it wears the ink the figure wore. */
+.Added {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--Space-Xs);
+  font-family: var(--FontFamily-Display);
+  font-size: calc(var(--Size-AnswerCardWidth) * 0.22);
+  font-weight: bold;
+  line-height: 1.15;
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The mark, painted through a mask rather than an image the way every other mark on this card
+ * is, so it wears the ink of the figure it stands in for rather than carrying a colour of its
+ * own. Square with the writing beside it, as tall as the figure it stands in for: a mark half
+ * the height of the number it belongs to reads as a subscript of it rather than as the same
+ * thing said another way. The width follows from the aspect of the file rather than being
+ * stated, so the mark keeps its own proportions while its height tracks the writing. */
+.MarkIcon {
+  height: 0.72em;
+  width: auto;
+  aspect-ratio: 1;
+  display: block;
+  background-color: currentColor;
+  -webkit-mask-image: var(--Mark);
+  mask-image: var(--Mark);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.MarkMult {
+  --Mark: url('../../Icons/X.svg');
+}
+
+.MarkLikes {
+  --Mark: url('../../Icons/Like.svg');
+}
+
+.Unit {
+  font-family: var(--FontFamily-Body);
+  font-size: calc(var(--Size-AnswerCardWidth) * 0.075);
+  font-weight: normal;
+  color: var(--Color-Text-Muted);
+}
+
+/* The label underneath, small and quiet so the figure stays the substance, and off the card's
+ * width for the same reason as everything else on it: the card is drawn at every size from a
+ * phone to a projector, and a fixed size is right at exactly one of them. */
+.Label {
+  font-family: var(--FontFamily-Body);
+  font-size: calc(var(--Size-AnswerCardWidth) * 0.075);
+  line-height: 1.2;
+  color: var(--Color-Text-Muted);
+  text-align: center;
+}

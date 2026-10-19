@@ -44,11 +44,19 @@ function clockOf(state: TimedHostState) {
   return { durationMs: state.durationMs, startedAt: state.startedAt };
 }
 
-/** The topic and the answers to it, which the two phases that ask and read a round share.
- * Narrowed here because the phase check that got us this far is the one the caller already
- * made. */
-function topicOf(state: Extract<HostState, { phase: 'Writing' | 'Reviewing' }>) {
-  return { topic: state.topic, answers: [...state.answers] };
+/** The topic and the answers to it, shared by the phases that ask and read a round. Each
+ * answer's share goes out with it: a missing one reads as the fastest there is, so a host that
+ * refreshed mid-round came back to a board where every answer scored the full scale. */
+function topicOf(state: Extract<HostState, { phase: 'Writing' | 'Reviewing' | 'Scores' }>) {
+  return {
+    topic: state.topic,
+    answers: [...state.answers],
+    // Omitted rather than written as null where there are none, so a room saved before this reads
+    // back as a room that timed nothing rather than as a room that timed nothing at all.
+    ...(state.answerShares === undefined || state.answerShares.size === 0
+      ? {}
+      : { answerShares: [...state.answerShares] }),
+  };
 }
 
 /** The theme the room settled on, which every phase after the choice carries. Omitted rather
@@ -116,10 +124,15 @@ export function encodeRoomState(state: HostState): Record<string, unknown> {
     };
   }
   if (state.phase === 'Scores') {
+    // The board travels with the count, not just the count: this phase draws the same cards the
+    // review did, and a host that refreshed here would come back to an empty stage.
     return {
       ...members,
       ...clock,
       phase: state.phase,
+      ...topicOf(state),
+      rejections: groupVotesOut(state.groupRejections),
+      likes: groupVotesOut(state.groupLikes),
       round: [...state.scores],
       ...themeOf(state),
     };

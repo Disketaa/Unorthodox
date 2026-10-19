@@ -171,6 +171,14 @@
   mask-size: 110%;
 }
 
+/* Beside the skip, and a different thing from it: the skip leaves the phase, this begins the
+ * one the room is already in again. Sized as those files are drawn rather than to a scale,
+ * since the arrow of a reload runs out past the round it turns. */
+.IconReload .Icon {
+  mask-image: url('../../Icons/Reload.svg');
+  mask-size: 108%;
+}
+
 /* Drawn but not pressed, so a dock keeps its row and the reader can see what the room cannot
  * do. Quieter rather than hidden: a control that vanishes reads as the feature being gone. */
 .Root:disabled {

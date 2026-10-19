@@ -82,8 +82,9 @@ function ConnectingScreen({ view }: { view: GameSessionView }) {
   );
 }
 
-/** The screen each phase plays on, as a row per phase. The lobby is the only one that is not the
- * game stage: the stage is a room already playing, with nothing left to set up. */
+/** The screen each phase plays on. The lobby is the only one that is not the game stage, and the
+ * round counted is the board again rather than a screen of its own, so a room is never shown a
+ * table of numbers where its answers were a moment ago. */
 const PhaseScreens: Record<
   SessionPhaseName,
   (props: { view: GameSessionView }) => ComponentChildren
@@ -93,7 +94,7 @@ const PhaseScreens: Record<
   Choosing: GameScene,
   Writing: WritingScene,
   Reviewing: ReviewScene,
-  Scores: GameScene,
+  Scores: ReviewScene,
   Final: GameScene,
 };
 

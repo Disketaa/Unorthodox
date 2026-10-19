@@ -1,12 +1,13 @@
-/* The room held still. Over the whole window rather than one panel of it, since what is stopped
- * is the game and not one screen of it. Above the paper and below the dock, so the host's
- * controls stay reachable over the room they are holding, and takes no pointer: a held room has
- * nothing to press, and a click that reached a card under this would be a press into a game
- * nobody is playing. */
+/* The room held still. Over the whole window rather than one panel, since what is stopped is
+ * the game, and over everything: a card held above the board's veil while one of its own is
+ * counted would be the one thing still moving while the game is stopped. Right up in three
+ * figures so whatever a screen lifts above itself still sits below this. Takes no pointer: a
+ * held room has nothing to press, and a click that reached a card under this would press into a
+ * game nobody is playing. */
 .Root {
   position: fixed;
   inset: 0;
-  z-index: 2;
+  z-index: 99;
   pointer-events: none;
 }
 

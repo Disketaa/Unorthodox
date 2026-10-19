@@ -109,14 +109,17 @@ export class HostSession implements HostFlowMoves, HostRoomOpener {
   setPaused(paused: boolean): void {
     this.moves.setPaused(paused);
   }
-  endReviewing(durationMs: number): void {
-    this.moves.endReviewing(durationMs);
+  endReviewing(): void {
+    this.moves.endReviewing();
   }
   nextRound(): void {
     this.moves.nextRound();
   }
   nextPhase(topic: string): void {
     this.moves.nextPhase(topic);
+  }
+  reloadPhase(): void {
+    this.moves.reloadPhase();
   }
   get roster() {
     return this.room.roster;

@@ -15,7 +15,7 @@ import {
 import { handleBankPick } from './RandomPick';
 import { handleRevealQuestion } from './PhaseActions';
 import { handleEditingAnswer } from './AnswerEditing';
-import { handleGoToPhase } from './PhaseJumps';
+import { handleGoToPhase, handleReloadPhase } from './PhaseJumps';
 import { handleNextTurn } from './Turns';
 import { handleRoster } from './LobbyActions';
 import { handleHold, isRefusedWhileHeld } from './Pause';
@@ -111,6 +111,8 @@ function dispatch(state: HostState, action: Exclude<GameAction, MarkAction>): Ho
       return handleNextTurn(state);
     case 'FINAL':
       return handleFinal(state);
+    case 'RELOAD_PHASE':
+      return handleReloadPhase(state, action);
     case 'GO_TO_PHASE':
       return handleGoToPhase(state, action);
     default:

@@ -6,6 +6,10 @@ describe('toPublicState Scores state', () => {
   test('converts correctly', () => {
     const state: HostState = {
       phase: 'Scores',
+      topic: 'a topic',
+      answers: new Map(),
+      groupRejections: new Map(),
+      groupLikes: new Map(),
       durationMs: 30000,
       startedAt: 1000,
       scores: new Map([
@@ -41,6 +45,10 @@ describe('toPublicState Scores state', () => {
     // choosing would fill back up the moment the round started.
     const state: HostState = {
       phase: 'Scores',
+      topic: 'a topic',
+      answers: new Map(),
+      groupRejections: new Map(),
+      groupLikes: new Map(),
       durationMs: 30000,
       startedAt: 1000,
       scores: new Map(),

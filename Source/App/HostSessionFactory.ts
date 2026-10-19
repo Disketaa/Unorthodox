@@ -95,6 +95,7 @@ function hostRoundActions(
   | 'endReviewing'
   | 'nextRound'
   | 'nextPhase'
+  | 'reloadPhase'
   | 'finish'
   | 'kick'
   | 'stop'
@@ -106,9 +107,10 @@ function hostRoundActions(
     startRandomPick: () => hostSession.startRandomPick(),
     resolveRandomPick: () => hostSession.resolveRandomPick(),
     setPaused: (paused) => hostSession.setPaused(paused),
-    endReviewing: (durationMs) => hostSession.endReviewing(durationMs),
+    endReviewing: () => hostSession.endReviewing(),
     nextRound: () => hostSession.nextRound(),
     nextPhase: (topic) => hostSession.nextPhase(topic),
+    reloadPhase: () => hostSession.reloadPhase(),
     finish: () => hostSession.finish(),
     kick: (playerId) => hostSession.kick(playerId),
     stop: () => hostSession.stop(),

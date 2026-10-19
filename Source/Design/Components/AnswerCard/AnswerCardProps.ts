@@ -68,4 +68,38 @@ export interface AnswerCardProps {
    * than one player wrote. Drawn with the cursor that says so, the only way a card that was a
    * control a moment ago can say it has stopped being one. */
   locked?: boolean;
+  /** What this card paid out, broken into the steps the count-up animates through. Only once the
+   * count has reached this card: before its turn the card is still an answer the room is
+   * reading, and a figure on it would be for something not yet told. */
+  score?: {
+    base: number;
+    mult: number;
+    likes: number;
+    total: number;
+  };
+  /** Whether the count has passed this card, which is what holds it back to the quietness every
+   * paid card is drawn at. A muted card included: the round being paid is a fact about the
+   * card, not a second thing that only the cards nobody struck out are told. */
+  paid?: boolean;
+  /** Whether this card is the one being paid right now, and so is painted in its writer's colour
+   * and is the only card on the board still at full ink. */
+  paying?: boolean;
+  /** Whether the round's enchanted card reached one of this card's writers, and so the figure on
+   * it is partly the enchantment's doing. The count adds a "mult" but nothing on the card says
+   * why the room was given one; this is the reason, and what the shine is for. */
+  enchanted?: boolean;
+  /** Whether the round is counting at all, rather than still being read. It hands the like badge
+   * the card's own colour on every card, even ones the count has not reached: voting is over,
+   * so the reader's accent is no longer what that badge says anything about. */
+  counting?: boolean;
+  /** Whether the room is held, which stands the count where it is rather than letting it run on
+   * under a held room. Left out, the count runs, which is every use outside a live game. */
+  paused?: boolean;
+  /** Which run of the phase the room is on. A run number rather than the phase's start, because
+   * a held room's start moves on by however long it was held and anything keyed on it takes a
+   * pause for a restart. */
+  run?: number;
+  /** How far into this card's own count the room is, off the phase clock, which is what says
+   * which figure of the count the card is showing. */
+  elapsedMs?: number;
 }

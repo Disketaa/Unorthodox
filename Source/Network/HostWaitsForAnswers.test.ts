@@ -50,7 +50,7 @@ function startRoundMissingFirstAnswer(fixture: Fixture): void {
   fixture.hostSession.startWriting('Test topic');
   fixture.clientSessions.slice(1).forEach((session) => session.submitAnswer('An answer'));
   fixture.hostSession.submitOwnAnswer('Another answer');
-  fixture.hostSession.endReviewing(1000);
+  fixture.hostSession.endReviewing();
 }
 
 describe('who the round waits for', () => {
@@ -90,7 +90,7 @@ describe('who the round waits for', () => {
     fixture.clientSessions.slice(1).forEach((session) => session.submitAnswer('An answer'));
     fixture.hostSession.submitOwnAnswer('Another answer');
     returned.submitAnswer('The returned answer');
-    fixture.hostSession.endReviewing(1000);
+    fixture.hostSession.endReviewing();
 
     expect(fixture.hostSession.getState()?.phase).toBe('Reviewing');
   });

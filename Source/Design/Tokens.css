@@ -241,6 +241,18 @@ body.PageFade {
    * through. */
   --Duration-CountVeil: 300ms;
 
+  /* How long one card's whole count takes on screen, across every line it pays. The same number
+   * `GameConfig.timing.scoreCountMs` holds for the code that walks the board, and
+   * `Tests/ScoreTiming.test.ts` fails rather than letting the two drift. Short enough that a
+   * card is paid inside its own turn rather than into the next one's. */
+  --Duration-ScoreCount: 375ms;
+
+  /* How long the mark saying what a card is adding stands in the figure's place, at the very
+   * least, whatever the card's own line was given. `GameConfig.timing.scoreMarkHoldMs` holds
+   * the same number and the same test holds the two together: the mark is the one moment a card
+   * explains itself, so it is given room however the line around it is sized. */
+  --Duration-ScoreMarkHold: 160ms;
+
   /* How long the whole phase-change splash runs, the mark's growth and the yellow's closing
    * together. A duration rather than a phase length: nothing waits on it, and the room moves on
    * when the host says so. Exported as `PhaseSplashMs` from the overlay, which is the one thing
@@ -680,6 +692,13 @@ body.PageFade {
    * instead. */
   --Size-AnswerCardHeightMin: 60px;
   --Space-AnswerCardsGap: clamp(6px, 3vw, 16px);
+  /* The wash over a board that is counting one card, in the colour of the writer being counted,
+   * so the dark says whose turn it is rather than being a flat black. Greyed to a third of the
+   * mix and held over heavy enough to send the other cards back, but not full strength: a full
+   * tint reads as a coloured filter over the room rather than one card standing in front of it.
+   * Read by the element that paints it, not resolved here — a custom property resolves its
+   * `var()` where it is declared, so this default would survive the board's own tints. */
+  --Color-Veil-AnswerCards-Tint: var(--Color-Character-Yellow);
   --Layout-AnswerCardsMaxWidth: calc(
     3 * var(--Size-AnswerCardWidthMax) + 2 * var(--Space-AnswerCardsGap)
   );
@@ -698,6 +717,10 @@ body.PageFade {
    * going to come back on its own, and a card being held back for a moment is quiet while a
    * card that has been dealt with is out of it. */
   --Opacity-AnswerCardVoted: 0.45;
+  /* How far a card is held once the count has gone past it. A share of its own opacity, not a
+   * colour of its own: a card that has been counted is still the writer's card, and greying it
+   * says the writer is gone rather than that the round has finished reading. */
+  --Opacity-AnswerCardPaid: 0.55;
   /* How far a like badge is held back while nothing has liked the answer. Held back rather than
    * removed, so a card nobody liked still carries somewhere to press. */
   --Opacity-LikeBadgeQuiet: 0.5;

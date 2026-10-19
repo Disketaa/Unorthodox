@@ -1,5 +1,5 @@
 import { Stack, Text } from '@/Design/Primitives';
-import { AnswerCards, type AnswerAuthor } from '@/Design/Components';
+import { AnswerCards, type AnswerAuthor, type AnswerCardsEntry } from '@/Design/Components';
 import { Strings } from '@/Content';
 import type { PlayerId } from '@/Core';
 
@@ -33,6 +33,18 @@ export interface ReviewGroup {
   landed: number;
   /** Whether the room is yet offered a like on this card, a beat after the last face lands. */
   revealed: boolean;
+  /** What this card paid, broken into the steps the count-up animates through: what the answer
+   * was worth on its own, what the round's card made of it, and what the room thought of it.
+   * Only present in the score phase, when the card is being paid rather than just read. */
+  score?: {
+    base: number;
+    mult: number;
+    likes: number;
+    total: number;
+  };
+  /** Whether the round's enchanted card reached one of this card's writers, so the count lays
+   * the round's shine over the card as it explains what the multiplier was for. */
+  enchanted: boolean;
 }
 
 export interface ReviewScreenProps {
@@ -41,43 +53,83 @@ export interface ReviewScreenProps {
   /** How many answers the room has got to. Left out the whole board is up, which is every screen
    * but the one the round plays on. */
   revealed?: number;
+  /** Which card the count is on right now, which is the one card still at full ink. Left out
+   * everywhere the round is being read rather than paid. */
+  payingIndex?: number;
+  /** Whether the rest of the board is held down under the card being paid. */
+  spotlight?: boolean;
+  inert?: boolean;
+  /** How far into its count the card being paid is, off the phase clock. */
+  payingElapsedMs?: number;
   /** Mute an answer, or take the mute back. Only the host is given one, and it is left out
    * entirely on every other screen rather than passed and ignored, so a card that cannot be
    * pressed is not pressable at all. */
   onReject?: (groupId: number) => void;
+  /** Whether the room is held, so the counts on the cards stand where they are rather than
+   * running on under a room that has been told to wait. */
+  paused?: boolean;
+  /** Which run of this phase the room is on, for a screen that has to tell two apart. The
+   * phase's start is not that number: a held room's start moves on by however long it was held,
+   * and a screen keyed on it would rebuild itself every time the host let go. */
+  run?: number;
   /** Liking an answer, or taking the like back. Left out on the player's own answer and on a
    * blank, being a record rather than an answer: a badge drawn but not pressable is a figure,
    * and both still show the count. */
   onLike?: (groupId: number) => void;
 }
 
+/** The review groups as the board draws them: one card each, in the bank's own shape. */
+function answersFor(groups: readonly ReviewGroup[]): AnswerCardsEntry[] {
+  return groups.map((group) => ({
+    id: group.groupId,
+    text: group.text,
+    count: group.playerCount,
+    voted: group.voted,
+    blank: group.isEmpty,
+    likes: group.likes,
+    liked: group.liked,
+    own: group.own,
+    likeLabel: Strings.reviewing.likes(group.likes),
+    authors: group.authors,
+    writerDelays: group.writerDelays,
+    authorsShown: group.authorsShown,
+    landed: group.landed,
+    revealed: group.revealed,
+    ownPlayerId: group.ownPlayerId,
+    score: group.score,
+    enchanted: group.enchanted,
+  }));
+}
+
 /** Reviewing phase: all answers at once as a board of panels, duplicates grouped and carrying
  * their count, and the host able to mute any of them. A board rather than a column of rows
  * because the round is read as one thing: how many answers, and which more than one wrote. */
-export function ReviewScreen({ topic, groups, revealed, onReject, onLike }: ReviewScreenProps) {
+export function ReviewScreen({
+  topic,
+  groups,
+  revealed,
+  onReject,
+  onLike,
+  payingIndex,
+  spotlight,
+  inert,
+  payingElapsedMs,
+  paused,
+  run,
+}: ReviewScreenProps) {
   return (
     <Stack gap="Md" grow align="Stretch">
       {/* The question over the board, centred, since every card on the board is centred. */}
       <Text variant="Topic">{topic}</Text>
       <AnswerCards
-        answers={groups.map((group) => ({
-          id: group.groupId,
-          text: group.text,
-          count: group.playerCount,
-          voted: group.voted,
-          blank: group.isEmpty,
-          likes: group.likes,
-          liked: group.liked,
-          own: group.own,
-          likeLabel: Strings.reviewing.likes(group.likes),
-          authors: group.authors,
-          writerDelays: group.writerDelays,
-          authorsShown: group.authorsShown,
-          landed: group.landed,
-          revealed: group.revealed,
-          ownPlayerId: group.ownPlayerId,
-        }))}
+        answers={answersFor(groups)}
         revealed={revealed}
+        payingIndex={payingIndex}
+        spotlight={spotlight}
+        inert={inert}
+        payingElapsedMs={payingElapsedMs}
+        paused={paused}
+        run={run}
         onReject={onReject}
         onLike={onLike}
         muteLabel={Strings.reviewing.mute}

@@ -124,12 +124,23 @@ function choosingFrom(
   };
 }
 
-/** The scores phase, which carries the round's own points beside the running totals. */
-function scoresFrom(fields: Fields, members: Members, theme: ThemeId | undefined): HostState {
+/** The round counted, which carries the round's own points beside the board it was counted from:
+ * the same cards, the same marks, so a room resumed into the count is looking at the board it
+ * was already reading rather than an empty stage. */
+function scoresFrom(
+  fields: Fields,
+  board: RoomMembers & {
+    topic: string;
+    durationMs: number;
+    startedAt: number;
+    answers: Map<string, string>;
+  },
+  theme: ThemeId | undefined
+): HostState {
   return {
     phase: 'Scores',
-    ...clockOf(fields),
-    ...commonOf(members),
+    ...board,
+    ...reviewMarks(fields),
     scores: toMap(rawPairs(fields, 'round'), isNumber),
     theme,
   };
@@ -141,6 +152,10 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
     ...clockOf(fields),
     topic: text(fields, 'topic'),
     answers: toMap(rawPairs(fields, 'answers'), isText),
+    // How far into the writing clock each answer reached the host — the whole of the speed bonus.
+    // Absent from an older room and read as no shares at all rather than shares of zero: a missing
+    // entry and an answer on the first tick are different claims, and only one of them is true.
+    answerShares: toMap(rawPairs(fields, 'answerShares'), isNumber),
     ...commonOf(members),
   };
   const theme = themeFrom(fields);
@@ -152,7 +167,7 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
     case 'Reviewing':
       return { phase: 'Reviewing', ...common, ...reviewMarks(fields), theme };
     case 'Scores':
-      return scoresFrom(fields, members, theme);
+      return scoresFrom(fields, common, theme);
     default:
       return undefined;
   }

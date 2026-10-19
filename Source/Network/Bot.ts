@@ -62,6 +62,17 @@ const BotIdPrefix = 'bot';
  * two, because one short word on every card is a board that looks like a test. */
 const SecondWordOdds = 3;
 
+/** How lopsided a bot's answer time is towards the start of the clock. One is even, which is a
+ * queue; higher pulls the draw towards the early end the way a room of people writing sits
+ * there. Two puts most bots in the first third with a tail of slow ones. */
+const BotSpeedSkew = 2;
+
+/** The latest share of the writing clock a bot answers at, and the smallest gap between two of
+ * them. Short of the end so a bot is never scored as somebody who ran out of time, and never
+ * exactly on another bot's moment so the board reveals as several arrivals rather than one. */
+const BotLatestShare = 0.85;
+const BotFloorMs = 400;
+
 interface Bot {
   playerId: PlayerId;
   name: string;
@@ -115,21 +126,33 @@ function word(random: Random): string {
   );
 }
 
-/** The answer each bot in the room still owes, for a round that has just opened. A bot that has
- * already answered is left out, so a host that answers late does not have its seat written over
- * a second time by a move nobody pressed. */
-export function botAnswers(
-  state: HostState,
-  random: Random,
-  at: number = Date.now()
-): ActionOf<'SUBMIT_ANSWER'>[] {
+/** The answer each bot still owes, each with its own moment counted from when the round began
+ * rather than from now: this runs after every write, and counting from now would push each
+ * remaining bot past the clock until the round scored them all at nothing. */
+export function botAnswers(state: HostState, random: Random): ActionOf<'SUBMIT_ANSWER'>[] {
   if (state.phase !== 'Writing') return [];
   const actions: ActionOf<'SUBMIT_ANSWER'>[] = [];
   for (const playerId of state.players.keys()) {
     if (botNumber(playerId) === 0 || state.answers.has(playerId)) continue;
-    actions.push({ type: 'SUBMIT_ANSWER', playerId, text: botAnswer(random), at });
+    actions.push({
+      type: 'SUBMIT_ANSWER',
+      playerId,
+      text: botAnswer(random),
+      at: state.startedAt + botDelayMs(state.durationMs, random),
+    });
   }
   return actions;
+}
+
+/** How long into the round this bot answers, drawn skewed towards the early end the way a room
+ * of people writes — a flat draw would read as a machine queueing. The top stops short of the
+ * clock's end, since a bot answering on the last tick cannot be told from one that ran out. */
+function botDelayMs(durationMs: number, random: Random): number {
+  const skew = Math.pow(random(), BotSpeedSkew);
+  // A floor under the spread, so two bots never land on the same moment and the board turns over as
+  // a few cards arriving at a few different times rather than as one block.
+  const room = Math.max(1, Math.round(durationMs * BotLatestShare)) - BotFloorMs;
+  return BotFloorMs + Math.round(skew * room);
 }
 
 /** Roll one bot: a name, a character, a tint, and a seat nobody can be given. */

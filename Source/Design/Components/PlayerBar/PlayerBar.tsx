@@ -1,9 +1,10 @@
 import { CharacterColor, CharacterId, PlayerId } from '@/Core';
 import { slotLimit } from './SlotLimit';
 import { PlayerBarSlot } from './PlayerBarSlot';
-import { slotsFor } from './PlayerBarSlots';
+import { rankedFor, slotsFor } from './PlayerBarSlots';
+import { useSeatSwap } from './UseSeatSwap';
 import styles from './PlayerBar.module.css';
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 
 /** One player as the bar draws them: who they are, and whether they are still here. */
 export interface PlayerBarEntry {
@@ -14,6 +15,10 @@ export interface PlayerBarEntry {
   /** What they are on across the rounds so far, drawn in place of the name under the pointer.
    * Zero in the phases that send no scores, which is every phase before the first is settled. */
   score: number;
+  /** What this seat stands for instead of a face, once the count reaches one of its cards: the
+   * card being counted, marked as an addition, and then the standing that card gave. Left out
+   * for the rest of the game, where a seat is a person again and a number is not who they are. */
+  payout?: { value: number; added: boolean; from?: number };
   character: CharacterId;
   color: CharacterColor;
   /** Whether the host still has this player on the line. */
@@ -29,6 +34,10 @@ export interface PlayerBarEntry {
    * Every seat still at work is marked, and not only this browser's own: the room says who has
    * written, so the row fills up as the answers come in. */
   isWorking?: boolean;
+  /** Whether the round is counting this player's card right now. The same loading mark as a seat
+   * at work, because it is the same waiting: the bar says who the room is waiting on, and while
+   * the count is on a card that seat is the one the room is waiting on. */
+  isPaying?: boolean;
   /** How many times this seat should react, so a change makes its character pop again. A count
    * rather than a flag, so two reveals in a row are two reactions. Rises when the room is told
    * this player wrote something, which the bar says better than the board does. */
@@ -60,11 +69,14 @@ function fitsLine(seats: number): boolean {
   return seats * num('--Layout-PlayerBarStraight') * num('--Size-PlayerBarSeatMin') <= room;
 }
 
-/** Every player in the room along the top of the game, one hexagon each. The same bar for every
- * phase, so a seat does not move between writing and the scores. */
+/** Every player in the room along the top of the game, one hexagon each, the same bar for every
+ * phase so a seat does not move between writing and the scores. In standing order, and dealt
+ * again the moment a card is paid — which is why the row is animated rather than cut. */
 export function PlayerBar({ players, ownPlayerId = null, inline = false }: PlayerBarProps) {
-  const slots = slotsFor(players, ownPlayerId, slotLimit());
+  const slots = slotsFor(inline ? players : rankedFor(players), ownPlayerId, slotLimit());
   const [compact, setCompact] = useState(false);
+  const row = useRef<HTMLDivElement>(null);
+  useSeatSwap(row, inline ? [] : slots.map((player) => player.id));
 
   // Which of the two arrangements the row takes is a fact about the viewport and the count alone.
   // Nothing reads the rendered row back, which is what would let the two states chase each other
@@ -85,7 +97,7 @@ export function PlayerBar({ players, ownPlayerId = null, inline = false }: Playe
     .join(' ');
 
   return (
-    <div class={classes} style={sizing}>
+    <div class={classes} style={sizing} ref={row}>
       {slots.map((player, index) => (
         <PlayerBarSlot
           key={player.id}

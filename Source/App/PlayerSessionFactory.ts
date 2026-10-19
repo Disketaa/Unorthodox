@@ -79,6 +79,7 @@ function playerNoDecisions(): Pick<
   | 'endReviewing'
   | 'nextRound'
   | 'nextPhase'
+  | 'reloadPhase'
   | 'finish'
   | 'kick'
 > {
@@ -98,6 +99,7 @@ function playerNoDecisions(): Pick<
     endReviewing: () => {},
     nextRound: () => {},
     nextPhase: () => {},
+    reloadPhase: () => {},
     finish: () => {},
     kick: () => {},
   };

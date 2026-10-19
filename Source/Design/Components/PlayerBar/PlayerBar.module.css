@@ -201,6 +201,18 @@
   animation: PlayerBarSpin var(--Duration-Spin) var(--Easing-Smooth) infinite;
 }
 
+/* The cross on a seat the round gave nothing to, standing where the character was. In the same
+ * red the strike through a muted answer is drawn in, so a broken seat and a muted card are the
+ * one pink-and-red the room learns rather than two ways of saying out. Held well in from the
+ * sloped edges like the face it replaces, since the cross is the same drawing at a weight that
+ * would touch them otherwise, and still rather than spinning: nothing here is going to finish. */
+.Killed {
+  position: absolute;
+  inset: var(--Inset-PlayerBarFace);
+  background-color: var(--Color-Feedback-Error);
+  mask: url('../../Icons/X.svg') center / contain no-repeat;
+}
+
 /* A seat waiting on its player breathes the way a room waits on a host, dipping rather than
  * lifting: the tints here are mid-tones, and a step up on a mid-tone washes toward white and
  * eats the character drawn over it, while a step down deepens the tint and keeps the linework
@@ -376,6 +388,57 @@
  * viewport by a room's worth of seats, and a card corner has no viewport to divide, so both
  * ends of the clamp are pinned. The label follows the seat rather than staying at the bar's
  * width, or a name wider than its hexagon runs over the neighbour's. */
+/* A paid seat's figure, in the room's own round and display face, measured into the hexagon.
+ * The room for it fills the face box the character used to have, so the figure is fitted
+ * against the same room the face was drawn into and the hexagon does not change shape around
+ * either. */
+.PayoutRoom {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Payout {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  font-family: var(--FontFamily-Display);
+  font-size: calc(var(--Size-PlayerBarSeat) * 0.46 * var(--PlayerBar-Payout-Fit, 1));
+  font-weight: bold;
+  line-height: 1;
+  /* The player's own tint, the same one their character wears and their seat is filled with,
+   * and not the seat's inherited ink: a figure that has replaced the face and then been drawn
+   * in a different colour from it is a label somebody put on the player rather than the player
+   * being the number they are on. */
+  color: var(--Character-Tint);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A seat the round paid nothing to, standing for the standing it had before the round. Its
+ * figure is a real figure, so it is drawn like one — and in the error colour, which is the only
+ * thing about that seat worth saying where a number can say it: this round is not where it came
+ * from. Without the colour a seat that scored nothing reads as a seat that is behind, which is
+ * a claim about a standing rather than about a round. */
+.PayoutFailed {
+  color: var(--Color-Character-Rose);
+}
+
+/* The plus on a figure that is being added rather than stood for. At rest weight rather than
+ * smaller: the mark belongs to the number and not beside it, so a seat growing from a one-digit
+ * addition to a two-digit standing does not also lose the sign off its own figure. */
+.Added {
+  font-size: 0.6em;
+  vertical-align: 0.45em;
+  margin-right: 0.06em;
+}
+
 .Inline {
   width: auto;
   --Size-PlayerBarSeatMin: var(--Size-PlayerBarInlineSeat);

@@ -1,15 +1,29 @@
 ﻿import { describe, it, expect } from 'vitest';
 import { handleGoToPhase } from './PhaseJumps';
 import { reducer } from './Reducer';
+import { freshLobbyState } from './GameState';
 import { toPublicReviewingState } from './PublicPhases';
+import { toPublicScoresState } from './PublicEndgame';
 import type { HostState, ReviewingState } from './GameState';
-import type { PlayerLook } from '@/Core';
+import type { PlayerId, PlayerLook } from '@/Core';
 
 const look: PlayerLook = { character: 'Ghost', color: 'Sky' };
 
 /** A room of `count` players in Reviewing, with the answers written by `answered` of them and
  * the rest having sat the round out. The roster is the whole room either way, which is the
  * point. */
+/** The table's own step onward: what the host's clock does to end a phase. Every room reaches
+ * the count this way, which is why the count has to keep what the review was holding. */
+function stepOnward(from: HostState): HostState {
+  return handleGoToPhase(from, {
+    type: 'GO_TO_PHASE',
+    phase: 'Scores',
+    topic: 'a topic',
+    durationMs: 15_000,
+    startedAt: 5000,
+  });
+}
+
 function reviewing(count: number, answered: readonly [string, string][]): ReviewingState {
   const players = new Map(
     Array.from(
@@ -346,6 +360,94 @@ describe('the host’s dock stepping into Reviewing', () => {
 
   it('starts empty when the dock stepped here from anywhere but Writing', () => {
     // From the lobby there is no round to carry, and a jump is not a round anybody played.
-    expect(jumpToReviewing(reviewing(3, threeAnswers)).answers.size).toBe(0);
+    expect(jumpToReviewing(freshLobbyState()).answers.size).toBe(0);
+  });
+});
+
+describe('the board does not reshuffle when the round is counted', () => {
+  it('carries the room likes into the count, since the count is a step along the round', () => {
+    // The host's clock ends the review by naming the phase after it, so every room arrives at the
+    // count through a jump rather than through the review's own end. Emptying the likes there meant
+    // the room arrived with its votes thrown away: each card was painted in its writer's colour for
+    // having been liked and the badge held no number, and the points those likes paid were counted
+    // as zero — a card the room had voted on, counted as though nobody had voted on it.
+    const liked = reducer(reviewing(4, threeAnswers), {
+      type: 'LIKE_GROUP',
+      playerId: 'p1',
+      groupId: 1,
+    });
+    const counted = toPublicScoresState(stepOnward(liked));
+    expect(counted.likeCounts).toEqual([{ groupId: 1, count: 1 }]);
+  });
+
+  it('carries the host mutes into the count too, which are the same claim in reverse', () => {
+    // A strike-out that vanished the moment the round was counted reads as the host un-muting, and
+    // it left the muted card drawn as a live one being paid.
+    const muted = reducer(reviewing(4, threeAnswers), {
+      type: 'REJECT_GROUP',
+      playerId: 'p1',
+      groupId: 1,
+    });
+    const counted = toPublicScoresState(stepOnward(muted));
+    // Group 0 is on the list too: two of the three wrote the same word, so the room declined that
+    // answer on sight. This is only about group 1, the host's own mute, surviving the step.
+    expect(counted.mutedGroupIds).toContain(1);
+  });
+
+  it('still carries nothing for a jump that was not out of a round', () => {
+    // The case the original rule was written for: there is no round behind this, so there is
+    // nothing to carry and a dock step is not a room's vote.
+    const lobby = handleGoToPhase(freshLobbyState(), {
+      type: 'GO_TO_PHASE',
+      phase: 'Scores',
+      topic: 'a topic',
+      startedAt: 5000,
+      durationMs: 15_000,
+    });
+    expect(lobby.phase).toBe('Scores');
+    if (lobby.phase !== 'Scores') throw new Error('not a board');
+    expect(lobby.groupLikes.size).toBe(0);
+    expect(lobby.groupRejections.size).toBe(0);
+  });
+
+  it('keeps the round its own question, whatever the dock stepped with', () => {
+    // The board is dealt from the question, so a round shown under a different question is a board
+    // dealt again. The dock standing in the middle of a round has no question of its own to offer
+    // and rolls one for the round's number — a fresh roll each press — so taking what it handed
+    // moved the question over the board and shuffled the cards underneath it, both on the way into
+    // the review and on the way into the count.
+    const base = reviewing(4, threeAnswers);
+    const reading = toPublicReviewingState(base);
+    for (const action of [
+      { type: 'GO_TO_PHASE', phase: 'Scores', startedAt: 5000, durationMs: 15_000 },
+      { type: 'GO_TO_PHASE', phase: 'Reviewing', startedAt: 5000, durationMs: 15_000 },
+    ] as const) {
+      const jumped = handleGoToPhase(base, {
+        ...action,
+        topic: 'some other question entirely',
+      });
+      if (jumped.phase !== 'Scores' && jumped.phase !== 'Reviewing')
+        throw new Error('not a board');
+      expect(jumped.topic, action.phase).toBe(reading.topic);
+      const dealt =
+        jumped.phase === 'Scores'
+          ? toPublicScoresState(jumped).groups.map((group) => group.groupId)
+          : toPublicReviewingState(jumped).groups.map((group) => group.groupId);
+      expect(dealt, action.phase).toEqual(reading.groups.map((group) => group.groupId));
+    }
+  });
+
+  it('deals the same cards in Reviewing and in Scores', () => {
+    // The count is the same board looked at once more, so the cards must stay in the places the
+    // room already read them in rather than being dealt again.
+    const base = reviewing(4, threeAnswers);
+    const reviewingOrder = toPublicReviewingState(base).groups.map((group) => group.text);
+    const counted: HostState = {
+      ...base,
+      phase: 'Scores',
+      scores: new Map<PlayerId, number>(),
+    };
+    const scoresOrder = toPublicScoresState(counted).groups.map((group) => group.text);
+    expect(scoresOrder).toEqual(reviewingOrder);
   });
 });

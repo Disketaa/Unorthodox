@@ -2,6 +2,7 @@
  * rather than naming one: the host's clock, the sentence at the top of a screen, the row the
  * screens are picked from. A new game is a new row rather than a new switch in three files. */
 import { GameConfig, type Pace, type PaceTimings } from './GameConfig';
+import { scoresDurationMs } from './ScoreCount';
 
 /** Every phase name, in the order the game runs them. A tuple rather than a literal union so a
  * caller can ask for the first phase: the host's clock has to land somewhere even at the end. */
@@ -56,7 +57,10 @@ export const PhaseFlow: Record<PhaseName, PhaseSpec> = {
   },
   Scores: {
     timed: true,
-    waitMs: () => GameConfig.timing.scoresDurationMs,
+    /** The floor of the count, for a board of no cards: how long the room is given to look at
+     * what it has just been shown. The real length is a fact about the board rather than the
+     * pace, so the host works it out from the cards; quoted here so the table still answers. */
+    waitMs: () => scoresDurationMs(0),
     graceMs: 0,
     next: 'Choosing',
     splash: false,

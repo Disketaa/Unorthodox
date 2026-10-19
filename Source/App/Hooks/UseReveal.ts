@@ -16,6 +16,10 @@ import type { Pace } from '@/Game';
  * screen turns the same card at the same moment, and counted from it again the next round. A
  * held room freezes on the moment it was held rather than counting the hold away. */
 export interface RevealState {
+  /** The moment this drawing is counting from: the wall clock now, or the moment a held room was
+   * held. Shared rather than private, so anything else on the same board can be counted from
+   * the same moment instead of each keeping a tick of its own that stops somewhere else. */
+  moment: number;
   /** How many answers have been turned over. */
   upTo: number;
   /** How much of the answer at this place is written out, in letters. */
@@ -32,18 +36,8 @@ export interface RevealState {
   likesAt: (index: number, total: number) => boolean;
 }
 
-/** The board's count of answers turned over, and of the letters of the one being written.
- * `writerCounts` is the board as the round will play it, since the beat between cards is sized
- * from the largest thing on it. `startedAt` is this device's clock, already skew-corrected. */
-export function useReveal(
-  writerCounts: readonly number[],
-  pace: Pace,
-  durationMs: number,
-  startedAt: number,
-  active = true,
-  held = false,
-  heldAt?: number
-): RevealState {
+/** This device's clock while the board is counting, which stops when the room is held. */
+function useClock(active: boolean, held: boolean): number {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -53,6 +47,24 @@ export function useReveal(
     return () => clearInterval(id);
   }, [active, held]);
 
+  return now;
+}
+
+/** The board's count of answers turned over, and of the letters of the one being written:
+ * `writerCounts` as the round will play it, `startedAt` this device's skew-corrected clock.
+ * `settled` is the round already read over, so it is counted at rest rather than again. */
+export function useReveal(
+  writerCounts: readonly number[],
+  pace: Pace,
+  durationMs: number,
+  startedAt: number,
+  active = true,
+  held = false,
+  heldAt?: number,
+  settled = false
+): RevealState {
+  const now = useClock(active, held);
+
   const moment = held && heldAt !== undefined ? heldAt : now;
   const count = writerCounts.length;
   const voteMs = GameConfig.paces[pace].voteMs;
@@ -61,7 +73,12 @@ export function useReveal(
   // card begins as that card comes over rather than a lead-in's worth of letters earlier.
   const first = startedAt + GameConfig.timing.revealLeadInMs;
 
+  if (settled) {
+    return atRest(count, moment);
+  }
+
   return {
+    moment,
     upTo: active ? revealedCount(writerCounts, durationMs, startedAt, moment, voteMs) : count,
     shownAt: (index, length) =>
       revealedLetterCount(length, moment - first - index * beat, answerWriteMs(length)),
@@ -81,6 +98,21 @@ export function useReveal(
         elapsedAt(moment, first, beat, index) - GameConfig.timing.revealAuthorsMs,
         total
       ),
+  };
+}
+
+/** A board every question has already answered: every card up, every answer whole, every writer
+ * in its corner and every like offered. What the room is looking at when it comes back to the
+ * board it has already read once. */
+function atRest(count: number, moment: number): RevealState {
+  return {
+    moment,
+    upTo: count,
+    shownAt: (_index, length) => length,
+    authorsAt: () => true,
+    writerDelayAt: () => 0,
+    landedAt: (_index, total) => total,
+    likesAt: () => true,
   };
 }
 

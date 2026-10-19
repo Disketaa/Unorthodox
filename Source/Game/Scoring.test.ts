@@ -6,7 +6,15 @@ import { GameConfig } from './GameConfig';
 /** One card as the round writes it: written at once, written by nobody else, worth its full
  * speed scale and no likes. A case says what it changes rather than restating the rest. */
 function card(over: Partial<CardScore> = {}): CardScore {
-  return { groupSize: 1, isRejected: false, speedShare: 0, likes: 0, mult: 1, ...over };
+  return {
+    groupSize: 1,
+    isRejected: false,
+    isEmpty: false,
+    speedShare: 0,
+    likes: 0,
+    mult: 1,
+    ...over,
+  };
 }
 
 describe('speedPoints', () => {
@@ -51,16 +59,20 @@ describe('scoreCard', () => {
     expect(scoreCard(card({ isRejected: true, likes: 5 })).points).toBe(0);
   });
 
-  test('pays a pair its flat rate and nothing else', () => {
+  test('pays a pair nothing at all, same as three who wrote it', () => {
     // No speed, since the room already had the idea, and no likes, since a like is the room
-    // finding something once. Both halves of the answer are already somebody else's.
-    expect(scoreCard(card({ groupSize: 2, speedShare: 0, likes: 4 })).points).toBe(
-      GameConfig.scoring.pairPoints
-    );
+    // finding something once. Both halves of the answer are already somebody else's, and how many
+    // people were in on it is not a thing to pay more of.
+    expect(scoreCard(card({ groupSize: 2, speedShare: 0, likes: 4 })).points).toBe(0);
   });
 
   test('pays three who wrote the same thing nothing at all', () => {
     expect(scoreCard(card({ groupSize: 3, likes: 6 })).points).toBe(0);
+  });
+
+  test('pays a doubled pair nothing as well', () => {
+    // The multiplier is the room's luck, and a duplicated sentence is not worth anything to scale.
+    expect(scoreCard(card({ groupSize: 2, mult: 2 })).points).toBe(0);
   });
 
   test('multiplies the speed and leaves the likes alone', () => {
@@ -71,12 +83,6 @@ describe('scoreCard', () => {
       fromSpeed: 40,
       fromLikes: 3,
     });
-  });
-
-  test('multiplies the flat rate of a pair as well', () => {
-    expect(scoreCard(card({ groupSize: 2, mult: 2 })).points).toBe(
-      GameConfig.scoring.pairPoints * 2
-    );
   });
 });
 
@@ -89,8 +95,8 @@ describe('calculateRoundScores', () => {
     ]);
     expect(Object.fromEntries(scores)).toEqual({
       p1: GameConfig.scoring.speedMaxPoints,
-      p2: GameConfig.scoring.pairPoints,
-      p3: GameConfig.scoring.pairPoints,
+      p2: GameConfig.scoring.duplicatePoints,
+      p3: GameConfig.scoring.duplicatePoints,
       p4: 0,
     });
   });

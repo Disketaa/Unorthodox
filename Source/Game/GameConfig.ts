@@ -92,6 +92,36 @@ const timing = {
    * like in the corner, and the mute under the card. A control arriving on the same frame as
    * the thing it is about is a control rather than an invitation. */
   revealLikeMs: 1000,
+  /** How long the room waits before the score starts counting up on each card. The drama beat:
+   * the board is up, the room has read it, and then the numbers start arriving. */
+  scoreDramaDelayMs: 300,
+  /** How long one card's whole count takes — every line of it, the speed bonus and the marks and
+   * the figures arriving, divided between them. Sized for the worst card, one paying three
+   * things: each line needs room to say what it is adding before the figure takes it on. */
+  scoreCountMs: 375,
+  /** How long the mark that says what a card is adding — the multiplier or the likes — stands in
+   * the figure's place before the figure takes it on, at the very least. It is the one moment
+   * the card explains itself, so it is given room whatever else the card is paying. */
+  scoreMarkHoldMs: 160,
+  /** How long the addition figure (+N) stays on the seat after the card is counted, before the
+   * room is told what the player has altogether. Long enough to read the figure and see who it
+   * belongs to. */
+  scoreAddedHoldMs: 200,
+  /** How long the pause is between the addition and the total, and between the total and the
+   * next card. The room needs to read one figure before the next one replaces it. A third of
+   * the old pause, keeping its job: two figures are still separated by a beat of their own. */
+  scoreGapMs: 85,
+  /** How long the player's total stands on the seat after the addition has had its moment,
+   * before the count moves to the next card. Long enough to read the total before the next card
+   * starts — at the card's own pace, which is the pace the addition above was given. */
+  scoreTotalHoldMs: 200,
+  /** How long the shade stays up over the board while the scores are counting. Long enough for
+   * the room to watch the numbers arrive without the board behind them moving. */
+  scoreVeilMs: 1200,
+  /** How long the counted board is left standing after the last card has been paid, before the
+   * room is moved on to the next round. The figures are all on the board and the room has not
+   * been given a moment to look at them, which is the one thing the phase is for. */
+  scoreBoardLingerMs: 2500,
 };
 
 /** How many players a room holds. The bar of hexes across the top of a game holds this many in
@@ -155,7 +185,7 @@ export const GameConfig = {
     },
   } satisfies Record<Pace, PaceTimings>,
   /** What a card is worth. A unique answer is paid for how early it was sent and how many likes
-   * it drew; a duplicated one is paid a flat rate. These numbers come out of `Tools/Balance`. */
+   * it drew; a duplicated one is paid nothing. These numbers come out of `Tools/Balance`. */
   scoring: {
     /** What an answer sent on the first tick is worth, before the card's multiplier. */
     speedMaxPoints: 20,
@@ -166,10 +196,10 @@ export const GameConfig = {
     /** What one like is worth. Never multiplied: a like is the room's opinion and the card's
      * multiplier is the room's luck. */
     likePoints: 1,
-    /** What an answer somebody else already wrote is worth, carried by the card's multiplier. */
-    pairPoints: 1,
-    /** Three or more wrote the same thing. Nothing, and always nothing. */
-    commonPoints: 0,
+    /** What an answer somebody else already wrote is worth, whatever wrote it and however early.
+     * Zero, and not multiplied: the round pays for being the first to say something, and a
+     * repeated sentence is not that however few people were in on it. */
+    duplicatePoints: 0,
   },
   /** How two answers are decided to be the same: the edits a word may be apart by its length,
    * the shortest word an ending is stripped from, how long a run of one letter is squeezed, and

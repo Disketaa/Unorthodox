@@ -7,6 +7,7 @@ export type IconName =
   | 'Kick'
   | 'Bot'
   | 'Skip'
+  | 'Reload'
   | 'Turn'
   | 'Pause'
   | 'Play'

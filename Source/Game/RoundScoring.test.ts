@@ -10,10 +10,15 @@ const look: PlayerLook = { character: 'Ghost', color: 'Sky' };
  * only to like. A like is the one thing a player who wrote nothing can still do, so the room
  * that measures likes needs somebody in it who did not answer. */
 const ANSWERED = ['early', 'late'];
+/** The writing clock this round ran on, which the moments in these cases are read against. */
+const Clock = 20_000;
 const BYSTANDERS = ['b1', 'b2', 'b3'];
 
-/** One round's board: two unique answers, and the moment each reached the host. */
+/** One round's board: two unique answers, and the moment each reached the host. Turned into the
+ * share of the clock the round keeps, since that is what the round is scored from and the
+ * moments are only a way of saying it here. */
 function reviewing(times: Record<string, number>, mult?: number): ReviewingState {
+  const shares = Object.fromEntries(Object.entries(times).map(([id, at]) => [id, at / Clock]));
   return {
     phase: 'Reviewing',
     players: new Map(
@@ -28,13 +33,13 @@ function reviewing(times: Record<string, number>, mult?: number): ReviewingState
     paused: false,
     pausedAt: undefined,
     topic: 'a topic',
-    durationMs: 20_000,
+    durationMs: Clock,
     startedAt: 0,
     answers: new Map([
       ['early', 'Кот'],
       ['late', 'Дом'],
     ]),
-    answerTimes: new Map(Object.entries(times)),
+    answerShares: new Map(Object.entries(shares)),
     groupRejections: new Map(),
     groupLikes: new Map(),
     theme: undefined,
@@ -67,20 +72,34 @@ function liked(state: ReviewingState, groupId: number, ...likers: string[]): Rev
 }
 
 describe('speedShareOf', () => {
-  it('reads the share of the clock the answer took', () => {
+  it('reads the share the answer was measured at when it arrived', () => {
     const state = reviewing({ early: 0, late: 10_000 });
     expect(speedShareOf(state, 'early')).toBe(0);
     expect(speedShareOf(state, 'late')).toBe(0.5);
   });
 
-  it('holds past the window, since a late answer is not a negative one', () => {
-    expect(speedShareOf(reviewing({ early: 999_999 }), 'early')).toBe(1);
-  });
-
-  it('reads a player with no recorded time as sent on the first tick', () => {
+  it('reads a player with no share as sent on the first tick', () => {
     // The direction of this default matters: the other way round quietly takes a player's points
     // away for a room that merely cannot say when the answer came.
     expect(speedShareOf(reviewing({ early: 0 }), 'late')).toBe(0);
+  });
+
+  it('is the same whatever phase the round is being read in', () => {
+    // The share was measured against the writing clock while that clock was the one running. Read
+    // against a later phase's own clock, every answer in the round sits before that phase began —
+    // and a share below zero clamps to nothing spent, which is the fastest answer there is, so a
+    // board counted that way paid every card the full scale however late it was written.
+    const shares = reviewing({ early: 0, late: 19_000 }).answerShares;
+    expect(speedShareOf(reviewing({ early: 0, late: 19_000 }), 'late')).toBe(0.95);
+    // The counts phase carries the same shares the writing clock measured, and its own much later
+    // start does not enter into it.
+    const counted: ReviewingState = {
+      ...reviewing({ early: 0, late: 19_000 }),
+      startedAt: 10_000_000,
+      durationMs: 15_000,
+    };
+    expect(counted.answerShares).toEqual(shares);
+    expect(speedShareOf(counted, 'late')).toBe(0.95);
   });
 });
 

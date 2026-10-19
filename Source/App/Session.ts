@@ -81,12 +81,15 @@ export interface Session {
   setPaused(paused: boolean): void;
   /** Advance out of the Writing phase once everyone has answered, or out of the Reviewing phase
    * (once reviewing time is up, going to Scores). */
-  endReviewing(durationMs: number): void;
+  endReviewing(): void;
   /** Advance from Scores or Reviewing to the next round's Choosing phase. */
   nextRound(): void;
   /** Advance to the next phase according to the phase flow table. The topic only matters to the
    * phases that show one, so a jump out of a phase that has none passes an empty string. */
   nextPhase(topic: string): void;
+  /** The phase the room is in begun again, for the host's dock. Everything the room has already
+   * said and voted stays said and voted; only the watch is set back to the start. */
+  reloadPhase(): void;
   finish(): void;
   stop(): void;
 }

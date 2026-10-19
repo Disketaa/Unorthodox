@@ -31,7 +31,7 @@ function playingRound(): { hostSession: HostSession; client: ClientSession } {
   hostSession.submitOwnAnswer('Another answer');
   // Onto the board. From Writing this is the ordinary close of the round; called again from
   // Reviewing it would score the round instead, which is what `scoredIn` is for.
-  hostSession.endReviewing(90_000);
+  hostSession.endReviewing();
   return { hostSession, client };
 }
 
@@ -58,7 +58,7 @@ function scoredIn(mutedGroupId: number | undefined): number {
   if (mutedGroupId !== undefined) {
     hostSession.rejectOwnGroup(mutedGroupId);
   }
-  hostSession.endReviewing(15_000);
+  hostSession.endReviewing();
   const scores = hostSession.getState();
   if (scores?.phase !== 'Scores') throw new Error('not scored');
   return [...scores.scores.values()].reduce((sum, score) => sum + score, 0);

@@ -4,6 +4,7 @@ import type { PublicState } from '@/Game';
 import type { RevealState } from '../Hooks/UseReveal';
 
 const everyoneNamed: RevealState = {
+  moment: 0,
   upTo: 1,
   shownAt: () => 0,
   authorsAt: () => true,
@@ -12,6 +13,7 @@ const everyoneNamed: RevealState = {
   likesAt: () => true,
 };
 const nobodyNamed: RevealState = {
+  moment: 0,
   upTo: 0,
   shownAt: () => 0,
   authorsAt: () => false,
@@ -149,6 +151,7 @@ describe('the number a seat shows under the pointer', () => {
   it('shows the settled total once the round has been scored', () => {
     const scores = readScores({
       phase: 'Scores',
+      topic: 'a topic',
       durationMs: 1000,
       startedAt: 0,
       turnPlayerId: null,
@@ -161,6 +164,8 @@ describe('the number a seat shows under the pointer', () => {
       players: [],
       scores: [{ id: 'p1', score: 12 }],
       cumulative: [{ id: 'p1', score: 59 }],
+      groups: [],
+      settled: true,
     });
     expect(scores.get('p1')).toBe(59);
   });

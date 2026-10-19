@@ -49,7 +49,10 @@ export function cardState(props: AnswerCardProps) {
       live: turned && !blank && !declined && revealed,
       takeback: declined && !locked,
       own: props.own === true,
-      moving: props.moving !== false,
+      // A card being paid stands still. The sway is a transform, and a transformed element makes
+      // itself the root of a stacking context — so a rocking card cannot be lifted above the dark
+      // however high it is given. A figure being read does not need the room watching it breathe.
+      moving: props.moving !== false && props.paying !== true,
     }),
   };
 }

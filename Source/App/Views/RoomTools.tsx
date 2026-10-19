@@ -1,4 +1,10 @@
-import { LobbyDebugTools, PauseDebugTools, PhaseDebugTools, TurnDebugTools } from '@/Screens';
+import {
+  LobbyDebugTools,
+  PauseDebugTools,
+  PhaseDebugTools,
+  ReloadDebugTools,
+  TurnDebugTools,
+} from '@/Screens';
 import { DebugDock } from '@/Design/Overlays';
 import type { GameSessionView } from '../Hooks/UseGameSession';
 import { useAnswerFlush } from '../Hooks/UseAnswerFlush';
@@ -29,6 +35,9 @@ export function RoomDebugTools({ view, enabled }: { view: GameSessionView; enabl
             <PauseDebugTools paused={view.paused} onSetPaused={view.setPaused} />
           )}
           <PhaseDebugTools publicState={view.publicState} onNextPhase={skip} />
+          {/* Beside the skip and not under the pause: a reload is a step in its own right, and a
+           * host watching a room move wants it next to the step out rather than next to the stop. */}
+          <ReloadDebugTools publicState={view.publicState} onReloadPhase={view.reloadPhase} />
         </>
       )}
     </DebugDock>

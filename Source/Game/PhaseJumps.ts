@@ -2,13 +2,27 @@
  * move the game makes: nothing in the flow reaches this, and its rules are the shape of the
  * state rather than a rule about what may follow what. */
 import { PlayerId, assertNever } from '@/Core';
-import { HostState, membersOf } from './GameState';
+import { HostState, membersOf, type BoardState, type ScoresState } from './GameState';
+import { scoreRound } from './RoundScoring';
 import type { PhaseName } from './PhaseFlow';
 import type { ActionOf } from './GameActions';
 
 /** The room put straight into a phase. Round data is started empty rather than carried, except
  * from Writing into Reviewing: the dock steps the room one phase along there, and throwing the
  * answers away would show a board of blanks for a round the room had already written. */
+/** The same phase begun again, which is the host's dock asking to watch a reveal twice. Only the
+ * clock moves; the moment is stamped on the state as well as becoming the phase's start, since
+ * a held room's start alone cannot say a new run has begun. */
+export function handleReloadPhase(
+  state: HostState,
+  action: ActionOf<'RELOAD_PHASE'>
+): HostState {
+  if (!('durationMs' in state)) {
+    return state;
+  }
+  return { ...state, startedAt: action.startedAt, reloadedAt: action.startedAt };
+}
+
 export function handleGoToPhase(state: HostState, action: ActionOf<'GO_TO_PHASE'>): HostState {
   const base = {
     ...membersOf(state),
@@ -40,7 +54,64 @@ export function handleGoToPhase(state: HostState, action: ActionOf<'GO_TO_PHASE'
         ? state.affectedPlayers
         : new Set<PlayerId>(),
   };
-  return { ...phaseBody(base, state, action.phase, action.topic), ...base };
+  return {
+    ...phaseBody(base, state, action.phase, action.topic),
+    ...base,
+    ...settledBy(state, action.phase),
+  };
+}
+
+/** A round enters the count settled, whichever way the room got there. Counted on the way in and
+ * nowhere else, so a dock pressing skip and a clock running out settle it at the same figure.
+ * Out of Writing as well as Reviewing, because the dock can step over the review entirely. */
+function settledBy(
+  state: HostState,
+  phase: PhaseName
+): Pick<ScoresState, 'scores' | 'cumulativeScores'> | object {
+  const playingRound = state.phase === 'Reviewing' || state.phase === 'Writing';
+  if (phase !== 'Scores' || !playingRound) {
+    return {};
+  }
+  const { roundScores, cumulativeScores } = scoreRound(state);
+  return { scores: roundScores, cumulativeScores };
+}
+
+/** The round the room was in the middle of, or undefined where it was not playing one. Only the
+ * writing of it is carried: the marks are a round's own and are dropped, since a dock step is
+ * not a room's vote. The question is carried with it, and that is why it is listed separately. */
+function writtenRound(
+  state: HostState
+):
+  | (Pick<BoardState, 'answers' | 'answerShares' | 'mult'> &
+      Partial<Pick<BoardState, 'groupRejections' | 'groupLikes'>> & { topic: string })
+  | undefined {
+  return state.phase === 'Writing' || state.phase === 'Reviewing' || state.phase === 'Scores'
+    ? state
+    : undefined;
+}
+
+/** The question a phase that draws a round's board is about: the round's own where there is one,
+ * and only the dock's where a jump is starting that round rather than moving it along. */
+function roundTopic(written: { topic: string } | undefined, topic: string): string {
+  return written?.topic ?? topic;
+}
+
+/** A board for the phases that draw one, from the round that was being written or read. The
+ * room's marks come with the board when there is a round to carry them from, and are empty only
+ * where there is not: a jump from the lobby has no round behind it and so carries nothing. */
+function carriedBoard(
+  written:
+    | (Pick<BoardState, 'answers' | 'answerShares' | 'mult'> &
+        Partial<Pick<BoardState, 'groupRejections' | 'groupLikes'>>)
+    | undefined
+): Pick<BoardState, 'answers' | 'groupRejections' | 'groupLikes' | 'answerShares' | 'mult'> {
+  return {
+    answers: written?.answers ?? new Map<PlayerId, string>(),
+    groupRejections: written?.groupRejections ?? new Map(),
+    groupLikes: written?.groupLikes ?? new Map(),
+    answerShares: written?.answerShares,
+    mult: written?.mult,
+  };
 }
 
 /** The part of a phase that is not the room around it. One switch rather than one handler per
@@ -51,6 +122,8 @@ function phaseBody(
   phase: PhaseName,
   topic: string
 ) {
+  // The round the room was writing or reading, carried into the phases that draw a board.
+  const written = writtenRound(state);
   switch (phase) {
     case 'Lobby':
       return { phase, ...membersOf(state) };
@@ -62,15 +135,21 @@ function phaseBody(
       return {
         phase,
         ...base,
-        topic,
+        topic: roundTopic(written, topic),
         // The round's answers, when the dock stepped here from Writing. Empty from anywhere else,
         // because there is nothing to carry and a jump is not a round anybody played.
-        answers: state.phase === 'Writing' ? state.answers : new Map<PlayerId, string>(),
-        groupRejections: new Map(),
-        groupLikes: new Map(),
+        ...carriedBoard(written),
       };
     case 'Scores':
-      return { phase, ...base, scores: new Map<PlayerId, number>() };
+      // The same board the review draws, so a room that is put straight into the count is not shown
+      // an empty stage. A jump from nowhere gets an empty board rather than somebody else's.
+      return {
+        phase,
+        ...base,
+        topic: roundTopic(written, topic),
+        ...carriedBoard(written),
+        scores: new Map<PlayerId, number>(),
+      };
     case 'Final':
       return { phase, ...membersOf(state) };
     default:

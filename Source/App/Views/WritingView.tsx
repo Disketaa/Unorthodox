@@ -37,11 +37,9 @@ const NoEnchantment: Enchantment = {
   mult: undefined,
 };
 
-/** Writing: topic, timer and the answer draft, which is local UI state. */
-export function WritingView({ view }: PhaseViewProps) {
-  const [draft, setDraft] = useState('');
-  const flush = useAnswerFlush();
-  const remainingMs = useCountdown(
+/** The round's countdown as this view reads it: the whole phase, held wherever the room is held. */
+function useRemainingMs(view: PhaseViewProps['view']): number {
+  return useCountdown(
     view.durationMs,
     view.phaseStartedAt,
     view.clockOffsetMs,
@@ -50,6 +48,13 @@ export function WritingView({ view }: PhaseViewProps) {
     view.paused,
     view.pausedAt
   );
+}
+
+/** Writing: topic, timer and the answer draft, which is local UI state. */
+export function WritingView({ view }: PhaseViewProps) {
+  const [draft, setDraft] = useState('');
+  const flush = useAnswerFlush();
+  const remainingMs = useRemainingMs(view);
   const writing = view.publicState?.phase === 'Writing' ? view.publicState : undefined;
   const theme = writing?.theme;
   flush.publish(() => {
@@ -68,7 +73,12 @@ export function WritingView({ view }: PhaseViewProps) {
       value={draft}
       held={view.paused}
       onValueChange={setDraft}
-      onSubmit={() => view.submitAnswer(draft)}
+      onSubmit={() => {
+        // Nothing written is not an answer, and the host is right to refuse one — but a press
+        // that sends nothing and gets nothing back reads as a broken button rather than as a
+        // word that was never there.
+        if (draft.trim().length > 0) view.submitAnswer(draft);
+      }}
       onEditing={view.setEditing}
       glinted={glintedFor(view)}
       enchantment={enchantment.note}

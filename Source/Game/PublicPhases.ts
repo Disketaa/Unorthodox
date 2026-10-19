@@ -1,8 +1,6 @@
-import { randomFor, shuffle, ThemeId, CustomTheme, PlayerId } from '@/Core';
-import { marksForRoom } from './PublicMarks';
-import { declinedGroupIds, scoreRound } from './RoundScoring';
-import { HostState, ReviewingState } from './GameState';
-import { groupAnswersWithPlayers } from './Grouping';
+import { ThemeId, CustomTheme } from '@/Core';
+import { HostState } from './GameState';
+import { boardOf, totalsForReview } from './PublicBoard';
 import type {
   PublicLobbyState,
   PublicPlayer,
@@ -11,6 +9,8 @@ import type {
   PublicChoosingState,
   PublicRoom,
 } from './PublicState';
+
+export { boardOf };
 
 /** The roster every phase sends, so the bar of players runs across the whole game and a client
  * that refreshed mid-round is handed the room back rather than an empty strip. */
@@ -42,6 +42,15 @@ export function room(state: HostState): PublicRoom {
       : {}),
     paused: state.paused,
     ...(state.pausedAt === undefined ? {} : { pausedAt: state.pausedAt }),
+    // What every seat stands at across the rounds so far, in every phase. Omitted before the
+    // first round has been settled, where every seat is genuinely at nothing and a bar full of
+    // zeroes is the same picture as a bar that has not been told anything yet.
+    ...(state.cumulativeScores.size === 0
+      ? {}
+      : { standings: [...state.cumulativeScores].map(([id, score]) => ({ id, score })) }),
+    // Which run of the phase the room is on, sent to every screen that has to rebuild itself
+    // between two of them. Omitted rather than sent as a zero where there is only ever one run.
+    ...(state.reloadedAt === undefined ? {} : { reloadedAt: state.reloadedAt }),
   };
 }
 
@@ -108,40 +117,10 @@ export function toPublicWritingState(state: HostState): PublicWritingState {
   };
 }
 
-/** The board's cards: the answers as written, in an order nobody can read off who wrote what,
- * plus one card between all the players who wrote nothing. Seeded from the round and not the
- * clock, since letting a held room go shifts the clock. */
-function reviewGroups(state: ReviewingState): PublicReviewingState['groups'] {
-  const written = [...state.answers.values()];
-  const answers = groupAnswersWithPlayers(state.answers).map((group) => ({
-    groupId: group.groupId,
-    text: group.answers[0] ?? '',
-    playerCount: group.answers.length,
-    playerIds: group.playerIds,
-    isEmpty: false,
-  }));
-  const groups = shuffle(answers, randomFor(`${state.topic}:${written.join('|')}`));
-  // Everybody who wrote nothing is one card between them, the way everybody who wrote the same
-  // thing is. One blank each was a board with more cards than there were people to put in it. The
-  // card still says how many, so the room still learns how many sat the round out.
-  const blanked = [...state.players.keys()].filter((playerId) => !state.answers.has(playerId));
-  if (blanked.length > 0) {
-    groups.push({
-      groupId: groups.length,
-      text: '',
-      playerCount: blanked.length,
-      playerIds: blanked,
-      isEmpty: true,
-    });
-  }
-  return groups;
-}
-
 export function toPublicReviewingState(state: HostState): PublicReviewingState {
   if (state.phase !== 'Reviewing') {
     throw new Error('Invalid state for Reviewing');
   }
-  const groups = reviewGroups(state);
   return {
     ...room(state),
     phase: 'Reviewing',
@@ -149,18 +128,8 @@ export function toPublicReviewingState(state: HostState): PublicReviewingState {
     durationMs: state.durationMs,
     startedAt: state.startedAt,
     players: publicPlayers(state),
-    groups,
-    ...marksForRoom(state, declinedGroupIds(state)),
+    ...boardOf(state),
     cumulative: totalsForReview(state),
     ...themeOf(state),
   };
-}
-
-/** The running total per player, as pairs rather than a map, since this goes out as plain data.
- * Worked out by the scorer that will settle the round, so the total a room watches climb is the
- * total it is scored with. */
-function totalsForReview(state: ReviewingState): { id: PlayerId; score: number }[] {
-  const totals: { id: PlayerId; score: number }[] = [];
-  scoreRound(state).cumulativeScores.forEach((score, id) => totals.push({ id, score }));
-  return totals;
 }

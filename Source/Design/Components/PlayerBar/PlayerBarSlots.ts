@@ -1,9 +1,16 @@
 import { PlayerId } from '@/Core';
 import type { PlayerBarEntry } from './PlayerBar';
 
-/** The players the bar draws, and in what order. Roster order is the room's own, unsorted, since
- * a face that moves about is a face nobody finds themselves in. A room past the count gets the
- * first of the roster and, failing them, the local player last: somebody must be left out. */
+/** The seats in standing order: most points at the left, least at the right. Ties keep the
+ * room's own order, which a stable sort gives for free. Ranked over the whole roster, not the
+ * seats that fit: a player passed by somebody who does not fit is still passed by them. */
+export function rankedFor(players: readonly PlayerBarEntry[]): PlayerBarEntry[] {
+  return [...players].sort((a, b) => b.score - a.score);
+}
+
+/** The players the bar draws, and in what order. The standing order, so that the row a room is
+ * watching is the row the round is moving. A room past the count gets the first of the roster
+ * and, failing them, the local player last: somebody must be left out. */
 export function slotsFor(
   players: readonly PlayerBarEntry[],
   ownPlayerId: PlayerId | null,

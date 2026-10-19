@@ -1,6 +1,5 @@
 import { ComponentChildren } from 'preact';
-import { useRef } from 'preact/hooks';
-import { useFittedText } from './UseFittedText';
+import { FittedAnswer } from './FittedAnswer';
 import styles from './AnswerCard.module.css';
 
 /** What is written on the card: the answer, fitted to the box it is given, and the figure behind
@@ -33,20 +32,5 @@ export function Face({
       <span class={styles.Noise} aria-hidden="true" />
       <FittedAnswer text={text} />
     </>
-  );
-}
-
-/** The answer itself, which measures itself into the card rather than being cut off at its edge.
- * Its own element inside the centring room rather than text straight into it: as bare text it
- * is sized to its longest line, and a word wider than the card then cannot wrap. */
-function FittedAnswer({ text }: { text: string }) {
-  const answer = useRef<HTMLSpanElement>(null);
-  useFittedText(answer, text);
-  return (
-    <span class={styles.Room}>
-      <span class={styles.Answer} ref={answer}>
-        {text}
-      </span>
-    </span>
   );
 }

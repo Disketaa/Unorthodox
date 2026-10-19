@@ -6,6 +6,10 @@ describe('reducer FINAL action', () => {
   test('moves Scores to Final keeping cumulative totals', () => {
     const state: HostState = {
       phase: 'Scores',
+      topic: 'a topic',
+      answers: new Map(),
+      groupRejections: new Map(),
+      groupLikes: new Map(),
       durationMs: 15000,
       startedAt: 1000,
       scores: new Map([['p1', 3]]),

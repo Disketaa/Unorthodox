@@ -13,6 +13,7 @@ import {
   endReviewingFrom,
   nextRoundFrom,
   nextPhaseFrom,
+  reloadPhaseFrom,
   type FlowHost,
 } from './HostFlow';
 
@@ -25,9 +26,10 @@ export interface HostFlowMoves {
   startRandomPick(): void;
   resolveRandomPick(): void;
   setPaused(paused: boolean): void;
-  endReviewing(durationMs: number): void;
+  endReviewing(): void;
   nextRound(): void;
   nextPhase(topic: string): void;
+  reloadPhase(): void;
 }
 
 export function hostFlowMoves(
@@ -43,8 +45,9 @@ export function hostFlowMoves(
     startRandomPick: () => startRandomPickFrom(flow(), roomCode()),
     resolveRandomPick: () => resolveRandomPickFrom(flow(), roomCode()),
     setPaused: (paused) => setPausedFrom(flow(), paused),
-    endReviewing: (durationMs) => endReviewingFrom(flow(), durationMs),
+    endReviewing: () => endReviewingFrom(flow()),
     nextRound: () => nextRoundFrom(flow()),
     nextPhase: (topic) => nextPhaseFrom(flow(), topic),
+    reloadPhase: () => reloadPhaseFrom(flow()),
   };
 }

@@ -77,6 +77,10 @@ export type GameAction =
   | { type: 'PAUSE'; at: number }
   /** The room running again, with the moment it was let go. */
   | { type: 'RESUME'; at: number }
+  /** The same phase begun again, for the host's dock and nothing else. Carries the clock it is
+   * restarted on and nothing of the round: a reload is the room's own watch started over, so
+   * the answers, the likes and the mutes all stand where the room left them. */
+  | { type: 'RELOAD_PHASE'; startedAt: number }
   | { type: 'FINAL' }
   /** The host's console putting the room straight into a phase, without playing there. Carries
    * the round's own data because a phase is a state and not only a screen. */

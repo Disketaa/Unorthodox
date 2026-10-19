@@ -19,7 +19,7 @@ function playingRound(): { hostSession: HostSession; client: ClientSession } {
   hostSession.startWriting('Test topic');
   client.submitAnswer('An answer');
   hostSession.submitOwnAnswer('Another answer');
-  hostSession.endReviewing(90_000);
+  hostSession.endReviewing();
   return { hostSession, client };
 }
 
@@ -93,7 +93,7 @@ describe('a like over the wire', () => {
     // takes an answer off it, and this must not quietly become a second one.
     const { hostSession, client } = playingRound();
     client.likeGroup(0);
-    hostSession.endReviewing(15_000);
+    hostSession.endReviewing();
     const scores = hostSession.getState();
     if (scores?.phase !== 'Scores') throw new Error('not scored');
     expect([...scores.scores.values()].every((score) => score > 0)).toBe(true);

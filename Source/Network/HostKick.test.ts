@@ -44,7 +44,7 @@ function kickAnnThenPlayRound(room: Lobby): void {
   room.hostSession.startWriting('Test topic');
   room.bob.submitAnswer('An answer');
   room.hostSession.submitOwnAnswer('Another answer');
-  room.hostSession.endReviewing(1000);
+  room.hostSession.endReviewing();
 }
 
 describe('the host kicking a player', () => {

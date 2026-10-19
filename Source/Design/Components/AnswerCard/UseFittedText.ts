@@ -20,21 +20,25 @@ const MaxLines = 2;
  * size stays a share of the card's width and only the reading of it is fitted. */
 const FitProperty = '--AnswerCard-Fit';
 
-/** Shrinks the writing on a card until the answer is as tall as the card can give it, rather
- * than cutting the end off. A font size that fits its box is not expressible in CSS, so this is
- * the measure-it answer, and the only one where a player reads the whole of it. */
-export function useFittedText(node: RefObject<HTMLElement | null>, text: string): void {
-  useEffect(fit(node), [node, text]);
+/** Shrinks the writing until the answer fits, rather than cutting the end off: a font size that
+ * fits its box is not expressible in CSS. `property` is where the result lands, and is passed
+ * in because the two things that need fitting sit against different boxes. */
+export function useFittedText(
+  node: RefObject<HTMLElement | null>,
+  text: string,
+  property: string = FitProperty
+): void {
+  useEffect(fit(node, property), [node, text, property]);
   // The box changes under the writing whenever the card is laid out, the window moves, or its
   // row is resized. An observer rather than a measurement on mount, because a card measured
   // before its font has loaded reports a size it never had and nothing afterwards would ask again.
-  useBoxResize(node, fit(node));
-  useViewportMeasure(node, fit(node));
+  useBoxResize(node, fit(node, property));
+  useViewportMeasure(node, fit(node, property));
 }
 
 /** The fitter for one element. A function rather than one body shared by three callers, because
  * the effect, the observer and the window measurement each hold it and each lets it go. */
-function fit(node: RefObject<HTMLElement | null>): () => void {
+function fit(node: RefObject<HTMLElement | null>, property: string): () => void {
   return () => {
     const element = node.current;
     // A box with no layout cannot be fitted to. Reporting that and stopping is what the observer
@@ -42,23 +46,23 @@ function fit(node: RefObject<HTMLElement | null>): () => void {
     if (element === null || roomOf(element).clientHeight === 0) {
       return;
     }
-    element.style.setProperty(FitProperty, '1');
-    scaleTo(element);
+    element.style.setProperty(property, '1');
+    scaleTo(element, property);
   };
 }
 
-/** How much of its full size the answer is drawn at. Each pass multiplies the size by what is
+/** How much of its full size the writing is drawn at. Each pass multiplies the size by what is
  * measured to be left over, rather than dividing by a ratio taken once at the larger size. */
-function scaleTo(element: HTMLElement): void {
+function scaleTo(element: HTMLElement, property: string): void {
   let scale = 1;
   for (let pass = 0; pass < Passes; pass += 1) {
-    element.style.setProperty(FitProperty, String(scale));
+    element.style.setProperty(property, String(scale));
     if (fits(element)) {
       return;
     }
     scale = Math.max(MinScale, scale * shortfall(element));
   }
-  element.style.setProperty(FitProperty, String(scale));
+  element.style.setProperty(property, String(scale));
 }
 
 /** How much smaller the writing must be drawn to fit, as a share of what it measures right now,

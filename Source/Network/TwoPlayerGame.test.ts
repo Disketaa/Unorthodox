@@ -67,11 +67,11 @@ describe('Two player round', () => {
     hostSession.submitOwnAnswer('Something green');
 
     // The host only leaves the writing phase once everyone has answered.
-    hostSession.endReviewing(90_000);
+    hostSession.endReviewing();
     expect(hostSession.getState()?.phase).toBe('Reviewing');
 
     // Two distinct answers make two groups, and a review can end.
-    hostSession.endReviewing(15_000);
+    hostSession.endReviewing();
     expect(hostSession.getState()?.phase).toBe('Scores');
   });
 });
@@ -87,21 +87,21 @@ describe('Two player scoring', () => {
     InMemoryTransport.resetPeers();
   });
 
-  it('scores a pair higher than a solo answer', () => {
+  it('scores a pair nothing, since the room already had the idea', () => {
     const { hostSession, clientSession } = startTwoPlayerRoom();
     hostSession.startGame();
     hostSession.startWriting('A topic');
     // Matching answers put both players in one group of two.
     clientSession.submitAnswer('The same thing');
     hostSession.submitOwnAnswer('the same thing!');
-    hostSession.endReviewing(90_000);
-    hostSession.endReviewing(15_000);
+    hostSession.endReviewing();
+    hostSession.endReviewing();
 
     const state = hostSession.getState();
     const scores = state !== undefined && 'scores' in state ? state.scores : new Map();
     expect(scores.size).toBe(2);
     for (const score of scores.values()) {
-      expect(score).toBe(GameConfig.scoring.pairPoints);
+      expect(score).toBe(GameConfig.scoring.duplicatePoints);
     }
   });
 });

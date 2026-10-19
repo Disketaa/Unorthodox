@@ -7,6 +7,9 @@ export interface CardScore {
   /** How many players wrote this answer. One is the only size that is paid for being early. */
   groupSize: number;
   isRejected: boolean;
+  /** Whether this is the card of somebody who wrote nothing, standing for a round they sat out.
+   * A separate thing from being struck out: the room never had an answer to turn down here. */
+  isEmpty: boolean;
   speedShare: number;
   /** How many of the other players liked it, the author excluded by the time it gets here. */
   likes: number;
@@ -27,28 +30,53 @@ export function speedPoints(
   );
 }
 
-/** What one card pays out. Three things are zero and they are zero in this order: a struck-out
- * card, an answer nobody can be first with, and an answer somebody else wrote first. */
+/** What one card pays out. Four things are zero and they are zero in this order: the card of a
+ * player who wrote nothing, a struck-out card, an answer nobody can be first with, and an
+ * answer somebody else wrote first — a blank card reads as the first tick, which pays the most. */
 export function scoreCard(
   card: CardScore,
   config: typeof GameConfig = GameConfig
 ): { points: number; fromSpeed: number; fromLikes: number } {
-  if (card.isRejected) {
+  if (card.isEmpty || card.isRejected) {
     return { points: 0, fromSpeed: 0, fromLikes: 0 };
   }
   if (card.groupSize > 1) {
-    // A shared answer pays its flat rate and nothing else: no speed, since the room already had
-    // the idea, and no likes, since a like is the room finding something once. Three or more
-    // wrote the same thing and there is nothing left to pay anybody for it.
-    const points =
-      card.groupSize === 2
-        ? config.scoring.pairPoints * card.mult
-        : config.scoring.commonPoints;
-    return { points, fromSpeed: 0, fromLikes: 0 };
+    // A shared answer pays nothing at all, and pays the same nothing whatever wrote it: two
+    // people and four both wrote what the room had already heard, and the size of the group is
+    // not a thing to pay more of. No speed and no likes: a like is the room finding it once.
+    return { points: config.scoring.duplicatePoints, fromSpeed: 0, fromLikes: 0 };
   }
-  const fromSpeed = speedPoints(card.speedShare, config) * card.mult;
+  // Rounded after the multiplier, not before it: a card paying half a point twice would leave a
+  // running total at twenty-two and a bit, and a standing is a whole number of points or it is
+  // not one. Rounded here so the same figure is on the card, in the bar and on the final screen.
+  const fromSpeed = Math.round(speedPoints(card.speedShare, config) * card.mult);
   const fromLikes = card.likes * config.scoring.likePoints;
   return { points: fromSpeed + fromLikes, fromSpeed, fromLikes };
+}
+
+/** The steps one card's score counts up through, in order, named for what they pay: the answer's
+ * own worth, what the round's card made of it, what the room thought of it. A struck-out or
+ * shared card is paid nothing and so has no steps to climb. */
+export function scoreSteps(
+  card: CardScore,
+  config: typeof GameConfig = GameConfig
+): {
+  base: number;
+  mult: number;
+  likes: number;
+  total: number;
+} {
+  const scored = scoreCard(card, config);
+  if (card.isEmpty || card.isRejected || card.groupSize > 1) {
+    return { base: 0, mult: 0, likes: 0, total: scored.points };
+  }
+  const base = Math.round(speedPoints(card.speedShare, config));
+  return {
+    base,
+    mult: Math.round(scored.fromSpeed) - base,
+    likes: scored.fromLikes,
+    total: scored.points,
+  };
 }
 
 /** Round score per player. Everyone in a card pays what that card pays, and a card nobody wrote

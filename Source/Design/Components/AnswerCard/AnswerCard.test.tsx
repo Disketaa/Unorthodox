@@ -209,4 +209,57 @@ describe('who wrote an answer', () => {
     expect(root.textContent).toContain('Ghost Player');
     expect(root.textContent).toContain('Star Player');
   });
+
+  it('wears the shine of the round over itself while the count is on an enchanted multiplier', () => {
+    // The mark that says what is being added says "mult", and nothing on the card says why there is
+    // a mult at all. This is that answer: an answer somebody enchanted wrote, paying a multiplier,
+    // being paid right now.
+    const root = renderCard({
+      counting: true,
+      paying: true,
+      enchanted: true,
+      score: { base: 10, mult: 8, likes: 0, total: 18 },
+    });
+    const shine = root.firstElementChild?.querySelector<HTMLElement>('[class*="Glint"]');
+    expect(shine).not.toBeNull();
+    expect(shine?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('takes the shine off an answer nobody was enchanted for', () => {
+    // A multiplier the round always paid is not the enchantment's doing, and a shine claiming
+    // credit for it would be the game lying about where the figure came from.
+    const root = renderCard({
+      counting: true,
+      paying: true,
+      enchanted: false,
+      score: { base: 10, mult: 8, likes: 0, total: 18 },
+    });
+    expect(root.firstElementChild?.querySelector('[class*="Glint"]')).toBeNull();
+  });
+
+  it('takes the shine off an enchanted answer whose multiplier gained nothing', () => {
+    // Somebody was enchanted, but no multiplier arrived, so there is nothing here the shine could
+    // be explaining. Leaving it on would put the round's enchantment on every card it touched,
+    // which is a claim rather than a fact.
+    const root = renderCard({
+      counting: true,
+      paying: true,
+      enchanted: true,
+      score: { base: 10, mult: 0, likes: 0, total: 10 },
+    });
+    expect(root.firstElementChild?.querySelector('[class*="Glint"]')).toBeNull();
+  });
+
+  it('takes the shine off once the count has left the board', () => {
+    // The shine is for the moment the figure is being explained, not a finish left on the card
+    // afterwards: the room was told what the multiplier was, and leaving the shine is decoration
+    // on a moment that has passed.
+    const root = renderCard({
+      counting: false,
+      paid: true,
+      enchanted: true,
+      score: { base: 10, mult: 8, likes: 0, total: 18 },
+    });
+    expect(root.firstElementChild?.querySelector('[class*="Glint"]')).toBeNull();
+  });
 });

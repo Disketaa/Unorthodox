@@ -45,14 +45,14 @@
   opacity: var(--Opacity-LikeBadgeQuiet);
 }
 
-/* Pressed: this player is one of the people who liked it, so the mark takes the reading
- * player's own accent and the count stays the dark figure it always was. The accent is already
- * a custom property on the page, written by whoever chose it for this browser, so the badge
- * wears the reader's colour without being told what it is — as every other accent-borne mark in
- * the game does. Deliberately not the board's pink: a like mark wearing it would say the
- * opposite of what it means. */
+/* Pressed: this player is one of the people who liked it, so the mark takes the reader's own
+ * accent — a custom property written by whoever chose it, as every accent-borne mark in the
+ * game reads it — and the count stays the dark figure it always was. Deliberately not the
+ * board's pink, which would say the opposite of what the mark means. Read through
+ * `--Color-LikeMarkLiked` so a card being paid can hand it its writer's colour instead: a card
+ * painted in the writer's colour is not something this browser presses. Unset while voting. */
 .Liked {
-  --Color-LikeMark: var(--Accent-Tint);
+  --Color-LikeMark: var(--Color-LikeMarkLiked, var(--Accent-Tint));
   opacity: 1;
 }
 

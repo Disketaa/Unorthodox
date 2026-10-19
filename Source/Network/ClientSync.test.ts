@@ -39,7 +39,7 @@ describe('Client state sync', () => {
     hostSession.startWriting('A topic');
     clientSession.submitAnswer('An answer');
     hostSession.submitOwnAnswer('Another answer');
-    hostSession.endReviewing(90_000);
+    hostSession.endReviewing();
     expect(hostSession.getState()?.phase).toBe('Reviewing');
 
     // The in-memory transport delivers instantly, so it cannot drop a message.

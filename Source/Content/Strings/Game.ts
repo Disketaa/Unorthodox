@@ -99,6 +99,9 @@ export const turn = {
   /** Steps the room along the phase table by hand, so every phase can be walked without waiting
    * any of them out. */
   nextPhase: 'Следующая фаза',
+  /** Begins the phase the room is in again from its first second, with the answers and the votes
+   * where they were left. */
+  reloadPhase: 'Начать фазу заново',
 };
 
 /** Holding the room where it is, and letting it run on again. */

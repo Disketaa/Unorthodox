@@ -1,8 +1,11 @@
 /* The room's answers on a board, filling the room it is given in both directions. `1fr` on both
  * axes, so a card is the width and the height that is actually there rather than one predicted
  * from the window before the board was laid out. The rows are floored so a card never becomes a
- * strip too short to read, and the board scrolls when the floor and the room disagree. */
+ * strip too short to read, and the board scrolls when the floor and the room disagree. Relative
+ * so the veil sits over the cards rather than over the window, which is the whole of what it is
+ * for. */
 .Root {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-auto-rows: minmax(var(--Size-AnswerCardHeightMin), 1fr);
@@ -45,6 +48,67 @@
 .Root::-webkit-scrollbar {
   width: 0;
   height: 0;
+}
+
+/* The dark over the board while one card is being paid, and over nothing else. Inside the board
+ * rather than over the window, because the question over it, the timer and the bar of players
+ * are about the round rather than about this one turn of the count — darkening them would be
+ * saying the whole game was waiting on a figure, when it is one card on a board being paid.
+ * Takes no pointer: nothing under it is pressable, and a press that reached a card would be an
+ * opinion about an answer the room is no longer being asked about. */
+.Veil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  /* Half of the page laid over the board, and nothing else. Every tint tried in here made the
+   * veil read as a colour over the room rather than as the room going back: the counted card
+   * already wears its writer own colour, and what is left to say is that the room is looking at
+   * that one card, which is said by the card coming forward and not by washing over the other
+   * eight. The eight stay legible enough to be read when their turn comes. */
+  background: color-mix(in srgb, var(--Color-Surface-Hover) 50%, transparent);
+  animation: VeilIn var(--Duration-Fast) var(--Easing-Decelerate) both;
+}
+
+/* The cell of the card being paid, over the dark rather than under it. Its own z-index only
+ * buys that if nothing between it and the veil is transformed, since a transformed element
+ * closes a stacking context around itself: the card's own sway is stood down while it is being
+ * paid, and the squash its arrival plays is stopped with it. Both are things it can do without. */
+.Lifted {
+  position: relative;
+  z-index: 3;
+}
+
+/* A card the count has gone past, over the dark for the same reason and to the same end: a card
+ * under the veil is a grey card, and a grey card is a card whose writer cannot be told from any
+ * other writer's. The room is told what every one of them was worth as it goes, so it has just
+ * been paid for this one and does not go on reading it as background. Muted rather than lit, so
+ * the card being paid now is still the brightest thing on the board. */
+.Settled {
+  position: relative;
+  z-index: 3;
+}
+
+.Lifted > [style*='--Pop-Index'] {
+  animation: none;
+}
+
+/* The board while it is counting: nothing on it answers the pointer. A card still lighting up
+ * under a finger says it can be pressed, and pressing it does nothing — worse than a card
+ * plainly not there to press. Taken off the whole board, since every card is in the same
+ * position. The veil takes no pointer itself, so this is what lies underneath that has to. */
+.NotPressable {
+  pointer-events: none;
+}
+
+@keyframes VeilIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* The count is a choice between widths rather than a consequence of one, so it is stated: one

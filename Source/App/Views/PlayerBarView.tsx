@@ -1,122 +1,118 @@
 import { PlayerBar, type PlayerBarEntry } from '@/Design/Components';
 import { lookFor } from '@/Screens';
 import type { PlayerId } from '@/Core';
-import type { PublicReviewingState, PublicState } from '@/Game';
-import { useRef } from 'preact/hooks';
 import { useReveal, type RevealState } from '../Hooks/UseReveal';
+import { countBoard, countSubPhase, type CountBoard } from '../Hooks/CountBoard';
 import type { PhaseViewProps } from './LobbyView';
+import {
+  boardOf,
+  isSettling,
+  readShownScores,
+  payoutsOf,
+  type BarBoard,
+  type Payout,
+} from './PlayerBarStandings';
+import { payingSeats, struckWriters, seatPulses, usePresses } from './PlayerBarMarks';
 
-/** The board the bar's marks are read off, and nothing else. Narrower than the room on purpose:
- * these look at the board and the mutes, and a test should not have to build a whole session to
- * prove what the bar does with a card. `PublicReviewingState` satisfies it as it stands. */
-export interface BarBoard {
-  groups: PublicReviewingState['groups'];
-  /** Optional on the wire, since an older host sends none and that reads as nothing muted. */
-  mutedGroupIds?: PublicReviewingState['mutedGroupIds'];
-  pace: PublicReviewingState['pace'];
-}
+export { readScores, readShownScores, payoutsOf } from './PlayerBarStandings';
+export { struckWriters, seatPulses } from './PlayerBarMarks';
+export type { BarBoard, Payout } from './PlayerBarStandings';
 
-/** The board, where the room is in the phase that has one. The one narrowing, in one place,
- * rather than one per reader. */
-function boardOf(view: PhaseViewProps['view']): BarBoard | undefined {
-  const state = view.publicState;
-  return state?.phase === 'Reviewing' ? state : undefined;
-}
+/** What every seat is marked with this frame, gathered in one place so the entries read off one
+ * object rather than a dozen locals. */
+type BarMarks = {
+  settled: boolean;
+  waitingOnTurn: boolean;
+  scores: ReadonlyMap<PlayerId, number>;
+  scoredNothing: ReadonlySet<PlayerId>;
+  paying: ReadonlySet<PlayerId>;
+  payouts: ReadonlyMap<PlayerId, Payout>;
+  named: ReadonlyMap<PlayerId, number>;
+  glinted: ReadonlySet<PlayerId>;
+};
 
-/** Every player's running total, read from whichever phase carries them. Reviewing sends the
- * round's own, worked out by the host as the board stands, so a seat shows a real number while
- * the round is still open. The phases before that have nothing and read as zero. */
-export function readScores(state: PublicState | undefined): ReadonlyMap<PlayerId, number> {
-  if (state?.phase === 'Reviewing') {
-    return new Map((state.cumulative ?? []).map((row) => [row.id, row.score]));
-  }
-  if (state?.phase === 'Scores') {
-    return new Map(state.cumulative.map((row) => [row.id, row.score]));
-  }
-  if (state?.phase === 'Final') {
-    return new Map(state.scores.map((row) => [row.id, row.score]));
-  }
-  return new Map();
-}
-
-/** The players the round has written off, taken off the bar as their own faces land rather than
- * all at once. Off the same landing count the card draws its figure with, so a seat goes off on
- * the frame its owner's face arrives rather than on a beat of this file's own. */
-export function struckWriters(
-  board: BarBoard | undefined,
-  rejected: ReadonlySet<number>,
-  reveal: RevealState
-): Set<PlayerId> {
-  const struck = new Set<PlayerId>();
-  board?.groups.forEach((group, index) => {
-    if (!group.isEmpty && !rejected.has(group.groupId)) return;
-    const landed = reveal.landedAt(index, group.playerIds.length);
-    // How many faces have to be there before the card is struck, which is the card's own rule and not
-    // this file's: a shared answer is drawn struck once the room can see there was more than one of
-    // them, so taking the first off the bar before that spoils the only beat the round has.
-    const shared = group.playerIds.length > 1 && !group.isEmpty;
-    if (landed < (shared ? 2 : 1)) return;
-    group.playerIds.forEach((playerId, seat) => {
-      if (seat < landed) struck.add(playerId);
-    });
+/** The bar's entries, in roster order — the order the room has held since the lobby: a seat that
+ * moves about between phases is a seat nobody can find themselves in. */
+function barEntries(view: PhaseViewProps['view'], marks: BarMarks): PlayerBarEntry[] {
+  return [...view.playerNames].map(([id, name]) => {
+    const look = lookFor(view.playerLooks, id);
+    return {
+      id,
+      name,
+      score: marks.scores.get(id) ?? 0,
+      character: look.character,
+      color: look.color,
+      isOnline: view.playerPresence.get(id) ?? true,
+      isTurning: marks.waitingOnTurn && id === view.turnPlayerId,
+      scoredNothing: marks.scoredNothing.has(id),
+      isPaying: marks.paying.has(id),
+      payout: marks.settled ? marks.payouts.get(id) : undefined,
+      pulse: marks.named.get(id) ?? 0,
+      glinted: marks.glinted.has(id),
+      // Every seat still at work, and not only this browser's own: the room says who has written,
+      // so a row of seats fills up as the answers come in. Writing over an answer already sent
+      // counts as work again, and the room is told that too, so it holds for everybody's bar.
+      isWorking:
+        (view.phase === 'Writing' &&
+          (!view.submittedIds.has(id) ||
+            view.editingIds.has(id) ||
+            (id === view.playerId && view.editing))) ||
+        (view.phase === 'Scores' && view.submittedIds.has(id)),
+    };
   });
-  return struck;
 }
 
-/** How many times each seat should have reacted, as one counter per player so that every event
- * pops again rather than only the first. Two events, which used to be counted as one: the room
- * being told who wrote an answer, and the host turning it down. */
-export function seatPulses(
-  board: BarBoard | undefined,
+/** What each seat is shown this frame, read off the board and the same clock the count runs on,
+ * so the bar's figure and the card's figure are the same figure on the same frame. */
+function barMarksFor(
+  view: PhaseViewProps['view'],
+  reviewing: BarBoard | undefined,
   reveal: RevealState,
-  presses: ReadonlyMap<PlayerId, number> = new Map()
-): Map<PlayerId, number> {
-  const pulses = new Map<PlayerId, number>();
-  board?.groups.forEach((group, index) => {
-    if (!reveal.authorsAt(index)) return;
-    for (const playerId of group.playerIds) {
-      pulses.set(playerId, (pulses.get(playerId) ?? 0) + 1);
-    }
-  });
-  for (const [playerId, times] of presses) {
-    pulses.set(playerId, (pulses.get(playerId) ?? 0) + times);
-  }
-  return pulses;
-}
-
-/** The cards the host has turned down or taken back since the bar was last drawn. An event
- * cannot be read out of a set of ids, but which ids are new it can say. Written during render,
- * so no reveal tick slips between the press and the seat reacting to it. */
-function usePresses(board: BarBoard | undefined): Map<PlayerId, number> {
-  const declared = new Set(board?.mutedGroupIds ?? []);
-  const seen = useRef<Set<number> | undefined>(undefined);
-  const before = seen.current ?? declared;
-  seen.current = declared;
-
-  const presses = new Map<PlayerId, number>();
-  board?.groups.forEach((group) => {
-    if (declared.has(group.groupId) === before.has(group.groupId)) return;
-    for (const playerId of group.playerIds) {
-      presses.set(playerId, (presses.get(playerId) ?? 0) + 1);
-    }
-  });
-  return presses;
-}
-
-/** The bar across the top of a game. In roster order, which is the order the room has held since
- * the lobby: a seat that moves about between phases is a seat nobody can find themselves in. */
-export function PlayerBarView({ view }: PhaseViewProps) {
-  const scores = readScores(view.publicState);
+  board: CountBoard,
+  settled: boolean
+): BarMarks {
   const choosing = view.publicState?.phase === 'Choosing' ? view.publicState : undefined;
   // The turn outlives the round that used it, so the mark belongs only to where the room is
   // actually waiting on it: an open bank. Once the bank is answered the phase is still Choosing,
   // now while the room reads the question, and by then nobody has been asked for anything.
   const waitingOnTurn = choosing !== undefined && choosing.theme === undefined;
-  // Who the round has written off, read off the board the room is already being shown rather than
+  const scores = readShownScores(view.publicState, reviewing, settled, board.payingIndex);
+  // Who the round gave nothing to, read off the board the room is already being shown rather than
   // off a second copy of the marks.
+  const struckFromBoard = (reviewing?.groups ?? []).flatMap((g) =>
+    g.isEmpty || g.playerIds.length > 1 ? g.playerIds : []
+  );
+  const scoredNothing = settled
+    ? new Set(struckFromBoard)
+    : struckWriters(reviewing, view.rejectedGroupIds, reveal);
+  // The sub-phase of the current card, shared by the board and the bar so both screens show the
+  // same figure on the same frame: counting the number, showing the addition, or showing the total.
+  const subPhase =
+    board.payingElapsedMs === undefined ? 'total' : countSubPhase(board.payingElapsedMs);
+  // Through the whole board once the index is past the last: the seats go over to their standings
+  // and stay there until the phase ends.
+  const finished =
+    board.payingIndex !== undefined &&
+    reviewing !== undefined &&
+    board.payingIndex >= reviewing.groups.length;
+  // Whose card the count is on, only while its number is being counted: once the number has
+  // landed, the loading mark comes off and the figure takes its place.
+  const paying = subPhase === 'counting' ? payingSeats(board, reviewing) : new Set<PlayerId>();
+  const payouts = payoutsOf(reviewing, board.payingIndex, scores, subPhase, finished);
+  const named = seatPulses(reviewing, reveal, usePresses(reviewing));
+  // Who the round's enchanted card reaches, read off the room's own roll rather than worked out
+  // here: the host named the seats and every screen is told the same ones.
+  const glinted = new Set(view.publicState?.affectedPlayerIds ?? []);
+  return { settled, waitingOnTurn, scores, scoredNothing, paying, payouts, named, glinted };
+}
+
+/** The bar across the top of a game. */
+export function PlayerBarView({ view }: PhaseViewProps) {
+  const settled = isSettling(view.publicState);
   const reviewing = boardOf(view);
-  // The same hook the board is drawn from, on the same arguments, so the bar and the board are
-  // told the same thing on the same frame. A bar that asked when it liked would be a bar guessing.
+  // The count is the board at rest: a seat struck in the review stays struck while the room is told
+  // what that answer earned. The same hook the board draws from, on the same arguments, so the bar
+  // and the board are told the same thing on the same frame.
   const reveal = useReveal(
     reviewing?.groups.map((group) => group.playerIds.length) ?? [],
     reviewing?.pace ?? 'Standard',
@@ -124,38 +120,12 @@ export function PlayerBarView({ view }: PhaseViewProps) {
     view.phaseStartedAt,
     reviewing !== undefined,
     view.paused,
-    view.pausedAt
+    view.pausedAt,
+    settled
   );
-  // Who the round gave nothing to, read off the board the room is already being shown rather than
-  // off a second copy of the marks.
-  const scoredNothing = struckWriters(reviewing, view.rejectedGroupIds, reveal);
-  const named = seatPulses(reviewing, reveal, usePresses(reviewing));
-  // Who the round's enchanted card reaches, read off the room's own roll rather than worked out
-  // here: the host named the seats and every screen is told the same ones.
-  const glinted = new Set(view.publicState?.affectedPlayerIds ?? []);
-  const players: PlayerBarEntry[] = [...view.playerNames].map(([id, name]) => {
-    const look = lookFor(view.playerLooks, id);
-    return {
-      id,
-      name,
-      score: scores.get(id) ?? 0,
-      character: look.character,
-      color: look.color,
-      isOnline: view.playerPresence.get(id) ?? true,
-      isTurning: waitingOnTurn && id === view.turnPlayerId,
-      scoredNothing: scoredNothing.has(id),
-      pulse: named.get(id) ?? 0,
-      glinted: glinted.has(id),
-      // Every seat still at work, and not only this browser's own: the room says who has written,
-      // so a row of seats fills up as the answers come in. Writing over an answer already sent
-      // counts as work again, and the room is told that too, so it holds for everybody's bar.
-      isWorking:
-        view.phase === 'Writing' &&
-        (!view.submittedIds.has(id) ||
-          view.editingIds.has(id) ||
-          (id === view.playerId && view.editing)),
-    };
-  });
-
+  // Counted off the same clock the board counts from, so a round's points arrive as the count
+  // reaches the answer they were for.
+  const board = countBoard(settled, view.phaseStartedAt, reveal.moment);
+  const players = barEntries(view, barMarksFor(view, reviewing, reveal, board, settled));
   return <PlayerBar players={players} ownPlayerId={view.playerId} />;
 }

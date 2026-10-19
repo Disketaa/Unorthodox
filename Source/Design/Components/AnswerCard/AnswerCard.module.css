@@ -16,6 +16,12 @@
   padding: var(--Space-AnswerCardPadding);
   gap: var(--Space-Xs);
   --AnswerCard-Surface: var(--Color-Surface-Hover);
+  /* The like badge takes the card's own colour while the round is counting, reached or not: a
+   * badge in the writer's colour is a mark of the room liking an answer rather than of this
+   * browser pressing something. Unset the rest of the round, where the reader's accent is the
+   * right answer. A named colour rather than `currentColor`, because the badge sets a `color`
+   * of its own for the figure it draws, and that grey is what `currentColor` reads from. */
+  --Color-LikeMarkLiked: var(--AnswerCard-Tint, var(--Accent-Tint));
   /* What the pressed rim is mixed toward. The ink at rest, since a rim has to be the surface
    * going darker into itself, and the card's own error colour once the room has turned the
    * answer down so the edge is saying the same thing the writing does. */
@@ -155,15 +161,137 @@
   opacity: var(--Opacity-ThemeCardNoise);
 }
 
-/* The answer, which is the whole content of the card, in the display face rather than the body
- * one: nine sentences at reading size read as a paragraph rather than as nine things to pick
- * from. Wraps rather than being cut, since a cut answer is a hidden answer. Two tenths of the
- * card's width, and the width is the smaller of its two axes, so a short row scales the writing
- * down with it rather than cutting it. */
-/* The card's inner room, holding the answer and centring it. Filling the card rather than sized
- * by its own text, so the answer is measured against the space it has rather than a box that
- * grew to hold it. It draws no type of its own: the size the answer is fitted to is read on the
- * answer, and a size declared here could not have been reached by a fit set on the answer. */
+/* The shine on a card whose writer the enchanted card reached: the same tile, blend and sweep
+ * as every other glint in the game, since it is the same fact. Over the grain and the figure
+ * rather than under them, and above everything but hidden from the pointer — a shine covering
+ * the thing being pressed is a shine that takes the press. Covering rather than tiling, scaled
+ * to fit the way the grain may not be: one sweep across one panel is the effect. */
+.Glint {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  mix-blend-mode: var(--Blend-ThemeCardGlint);
+  opacity: var(--Opacity-ThemeCardGlint);
+}
+
+/* The tile itself, one of three, since which one is rolled rather than fixed. */
+.GlintA {
+  background-image: var(--Texture-ThemeCardGlintA);
+}
+.GlintB {
+  background-image: var(--Texture-ThemeCardGlintB);
+}
+.GlintC {
+  background-image: var(--Texture-ThemeCardGlintC);
+}
+
+/* The card being paid right now, in its own writer's colour, since the figure on it is theirs.
+ * Painted rather than popped: the card is already turning over under the room, and a squash on
+ * top of the sway would be the card reacting to something the room did not do. */
+.PayingViolet {
+  --AnswerCard-Surface: color-mix(
+    in srgb,
+    var(--Color-Character-Violet) 22%,
+    var(--Color-Surface-Hover)
+  );
+  background: var(--AnswerCard-Surface);
+  color: var(--Color-Character-Violet);
+}
+.PayingCoral {
+  --AnswerCard-Surface: color-mix(
+    in srgb,
+    var(--Color-Character-Coral) 22%,
+    var(--Color-Surface-Hover)
+  );
+  background: var(--AnswerCard-Surface);
+  color: var(--Color-Character-Coral);
+}
+.PayingAmber {
+  --AnswerCard-Surface: color-mix(
+    in srgb,
+    var(--Color-Character-Amber) 22%,
+    var(--Color-Surface-Hover)
+  );
+  background: var(--AnswerCard-Surface);
+  color: var(--Color-Character-Amber);
+}
+.PayingLime {
+  --AnswerCard-Surface: color-mix(
+    in srgb,
+    var(--Color-Character-Lime) 22%,
+    var(--Color-Surface-Hover)
+  );
+  background: var(--AnswerCard-Surface);
+  color: var(--Color-Character-Lime);
+}
+.PayingMint {
+  --AnswerCard-Surface: color-mix(
+    in srgb,
+    var(--Color-Character-Mint) 22%,
+    var(--Color-Surface-Hover)
+  );
+  background: var(--AnswerCard-Surface);
+  color: var(--Color-Character-Mint);
+}
+.PayingSky {
+  --AnswerCard-Surface: color-mix(
+    in srgb,
+    var(--Color-Character-Sky) 22%,
+    var(--Color-Surface-Hover)
+  );
+  background: var(--AnswerCard-Surface);
+  color: var(--Color-Character-Sky);
+}
+.PayingRose {
+  --AnswerCard-Surface: color-mix(
+    in srgb,
+    var(--Color-Character-Rose) 22%,
+    var(--Color-Surface-Hover)
+  );
+  background: var(--AnswerCard-Surface);
+  color: var(--Color-Character-Rose);
+}
+.PayingYellow {
+  --AnswerCard-Surface: color-mix(
+    in srgb,
+    var(--Color-Character-Yellow) 22%,
+    var(--Color-Surface-Hover)
+  );
+  background: var(--AnswerCard-Surface);
+  color: var(--Color-Character-Yellow);
+}
+
+/* What a card shows while it is being paid, standing in the answer's own place rather than over
+ * it: the steps of the count laid down one after another. Laid out as the answer is — the same
+ * centring room, the same inset — so a card does not change shape between being read and being
+ * paid. */
+.ScoreRoom {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--Space-Xs);
+  pointer-events: none;
+  text-align: center;
+}
+
+/* One step of the count, one under the next, the earlier figures staying where they landed. The
+ * card is read top to bottom as the count climbs rather than being redrawn under the room, so
+ * what a step added is still on the card while the step after it counts. */
+.Step {
+  display: block;
+}
+
 /* The control laid over the whole card, which is still the card as far as the pointer is
  * concerned: a control the size of a card is the one thing that can be pressed in a room where
  * people are standing up. A sibling of the answer rather than the card itself, because a badge
@@ -269,6 +397,10 @@
   width: auto;
 }
 
+/* The card's inner room, holding the answer and centring it. Filling the card rather than sized
+ * by its own text, so the answer is measured against the space it has rather than a box that
+ * grew to hold it. It draws no type of its own: the size the answer is fitted to is read on the
+ * answer, and a size declared here could not have been reached by a fit set on the answer. */
 .Room {
   position: relative;
   z-index: 1;
@@ -304,7 +436,7 @@
 /* An answer the room has not got to yet. Held down and back rather than taken off the board:
  * the cell is already there, and a grid that reflows as the room reads it moves the answers it
  * has already voted on out from under its finger. Not a control yet either. */
-.Unturned {
+.Root.Unturned {
   opacity: 0;
   scale: var(--Scale-AnswerCardUnturned);
   pointer-events: none;
@@ -389,6 +521,16 @@
   text-decoration-line: line-through;
   text-decoration-thickness: var(--Border-Width-AnswerCardMuted);
   text-decoration-color: currentColor;
+}
+
+/* A card the count has gone past, held back rather than taken away. It stops inviting the
+ * pointer, and it goes quiet by a quarter of its own opacity — which is a colour, not a grey:
+ * the veil it now stands over is what was making it grey, and holding the card back any further
+ * only made it quieter. Held back rather than lit, so the card being paid this moment is still
+ * the one the eye goes to. */
+.Root.Paid {
+  cursor: var(--Cursor-Default);
+  opacity: var(--Opacity-AnswerCardPaid);
 }
 
 /* The focus ring on the card itself, since there is no border left to recolour. Drawn outside

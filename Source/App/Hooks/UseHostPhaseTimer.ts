@@ -33,15 +33,7 @@ export function useHostPhaseTimer(
     choosing?.questionAt,
     onQuestionRead
   );
-  useAnswersIn(
-    session,
-    isHost,
-    phase.phase,
-    submittedCount,
-    playerCount,
-    publicState?.pace,
-    held
-  );
+  useAnswersIn(session, isHost, phase.phase, submittedCount, playerCount, held);
 }
 
 /** The round's three hands, in one call: the theme held for a beat, then its question read out

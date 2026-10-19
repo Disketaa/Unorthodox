@@ -1,13 +1,13 @@
-/* The change-of-phase splash: the room's yellow growing out of nothing as a disc until it fills
- * the window, the mark arriving inside it, and the two of them going back down together.
- * `fixed` against the window rather than in the page flow, like the count-in, since what it
- * announces is the room and not one screen of it. Above the paper at 1, and below the count-in
- * at 3. Takes the pointer for the count-in's reason: a click reaches the splash and nothing
- * under it. */
+/* The change-of-phase splash: the room's yellow growing out as a disc, the mark arriving inside
+ * it, and the two going back down together. `fixed` against the window like the count-in — what
+ * it announces is the room, not one screen of it — and it takes the pointer for the count-in's
+ * reason: a click reaches the splash and nothing under it. Above the held room at 99, since the
+ * splash is what a paused room is underneath. It shares the dock's hundred rather than clearing
+ * it: the splash covers the window, so the dock is unreachable while it plays. */
 .Root {
   position: fixed;
   inset: 0;
-  z-index: 2;
+  z-index: 100;
 }
 
 /* The yellow, in the room's own: the fixed colour for facts about the room that everybody in it

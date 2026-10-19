@@ -29,13 +29,21 @@ export function boardMarks(
 /** The cards the host has muted, as the room is shown them, rather than as a mark this browser
  * kept: a card one screen can mute alone is a card the room cannot see muted together. */
 function mutedBy(publicState: PublicState | undefined): ReadonlySet<number> {
-  const ids = publicState?.phase === 'Reviewing' ? publicState.mutedGroupIds : undefined;
+  // Both halves of the round carry the marks: the count is still drawn on the same cards, and a
+  // strike-out that vanished the moment the round was counted would look like the host un-muting.
+  const ids =
+    publicState?.phase === 'Reviewing' || publicState?.phase === 'Scores'
+      ? publicState.mutedGroupIds
+      : undefined;
   return new Set(ids ?? []);
 }
 
 /** How many liked each answer, as the room is shown it: the count only, since every client is
  * handed this and a card that named its likers would be saying who read it. */
 function likedBy(publicState: PublicState | undefined): ReadonlyMap<number, number> {
-  const counts = publicState?.phase === 'Reviewing' ? publicState.likeCounts : undefined;
+  const counts =
+    publicState?.phase === 'Reviewing' || publicState?.phase === 'Scores'
+      ? publicState.likeCounts
+      : undefined;
   return new Map((counts ?? []).map((entry) => [entry.groupId, entry.count]));
 }

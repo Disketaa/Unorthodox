@@ -47,11 +47,19 @@ export interface PublicRoom {
   affectedPlayerIds?: PlayerId[];
   /** Whether the host is holding the room. On the wire rather than held per client, since a
    * player who is not held is one still playing against a timer nobody stopped. */
+  /** What every seat stands at across the rounds so far, in every phase that has a room. Sent
+   * separately from the per-round figures because those only exist where a round is being read
+   * or counted, and a bar that could only read them showed every seat at nothing in between. */
+  standings?: { id: PlayerId; score: number }[];
   paused: boolean;
   /** When the room was held, on the host's clock, or absent while it is running. On the wire
    * because a client that joined or refreshed mid-hold has to draw the clock as it stood when
    * the room stopped, rather than counting the hold away as if the phase had run through it. */
   pausedAt?: number;
+  /** Which run of the phase the room is on, for a screen that rebuilds itself between two of
+   * them. Not the phase's start: a held room's start moves on by however long it was held, so a
+   * client keyed on it would rebuild on every let-go and replay the arrival. */
+  reloadedAt?: number;
 }
 
 export type PublicLobbyState = PublicRoom & {
@@ -111,13 +119,7 @@ export type PublicReviewingState = PublicRoom & {
   players: PublicPlayer[];
   /** One answer group as the room is shown it. `isEmpty` marks the card of a player who wrote
    * nothing, so the room sees who sat the round out rather than seeing somebody missing. */
-  groups: {
-    groupId: number;
-    text: string;
-    playerCount: number;
-    playerIds: PlayerId[];
-    isEmpty: boolean;
-  }[];
+  groups: PublicScoreGroup[];
   /** The groups the host has muted, which the whole room is shown. A card one player can see
    * struck out and another cannot is a card the room cannot talk about. Optional, so a host
    * that sends none reads as nothing muted rather than as every card muted. */
@@ -135,14 +137,44 @@ export type PublicReviewingState = PublicRoom & {
 
 export type PublicScoresState = PublicRoom & {
   phase: 'Scores';
+  topic: string;
   durationMs: number;
   startedAt: number;
   players: PublicPlayer[];
   scores: { id: PlayerId; score: number }[];
   /** The round total per player, which is what the bar of players shows. */
   cumulative: { id: PlayerId; score: number }[];
+  /** The board as it was when the room finished reading it, sent again because this phase draws
+   * the same screen the room is already looking at. A room shown a bare stage while it is told
+   * what it won has had its board taken away at the moment it wanted to look up what it won. */
+  groups: PublicScoreGroup[];
+  likeCounts?: PublicReviewingState['likeCounts'];
+  mutedGroupIds?: PublicReviewingState['mutedGroupIds'];
+  /** Whether this phase is the round counted rather than the round still being read. The room
+   * draws the board at rest: nothing is turned over again, and no answer is written out twice. */
+  settled: true;
   theme?: ThemeId;
 };
+
+/** One answer card as the room is shown it. One shape for both halves of a round rather than one
+ * each, so the screen that draws the board draws the same card whichever half it is on: two
+ * shapes differing by an optional field is a card whose score goes missing in one of them. */
+export interface PublicScoreGroup {
+  groupId: number;
+  text: string;
+  playerCount: number;
+  playerIds: PlayerId[];
+  isEmpty: boolean;
+  /** How the card's total is built: what the answer was worth on its own, what the round's card
+   * made of it, what the room thought of it, and the total the count-up stops at. Left out
+   * while the round is still being read, and on a card that paid nothing. */
+  score?: {
+    base: number;
+    mult: number;
+    likes: number;
+    total: number;
+  };
+}
 
 export type PublicFinalState = PublicRoom & {
   phase: 'Final';

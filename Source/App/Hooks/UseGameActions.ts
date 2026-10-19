@@ -15,6 +15,9 @@ export interface GameActions {
    * phase the table's move would break, since Writing with nothing pressed on it has no topic,
    * so the dock answers the bank itself and both halves land in the same press. */
   nextPhase: () => void;
+  /** The phase the room is in begun again from the top, for the dock. The room's answers and its
+   * votes stay where they are; only the clock and the reveal that rides on it start over. */
+  reloadPhase: () => void;
   /** The round's question arriving word by word, drawn from the theme the room just answered. */
   revealQuestion: () => void;
   /** The round starting once the question has been read. Goes through the writing move rather
@@ -41,6 +44,26 @@ function questionForRoom(state: PublicState | undefined, roomCode: string): stri
   if (state?.phase !== 'Choosing' || state.theme === undefined) return undefined;
   const spent = state.spent.find((entry) => entry.theme === state.theme);
   return questionFor(roomCode, state.theme, spent?.rounds ?? 0);
+}
+
+/** The question this round is asking, whichever half the room has reached: the bank's while it
+ * is open, the round's own topic once that half has closed. The dock steps the room on and
+ * passes this question with it; read off the bank alone it carried a made-up topic instead. */
+function questionForRound(
+  state: PublicState | undefined,
+  roomCode: string
+): string | undefined {
+  if (state === undefined) return undefined;
+  switch (state.phase) {
+    case 'Choosing':
+      return questionForRoom(state, roomCode);
+    case 'Writing':
+    case 'Reviewing':
+    case 'Scores':
+      return state.topic;
+    default:
+      return undefined;
+  }
 }
 
 /** The dock's step, which walks the round the way the room's own clocks do rather than jumping
@@ -75,19 +98,21 @@ function useRoundFlow(
 ) {
   const roundsRef = useRef(0);
   const questionRef = useRef<string | undefined>(undefined);
-  questionRef.current = questionForRoom(publicState, roomCode);
+  questionRef.current = questionForRound(publicState, roomCode);
 
+  return {
+    ...useRoundMoves(session, roundsRef),
+    ...usePhaseMoves(session, publicState, questionRef, roundsRef),
+  };
+}
+
+function useRoundMoves(session: Session, roundsRef: { current: number }) {
   const startGame = useCallback(() => {
     roundsRef.current = 1;
     session.startGame();
   }, [session]);
 
-  const chooseTheme = useCallback(
-    (theme: ThemeId) => {
-      session.chooseTheme(theme);
-    },
-    [session]
-  );
+  const chooseTheme = useCallback((theme: ThemeId) => session.chooseTheme(theme), [session]);
 
   const nextRound = useCallback(() => {
     const next = roundsRef.current + 1;
@@ -99,12 +124,25 @@ function useRoundFlow(
     session.nextRound();
   }, [session]);
 
+  return { startGame, chooseTheme, nextRound };
+}
+
+function usePhaseMoves(
+  session: Session,
+  publicState: PublicState | undefined,
+  questionRef: { current: string | undefined },
+  roundsRef: { current: number }
+) {
   const topic = () => topicAt(roundsRef.current - 1);
 
   const nextPhase = useCallback(
     () => stepPhase(session, publicState, questionRef.current, topic()),
     [session, publicState]
   );
+
+  // The host's own watch, not the room's: it carries no topic and nothing else, because the round
+  // is not being begun again, only watched.
+  const reloadPhase = useCallback(() => session.reloadPhase(), [session]);
 
   const revealQuestion = useCallback(() => {
     session.revealQuestion(questionRef.current ?? topicAt(roundsRef.current - 1));
@@ -117,7 +155,7 @@ function useRoundFlow(
     session.startWriting(questionRef.current ?? topicAt(roundsRef.current - 1));
   }, [session]);
 
-  return { startGame, chooseTheme, nextRound, nextPhase, revealQuestion, startRound };
+  return { nextPhase, reloadPhase, revealQuestion, startRound };
 }
 
 /** Everything the UI can ask the session to do. Only the host acts on round flow. */

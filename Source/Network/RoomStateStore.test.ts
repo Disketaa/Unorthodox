@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach } from 'vitest';
-import type { HostState } from '@/Game';
+import type { HostState, WritingState } from '@/Game';
 import { CustomTheme } from '@/Core';
 import { decodeRoomState } from './RoomStateCodec';
 import { encodeRoomState } from './RoomStateEncoder';
@@ -17,13 +17,16 @@ beforeEach(() => {
   localStorage.clear();
 });
 
-/** The writing phase as a host leaves it, with an answer already written. */
-const writingPhase: HostState = {
+/** The writing phase as a host leaves it, with an answer already written. Named as the writing
+ * phase rather than as any phase, since these are copied and edited below: a copy of the whole
+ * room state carries every phase's shape at once and stops saying which one is under test. */
+const writingPhase: WritingState = {
   phase: 'Writing',
   topic: 'Два слова',
   durationMs: 60000,
   startedAt: 5000,
   answers: new Map([['host', 'раз']]),
+  answerShares: new Map([['host', 0.15]]),
   players: new Map(),
   cumulativeScores: new Map([['host', 7]]),
   turnPlayerId: null,
@@ -46,6 +49,7 @@ const reviewingPhase: HostState = {
   durationMs: 90_000,
   startedAt: 5000,
   answers: new Map([['host', 'раз']]),
+  answerShares: new Map([['host', 0.15]]),
   groupRejections: new Map([[1, new Set(['host', 'p1'])]]),
   groupLikes: new Map([[0, new Set(['p1', 'p2'])]]),
   players: new Map(),
@@ -65,6 +69,11 @@ const reviewingPhase: HostState = {
 
 const scoresPhase: HostState = {
   phase: 'Scores',
+  topic: 'a topic',
+  answers: new Map(),
+  answerShares: new Map([['host', 0.15]]),
+  groupRejections: new Map(),
+  groupLikes: new Map(),
   durationMs: 15000,
   startedAt: 2,
   scores: new Map([['host', 10]]),
@@ -120,6 +129,17 @@ describe('a room that outlives its tab', () => {
   it('comes back mid-round, with the answers and the clock it was on', () => {
     saveRoomState('1234', writingPhase);
     expect(loadRoomState('1234')).toEqual(writingPhase);
+  });
+
+  it('comes back with how fast each answer was written, not only that it was', () => {
+    // The speed bonus is that share and nothing else. Left out of the save, a host that refreshed
+    // came back to a room where every answer read as having been written on the first tick — the
+    // full scale, for the first and the last alike — and the board it was looking at was not the
+    // one it had been playing.
+    saveRoomState('1234', writingPhase);
+    const back = loadRoomState('1234');
+    const shares = back !== undefined && 'answerShares' in back ? back.answerShares : undefined;
+    expect(shares).toEqual(new Map([['host', 0.15]]));
   });
 
   it('comes back with the rejections, which are sets and not lists', () => {

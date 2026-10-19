@@ -103,16 +103,26 @@ function reviewingMs(state: HostState): number {
   return Game.reviewingDurationMs(state.players.size, state.pace);
 }
 
+/** How long the count runs for the board the room is about to be shown: one turn per card it
+ * actually has. Read here rather than off the phase table for the same reason `reviewingMs` is:
+ * the length is a fact about this round, and the table has one figure per pace. */
+function scoresMs(state: HostState): number {
+  if (state.phase !== 'Reviewing' && state.phase !== 'Scores') {
+    return Game.phaseDurationMs('Scores', state.pace);
+  }
+  return Game.scoresDurationMs(Game.boardCardCount(state));
+}
+
 /** Advance out of Writing once everyone has answered, or out of Reviewing once its clock is up.
- * Which is read off the phase the room is in, since a late message can ask for either. The
- * length passed in is only the length of the phase being closed. */
-export function endReviewingFrom(host: FlowHost, durationMs: number): void {
+ * The opened phase's length is worked out from the room rather than taken in: both are facts
+ * about the round, and a figure passed in would stop being true the moment the room changed. */
+export function endReviewingFrom(host: FlowHost): void {
   const state = host.getState();
   if (state === undefined) return;
   const next =
     state.phase === 'Writing'
       ? closeWriting(state, reviewingMs(state), host.expectedAnswers())
-      : closeReviewing(state, durationMs);
+      : closeReviewing(state, scoresMs(state));
   host.commit(next);
 }
 
@@ -123,6 +133,14 @@ export function nextRoundFrom(host: FlowHost): void {
   host.commit(nextRound(state, Game.phaseDurationMs('Choosing', state.pace)));
 }
 
+/** The same phase begun again, from the dock: the room watches the reveal again with nothing
+ * rewritten and no vote retaken. */
+export function reloadPhaseFrom(host: FlowHost): void {
+  const state = host.getState();
+  if (state === undefined) return;
+  host.commit(Game.reducer(state, { type: 'RELOAD_PHASE', startedAt: Date.now() }));
+}
+
 /** Wherever the phase table says goes next, which is how the host's clock ends a phase without
  * this file having to know any phase by name. */
 export function nextPhaseFrom(host: FlowHost, topic: string): void {
@@ -130,6 +148,10 @@ export function nextPhaseFrom(host: FlowHost, topic: string): void {
   if (state === undefined) return;
   const next = Game.phaseAfterCycling(state.phase);
   const durationMs =
-    next === 'Reviewing' ? reviewingMs(state) : Game.phaseDurationMs(next, state.pace);
+    next === 'Reviewing'
+      ? reviewingMs(state)
+      : next === 'Scores'
+        ? scoresMs(state)
+        : Game.phaseDurationMs(next, state.pace);
   host.commit(nextPhase(state, next, topic, durationMs));
 }

@@ -6,6 +6,10 @@ describe('reducer NEXT_ROUND action', () => {
   test('transitions to Choosing, carrying the totals across untouched', () => {
     let state: HostState = {
       phase: 'Scores',
+      topic: 'a topic',
+      answers: new Map(),
+      groupRejections: new Map(),
+      groupLikes: new Map(),
       durationMs: 30000,
       startedAt: 1000,
       scores: new Map([['p1', 3]]),
@@ -79,6 +83,10 @@ describe('reducer NEXT_ROUND action', () => {
 function scored(): ScoresState {
   return {
     phase: 'Scores',
+    topic: 'a topic',
+    answers: new Map(),
+    groupRejections: new Map(),
+    groupLikes: new Map(),
     durationMs: 30000,
     startedAt: 1000,
     scores: new Map(),

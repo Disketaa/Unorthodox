@@ -8,6 +8,8 @@ import { scoreRound } from './RoundScoring';
 import { nextPlayerInTurn, turnOrder } from './Turns';
 import type { ActionOf } from './GameActions';
 
+export { handleSubmitAnswer } from './AnswerSubmission';
+
 export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>): HostState {
   if (state.phase !== 'Lobby' || state.players.size === 0) {
     return state;
@@ -91,7 +93,7 @@ export function handleStartWriting(
     durationMs: action.durationMs,
     startedAt: action.startedAt,
     answers: new Map<PlayerId, string>(),
-    answerTimes: new Map<PlayerId, number>(),
+    answerShares: new Map<PlayerId, number>(),
     mult: action.mult ?? 1,
     theme: state.theme,
     // Handed on as the round starts, which is the only place it can be handed: choosing a theme is
@@ -99,28 +101,6 @@ export function handleStartWriting(
     // first with a bank they are not allowed to press and no round to play.
     turnPlayerId: nextPlayerInTurn(state.turnPlayerId, turnOrder(state.players)),
   };
-}
-
-export function handleSubmitAnswer(
-  state: HostState,
-  action: ActionOf<'SUBMIT_ANSWER'>
-): HostState {
-  if (state.phase !== 'Writing') {
-    return state;
-  }
-  const answers = new Map(state.answers);
-  answers.set(action.playerId, action.text);
-  // Written over, so it is the later of the two moments that counts: a player who changes their
-  // mind has spent the time again, and a round that timed only the first press would pay them for
-  // an answer they had already thrown away.
-  const answerTimes = new Map(state.answerTimes ?? []);
-  answerTimes.set(action.playerId, action.at);
-  // An answer that has just been sent is not one being written over. Taken off here rather than
-  // only on the way out of editing, since the two travel as separate messages and a seat must not
-  // be left marked at work over an answer the room is already holding.
-  const editing = new Set(state.editing ?? []);
-  editing.delete(action.playerId);
-  return { ...state, answers, answerTimes, editing };
 }
 
 export function handleStartReviewing(
@@ -140,6 +120,9 @@ export function handleStartReviewing(
   };
 }
 
+/** The round counted, with the board left whole rather than drawn down to its total: counting a
+ * round is the same board looked at once more, and a room shown only the numbers cannot go back
+ * and find the answers that earned them. */
 export function handleEndReviewing(
   state: HostState,
   action: ActionOf<'END_REVIEWING'>
@@ -149,13 +132,12 @@ export function handleEndReviewing(
   }
   const { roundScores, cumulativeScores } = scoreRound(state);
   return {
-    ...membersOf(state),
+    ...state,
     phase: 'Scores',
     durationMs: action.durationMs,
     startedAt: action.startedAt,
     scores: roundScores,
     cumulativeScores,
-    theme: state.theme,
   };
 }
 

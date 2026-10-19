@@ -49,6 +49,10 @@ export interface RoomMembers {
    * letting go can move the phase's clock on by exactly the time it was held, rather than by
    * however long the host took to notice. */
   pausedAt: number | undefined;
+  /** Which run of the phase the room is on, for a screen that has to tell two apart. The phase's
+   * start is not that number: a held room's start is moved on by however long it was held, so
+   * anything keyed on it takes the host's pause for a restart. */
+  reloadedAt?: number;
 }
 
 export type LobbyState = RoomMembers & {
@@ -115,10 +119,10 @@ export type WritingState = RoomMembers & {
   durationMs: number;
   startedAt: number;
   answers: Map<PlayerId, string>;
-  /** When each answer reached the host, which is the whole of the speed bonus. Beside the
-   * answers rather than inside them. No time means sent on the first tick, so a room that
-   * cannot say when does not lose the points for it. */
-  answerTimes?: Map<PlayerId, number>;
+  /** How far into the writing clock each answer reached the host, as a share from zero to one,
+   * and that share is the whole of the speed bonus. The share and not the moment, because a
+   * moment only means anything beside the clock of the round that took it. */
+  answerShares?: Map<PlayerId, number>;
   /** The multiplier the round's card wears, or absent where it carried none. */
   mult?: number;
   /** Who among those who have answered is writing over the one they sent. Beside the answers
@@ -131,15 +135,18 @@ export type WritingState = RoomMembers & {
   theme: ThemeId | undefined;
 };
 
-export type ReviewingState = RoomMembers & {
-  phase: 'Reviewing';
+/** A round's board: the answers as written, how quickly each reached the room, and the room's
+ * marks on them. Carried by both halves of a round rather than written out twice, since
+ * counting a round is the same board looked at once more. */
+export type BoardState = RoomMembers & {
   topic: string;
   durationMs: number;
   startedAt: number;
   answers: Map<PlayerId, string>;
-  /** As in Writing. The round is scored from here, and the bar shows the running total while it
-   * is still open. */
-  answerTimes?: Map<PlayerId, number>;
+  /** As in Writing: how far into the writing clock each answer reached the host. The round is
+   * scored from here, and the bar shows the running total while the round is still open. */
+  answerShares?: Map<PlayerId, number>;
+  /** As in Writing: the multiplier the round's card wears. */
   mult?: number;
   /** groupId -> the playerIds who voted that group not suitable */
   groupRejections: Map<number, Set<PlayerId>>;
@@ -151,13 +158,18 @@ export type ReviewingState = RoomMembers & {
   theme: ThemeId | undefined;
 };
 
-export type ScoresState = RoomMembers & {
+/** The round while the room is still reading it: the board is being turned over, the answers are
+ * being liked and turned down, and the score is moving under all of it. */
+export type ReviewingState = BoardState & {
+  phase: 'Reviewing';
+};
+
+/** The round counted, with the board still up. A subphase of reviewing rather than a screen of
+ * its own: what the room is looking at has not changed, only what the room now knows about it. */
+export type ScoresState = BoardState & {
   phase: 'Scores';
-  durationMs: number;
-  startedAt: number;
+  /** What the round paid each player, settled once at the change. */
   scores: Map<PlayerId, number>;
-  /** As in Writing: the round's theme, which the bank on screen is still showing off. */
-  theme: ThemeId | undefined;
 };
 
 export type FinalState = RoomMembers & {
