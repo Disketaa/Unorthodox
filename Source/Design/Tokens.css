@@ -243,15 +243,10 @@ body.PageFade {
 
   /* How long one card's whole count takes on screen, across every line it pays. The same number
    * `GameConfig.timing.scoreCountMs` holds for the code that walks the board, and
-   * `Tests/ScoreTiming.test.ts` fails rather than letting the two drift. Short enough that a
-   * card is paid inside its own turn rather than into the next one's. */
-  --Duration-ScoreCount: 375ms;
-
-  /* How long the mark saying what a card is adding stands in the figure's place, at the very
-   * least, whatever the card's own line was given. `GameConfig.timing.scoreMarkHoldMs` holds
-   * the same number and the same test holds the two together: the mark is the one moment a card
-   * explains itself, so it is given room however the line around it is sized. */
-  --Duration-ScoreMarkHold: 160ms;
+   * `Tests/ScoreTiming.test.ts` fails rather than letting the two drift. Long enough that the
+   * room watches the figure climb rather than seeing it arrive, and short enough that a card is
+   * paid inside its own turn rather than into the next one's. */
+  --Duration-ScoreCount: 560ms;
 
   /* How long the whole phase-change splash runs, the mark's growth and the yellow's closing
    * together. A duration rather than a phase length: nothing waits on it, and the room moves on
@@ -622,6 +617,15 @@ body.PageFade {
   --Texture-ThemeCardGlintC: url('./Overlays/Glint3.gif');
   --Blend-ThemeCardGlint: multiply;
   --Opacity-ThemeCardGlint: 0.2;
+  /* How bright the enchantment's flash burns and how long it takes to go. Brighter than a shine
+   * that stays, since a flash is a moment rather than a finish and it is laid over the whole
+   * room at once. */
+  --Opacity-GlintFlash: 0.55;
+  --Duration-GlintFlash: 700ms;
+  /* How long the wash over the room behind the word that arrives holds before it lets go: two
+   * beats of the countdown, so the light lasts as long as one of the numbers the room already
+   * reads time by. */
+  --Duration-GlintWash: calc(var(--Duration-CountTick) * 2);
   /* The round ticks along the bottom of a card: how big one is, how far apart they sit, how
    * rounded, and how faint the ones the room is not on are. A tick rather than a dot, and
    * taller than it is wide: a row of dots on a card this size reads as a rating meter, and ten
@@ -717,10 +721,6 @@ body.PageFade {
    * going to come back on its own, and a card being held back for a moment is quiet while a
    * card that has been dealt with is out of it. */
   --Opacity-AnswerCardVoted: 0.45;
-  /* How far a card is held once the count has gone past it. A share of its own opacity, not a
-   * colour of its own: a card that has been counted is still the writer's card, and greying it
-   * says the writer is gone rather than that the round has finished reading. */
-  --Opacity-AnswerCardPaid: 0.55;
   /* How far a like badge is held back while nothing has liked the answer. Held back rather than
    * removed, so a card nobody liked still carries somewhere to press. */
   --Opacity-LikeBadgeQuiet: 0.5;
@@ -739,6 +739,17 @@ body.PageFade {
    * snapped in would leave the room no moment to react to what it said. */
   --Duration-AnswerCardTurn: 700ms;
   --Transition-AnswerCardTurn: var(--Duration-AnswerCardTurn) var(--Easing-Decelerate);
+  /* How long a counted card takes to leave the board, and how far it draws in on the way. The
+   * shrink is a share of the card's own size, so the card closes up around its own centre
+   * rather than travelling anywhere, and a card on a short board shrinks as much as one on a
+   * tall board. The card is gone well inside one card's beat, so a card that has left is out of
+   * the way before the next one is counted. */
+  --Duration-AnswerCardFlyOut: 420ms;
+  --Scale-AnswerCardFlyOut: 0.86;
+  /* How long the room has with a counted card before it is taken away: the figure lands, the
+   * room reads it, and only then does the card go. The note that says what the card paid waits
+   * the same beat, so the sound and the card leaving are one moment. */
+  --Delay-AnswerCardFlyOut: 200ms;
 
   /* Layout, and how wide one container of a screen may be, and how many may sit side by side.
    * The width is what a card's text is measured against, so it is the readable line length

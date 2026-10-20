@@ -210,10 +210,10 @@ describe('who wrote an answer', () => {
     expect(root.textContent).toContain('Star Player');
   });
 
-  it('wears the shine of the round over itself while the count is on an enchanted multiplier', () => {
-    // The mark that says what is being added says "mult", and nothing on the card says why there is
-    // a mult at all. This is that answer: an answer somebody enchanted wrote, paying a multiplier,
-    // being paid right now.
+  it('wears the shine of the round over itself while the count is on an enchanted answer', () => {
+    // The mark that says what is being added says "mult", and nothing on the card says why there
+    // is a mult at all. This is that answer: an answer somebody enchanted wrote, being paid
+    // right now.
     const root = renderCard({
       counting: true,
       paying: true,
@@ -223,6 +223,19 @@ describe('who wrote an answer', () => {
     const shine = root.firstElementChild?.querySelector<HTMLElement>('[class*="Glint"]');
     expect(shine).not.toBeNull();
     expect(shine?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('wears the shine as soon as the card is on the board, before the count reaches it', () => {
+    // The same rule the enchanted theme card in the bank follows: a card the enchantment reached
+    // is shining from the moment the room is shown it, and not only while it is being paid. The
+    // room is told which answers the enchantment touched, and it is told at once.
+    const root = renderCard({
+      counting: false,
+      paying: false,
+      enchanted: true,
+      score: { base: 10, mult: 8, likes: 0, total: 18 },
+    });
+    expect(root.firstElementChild?.querySelector('[class*="Glint"]')).not.toBeNull();
   });
 
   it('takes the shine off an answer nobody was enchanted for', () => {
@@ -237,29 +250,29 @@ describe('who wrote an answer', () => {
     expect(root.firstElementChild?.querySelector('[class*="Glint"]')).toBeNull();
   });
 
-  it('takes the shine off an enchanted answer whose multiplier gained nothing', () => {
-    // Somebody was enchanted, but no multiplier arrived, so there is nothing here the shine could
-    // be explaining. Leaving it on would put the round's enchantment on every card it touched,
-    // which is a claim rather than a fact.
+  it('keeps the shine on an enchanted answer even where its multiplier gained nothing', () => {
+    // Somebody was enchanted, and the room is told which answer the enchantment reached: the
+    // shine says the answer was written by somebody the round touched, whether or not the
+    // enchantment turned out to pay for it.
     const root = renderCard({
       counting: true,
       paying: true,
       enchanted: true,
       score: { base: 10, mult: 0, likes: 0, total: 10 },
     });
-    expect(root.firstElementChild?.querySelector('[class*="Glint"]')).toBeNull();
+    expect(root.firstElementChild?.querySelector('[class*="Glint"]')).not.toBeNull();
   });
 
-  it('takes the shine off once the count has left the board', () => {
-    // The shine is for the moment the figure is being explained, not a finish left on the card
-    // afterwards: the room was told what the multiplier was, and leaving the shine is decoration
-    // on a moment that has passed.
+  it('keeps the shine on once the count has been through the card', () => {
+    // The shine is a finish over the card rather than a moment of it: the answer was written by
+    // somebody the enchantment reached, and that stays true after the room has been told what it
+    // was worth. The card leaves the board on its own beat.
     const root = renderCard({
       counting: false,
       paid: true,
       enchanted: true,
       score: { base: 10, mult: 8, likes: 0, total: 18 },
     });
-    expect(root.firstElementChild?.querySelector('[class*="Glint"]')).toBeNull();
+    expect(root.firstElementChild?.querySelector('[class*="Glint"]')).not.toBeNull();
   });
 });

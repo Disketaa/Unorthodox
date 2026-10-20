@@ -95,6 +95,12 @@ function Payout({ value, added, failed }: { value: number; added: boolean; faile
   );
 }
 
+/** The shine a seat wears for the round: the one the enchantment laid over it, which is there
+ * for as long as the round is. */
+function SeatShine({ entry, glintClass }: { entry: PlayerBarEntry; glintClass: string }) {
+  return <>{entry.glinted && <span class={glintClass} aria-hidden="true" />}</>;
+}
+
 /** One player in the bar: their name over a hexagon, and their score over it instead while the
  * pointer is on the seat. The name is what a player looks for in a room they have just joined,
  * where a face alone asks them to remember who they picked. */
@@ -144,7 +150,7 @@ export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
           shown={shown}
           trigger={popTriggerRef.current}
         />
-        {entry.glinted && <span class={glintClass} aria-hidden="true" />}
+        <SeatShine entry={entry} glintClass={glintClass} />
       </span>
       <span class={styles.Label}>
         <span class={styles.Name}>{entry.name}</span>

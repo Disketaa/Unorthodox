@@ -26,17 +26,10 @@ interface Step {
   /** The figure the previous line left on the card, which is what this one counts up from. */
   from: number;
   name: StepName;
-  /** What this line added to the running total. Left out on the first, where there is nothing
-   * before it to be an addition to. */
-  added?: number;
   /** How long this figure takes to arrive. */
   durationMs: number;
   /** How far into the card's own count this line begins. */
   atMs: number;
-  /** What kind of thing this line is adding, so the card can name it with a mark of its own
-   * while the figure waits. Left out on the first line, which adds the answer's own worth and
-   * has no mark to stand for. */
-  mark?: 'Mult' | 'Likes';
 }
 
 /** One of the three things a card's count pays, before the rows with nothing in them are
@@ -44,7 +37,6 @@ interface Step {
 interface Row {
   value: number;
   name: StepName;
-  mark?: 'Mult' | 'Likes';
 }
 
 /** The lines of a card's count, each with the moment it begins and how long its figure takes.
@@ -53,8 +45,8 @@ interface Row {
 function steps(score: CardScore): Step[] {
   const every: Row[] = [
     { value: score.base, name: 'base' },
-    { value: score.mult, name: 'mult', mark: 'Mult' },
-    { value: score.likes, name: 'likes', mark: 'Likes' },
+    { value: score.mult, name: 'mult' },
+    { value: score.likes, name: 'likes' },
   ];
   const rows = every.filter((row) => row.value !== 0);
   // The lines do not necessarily add up to the total on their own: the scorer rounds what it
@@ -66,20 +58,15 @@ function steps(score: CardScore): Step[] {
   // and the total the bar shows after, so a count that overran this is a card still counting
   // while the room is being told about the next one.
   const budget = scoreCountMs();
-  // The base line is given half a share: it has no mark to announce before it, so a room spends
-  // the same second watching a climb it has not been told the meaning of yet. The half is not
-  // saved but handed back — the other lines gain exactly what the base gives up.
-  const plain = Math.max(1, Math.round(budget / rows.length / 2));
-  const marked = (budget - plain) / Math.max(1, rows.length - 1);
+  // Every line is given the same share of it: nothing stands in the figure's place before it
+  // now, so a line is watched for as long as the one beside it.
+  const share = Math.max(1, Math.round(budget / Math.max(1, rows.length)));
   let atMs = 0;
-  return rows.map((row, index) => {
-    const share = index === 0 ? plain : Math.round(marked);
+  return rows.map((row) => {
     const step: Step = {
       from: running,
       to: running + row.value,
       name: row.name,
-      mark: row.mark,
-      added: index === 0 ? undefined : row.value,
       durationMs: share,
       atMs,
     };
@@ -142,8 +129,6 @@ function PaidFigure({
           <ScoreCount
             from={shown.from}
             to={shown.to}
-            added={shown.added}
-            addedMark={shown.mark}
             onBeat={onBeat}
             durationMs={shown.durationMs}
             paused={paused}

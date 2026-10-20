@@ -44,11 +44,11 @@ function tintFor(props: AnswerCardProps): { '--AnswerCard-Tint': string } | unde
     : { '--AnswerCard-Tint': `var(--Color-Character-${writer.color})` };
 }
 
-/** Whether this card wears the round's shine while the count is on it: it was written by
- * somebody the enchanted card reached, and its figure carries a multiplier because of that.
- * Both halves are needed — an enchanted answer that gained nothing has no multiplier to show. */
+/** Whether this card wears the round's shine: its writer was enchanted. The same rule the
+ * enchanted theme card in the bank follows — a card the enchantment reached is shining from the
+ * moment the room is shown it, through the round and into the count that pays it. */
 function glinted(props: AnswerCardProps): boolean {
-  return props.counting === true && props.enchanted === true && (props.score?.mult ?? 0) > 0;
+  return props.enchanted === true;
 }
 
 /** What is on the card's face: the answer as the substance while the room reads it, and the

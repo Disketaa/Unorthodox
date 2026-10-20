@@ -103,7 +103,16 @@ function barMarksFor(
   // Who the round's enchanted card reaches, read off the room's own roll rather than worked out
   // here: the host named the seats and every screen is told the same ones.
   const glinted = new Set(view.publicState?.affectedPlayerIds ?? []);
-  return { settled, waitingOnTurn, scores, scoredNothing, paying, payouts, named, glinted };
+  return {
+    settled,
+    waitingOnTurn,
+    scores,
+    scoredNothing,
+    paying,
+    payouts,
+    named,
+    glinted,
+  };
 }
 
 /** The bar across the top of a game. */
@@ -126,6 +135,7 @@ export function PlayerBarView({ view }: PhaseViewProps) {
   // Counted off the same clock the board counts from, so a round's points arrive as the count
   // reaches the answer they were for.
   const board = countBoard(settled, view.phaseStartedAt, reveal.moment);
-  const players = barEntries(view, barMarksFor(view, reviewing, reveal, board, settled));
+  const marks = barMarksFor(view, reviewing, reveal, board, settled);
+  const players = barEntries(view, marks);
   return <PlayerBar players={players} ownPlayerId={view.playerId} />;
 }

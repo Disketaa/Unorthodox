@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { playSound } from '../../Sounds';
-import { scoreCountMs } from '../ScoreTiming';
+import { cardLeaves } from './CardLeaves';
 import type { AnswerCardsEntry } from './AnswerCardsEntry';
 
 /** Whether the count has reached this card yet, kept as a thing that only moves forward. State
@@ -30,44 +30,34 @@ function usePaidNote(paid: boolean): void {
   }, [paid]);
 }
 
-/** The note that says this card was paid nothing, on the beat the count reaches it. Here on the
- * slot rather than inside the card, which is the whole point: the card's pop re-keys its
- * subtree on every arrival, so a guard kept inside it forgets itself on each rebuild. */
-function useNothingNote(answer: AnswerCardsEntry, reached: boolean): void {
+/** The note that says this card was paid nothing, on the beat the card is taken off the board.
+ * Here on the slot rather than inside the card, which is the whole point: the card's pop
+ * re-keys its subtree on every arrival, so a guard kept inside it forgets itself. */
+function useNothingNote(answer: AnswerCardsEntry, leaves: boolean): void {
   const said = useRef(false);
   const total = answer.score?.total;
   useEffect(() => {
-    if (!reached || total !== 0 || said.current) {
+    if (!leaves || total !== 0 || said.current) {
       return;
     }
     said.current = true;
     playSound('Sad');
-  }, [reached, total]);
+  }, [leaves, total]);
 }
 
-/** The note that says the count has finished this card and its figure has landed — once for the
- * card, and never for one paid nothing, which has its own note above. A card is paid once
- * however many wrote it, so this is sounded by the card rather than by each seat under it. */
-function usePaidFigure(
-  answer: AnswerCardsEntry,
-  index: number,
-  payingIndex: number | undefined,
-  payingElapsedMs: number | undefined,
-  lifted: boolean
-): void {
+/** The note that says what the card paid, on the same beat the card is taken off the board —
+ * once for the card, and never for one paid nothing, which has its own note above. A card is
+ * paid once however many wrote it, so this is sounded by the card rather than by each seat. */
+function usePaidFigure(answer: AnswerCardsEntry, leaves: boolean): void {
   const said = useRef(false);
   const total = answer.score?.total ?? 0;
-  const landed =
-    payingIndex !== undefined &&
-    payingIndex >= index &&
-    (payingIndex > index || (lifted && (payingElapsedMs ?? 0) >= scoreCountMs()));
   useEffect(() => {
-    if (!landed || total === 0 || said.current) {
+    if (!leaves || total === 0 || said.current) {
       return;
     }
     said.current = true;
     playSound('Eat');
-  }, [landed, total]);
+  }, [leaves, total]);
 }
 
 /** Everything one slot owns that makes a sound, sounded by the slot and not by the card, since
@@ -95,8 +85,9 @@ export function useSlotNotes(
     if (named) playSound('Reveal');
   }, [named]);
   const paid = usePaidOnce(index, payingIndex);
+  const leaves = cardLeaves(index, payingIndex, payingElapsedMs, lifted);
   usePaidNote(paid);
-  useNothingNote(answer, paid);
-  usePaidFigure(answer, index, payingIndex, payingElapsedMs, lifted);
+  useNothingNote(answer, leaves);
+  usePaidFigure(answer, leaves);
   return paid;
 }

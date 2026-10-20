@@ -11,52 +11,14 @@
   pointer-events: none;
 }
 
-/* The room wearing the enchantment for a moment while the word is there: the same tile, over
- * the whole window, rather than a plate behind the word. A notice that brightened only its own
- * block would say the enchantment is a word; a wash over the page says it reached the player.
- * Fades away rather than waiting for the word to go, since the room cannot stay lit behind a
- * question, and one beat of it is what is wanted. */
-.Backdrop {
-  position: absolute;
-  inset: 0;
-  /* The whole wash is two beats, half of it held: one beat of light and one of it going, off
-   * the countdown's own beat rather than a length of its own, so the light lasts exactly as
-   * long as one of the numbers the room already reads time by. The length travels as a custom
-   * property because a `calc()` written inside the animation is stripped by the build. */
-  --Enchanted-Wash: calc(var(--Duration-CountTick) * 2);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  mix-blend-mode: var(--Blend-ThemeCardGlint);
-  animation: BackdropWash var(--Enchanted-Wash) linear both;
-}
-
-@keyframes BackdropWash {
-  0%,
-  50% {
-    opacity: var(--Opacity-ThemeCardGlint);
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  /* The wash is the whole of the movement here, so there is nothing to take away but the wash
-   * itself: a player who has asked for less motion is not having a bright page put over their
-   * question, and the word still arrives to say what happened. */
-  .Backdrop {
-    display: none;
-  }
-}
-
 /* The word itself, centred on the window rather than in a block of its own: it is a beat in the
- * middle of the screen, and a plate behind it would be a card covering the answer field. */
+ * middle of the screen, and a plate behind it would be a card covering the answer field. Above
+ * the wash behind it, so the word is read over the shine rather than under it. */
 .Word {
   position: absolute;
   top: 50%;
   left: 50%;
+  z-index: 3;
   translate: -50% -50%;
   font-family: var(--FontFamily-Display);
   font-size: min(18vw, calc(var(--FontSize-4xl) * 2));

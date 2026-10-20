@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { countStepMs } from '../Source/Game';
 import { stylesheet, tokenReader } from './Stylesheet';
 
 /** The board of answers, read from its stylesheet and the token file rather than rendered:
@@ -142,6 +143,38 @@ describe('the board of answers', () => {
     );
     expect(sheet.declares(Slot, '--Size-AnswerCardWidth')).toBe(false);
     expect(sheet.declares(Root, '--Size-AnswerCardWidth')).toBe(false);
+  });
+});
+
+describe('a card the count has been through', () => {
+  const Fleeing = /\.Fleeing[^{]*\{([^}]*)\}/;
+
+  it('draws in on itself and goes out, rather than being switched off where it stands', () => {
+    // A sheet lifted off a pile closes up as it is taken: the card draws in around its own centre
+    // while it dissolves, so the room sees it go rather than seeing it stop being there.
+    const shrink = sheet.text.match(/@keyframes CardFlyOutShrink \{([\s\S]*?)\n\}/)?.[1] ?? '';
+    const last = shrink.match(/to\s*\{([^}]*)\}/)?.[1]?.replace(/\s+/g, '') ?? '';
+    expect(last).toContain('transform:scale(var(--Scale-AnswerCardFlyOut))');
+    // And it starts at its own size: a card that began the shrink already smaller is a card that
+    // has jumped rather than one that has been taken away.
+    const first = shrink.match(/from\s*\{([^}]*)\}/)?.[1]?.replace(/\s+/g, '') ?? '';
+    expect(first).toContain('transform:scale(1)');
+  });
+
+  it('loses its ink on a straight line, so it dissolves while it is still closing up', () => {
+    // A fade that ran on the same curve as the shrink would have the card nearly gone before it
+    // had visibly moved, which is a card switched off rather than a card taken away.
+    const fade = sheet.text.match(/@keyframes CardFlyOutFade \{([\s\S]*?)\n\}/)?.[1] ?? '';
+    const last = fade.match(/to\s*\{([^}]*)\}/)?.[1]?.replace(/\s+/g, '') ?? '';
+    expect(last).toContain('opacity:0');
+    expect(sheet.declaration(Fleeing, 'animation')).toContain('var(--Duration-AnswerCardFlyOut)');
+  });
+
+  it('is gone well inside one card’s beat, so it is out of the way before the next is counted', () => {
+    // The count gives every card the same beat and moves on whether the card has finished
+    // leaving or not, so a flyout longer than that beat would have two cards in the air at once.
+    const flyOut = Number(tokenValue('--Duration-AnswerCardFlyOut').replace('ms', ''));
+    expect(flyOut).toBeLessThan(countStepMs());
   });
 });
 

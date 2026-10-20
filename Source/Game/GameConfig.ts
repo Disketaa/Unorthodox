@@ -95,26 +95,21 @@ const timing = {
   /** How long the room waits before the score starts counting up on each card. The drama beat:
    * the board is up, the room has read it, and then the numbers start arriving. */
   scoreDramaDelayMs: 300,
-  /** How long one card's whole count takes — every line of it, the speed bonus and the marks and
-   * the figures arriving, divided between them. Sized for the worst card, one paying three
-   * things: each line needs room to say what it is adding before the figure takes it on. */
-  scoreCountMs: 375,
-  /** How long the mark that says what a card is adding — the multiplier or the likes — stands in
-   * the figure's place before the figure takes it on, at the very least. It is the one moment
-   * the card explains itself, so it is given room whatever else the card is paying. */
-  scoreMarkHoldMs: 160,
+  /** How long one card's whole count takes — every line of it, the speed bonus and the figures
+   * arriving, divided between them. Sized for the worst card, one paying three things: each
+   * line needs room to be watched before the next one takes the figure over. */
+  scoreCountMs: 560,
   /** How long the addition figure (+N) stays on the seat after the card is counted, before the
    * room is told what the player has altogether. Long enough to read the figure and see who it
    * belongs to. */
-  scoreAddedHoldMs: 200,
+  scoreAddedHoldMs: 300,
   /** How long the pause is between the addition and the total, and between the total and the
-   * next card. The room needs to read one figure before the next one replaces it. A third of
-   * the old pause, keeping its job: two figures are still separated by a beat of their own. */
-  scoreGapMs: 85,
+   * next card. The room needs to read one figure before the next one replaces it. */
+  scoreGapMs: 128,
   /** How long the player's total stands on the seat after the addition has had its moment,
    * before the count moves to the next card. Long enough to read the total before the next card
    * starts — at the card's own pace, which is the pace the addition above was given. */
-  scoreTotalHoldMs: 200,
+  scoreTotalHoldMs: 300,
   /** How long the shade stays up over the board while the scores are counting. Long enough for
    * the room to watch the numbers arrive without the board behind them moving. */
   scoreVeilMs: 1200,

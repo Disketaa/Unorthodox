@@ -1,0 +1,7 @@
+/* What the shine is laid over in the gallery: a stage of its own, since the shine is drawn over
+ * whatever is under it and the gallery has to have something under it. */
+.Stage {
+  position: relative;
+  height: 120px;
+  background: var(--Color-Surface-Hover);
+}

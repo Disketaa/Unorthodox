@@ -67,6 +67,16 @@ describe('the bar of hexes', () => {
   });
 });
 
+describe('the row flashed by the enchantment', () => {
+  it('shines over nothing of its own, since the room is what is flashed', () => {
+    // The enchantment is told of the whole room rather than of the seat the card names, so the
+    // bar carries no shine of its own: the flash is laid over the window by the room above it.
+    const players = Array.from({ length: 3 }, (_, index) => player({ id: `p${index}` }));
+    const root = mounted(<PlayerBar players={players} />);
+    expect(root.querySelectorAll('[class*="Flash"]')).toHaveLength(0);
+  });
+});
+
 describe('the host', () => {
   it('carries no crown, since the name already says who this is', () => {
     // The host is the first player of the roster, which is where the room puts them, so the bar

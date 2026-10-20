@@ -1,0 +1,87 @@
+/* The shine the round's enchantment lays over whatever it has touched, and then takes away: the
+ * one mechanic behind a seat that flashes, the wash over the room behind the word that arrives,
+ * and the shine over a card the enchantment reached. Over the thing it belongs to rather than
+ * under it, and hidden from the pointer — a shine covering the thing being pressed is a shine
+ * that takes the press. Above the shine that stays, since a flash is the loud one of the two. */
+.Root {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  mix-blend-mode: var(--Blend-ThemeCardGlint);
+}
+
+/* The shine over the whole window rather than over the thing it belongs to: the room itself is
+ * flashed, so the light is laid over everything the room is looking at and not over one corner
+ * of it. Fixed against the window, above the paper and the board and below the notices, so it
+ * covers the room without taking the pointer or hiding what is being said. */
+.Full {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+}
+
+/* A shine that burns away at once: the enchantment's own flash, which says the room has been
+ * touched and leaves the room as it found it. Held at its peak for a third of its time before
+ * it goes, since a shine that starts fading on the first frame is gone before the room has
+ * looked at it. */
+.Flash {
+  animation: GlintFlash var(--Duration-GlintFlash) var(--Easing-Smooth) both;
+}
+
+@keyframes GlintFlash {
+  0%,
+  35% {
+    opacity: var(--Opacity-GlintFlash);
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+/* A shine that holds before it lets go: the arrival's own wash, which is there for the length
+ * of the word standing over it. Half of it held and half of it going, off the countdown's beat
+ * rather than a length of its own, so the light lasts as long as one of the numbers the room
+ * already reads time by. */
+.Wash {
+  animation: GlintWash var(--Duration-GlintWash) linear both;
+}
+
+@keyframes GlintWash {
+  0%,
+  50% {
+    opacity: var(--Opacity-ThemeCardGlint);
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The tile itself, one of three, since which one is rolled rather than fixed. */
+.GlintA {
+  background-image: var(--Texture-ThemeCardGlintA);
+}
+
+.GlintB {
+  background-image: var(--Texture-ThemeCardGlintB);
+}
+
+.GlintC {
+  background-image: var(--Texture-ThemeCardGlintC);
+}
+
+/* The movement off: a flash is a movement, and a player who has asked for less motion is not
+ * having the room lit over it. The enchantment is still said — by the word, and by the shine
+ * that stays on the card the enchantment reached. */
+@media (prefers-reduced-motion: reduce) {
+  .Flash,
+  .Wash {
+    animation: none;
+    opacity: 0;
+  }
+}

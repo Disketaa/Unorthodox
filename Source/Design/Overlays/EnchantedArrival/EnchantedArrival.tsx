@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { playSound } from '../../Sounds';
+import { GlintFlash } from '../../Components/GlintFlash';
 import { useGlintVariant } from '../../Components/Glint';
 import styles from './EnchantedArrival.module.css';
 
@@ -42,7 +42,6 @@ export function EnchantedArrival({ enchanted, children }: EnchantedArrivalProps)
     if (!enchanted) return;
     setLeaving(false);
     setGone(false);
-    playSound('Enchant');
     // One timer per arrival, cleared before any new one is set: two timers here are two words,
     // and the second arrives after the first has already gone.
     const leave = window.setTimeout(() => setLeaving(true), HoldMs);
@@ -57,9 +56,9 @@ export function EnchantedArrival({ enchanted, children }: EnchantedArrivalProps)
   if ((!enchanted && !leaving) || gone) return null;
   return (
     <div class={styles.Root}>
-      {!leaving && (
-        <span class={`${styles.Backdrop} ${styles[`Glint${variant}`]}`} aria-hidden="true" />
-      )}
+      {/* The room wearing the enchantment for a moment while the word is there: the same shine,
+       * and the same note, as every other place the enchantment touches. */}
+      {!leaving && <GlintFlash variant="Wash" sound />}
       <span
         class={`${styles.Word} ${leaving ? styles.Leaving : styles.Showing} ${styles.Glinted} ${styles[`Glint${variant}`]}`}
         role="status"

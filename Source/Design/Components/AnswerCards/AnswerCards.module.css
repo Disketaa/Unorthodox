@@ -101,6 +101,44 @@
   pointer-events: none;
 }
 
+/* A card the count has been through, on its way off the board: it shrinks around its own centre
+ * and goes out, the way a sheet of paper lifted off a pile comes away and dissolves. On the
+ * slot rather than on the card, since the card is a closed component and the slot is what holds
+ * its place on the board. The cell it leaves behind stays, so the board keeps its shape while
+ * the round is counted and the room's eyes are not moved off the card being paid by a grid
+ * closing up under it. */
+.Fleeing {
+  animation:
+    CardFlyOutShrink var(--Duration-AnswerCardFlyOut) var(--Easing-Decelerate) both,
+    CardFlyOutFade var(--Duration-AnswerCardFlyOut) linear both;
+  pointer-events: none;
+}
+
+/* The card drawing in on itself, on the room's own easing: it is taken off the pile rather than
+ * pushed, so it is already moving at once and settles into the end of its shrink. */
+@keyframes CardFlyOutShrink {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(var(--Scale-AnswerCardFlyOut));
+  }
+}
+
+/* The ink going out on its own straight line, so the card dissolves while it is still visibly
+ * growing: a fade that ran on the same curve as the swell would have the card nearly gone
+ * before it had visibly come forward. */
+@keyframes CardFlyOutFade {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes VeilIn {
   from {
     opacity: 0;

@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { AnswerCards, type AnswerCardsEntry } from './AnswerCards';
+import { flyOutDelayMs, scoreCountMs } from '../ScoreTiming';
 
 /** A board of `count` answers, all different, and nothing voted out. */
 function answers(count: number): AnswerCardsEntry[] {
@@ -43,6 +44,69 @@ function mount(
 function fillersOf(root: Element): number {
   return [...root.children].filter((cell) => cell.firstElementChild === null).length;
 }
+
+/** Mount a board with the count standing on one card, and hand back the board itself: the cells
+ * are what the count moves over, so the class of a cell is what the room is shown. */
+function mountPaying(count: number, payingIndex: number, payingElapsedMs?: number): Element {
+  const container = document.body.appendChild(document.createElement('div'));
+  act(() => {
+    render(
+      <AnswerCards
+        answers={answers(count)}
+        payingIndex={payingIndex}
+        payingElapsedMs={payingElapsedMs}
+        spotlight
+      />,
+      container
+    );
+  });
+  const root = container.firstElementChild;
+  if (root === null) throw new Error('no board rendered');
+  return root;
+}
+
+/** The cells of a board, in the order they are drawn: the veil over a counting board is not a
+ * cell, and neither is the empty cell that holds the place of one the last row is short by. */
+function slotsOf(root: Element): Element[] {
+  return [...root.children].filter((cell) => cell.firstElementChild !== null);
+}
+
+describe('a card the count has been through', () => {
+  it('is on its way off the board, and the card being counted is not', () => {
+    // The count walks the board one card at a time, and a card it has been through is a card
+    // that leaves: the board is read as a pile of sheets taken off one at a time, not as a board
+    // holding every answer it has ever read.
+    const slots = slotsOf(mountPaying(3, 1));
+    expect(slots[0]?.className).toContain('Fleeing');
+    expect(slots[1]?.className).not.toContain('Fleeing');
+    expect(slots[2]?.className).not.toContain('Fleeing');
+  });
+
+  it('holds the card while its figure is still counting', () => {
+    // The card is being read while its figure climbs, and a card that left in the middle of the
+    // climb would be a card taken away before the room had been told what it was worth.
+    const counting = slotsOf(mountPaying(2, 0, scoreCountMs() - 1));
+    expect(counting[0]?.className).not.toContain('Fleeing');
+  });
+
+  it('leaves a beat after the figure lands, so the room has read it first', () => {
+    // The card is held for a moment once its figure has landed, and the note that says what it
+    // paid waits the same beat: the sound and the card leaving are one moment, and neither of
+    // them comes before the room has had the figure.
+    const held = slotsOf(mountPaying(2, 0, scoreCountMs() + flyOutDelayMs() - 1));
+    expect(held[0]?.className).not.toContain('Fleeing');
+    const leaving = slotsOf(mountPaying(2, 0, scoreCountMs() + flyOutDelayMs()));
+    expect(leaving[0]?.className).toContain('Fleeing');
+  });
+
+  it('keeps its cell, since the board holds its shape while the round is counted', () => {
+    // A board that closed up under the count would move the room's eyes off the card being
+    // paid and onto a grid that is being redrawn, which is the one thing the count cannot
+    // afford to do.
+    const root = mountPaying(3, 2);
+    expect(slotsOf(root)).toHaveLength(3);
+  });
+});
 
 describe('the board of answers', () => {
   it('draws two answers side by side rather than as one column with a gap beside it', () => {

@@ -25,3 +25,4 @@ export * from './ThemeCard';
 export * from './ThemeCards';
 export * from './ThemeLabel';
 export * from './Keyboard';
+export * from './GlintFlash';

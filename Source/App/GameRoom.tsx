@@ -22,6 +22,7 @@ import type { GameSessionView } from './Hooks/UseGameSession';
 import type { SessionPhaseName } from './Hooks/UseSessionPhase';
 import { SessionRole, BlockedReason } from './Session';
 import { LobbyView } from './Views/LobbyView';
+import { EnchantFlash } from './Views/EnchantFlash';
 import { GameScene, WritingScene, ReviewScene } from './Views/GameScene';
 
 export interface GameRoomProps {
@@ -180,6 +181,7 @@ function CountedRoom({ view, roomCode, debugEnabled }: CountedRoomProps) {
       {!counting && !splashing && (
         <EnchantedArrival enchanted={enchanted}>{Strings.writing.enchanted}</EnchantedArrival>
       )}
+      {!counting && !splashing && <EnchantFlash view={view} />}
       <PhaseScreen view={underRef.current ?? view} />
       {!counting && !splashing && <RoomDebugTools view={view} enabled={debugEnabled} />}
     </AnswerFlushProvider>

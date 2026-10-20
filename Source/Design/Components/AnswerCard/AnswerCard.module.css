@@ -523,14 +523,12 @@
   text-decoration-color: currentColor;
 }
 
-/* A card the count has gone past, held back rather than taken away. It stops inviting the
- * pointer, and it goes quiet by a quarter of its own opacity — which is a colour, not a grey:
- * the veil it now stands over is what was making it grey, and holding the card back any further
- * only made it quieter. Held back rather than lit, so the card being paid this moment is still
- * the one the eye goes to. */
+/* A card the count has gone past, which is on its way off the board. It stops inviting the
+ * pointer, and it is not held back: a card that is leaving is read at full ink until it is
+ * gone, and greying it first would say the writer was already out of the round rather than that
+ * the card is on its way. */
 .Root.Paid {
   cursor: var(--Cursor-Default);
-  opacity: var(--Opacity-AnswerCardPaid);
 }
 
 /* The focus ring on the card itself, since there is no border left to recolour. Drawn outside
