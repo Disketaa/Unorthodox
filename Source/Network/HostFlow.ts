@@ -100,7 +100,8 @@ export function chooseThemeFrom(
  * off the phase table, which has one figure per pace where the room needs one per room size. */
 function reviewingMs(state: HostState): number {
   if (state.phase !== 'Writing') return Game.phaseDurationMs('Reviewing', state.pace);
-  return Game.reviewingDurationMs(state.players.size, state.pace);
+  const board = Game.boardWriterCounts(state);
+  return Game.reviewingDurationMs(board, Game.GameConfig.paces[state.pace]);
 }
 
 /** How long the count runs for the board the room is about to be shown: one turn per card it

@@ -18,14 +18,13 @@ export interface SettingsCardProps {
   customThemes: readonly CustomTheme[];
 }
 
-/** The room's own settings, on one card: pace, waits, and themes. */
+/** The room's own settings, on one card: pace and themes. */
 export function SettingsCard(props: SettingsCardProps) {
   return (
     <LobbyPace
       pace={props.pace}
       themeMode={props.themeMode}
       themes={props.themes}
-      players={props.players}
       isHost={props.isHost}
       onPick={props.onPickPace}
       onPickThemes={props.onPickThemes}

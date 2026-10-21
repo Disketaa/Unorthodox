@@ -10,12 +10,14 @@ import {
   readShownScores,
   payoutsOf,
   settledTotals,
+  glintedSeats,
   type BarBoard,
   type Payout,
 } from './PlayerBarStandings';
 import { payingSeats, struckWriters, seatPulses, usePresses } from './PlayerBarMarks';
 
 export { readScores, readShownScores, payoutsOf, settledTotals } from './PlayerBarStandings';
+export { glintedSeats } from './PlayerBarStandings';
 export { struckWriters, seatPulses } from './PlayerBarMarks';
 export type { BarBoard, Payout } from './PlayerBarStandings';
 
@@ -114,8 +116,9 @@ function barMarksFor(
   const payouts = payoutsOf(reviewing, board.payingIndex, scores, subPhase, finished);
   const named = seatPulses(reviewing, reveal, usePresses(reviewing));
   // Who the round's enchanted card reaches, read off the room's own roll rather than worked out
-  // here: the host named the seats and every screen is told the same ones.
-  const glinted = new Set(view.publicState?.affectedPlayerIds ?? []);
+  // here: the host named the seats and every screen is told the same ones. The bar says so from
+  // the moment the round is rolled, and only the cards wait for the count.
+  const glinted = glintedSeats(view.publicState);
   return {
     settled,
     waitingOnTurn,
@@ -137,8 +140,6 @@ export function PlayerBarView({ view }: PhaseViewProps) {
   // and the board are told the same thing on the same frame.
   const reveal = useReveal(
     reviewing?.groups.map((group) => group.playerIds.length) ?? [],
-    reviewing?.pace ?? 'Standard',
-    view.durationMs,
     view.phaseStartedAt,
     reviewing !== undefined,
     view.paused,

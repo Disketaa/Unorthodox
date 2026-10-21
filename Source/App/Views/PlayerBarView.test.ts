@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { readScores, seatPulses, struckWriters, type BarBoard } from './PlayerBarView';
+import {
+  readScores,
+  glintedSeats,
+  seatPulses,
+  struckWriters,
+  type BarBoard,
+} from './PlayerBarView';
 import type { PublicState } from '@/Game';
 import type { RevealState } from '../Hooks/UseReveal';
 
@@ -174,5 +180,38 @@ describe('the number a seat shows under the pointer', () => {
     // A phase with no score in it is not a phase whose score is zero, and the difference is the
     // whole reason the bar can say which of the two it is looking at.
     expect(readScores(reviewingRoom([])).size).toBe(0);
+  });
+});
+
+/** One room that has just picked a theme, with the enchantment having reached a seat. */
+function choosing(): PublicState {
+  return {
+    phase: 'Choosing',
+    durationMs: 1000,
+    startedAt: 0,
+    turnPlayerId: null,
+    pace: 'Standard',
+    themes: [],
+    themeMode: 'Random',
+    customThemes: [],
+    spent: [],
+    paused: false,
+    players: [],
+    affectedPlayerIds: ['p1'],
+  };
+}
+
+describe('the seats the round has enchanted', () => {
+  it('says so from the moment the theme is picked, in every phase that carries the list', () => {
+    // The bar is on every screen of the round, so the room is told who was enchanted as soon as
+    // the theme is rolled: the bar says it from the start, and only the cards wait for the count.
+    expect([...glintedSeats(choosing())]).toEqual(['p1']);
+    expect([...glintedSeats({ ...reviewingRoom([]), affectedPlayerIds: ['p1'] })]).toEqual([
+      'p1',
+    ]);
+  });
+
+  it('says nothing when the round enchanted nobody', () => {
+    expect(glintedSeats(reviewingRoom([])).size).toBe(0);
   });
 });

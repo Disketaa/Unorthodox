@@ -1,8 +1,22 @@
 import { useEffect, useState } from 'preact/hooks';
-import { GameConfig } from '@/Game';
+import { GameConfig, type PublicScoreGroup } from '@/Game';
+import type { PlayerId } from '@/Core';
 import { countBoard } from './CountBoard';
 import { boardOf } from '../Views/PlayerBarStandings';
 import type { GameSessionView } from './UseGameSession';
+
+/** Whether the room is flashed for the card the count is on: the enchantment reached one of its
+ * writers, and the room has not turned the answer down. A struck-out answer is not paid, so the
+ * shine and the note would be saying what the enchantment bought of nothing. */
+export function flashesFor(
+  group: PublicScoreGroup | undefined,
+  affected: ReadonlySet<PlayerId>,
+  rejected: ReadonlySet<number>
+): boolean {
+  if (group === undefined) return false;
+  if (rejected.has(group.groupId)) return false;
+  return group.playerIds.some((id) => affected.has(id));
+}
 
 /** The card the count is on, when the enchantment reached one of its writers: the room is
  * flashed with the shine on that card's own beat. The card's own number, so each enchanted card
@@ -23,6 +37,6 @@ export function useEnchantFlash(view: GameSessionView): number | undefined {
   const group =
     board.payingIndex === undefined ? undefined : boardOf(view)?.groups[board.payingIndex];
   const affected = new Set(view.publicState?.affectedPlayerIds ?? []);
-  const reached = (group?.playerIds ?? []).some((id) => affected.has(id));
-  return reached ? board.payingIndex : undefined;
+  if (!flashesFor(group, affected, view.rejectedGroupIds)) return undefined;
+  return board.payingIndex;
 }

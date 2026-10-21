@@ -20,8 +20,6 @@ export function ReviewView({ view }: PhaseViewProps) {
   const settling = view.publicState?.phase === 'Scores';
   const reveal = useReveal(
     state?.groups.map((group) => group.playerIds.length) ?? [],
-    state?.pace ?? 'Standard',
-    view.durationMs,
     view.phaseStartedAt,
     state !== undefined,
     view.paused,
@@ -98,8 +96,8 @@ function reviewGroups(
         // from. Left out before the count reaches the card, so it stays drawn as an answer.
         score: group.score,
         // Whether the round's enchanted card reached one of this card's writers, which is what the
-        // card wears the shine for. Read off the round's list of who the enchantment reached,
-        // intersected with the writers: a mult nobody was enchanted for is not the enchantment's.
+        // card wears the shine for. The card decides when to wear it: the shine waits for the
+        // count, so the room is not told who was enchanted while it is still reading the answers.
         enchanted: enchantedSome(state, group.playerIds),
         ownPlayerId: view.playerId,
       };

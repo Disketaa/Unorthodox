@@ -33,6 +33,13 @@ export function isSettling(state: PublicState | undefined): boolean {
   return state?.phase === 'Scores';
 }
 
+/** The seats the round's enchantment reached, which the bar marks with a shine from the start of
+ * the round: the room is told who was enchanted, and the bar says so on every screen. Only the
+ * cards wait for the count. */
+export function glintedSeats(state: PublicState | undefined): ReadonlySet<PlayerId> {
+  return new Set(state?.affectedPlayerIds ?? []);
+}
+
 /** Every player's total, from whichever figure the phase carries. The round's two halves send
  * its own running figures and Final the whole thing; every other phase reads the standings,
  * which is what makes the bar climb to a number and stay rather than falling back to zero. */

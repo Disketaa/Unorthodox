@@ -6,7 +6,7 @@ import {
   MusicButton,
   VolumeButton,
 } from '@/Design/Components';
-import { GameConfig, Pace, reviewingDurationMs } from '@/Game';
+import { GameConfig, Pace } from '@/Game';
 import { ThemeId, ThemeMode, CustomTheme } from '@/Core';
 import { Strings } from '@/Content';
 import { LobbyCategory } from './LobbyCategory';
@@ -23,10 +23,6 @@ export interface LobbyPaceProps {
   /** Which way the room is given its themes, and the ones it has named. */
   themeMode: ThemeMode;
   themes: readonly ThemeId[];
-  /** How many are in the room. The voting round is timed from the roster rather than from a
-   * fixed figure, so a room of four is told what four players get and not what a full house
-   * gets. */
-  players: number;
   /** Whether this device owns the setting, which is what makes the buttons live. A client still
    * sees the card and its numbers, and finds the buttons inert. */
   isHost: boolean;
@@ -42,14 +38,13 @@ export interface LobbyPaceProps {
   customThemes: readonly CustomTheme[];
 }
 
-/** The three waits of a round, in the order a player meets them. Read from the pace rather than
- * written out, so a wait cannot be shown at one length and run at another. */
-function waits(pace: Pace, players: number) {
+/** The waits a pace sets, in the order a player meets them. The reviewing wait is not among
+ * them: a round is timed by the board it is dealt and by the room in it, so a figure here would
+ * be a guess at both. */
+function waits(pace: Pace) {
   const { writingMs, categoryMs } = GameConfig.paces[pace];
-  const decidingMs = reviewingDurationMs(players, pace);
   return [
     { label: Strings.lobby.settings.writing, ms: writingMs },
-    { label: Strings.lobby.settings.deciding, ms: decidingMs },
     { label: Strings.lobby.settings.category, ms: categoryMs },
   ];
 }
@@ -59,11 +54,11 @@ function questionsPerTheme(pace: Pace): number {
   return pace === 'Fast' ? 5 : 10;
 }
 
-/** The three waits a pace decides, one row each, under the pace buttons that decide them. */
-function WaitRows({ pace, players }: Pick<LobbyPaceProps, 'pace' | 'players'>) {
+/** The waits a pace decides, one row each, under the pace buttons that decide them. */
+function WaitRows({ pace }: Pick<LobbyPaceProps, 'pace'>) {
   return (
     <Stack gap="Sm" align="Stretch">
-      {waits(pace, players).map((wait) => (
+      {waits(pace).map((wait) => (
         <Banner
           key={wait.label}
           variant="Muted"
@@ -86,7 +81,6 @@ export function LobbyPace({
   pace,
   themeMode,
   themes,
-  players,
   isHost,
   onPick,
   onPickThemes,
@@ -101,7 +95,7 @@ export function LobbyPace({
     >
       <Separator>{Strings.lobby.settings.params}</Separator>
       <PaceChoices pace={pace} isHost={isHost} onPick={onPick} />
-      <WaitRows pace={pace} players={players} />
+      <WaitRows pace={pace} />
       <LobbyThemes
         themeMode={themeMode}
         themes={themes}

@@ -44,11 +44,12 @@ function tintFor(props: AnswerCardProps): { '--AnswerCard-Tint': string } | unde
     : { '--AnswerCard-Tint': `var(--Color-Character-${writer.color})` };
 }
 
-/** Whether this card wears the round's shine: its writer was enchanted. The same rule the
- * enchanted theme card in the bank follows — a card the enchantment reached is shining from the
- * moment the room is shown it, through the round and into the count that pays it. */
-function glinted(props: AnswerCardProps): boolean {
-  return props.enchanted === true;
+/** Whether this card wears the round's shine: its writer was enchanted, the count is on it, and
+ * the room has not turned the answer down. The shine is laid over the card while the count
+ * explains what the multiplier was for, and not before the count reaches the card. */
+function glinted(props: AnswerCardProps, declined: boolean): boolean {
+  if (props.enchanted !== true || declined) return false;
+  return props.paying === true || props.paid === true;
 }
 
 /** What is on the card's face: the answer as the substance while the room reads it, and the
@@ -104,7 +105,7 @@ function CardSides({ props, declined, revealed, pressedIt, glintClass }: CardSid
         shown={props.authorsShown !== false}
         ownPlayerId={props.ownPlayerId}
       />
-      {glinted(props) && <span class={glintClass} aria-hidden="true" />}
+      {glinted(props, declined) && <span class={glintClass} aria-hidden="true" />}
       <LikeCorner
         blank={props.blank === true}
         voted={declined}

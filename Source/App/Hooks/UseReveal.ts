@@ -10,7 +10,6 @@ import {
   revealedCount,
   revealedLetterCount,
 } from '@/Game';
-import type { Pace } from '@/Game';
 
 /** How much of the round's board is up, counted from the host's start of the phase so every
  * screen turns the same card at the same moment, and counted from it again the next round. A
@@ -55,8 +54,6 @@ function useClock(active: boolean, held: boolean): number {
  * `settled` is the round already read over, so it is counted at rest rather than again. */
 export function useReveal(
   writerCounts: readonly number[],
-  pace: Pace,
-  durationMs: number,
   startedAt: number,
   active = true,
   held = false,
@@ -67,8 +64,7 @@ export function useReveal(
 
   const moment = held && heldAt !== undefined ? heldAt : now;
   const count = writerCounts.length;
-  const voteMs = GameConfig.paces[pace].voteMs;
-  const beat = answerRevealBeat(writerCounts, durationMs, voteMs);
+  const beat = answerRevealBeat(writerCounts);
   // Off the same moment the first card is counted from, including the lead-in, so the writing on a
   // card begins as that card comes over rather than a lead-in's worth of letters earlier.
   const first = startedAt + GameConfig.timing.revealLeadInMs;
@@ -79,7 +75,7 @@ export function useReveal(
 
   return {
     moment,
-    upTo: active ? revealedCount(writerCounts, durationMs, startedAt, moment, voteMs) : count,
+    upTo: active ? revealedCount(writerCounts, startedAt, moment) : count,
     shownAt: (index, length) =>
       revealedLetterCount(length, moment - first - index * beat, answerWriteMs(length)),
     // Off the same moment the writing is, since a card that named its writers while the sentence

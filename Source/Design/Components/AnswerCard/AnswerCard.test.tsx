@@ -225,17 +225,17 @@ describe('who wrote an answer', () => {
     expect(shine?.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('wears the shine as soon as the card is on the board, before the count reaches it', () => {
-    // The same rule the enchanted theme card in the bank follows: a card the enchantment reached
-    // is shining from the moment the room is shown it, and not only while it is being paid. The
-    // room is told which answers the enchantment touched, and it is told at once.
+  it('does not wear the shine before the count reaches it', () => {
+    // The shine says who the enchantment reached, and the room is reading the answers: a card
+    // marked before its turn would say whose card is about to be multiplied before the count does.
+    // The count is what wears it, and what it is for.
     const root = renderCard({
       counting: false,
       paying: false,
       enchanted: true,
       score: { base: 10, mult: 8, likes: 0, total: 18 },
     });
-    expect(root.firstElementChild?.querySelector('[class*="Glint"]')).not.toBeNull();
+    expect(root.firstElementChild?.querySelector('[class*="Glint"]')).toBeNull();
   });
 
   it('takes the shine off an answer nobody was enchanted for', () => {
@@ -245,6 +245,22 @@ describe('who wrote an answer', () => {
       counting: true,
       paying: true,
       enchanted: false,
+      score: { base: 10, mult: 8, likes: 0, total: 18 },
+    });
+    expect(root.firstElementChild?.querySelector('[class*="Glint"]')).toBeNull();
+  });
+
+  it('takes the shine off an answer the room has turned down', () => {
+    // A card that is not counted wears nothing that says what it was worth. The shine is there to
+    // explain a multiplier, and a card the room has turned down has no multiplier to explain: it
+    // is the one card on the board that is not paid, and a shine on it would be the game saying
+    // a figure it is not paying.
+    const root = renderCard({
+      counting: true,
+      paying: true,
+      voted: true,
+      count: 1,
+      enchanted: true,
       score: { base: 10, mult: 8, likes: 0, total: 18 },
     });
     expect(root.firstElementChild?.querySelector('[class*="Glint"]')).toBeNull();

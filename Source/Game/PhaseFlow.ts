@@ -4,6 +4,7 @@
 import { GameConfig, type Pace, type PaceTimings } from './GameConfig';
 import type { HostState } from './GameState';
 import { standingsDurationMs } from './Leaderboard';
+import { reviewingDurationMs } from './Reveal';
 import { scoresDurationMs } from './ScoreCount';
 
 /** Every phase name, in the order the game runs them. A tuple rather than a literal union so a
@@ -60,7 +61,10 @@ export const PhaseFlow: Record<PhaseName, PhaseSpec> = {
   },
   Reviewing: {
     timed: true,
-    waitMs: (pace) => pace.decidingMs,
+    /** The floor of the review, for a board of no cards: the lead-in and the room's beat of
+     * voting. The real length is a fact about the board rather than the pace, so the host works
+     * it out from the cards. */
+    waitMs: (pace) => reviewingDurationMs([], pace),
     graceMs: 0,
     next: 'Scores',
     splash: true,

@@ -38,13 +38,15 @@
 
 /* The round's question, over a board of answers. Wrapped rather than cut, unlike `Title`, since
  * a question is read and a name is scanned: cutting it with an ellipsis drops the part that
- * says what is being asked. Clamped to the window, as `Display` is. */
+ * says what is being asked. Clamped to the window, as `Display` is. Written in the page's own
+ * ink rather than the accent: the question is the room's, not the reader's, and a board of
+ * answers under it is black and white. */
 .VariantTopic {
   font-family: var(--FontFamily-Display);
   font-size: clamp(var(--FontSize-Xl), 4.4vw, var(--FontSize-H1));
   line-height: 1.15;
   text-align: center;
-  color: var(--Color-Text-Title);
+  color: var(--Color-Text-Default);
   overflow-wrap: break-word;
   /* Break at a syllable rather than mid-word, which needs lang="ru" on <html>. */
   hyphens: auto;

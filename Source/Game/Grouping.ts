@@ -48,7 +48,7 @@ export function groupAnswers(answers: string[]): { groupId: number; answers: str
 }
 
 /** The same grouping, carrying the player each answer came from. */
-export function groupAnswersWithPlayers(answers: Map<PlayerId, string>): {
+export function groupAnswersWithPlayers(answers: ReadonlyMap<PlayerId, string>): {
   groupId: number;
   answers: string[];
   playerIds: PlayerId[];
@@ -59,4 +59,17 @@ export function groupAnswersWithPlayers(answers: Map<PlayerId, string>): {
     answers: group.map((entry) => entry.answer),
     playerIds: group.map((entry) => entry.playerId),
   }));
+}
+
+/** The board's cards, as the number of writers on each of them: one card for every distinct
+ * answer, and one card for everybody who wrote nothing. The shape the review's length is worked
+ * out from, and the board every screen draws. */
+export function boardWriterCounts(state: {
+  answers: ReadonlyMap<PlayerId, string>;
+  players: ReadonlyMap<PlayerId, unknown>;
+}): number[] {
+  const counts = groupAnswersWithPlayers(state.answers).map((group) => group.playerIds.length);
+  const blanked = [...state.players.keys()].filter((playerId) => !state.answers.has(playerId));
+  if (blanked.length > 0) counts.push(blanked.length);
+  return counts;
 }

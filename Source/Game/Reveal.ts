@@ -1,5 +1,5 @@
 import { GameConfig } from './GameConfig';
-import type { Pace } from './GameConfig';
+import type { PaceTimings } from './GameConfig';
 
 /** What one card of the board needs the room to be given: the hold before anyone is named, every
  * writer landing in turn, and the beat before the room is offered a like. The longer of the
@@ -12,27 +12,25 @@ export function cardRevealMs(writerCount: number): number {
   );
 }
 
-/** How long after one answer comes the next, for a board shaped like this: one number per card,
- * being how many wrote that answer. Taken from the largest thing on the board rather than from
- * its size alone, since a card eleven people agreed on needs nearly twice a card nobody shared. */
-export function answerRevealBeat(
-  writerCounts: readonly number[],
-  durationMs: number,
-  voteMs = GameConfig.timing.revealVoteMs
-): number {
+/** How long after one answer comes the next, for a board shaped like this: the slowest card's
+ * own beat, and the nominal beat of a card coming in. Not stretched to fill a round, since the
+ * round is worked out from the board and the board's own pace is the pace it runs at. */
+export function answerRevealBeat(writerCounts: readonly number[]): number {
   let needed = 0;
   for (const writers of writerCounts) needed = Math.max(needed, cardRevealMs(writers));
-  const spendable = Math.max(0, durationMs - voteMs);
-  const perCard = spendable / Math.max(1, writerCounts.length - 1);
-  return Math.max(needed, Math.min(GameConfig.timing.revealCardMs, perCard));
+  return Math.max(needed, GameConfig.timing.revealCardMs);
 }
 
-/** How long the reviewing round runs for a room of this many: a floor for being in it at all,
- * and five seconds per player after the first. On the players rather than the answers, which
- * are not fixed until the round is over and would shorten the wait by the room's best moment. */
-export function reviewingDurationMs(players: number, pace: Pace): number {
-  const { decidingBaseMs, decidingPerPlayerMs } = GameConfig.paces[pace];
-  return decidingBaseMs + decidingPerPlayerMs * Math.max(0, players - 1);
+/** How long the reviewing round runs for a board like this: the time it takes to show every card
+ * on it, and then the room's beat of voting. On the board rather than on the room: the cards
+ * are what the phase is for. */
+export function reviewingDurationMs(
+  writerCounts: readonly number[],
+  pace: PaceTimings
+): number {
+  const cards = writerCounts.length;
+  const shown = cards <= 1 ? 0 : (cards - 1) * answerRevealBeat(writerCounts);
+  return GameConfig.timing.revealLeadInMs + shown + pace.reviewTailMs;
 }
 
 /** How many of the round's answers are up at a moment counted from the host's start of the
@@ -40,14 +38,12 @@ export function reviewingDurationMs(players: number, pace: Pace): number {
  * deals the board face down again. */
 export function revealedCount(
   writerCounts: readonly number[],
-  durationMs: number,
   startedAt: number,
-  now: number,
-  voteMs = GameConfig.timing.revealVoteMs
+  now: number
 ): number {
   const count = writerCounts.length;
   if (count <= 0) return 0;
-  const beat = answerRevealBeat(writerCounts, durationMs, voteMs);
+  const beat = answerRevealBeat(writerCounts);
   const since = now - startedAt - GameConfig.timing.revealLeadInMs;
   if (since <= 0) return 0;
   return Math.min(count, Math.floor(since / beat) + 1);

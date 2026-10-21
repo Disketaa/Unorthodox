@@ -6,24 +6,16 @@ export type Pace = 'Fast' | 'Standard';
 export interface PaceTimings {
   /** Answering a topic. */
   writingMs: number;
-  /** Reading the room's answers and rejecting the ones that do not fit. What a full room gets,
-   * kept here so the phase table can still say something true about the phase. */
-  decidingMs: number;
-  /** The round a room of one gets, and what every further player adds to it. */
-  decidingBaseMs: number;
-  decidingPerPlayerMs: number;
   /** Choosing what the next round asks about. */
   categoryMs: number;
-  /** The voting the room gets once the whole board is up and read. What a pace shortens is this
+  /** The room's beat of voting once the whole board is up and read. What a pace shortens is this
    * slack, never the reveal — a card cut off mid-way through naming its writers is not a
    * quicker game, it is a broken one. */
-  voteMs: number;
+  reviewTailMs: number;
 }
 
 const timing = {
   writingDurationMs: 60000,
-  reviewingDurationMs: 90000,
-  scoresDurationMs: 15000,
   graceMs: 3000,
   /** When the countdown under a timed phase turns to the room's alarm colour. Late rather than
    * early, because it is the last few seconds that decide an answer nobody has finished, and a
@@ -81,9 +73,6 @@ const timing = {
   /** How long one answer takes to come in, and how many are left to come after the last one has
    * opened, so a full board reads as a run rather than as twelve cards appearing at once. */
   revealCardMs: 3500,
-  /** How long the room has to vote once the last answer is up. The reveal is shortened rather
-   * than this, so a full room is still a board everybody got to see before the phase ended. */
-  revealVoteMs: 20000,
   /** How long after a card comes up before the room is told who wrote it. Held well past the
    * writing, so the answer lands on its own first: who agreed with whom is the round's best
    * joke and it is worth the room reading the sentence before it finds out. */
@@ -114,9 +103,9 @@ const timing = {
    * the room to watch the numbers arrive without the board behind them moving. */
   scoreVeilMs: 1200,
   /** How long the counted board is left standing after the last card has been paid, before the
-   * room is shown where it stands. The figures are all on the board and the room has not been
-   * given a moment to look at them, which is the one thing the phase is for. */
-  scoreBoardLingerMs: 2500,
+   * room is shown where it stands. The cards are gone by then, so this is the beat the room
+   * reads the final totals in the bar by, and nothing more. */
+  scoreBoardLingerMs: 1000,
   /** How long between one place arriving on the standing list and the next. The list is built
    * from the last place up, so this is the beat the room reads the order on. */
   leaderboardWaveMs: 90,
@@ -139,17 +128,6 @@ const timing = {
  * one row. Here rather than inside `GameConfig`, which is not built yet when the paces below
  * use it. */
 const MaxPlayers = 12;
-
-/** The two paces' voting rounds, built from a base and a cost per head rather than written as
- * whole figures, so a new player count cannot leave the table and the arithmetic disagreeing.
- * The slower pace is longer to begin with rather than longer per player. */
-const deciding = (baseMs: number, perPlayerMs: number) => ({
-  decidingBaseMs: baseMs,
-  decidingPerPlayerMs: perPlayerMs,
-  // One player fewer than the room holds, since the base is already the first player's share and
-  // the table would otherwise quote a full house more than the game gives it.
-  decidingMs: baseMs + perPlayerMs * (MaxPlayers - 1),
-});
 
 /** How many letters an enchanted card bans or demands, by the multiplier it wears: one, two,
  * four and six out of the twelve lookalike pairs. It scales the cost of the enchantment rather
@@ -184,15 +162,13 @@ export const GameConfig = {
   paces: {
     Standard: {
       writingMs: timing.writingDurationMs,
-      ...deciding(10000, 5000),
       categoryMs: 20000,
-      voteMs: timing.revealVoteMs,
+      reviewTailMs: 10000,
     },
     Fast: {
       writingMs: 40000,
-      ...deciding(5000, 5000),
       categoryMs: 15000,
-      voteMs: timing.revealVoteMs / 2,
+      reviewTailMs: 5000,
     },
   } satisfies Record<Pace, PaceTimings>,
   /** What a card is worth. A unique answer is paid for how early it was sent and how many likes
