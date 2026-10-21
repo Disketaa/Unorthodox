@@ -114,9 +114,25 @@ const timing = {
    * the room to watch the numbers arrive without the board behind them moving. */
   scoreVeilMs: 1200,
   /** How long the counted board is left standing after the last card has been paid, before the
-   * room is moved on to the next round. The figures are all on the board and the room has not
-   * been given a moment to look at them, which is the one thing the phase is for. */
+   * room is shown where it stands. The figures are all on the board and the room has not been
+   * given a moment to look at them, which is the one thing the phase is for. */
   scoreBoardLingerMs: 2500,
+  /** How long between one place arriving on the standing list and the next. The list is built
+   * from the last place up, so this is the beat the room reads the order on. */
+  leaderboardWaveMs: 90,
+  /** How long a place takes to come up once the wave has reached it. Nothing on the list is
+   * counted until the whole wave is up: no figure climbs under a row that has not arrived. */
+  leaderboardPlaceMs: 300,
+  /** How long the new figures are left standing before the list is rearranged. The room reads
+   * what the round paid before the list moves under it, so the move says the order changed
+   * rather than telling the room it misread the figures. */
+  leaderboardReorderDelayMs: 400,
+  /** How long the places take to slide into their new order once the move has begun. */
+  leaderboardReorderMs: 600,
+  /** How long the rearranged list stands after the move: every figure is on the list, and the
+   * room is given the time to read where everybody ended up rather than only to see that they
+   * moved. */
+  leaderboardLingerMs: 4500,
 };
 
 /** How many players a room holds. The bar of hexes across the top of a game holds this many in

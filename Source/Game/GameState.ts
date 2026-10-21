@@ -172,6 +172,20 @@ export type ScoresState = BoardState & {
   scores: Map<PlayerId, number>;
 };
 
+/** Where the room stands after a round, and for as long as the room looks at it. A phase of its
+ * own rather than a stretch of the count: the board is counted card by card and the places are
+ * shown once, at the end, and the room is given a beat of its own to read them in. */
+export type LeaderboardState = RoomMembers & {
+  phase: 'Leaderboard';
+  durationMs: number;
+  startedAt: number;
+  /** What the round just paid each player, which the places show beside what they have
+   * altogether: the room is told the round's figure and the standing in one line. */
+  scores: Map<PlayerId, number>;
+  /** The theme the round just played, which the bank is still showing behind the places. */
+  theme: ThemeId | undefined;
+};
+
 export type FinalState = RoomMembers & {
   phase: 'Final';
   /** The theme the game was finally played in. The bank is on the last screen too, and a bank
@@ -180,7 +194,13 @@ export type FinalState = RoomMembers & {
 };
 
 export type HostState =
-  LobbyState | ChoosingState | WritingState | ReviewingState | ScoresState | FinalState;
+  | LobbyState
+  | ChoosingState
+  | WritingState
+  | ReviewingState
+  | ScoresState
+  | LeaderboardState
+  | FinalState;
 
 /** A room with nobody in it and nobody holding the turn. One function rather than three
  * literals, so a new room cannot be shaped differently from a resumed one. */

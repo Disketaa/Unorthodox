@@ -15,7 +15,7 @@ export function useHostPhaseTimer(
   session: Session,
   isHost: boolean,
   phase: SessionPhase,
-  onScoresDone: () => void,
+  onRoundDone: () => void,
   onThemeRevealed: () => void,
   onQuestionRead: () => void
 ): void {
@@ -24,7 +24,7 @@ export function useHostPhaseTimer(
   const choosing = publicState?.phase === 'Choosing' ? publicState : undefined;
   const held = publicState?.paused === true;
 
-  usePhaseClock(session, isHost, phase, onScoresDone);
+  usePhaseClock(session, isHost, phase, onRoundDone);
   useRandomPick(session, isHost, held ? undefined : choosing?.picking);
   useAnswerReveal(isHost, held ? undefined : answeredAt, onThemeRevealed);
   useQuestionReveal(

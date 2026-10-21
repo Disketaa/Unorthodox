@@ -62,14 +62,16 @@ export function handleGoToPhase(state: HostState, action: ActionOf<'GO_TO_PHASE'
 }
 
 /** A round enters the count settled, whichever way the room got there. Counted on the way in and
- * nowhere else, so a dock pressing skip and a clock running out settle it at the same figure.
- * Out of Writing as well as Reviewing, because the dock can step over the review entirely. */
+ * nowhere else, so a dock pressing skip and a clock running out settle it at the same figure. */
 function settledBy(
   state: HostState,
   phase: PhaseName
 ): Pick<ScoresState, 'scores' | 'cumulativeScores'> | object {
-  const playingRound = state.phase === 'Reviewing' || state.phase === 'Writing';
-  if (phase !== 'Scores' || !playingRound) {
+  // Out of Writing as well as Reviewing, because the dock can step over the review entirely. The
+  // standings are settled on the way in too, so the places are not a round behind the room.
+  const playingRound =
+    state.phase === 'Reviewing' || state.phase === 'Writing' || state.phase === 'Scores';
+  if ((phase !== 'Scores' && phase !== 'Leaderboard') || !playingRound) {
     return {};
   }
   const { roundScores, cumulativeScores } = scoreRound(state);
@@ -150,6 +152,10 @@ function phaseBody(
         ...carriedBoard(written),
         scores: new Map<PlayerId, number>(),
       };
+    case 'Leaderboard':
+      // The places and the round they were paid in: a jump here has no board to draw, only
+      // the totals the room has settled so far and what this round gave.
+      return { phase, ...base, scores: new Map<PlayerId, number>() };
     case 'Final':
       return { phase, ...membersOf(state) };
     default:

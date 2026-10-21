@@ -5,7 +5,11 @@ import {
   toPublicWritingState,
   toPublicChoosingState,
 } from './PublicPhases';
-import { toPublicFinalState, toPublicScoresState } from './PublicEndgame';
+import {
+  toPublicFinalState,
+  toPublicLeaderboardState,
+  toPublicScoresState,
+} from './PublicEndgame';
 import { PlayerId, PlayerLook, ThemeId, ThemeMode, CustomTheme, assertNever } from '@/Core';
 import type { RandomPick } from './GameState';
 import type { Pace } from './GameConfig';
@@ -176,6 +180,19 @@ export interface PublicScoreGroup {
   };
 }
 
+export type PublicLeaderboardState = PublicRoom & {
+  phase: 'Leaderboard';
+  durationMs: number;
+  startedAt: number;
+  players: PublicPlayer[];
+  /** Where every player stands over the rounds so far, which is what this phase draws. */
+  scores: { id: PlayerId; score: number }[];
+  /** What the round just paid each player, which stands beside the standing: the room is told
+   * the round's figure and the total in one line. */
+  round: { id: PlayerId; score: number }[];
+  theme?: ThemeId;
+};
+
 export type PublicFinalState = PublicRoom & {
   phase: 'Final';
   durationMs: number;
@@ -190,6 +207,7 @@ export type PublicState =
   | PublicWritingState
   | PublicReviewingState
   | PublicScoresState
+  | PublicLeaderboardState
   | PublicFinalState;
 
 export function toPublicState(hostState: HostState): PublicState {
@@ -204,6 +222,8 @@ export function toPublicState(hostState: HostState): PublicState {
       return toPublicReviewingState(hostState);
     case 'Scores':
       return toPublicScoresState(hostState);
+    case 'Leaderboard':
+      return toPublicLeaderboardState(hostState);
     case 'Final':
       return toPublicFinalState(hostState);
     default:

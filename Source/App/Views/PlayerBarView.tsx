@@ -9,12 +9,13 @@ import {
   isSettling,
   readShownScores,
   payoutsOf,
+  settledTotals,
   type BarBoard,
   type Payout,
 } from './PlayerBarStandings';
 import { payingSeats, struckWriters, seatPulses, usePresses } from './PlayerBarMarks';
 
-export { readScores, readShownScores, payoutsOf } from './PlayerBarStandings';
+export { readScores, readShownScores, payoutsOf, settledTotals } from './PlayerBarStandings';
 export { struckWriters, seatPulses } from './PlayerBarMarks';
 export type { BarBoard, Payout } from './PlayerBarStandings';
 
@@ -31,8 +32,8 @@ type BarMarks = {
   glinted: ReadonlySet<PlayerId>;
 };
 
-/** The bar's entries, in roster order — the order the room has held since the lobby: a seat that
- * moves about between phases is a seat nobody can find themselves in. */
+/** The bar's entries in the room's own order — the order the room has held since the lobby, and
+ * the order `standingEntries` deals them out of. */
 function barEntries(view: PhaseViewProps['view'], marks: BarMarks): PlayerBarEntry[] {
   return [...view.playerNames].map(([id, name]) => {
     const look = lookFor(view.playerLooks, id);
@@ -60,6 +61,18 @@ function barEntries(view: PhaseViewProps['view'], marks: BarMarks): PlayerBarEnt
         (view.phase === 'Scores' && view.submittedIds.has(id)),
     };
   });
+}
+
+/** The bar's entries in standing order. Dealt by the last settled round's totals, not the
+ * figures the bar shows: the order is taken when the leaderboard has been. */
+function standingEntries(
+  view: PhaseViewProps['view'],
+  entries: readonly PlayerBarEntry[]
+): PlayerBarEntry[] {
+  const totals = settledTotals(view.publicState, boardOf(view));
+  return [...entries].sort(
+    (left, right) => (totals.get(right.id) ?? 0) - (totals.get(left.id) ?? 0)
+  );
 }
 
 /** What each seat is shown this frame, read off the board and the same clock the count runs on,
@@ -136,6 +149,6 @@ export function PlayerBarView({ view }: PhaseViewProps) {
   // reaches the answer they were for.
   const board = countBoard(settled, view.phaseStartedAt, reveal.moment);
   const marks = barMarksFor(view, reviewing, reveal, board, settled);
-  const players = barEntries(view, marks);
+  const players = standingEntries(view, barEntries(view, marks));
   return <PlayerBar players={players} ownPlayerId={view.playerId} />;
 }

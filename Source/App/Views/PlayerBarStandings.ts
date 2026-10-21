@@ -49,9 +49,19 @@ export function readScores(state: PublicState | undefined): ReadonlyMap<PlayerId
   return new Map((state?.standings ?? []).map((row) => [row.id, row.score]));
 }
 
+/** Every player's total as of the last round that was settled, which is what the bar deals
+ * itself by. The round in the room's hands is taken back out, so a row is not reordered under
+ * the room while the cards are being paid: the order is taken once the leaderboard has been. */
+export function settledTotals(
+  state: PublicState | undefined,
+  board: BarBoard | undefined
+): ReadonlyMap<PlayerId, number> {
+  return readShownScores(state, board, false, undefined);
+}
+
 /** What every seat is shown. During the review each seat stands at what it held before the
  * round, and the round's points arrive as the count reaches each card, off the same board the
- * figures are on. Wire totals include the round, so before is the total minus the round. */
+ * figures are on. Wire totals include the round, so the round comes back out. */
 export function readShownScores(
   state: PublicState | undefined,
   board: BarBoard | undefined,
@@ -62,19 +72,32 @@ export function readShownScores(
   if (board === undefined || state === undefined) {
     return totals;
   }
-  const cards = board.groups.map((group) => group.score?.total ?? 0);
-  const roundTotal = cards.reduce((sum, card) => sum + card, 0);
-  const before = new Map<PlayerId, number>();
-  // Never below nothing, and not a fudge: every point is earned, so a negative standing can only
-  // mean the round was taken back out of a total that never had it. The floor turns that mistake
-  // into a wrong-but-plausible figure instead of an impossible one the room can report.
-  totals.forEach((total, id) => before.set(id, Math.max(0, total - roundTotal)));
+  const before = beforeRound(totals, board.groups);
   // Nothing counted yet, so the round is worth nothing and every seat stands where it was.
   if (!settled) {
     return before;
   }
   const shown = payingIndex === undefined ? -1 : payingIndex;
   return shownRunning(before, board.groups.slice(0, shown + 1));
+}
+
+/** Where every seat stood coming into the round. A seat's own cards come back out of its total,
+ * and not the whole board's worth, which no seat is on: taking the board off every seat left a
+ * room with rounds behind it at a figure it never held. */
+function beforeRound(
+  totals: ReadonlyMap<PlayerId, number>,
+  groups: BarBoard['groups']
+): Map<PlayerId, number> {
+  const earned = new Map<PlayerId, number>();
+  for (const group of groups) {
+    const card = group.score?.total ?? 0;
+    for (const playerId of group.playerIds) {
+      earned.set(playerId, (earned.get(playerId) ?? 0) + card);
+    }
+  }
+  const before = new Map<PlayerId, number>();
+  totals.forEach((total, id) => before.set(id, total - (earned.get(id) ?? 0)));
+  return before;
 }
 
 /** What the bar would show if the count were through the first `count` cards. */

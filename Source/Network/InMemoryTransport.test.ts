@@ -185,4 +185,18 @@ describe('InMemoryTransport integration test (host + 3 clients)', function () {
     round.hostSession.startWriting('Test topic 2');
     checkNextRound(round);
   });
+
+  it('should end the round at the standings and choose again from there', function () {
+    // The round the room actually plays ends at the places rather than at the count: the clock
+    // that closes the standings hands the room on to its next theme choice, which is the one move
+    // nothing else would make if the phase the round ends on were not the phase the round began in.
+    const round = playRound();
+    round.hostSession.endReviewing();
+    round.hostSession.endReviewing();
+    round.hostSession.nextPhase('Test topic');
+    expect(round.hostSession.getState()?.phase).toBe('Leaderboard');
+    round.hostSession.nextRound();
+    expect(round.hostSession.getState()?.phase).toBe('Choosing');
+    expect(clientStates(round).every((state) => state.phase === 'Choosing')).toBe(true);
+  });
 });

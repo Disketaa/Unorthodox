@@ -13,32 +13,36 @@
    * reason, since a separate `animation-delay` would strip it from the caller's own entry. */
 }
 
+/* The lean as a share of the tilt: one leans the whole rolled way, and zero rocks the thing
+ * without tipping it. A place is a line across the room, so a lean on a line tips the whole
+ * line rather than rocking it, and the leaderboard asks for the swing alone. */
 @keyframes SwayBob {
   /* Settled, tipped a little one way. */
   0% {
-    transform: translateX(0) rotate(calc(var(--Sway-Tilt, 0deg) * 0.5));
+    transform: translateX(0) rotate(calc(var(--Sway-Tilt, 0deg) * var(--Sway-Lean, 1) * 0.5));
   }
 
   /* Swung to one side, leaning into it. */
   24% {
     transform: translateX(calc(var(--Sway-Sway, 1px) * -1))
-      rotate(calc(var(--Sway-Tilt, 0deg) * -1.2));
+      rotate(calc(var(--Sway-Tilt, 0deg) * var(--Sway-Lean, 1) * -1.2));
   }
 
   /* Through the middle, with the smallest lift of the whole cycle. This is the only place it
    * leaves the ground at all, and barely. */
   50% {
     transform: translateX(0) translateY(calc(var(--Sway-Range, 0.5px) * -1))
-      rotate(calc(var(--Sway-Tilt, 0deg) * 0.35));
+      rotate(calc(var(--Sway-Tilt, 0deg) * var(--Sway-Lean, 1) * 0.35));
   }
 
   /* Swung the other way, leaning the other way. */
   76% {
-    transform: translateX(var(--Sway-Sway, 1px)) rotate(calc(var(--Sway-Tilt, 0deg) * 1.2));
+    transform: translateX(var(--Sway-Sway, 1px))
+      rotate(calc(var(--Sway-Tilt, 0deg) * var(--Sway-Lean, 1) * 1.2));
   }
 
   100% {
-    transform: translateX(0) rotate(calc(var(--Sway-Tilt, 0deg) * 0.5));
+    transform: translateX(0) rotate(calc(var(--Sway-Tilt, 0deg) * var(--Sway-Lean, 1) * 0.5));
   }
 }
 
@@ -50,7 +54,7 @@
   /* An empty movement rather than an `animation: none` declaration, so a caller writing the one
    * `animation` list is not overwritten by this class landing later in the stylesheet. */
   --Sway-Animation: none;
-  transform: rotate(var(--Sway-Tilt, 0deg));
+  transform: rotate(calc(var(--Sway-Tilt, 0deg) * var(--Sway-Lean, 1)));
 }
 
 /* The breath on something waiting on the room rather than moving of its own accord: the whole
@@ -84,6 +88,6 @@
   }
 
   .Moving {
-    transform: rotate(var(--Sway-Tilt, 0deg));
+    transform: rotate(calc(var(--Sway-Tilt, 0deg) * var(--Sway-Lean, 1)));
   }
 }

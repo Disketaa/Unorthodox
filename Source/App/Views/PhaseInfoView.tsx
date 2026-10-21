@@ -1,7 +1,13 @@
 ﻿import { Banner, Timer } from '@/Design/Components';
 import { Stack } from '@/Design/Primitives';
 import { Strings } from '@/Content';
-import { GameConfig, isPhaseName, isTimedPhase, questionRevealMs } from '@/Game';
+import {
+  GameConfig,
+  isPhaseName,
+  isTimedPhase,
+  questionRevealMs,
+  type PublicChoosingState,
+} from '@/Game';
 import { accentFor } from '@/Core';
 import { useCountdown } from '../Hooks/UseCountdown';
 import { usePhaseAlarm } from '../Hooks/UsePhaseAlarm';
@@ -27,6 +33,7 @@ const PhaseSentences: Record<SessionPhaseName, (story: PhaseStory) => string> = 
     story.hasSubmitted ? Strings.writing.waitForOthers : Strings.phase.writing,
   Reviewing: () => Strings.phase.reviewing,
   Scores: () => Strings.phase.scores,
+  Leaderboard: () => Strings.phase.leaderboard,
   Final: () => Strings.phase.final,
 };
 
@@ -72,6 +79,18 @@ function tintOf(view: GameSessionView, reading: boolean): string | undefined {
   return look === undefined ? undefined : accentFor(look.color).tint;
 }
 
+/** The sentence the note carries: what the room is doing, in this browser's own voice. */
+function sentenceFor(
+  view: GameSessionView,
+  choosing: PublicChoosingState | undefined,
+  turnName: string
+): string {
+  // The question is what the room reads once the bank is answered, whether or not it has arrived
+  // on screen yet, so the sentence stops naming a choice the room has already made.
+  if (choosing?.theme !== undefined) return Strings.phase.readingQuestion;
+  return PhaseSentences[view.phase]({ turnName, hasSubmitted: view.hasSubmitted });
+}
+
 /** The note at the top of a game screen: what is happening, with the mark saying it still is.
  * The countdown is drawn behind the sentence rather than under it, so a timed phase is one
  * block and a phase nobody waits out is the same block with no bar in it. */
@@ -81,12 +100,7 @@ export function PhaseInfoView({ view }: PhaseViewProps) {
   const turnName =
     view.turnPlayerId === null ? '' : (view.playerNames.get(view.turnPlayerId) ?? '');
   const choosing = view.publicState?.phase === 'Choosing' ? view.publicState : undefined;
-  // The question is what the room reads once the bank is answered, whether or not it has arrived
-  // on screen yet, so the sentence stops naming a choice the room has already made.
-  const sentence =
-    choosing?.theme !== undefined
-      ? Strings.phase.readingQuestion
-      : PhaseSentences[view.phase]({ turnName, hasSubmitted: view.hasSubmitted });
+  const sentence = sentenceFor(view, choosing, turnName);
   // Connecting is not a game phase, so the table has no row for it and nothing is timed.
   const timed = view.phase !== 'Connecting' && isTimedPhase(view.phase);
   const secondsLeft = Math.ceil(remainingMs / 1000);

@@ -1,7 +1,11 @@
 import type { PlayerId } from '@/Core';
 import { publicPlayers, room, themeOf, boardOf } from './PublicPhases';
 import type { HostState } from './GameState';
-import type { PublicScoresState, PublicFinalState } from './PublicState';
+import type {
+  PublicScoresState,
+  PublicFinalState,
+  PublicLeaderboardState,
+} from './PublicState';
 
 /** A score map as the pairs a client reads, in the room's own order. */
 function totalsOf(scores: ReadonlyMap<PlayerId, number>): { id: PlayerId; score: number }[] {
@@ -45,6 +49,25 @@ export function toPublicFinalState(state: HostState): PublicFinalState {
     durationMs: 0,
     players: publicPlayers(state),
     scores: totalsOf(state.cumulativeScores),
+    ...themeOf(state),
+  };
+}
+
+/** Where the room stands after a round, as the totals every player has over the rounds so far.
+ * The same figures the last screen settles on, sent in the same shape, so the two read as one
+ * number rather than as two. */
+export function toPublicLeaderboardState(state: HostState): PublicLeaderboardState {
+  if (state.phase !== 'Leaderboard') {
+    throw new Error('Invalid state for Leaderboard');
+  }
+  return {
+    ...room(state),
+    phase: 'Leaderboard',
+    durationMs: state.durationMs,
+    startedAt: state.startedAt,
+    players: publicPlayers(state),
+    scores: totalsOf(state.cumulativeScores),
+    round: totalsOf(state.scores),
     ...themeOf(state),
   };
 }

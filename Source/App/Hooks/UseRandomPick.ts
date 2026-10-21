@@ -5,21 +5,21 @@ import { phaseAfterCycling } from '@/Game/PhaseFlow';
 import { Session } from '../Session';
 import type { SessionPhase } from './UseSessionPhase';
 
-/** What ends a phase whose clock has run out: the round counter for Scores, and for the rest the
- * next move the table says goes there. A bank closed with nothing pressed is neither, which is
- * the one case where the clock says the bank is shut and not what the room does about it. */
+/** What ends a phase whose clock has run out: the round counter for the places, and for the rest
+ * the next move the table says goes there. A bank closed with nothing pressed is neither, which
+ * is the one case where the clock says the bank is shut and not what the room does about it. */
 function onElapsed(
   session: Session,
   phase: SessionPhase,
   answered: boolean,
-  onScoresDone: () => void
+  onRoundDone: () => void
 ): () => void {
   const name = phase.phase;
   if (!isPhaseName(name)) {
     return () => {};
   }
-  if (name === 'Scores') {
-    return onScoresDone;
+  if (name === 'Leaderboard') {
+    return onRoundDone;
   }
   return () => {
     if (name === 'Choosing' && !answered) {
@@ -37,7 +37,7 @@ export function usePhaseClock(
   session: Session,
   isHost: boolean,
   phase: SessionPhase,
-  onScoresDone: () => void
+  onRoundDone: () => void
 ): void {
   const { durationMs, phaseStartedAt, answeredAt } = phase;
   const inGame = isPhaseName(phase.phase) ? phase.phase : null;
@@ -61,9 +61,9 @@ export function usePhaseClock(
     if (remaining === 0) {
       return;
     }
-    const id = setTimeout(onElapsed(session, phase, answered, onScoresDone), remaining);
+    const id = setTimeout(onElapsed(session, phase, answered, onRoundDone), remaining);
     return () => clearTimeout(id);
-  }, [isHost, inGame, durationMs, phaseStartedAt, session, onScoresDone, answered, held]);
+  }, [isHost, inGame, durationMs, phaseStartedAt, session, onRoundDone, answered, held]);
 }
 
 /** The room's own roll, and the commit at the end of it. Its own hook because a bank nobody

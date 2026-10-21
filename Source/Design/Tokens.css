@@ -337,8 +337,17 @@ body.PageFade {
    * the tint goes. */
   --Overlay-BlendMode: multiply;
   --Overlay-Opacity: 0.3;
+  /* The stone under the paper is held back further than the paper over it: it is the table the
+   * round is played on, and a table seen through a sheet of paper is a shadow rather than a
+   * surface. */
+  --Overlay-StoneOpacity: 0.22;
   /* How far the texture may move before an edge would show, in pixels. */
   --Overlay-ShiftMax: 60px;
+  /* The two textures themselves, named once. They are seamless, so the overlay can tile and
+   * shift them without a seam, and a surface that wears one asks for it by name instead of
+   * spelling out a file of its own. */
+  --Texture-Paper: url('./Overlays/Paper.jpg');
+  --Texture-Stone: url('./Overlays/Stone.jpg');
 
   /* The margin field. Marks are drawn in the display face at a size multiplier of this one, so
    * the whole field scales from a single line here. The tones are neutral greys well above the
@@ -750,6 +759,23 @@ body.PageFade {
    * room reads it, and only then does the card go. The note that says what the card paid waits
    * the same beat, so the sound and the card leaving are one moment. */
   --Delay-AnswerCardFlyOut: 200ms;
+
+  /* The gap between the places, the same clamp the bank of theme cards uses: the gap is what a
+   * place's width is measured from, so it cannot be a share of the place. */
+  --Space-LeaderboardGap: clamp(4px, 1.2vw, 10px);
+  /* The wave the places arrive in and how long one takes to come up: the list is built from the
+   * last place up, and nothing on it is counted until the wave is standing. */
+  --Duration-LeaderboardWave: 90ms;
+  --Duration-LeaderboardPlace: 300ms;
+  /* How long the new figures stand before the list is rearranged, and how long the move takes.
+   * The room reads what the round paid before the list moves under it, and a slide rather than
+   * a jump is what says the order changed rather than that the room misread it. */
+  --Delay-LeaderboardReorder: 400ms;
+  --Duration-LeaderboardReorder: 600ms;
+  /* The stone in a place's bar: the page's stone held further back, since a bar is read as a
+   * figure rather than as a surface, and the stone is only there to say what the bar is made
+   * of. */
+  --Opacity-LeaderboardStone: 0.1;
 
   /* Layout, and how wide one container of a screen may be, and how many may sit side by side.
    * The width is what a card's text is measured against, so it is the readable line length

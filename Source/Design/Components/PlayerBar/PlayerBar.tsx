@@ -1,10 +1,9 @@
 import { CharacterColor, CharacterId, PlayerId } from '@/Core';
 import { slotLimit } from './SlotLimit';
 import { PlayerBarSlot } from './PlayerBarSlot';
-import { rankedFor, slotsFor } from './PlayerBarSlots';
-import { useSeatSwap } from './UseSeatSwap';
+import { slotsFor } from './PlayerBarSlots';
 import styles from './PlayerBar.module.css';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 
 /** One player as the bar draws them: who they are, and whether they are still here. */
 export interface PlayerBarEntry {
@@ -48,7 +47,8 @@ export interface PlayerBarEntry {
 }
 
 export interface PlayerBarProps {
-  /** The room's roster, in the order the room holds it. */
+  /** The room as the bar draws it, in the order the row is to be dealt: the room's own order
+   * through a round, and the order the last leaderboard left it in after one. */
   players: readonly PlayerBarEntry[];
   /** This browser's own player, filled in the accent so a full bar is still findable. */
   ownPlayerId?: PlayerId | null;
@@ -70,13 +70,11 @@ function fitsLine(seats: number): boolean {
 }
 
 /** Every player in the room along the top of the game, one hexagon each, the same bar for every
- * phase so a seat does not move between writing and the scores. In standing order, and dealt
- * again the moment a card is paid — which is why the row is animated rather than cut. */
+ * phase. Drawn in the order it is handed: the room's own order through a round and the order
+ * the last leaderboard settled after one. A change of order is a cut, not a journey. */
 export function PlayerBar({ players, ownPlayerId = null, inline = false }: PlayerBarProps) {
-  const slots = slotsFor(inline ? players : rankedFor(players), ownPlayerId, slotLimit());
+  const slots = slotsFor(players, ownPlayerId, slotLimit());
   const [compact, setCompact] = useState(false);
-  const row = useRef<HTMLDivElement>(null);
-  useSeatSwap(row, inline ? [] : slots.map((player) => player.id));
 
   // Which of the two arrangements the row takes is a fact about the viewport and the count alone.
   // Nothing reads the rendered row back, which is what would let the two states chase each other
@@ -97,7 +95,7 @@ export function PlayerBar({ players, ownPlayerId = null, inline = false }: Playe
     .join(' ');
 
   return (
-    <div class={classes} style={sizing} ref={row}>
+    <div class={classes} style={sizing}>
       {slots.map((player, index) => (
         <PlayerBarSlot
           key={player.id}

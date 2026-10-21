@@ -6,17 +6,19 @@ import { PhaseInfoView } from './PhaseInfoView';
 import { PlayerBarView } from './PlayerBarView';
 import { QuestionOverlay } from './QuestionOverlay';
 import { ThemeCardsView } from './ThemeCardsView';
+import { LeaderboardView } from './LeaderboardView';
 import { ReviewView } from './ReviewView';
 import { WritingView } from './WritingView';
 import type { PhaseViewProps } from './LobbyView';
 
 /** The stage the game plays on: what the room is doing at the very top, the room's hexes under
- * it, and the themes below. The bank sits under the note rather than in the middle of what is
- * left: it was measured against the viewport, so it moved as the note above it changed height. */
+ * it, and the themes below. The row of players is off where the stage is the room itself, since
+ * the leaderboard is a row of players drawn differently. */
 export function GameScene({
   view,
   children,
-}: PhaseViewProps & { children?: ComponentChildren }) {
+  bar = true,
+}: PhaseViewProps & { children?: ComponentChildren; bar?: boolean }) {
   const choosing = view.publicState?.phase === 'Choosing' ? view.publicState : undefined;
   // The bank leaves once the question is on screen. It was never going to be answered then, and it
   // takes the whole window, which is the one place the question has to be read.
@@ -28,7 +30,7 @@ export function GameScene({
     <Stack align="Stretch" gap="Md" grow clip>
       <Stack gap="Md" align="Center">
         <PhaseInfoView view={view} />
-        <PlayerBarView view={view} />
+        {bar && <PlayerBarView view={view} />}
       </Stack>
       {bankOpen && (
         <ThemeCardsView
@@ -63,11 +65,23 @@ export function WritingScene({ view }: PhaseViewProps) {
 }
 
 /** Reviewing: the stage with the board of answers under it, taking the room the stage leaves so
- * nine of them fill it rather than scroll half the round below the fold. */
+ * nine of them fill it rather than scroll half the round below the fold. The last stretch of
+ * the scores phase shows where the room stands instead of the board it has just read. */
 export function ReviewScene({ view }: PhaseViewProps) {
   return (
     <GameScene view={view}>
       <ReviewView view={view} />
+    </GameScene>
+  );
+}
+
+/** Leaderboard: the stage with the room's places under it, which is what the room is shown once
+ * the round has been counted. The bar of players is off, since the places are a row of the same
+ * people and the figures stand on the lines. */
+export function LeaderboardScene({ view }: PhaseViewProps) {
+  return (
+    <GameScene view={view} bar={false}>
+      <LeaderboardView view={view} />
     </GameScene>
   );
 }

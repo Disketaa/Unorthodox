@@ -9,6 +9,7 @@ export * from './Normalization';
 export * from './Grouping';
 export * from './Scoring';
 export * from './ScoreCount';
+export * from './Leaderboard';
 export * from './RoundScoring';
 export * from './GameActions';
 export * from './LobbyActions';

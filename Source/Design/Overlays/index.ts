@@ -1,5 +1,6 @@
 export * from './GlyphField';
 export * from './PaperBackground';
+export * from './TextureOverlay';
 export * from './DebugDock';
 export * from './CenterStage';
 export * from './QuestionStage';

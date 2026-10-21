@@ -113,6 +113,16 @@ function scoresMs(state: HostState): number {
   return Game.scoresDurationMs(Game.boardCardCount(state));
 }
 
+/** How long the standing list runs for the room about to be shown it: the wave the places arrive
+ * in, and then the show itself. Read here rather than off the phase table for the same reason
+ * `scoresMs` is: the length is a fact about this room. */
+function standingsMs(state: HostState): number {
+  if (state.phase !== 'Scores' && state.phase !== 'Leaderboard') {
+    return Game.phaseDurationMs('Leaderboard', state.pace);
+  }
+  return Game.standingsDurationMs(state.cumulativeScores.size);
+}
+
 /** Advance out of Writing once everyone has answered, or out of Reviewing once its clock is up.
  * The opened phase's length is worked out from the room rather than taken in: both are facts
  * about the round, and a figure passed in would stop being true the moment the room changed. */
@@ -141,17 +151,21 @@ export function reloadPhaseFrom(host: FlowHost): void {
   host.commit(Game.reducer(state, { type: 'RELOAD_PHASE', startedAt: Date.now() }));
 }
 
+/** How long the phase about to be opened runs for this room. Three of them are a fact about the
+ * round rather than the pace — the review follows the room, the count the board, the standings
+ * what the round paid — so they are read here rather than taken off the table. */
+function openingMs(state: HostState, next: Game.PhaseName): number {
+  if (next === 'Reviewing') return reviewingMs(state);
+  if (next === 'Scores') return scoresMs(state);
+  if (next === 'Leaderboard') return standingsMs(state);
+  return Game.phaseDurationMs(next, state.pace);
+}
+
 /** Wherever the phase table says goes next, which is how the host's clock ends a phase without
  * this file having to know any phase by name. */
 export function nextPhaseFrom(host: FlowHost, topic: string): void {
   const state = host.getState();
   if (state === undefined) return;
   const next = Game.phaseAfterCycling(state.phase);
-  const durationMs =
-    next === 'Reviewing'
-      ? reviewingMs(state)
-      : next === 'Scores'
-        ? scoresMs(state)
-        : Game.phaseDurationMs(next, state.pace);
-  host.commit(nextPhase(state, next, topic, durationMs));
+  host.commit(nextPhase(state, next, topic, openingMs(state, next)));
 }

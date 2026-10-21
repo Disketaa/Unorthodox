@@ -6,6 +6,7 @@ import { HostState, membersOf } from './GameState';
 import { roundsAfter } from './ThemeRounds';
 import { scoreRound } from './RoundScoring';
 import { nextPlayerInTurn, turnOrder } from './Turns';
+import { endsRound } from './PhaseFlow';
 import type { ActionOf } from './GameActions';
 
 export { handleSubmitAnswer } from './AnswerSubmission';
@@ -145,7 +146,7 @@ export function handleEndReviewing(
  * by END_REVIEWING, so totals carry over untouched here, and a round abandoned from Reviewing
  * never scored and carries over as-is. */
 export function handleNextRound(state: HostState, action: ActionOf<'NEXT_ROUND'>): HostState {
-  if (state.phase !== 'Reviewing' && state.phase !== 'Scores') {
+  if (!endsRound(state)) {
     return state;
   }
   return {
@@ -169,7 +170,7 @@ export function handleNextRound(state: HostState, action: ActionOf<'NEXT_ROUND'>
 }
 
 export function handleFinal(state: HostState): HostState {
-  if (state.phase !== 'Scores' && state.phase !== 'Reviewing') {
+  if (!endsRound(state)) {
     return state;
   }
   return {

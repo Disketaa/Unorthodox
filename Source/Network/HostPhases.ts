@@ -141,12 +141,14 @@ export function closeReviewing(
   return Game.reducer(state, { type: 'END_REVIEWING', startedAt: Date.now(), durationMs });
 }
 
-/** Scores, or an abandoned Reviewing, to the next round's theme choice. */
+/** A round's last phase to the next round's theme choice. The count, an abandoned Reviewing, and
+ * the standings, which is where a round the room actually played ends: the places are the last
+ * thing it sees of the round, not the last thing before it. */
 export function nextRound(
   state: Game.HostState | undefined,
   durationMs: number
 ): Game.HostState {
-  if (state?.phase !== 'Scores' && state?.phase !== 'Reviewing') {
+  if (state === undefined || !Game.endsRound(state)) {
     return state ?? Game.freshLobbyState();
   }
   log('info', 'starting next round');

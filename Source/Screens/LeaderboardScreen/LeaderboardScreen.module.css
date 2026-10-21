@@ -1,0 +1,12 @@
+/* The frame the places stand in: as wide as the bank of theme cards is, which is the room's own
+ * measure of a row of things, and the height the stage has left. The height is the whole of the
+ * frame's second job: the rows are measured as a share of it, and a frame whose height is not
+ * settled measures every one of them as nothing. */
+.Frame {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-width: var(--Layout-ThemeCardsMaxWidth);
+  margin: 0 auto;
+}

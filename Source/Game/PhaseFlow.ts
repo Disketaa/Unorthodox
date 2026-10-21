@@ -2,11 +2,21 @@
  * rather than naming one: the host's clock, the sentence at the top of a screen, the row the
  * screens are picked from. A new game is a new row rather than a new switch in three files. */
 import { GameConfig, type Pace, type PaceTimings } from './GameConfig';
+import type { HostState } from './GameState';
+import { standingsDurationMs } from './Leaderboard';
 import { scoresDurationMs } from './ScoreCount';
 
 /** Every phase name, in the order the game runs them. A tuple rather than a literal union so a
  * caller can ask for the first phase: the host's clock has to land somewhere even at the end. */
-const PhaseNames = ['Lobby', 'Choosing', 'Writing', 'Reviewing', 'Scores', 'Final'] as const;
+const PhaseNames = [
+  'Lobby',
+  'Choosing',
+  'Writing',
+  'Reviewing',
+  'Scores',
+  'Leaderboard',
+  'Final',
+] as const;
 
 /** The names a phase goes by, taken off the table rather than written out again. */
 export type PhaseName = (typeof PhaseNames)[number];
@@ -62,6 +72,16 @@ export const PhaseFlow: Record<PhaseName, PhaseSpec> = {
      * pace, so the host works it out from the cards; quoted here so the table still answers. */
     waitMs: () => scoresDurationMs(0),
     graceMs: 0,
+    next: 'Leaderboard',
+    splash: false,
+  },
+  Leaderboard: {
+    timed: true,
+    /** The floor of the show, for a room of nobody: how long the room is given to look at the
+     * places it has just been shown. The real length is a fact about the room, so the host
+     * works it out from the standings; quoted here so the table still answers. */
+    waitMs: () => standingsDurationMs(0),
+    graceMs: 0,
     next: 'Choosing',
     splash: false,
   },
@@ -94,6 +114,17 @@ export function phaseAfter(phase: PhaseName): PhaseName | null {
  * asked of timed phases, which is why Final being terminal is not a contradiction here. */
 export function phaseAfterCycling(phase: PhaseName): PhaseName {
   return PhaseFlow[phase].next ?? PhaseNames[0];
+}
+
+/** Whether a round can end from here: the count, a review the room abandoned, and the standings
+ * a played round ends on. Named here so the round-ending moves cannot list the phases
+ * differently, and narrowing as it goes so the moves keep the phase's own shape. */
+export function endsRound(
+  state: HostState
+): state is Extract<HostState, { phase: 'Reviewing' | 'Scores' | 'Leaderboard' }> {
+  return (
+    state.phase === 'Reviewing' || state.phase === 'Scores' || state.phase === 'Leaderboard'
+  );
 }
 
 /** Whether the host's clock ends this phase, which is what decides whether a countdown is drawn

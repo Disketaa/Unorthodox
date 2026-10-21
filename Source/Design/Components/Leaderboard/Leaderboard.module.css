@@ -1,0 +1,232 @@
+/* The room's places, a list of them: where the player stands, the player themselves, their name
+ * and what they have. A list rather than a row of seats, because a place is a line of a table
+ * and reads as one — four things said about the same player, left to right, with the number the
+ * room is ranked by leading the line and the standing it is read for closing it. The list is
+ * the room the rows are placed in rather than the thing they stack in, so a list of a dozen
+ * fits a phone and a projector alike without scrolling either of them. */
+.Root {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+/* The track the row is read against: a muted wash of the room's own ink, so the list reads as
+ * one bar of places rather than as a table of numbers. The fill is the same wash a step deeper,
+ * and reaches as far as the player's share of the top score's. */
+.Track {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: var(--Radius-Card);
+  background: var(--Color-Surface-Hover);
+}
+
+/* How much of the track this player has filled: the top score fills it and the rest are
+ * measured against it, so the list is a graph of the round rather than a table of numbers. The
+ * stone is the same overlay the page wears, tiled at its own size and held further back than
+ * the page holds it, so the bar is made of the material the table under the paper is and stays
+ * a wash rather than a slab of it. */
+.Fill {
+  --Overlay-StoneOpacity: var(--Opacity-LeaderboardStone);
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--Place-Share, 0) * 100%);
+  height: 100%;
+  background-color: var(--Color-Surface-Active);
+}
+
+/* The bar in the player's own colour: the row of the player looking at the screen, which is
+ * theirs throughout, and every row while its round is being added up — the bar is the figure
+ * being counted, so it wears the player the figure is about until the figure has landed, and is
+ * the wash it was after. Both are washed back, so the writing on the bar is read first: a list
+ * of places is a list of places, and a table of one player's colours is not a table of places. */
+.Mine .Track,
+.Counting .Track {
+  background: color-mix(
+    in srgb,
+    var(--Character-Tint) 12%,
+    var(--Color-Page-Fill, var(--Color-Surface-Default))
+  );
+}
+
+.Mine .Fill,
+.Counting .Fill {
+  background-color: color-mix(
+    in srgb,
+    var(--Character-Tint) 34%,
+    var(--Color-Page-Fill, var(--Color-Surface-Default))
+  );
+}
+
+/* A colour that comes and goes rather than one that is switched: the count is a moment, and the
+ * bar is the wash it was on either side of it. */
+.Mine .Track,
+.Mine .Fill,
+.Counting .Track,
+.Counting .Fill {
+  transition: background-color var(--Duration-Slow) var(--Easing-Smooth);
+}
+
+/* One place, placed rather than stacked: the row is laid at its slot so it can move to another
+ * one. The slot is a share of the list's own height, the same share for every row, with the gap
+ * taken out of the room before the share is worked out. Every size in the row is a share of the
+ * row's own height, so a list of a dozen on a short screen is a list of twelve small rows
+ * rather than twelve rows and a scroll. */
+.Row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(
+    (100% - (var(--Row-Count) - 1) * var(--Space-LeaderboardGap)) / var(--Row-Count)
+  );
+  /* A slot is the row's own height plus the gap below it, so a row one place further down
+   * stands exactly one row lower. The move is a slide rather than a jump, and only the slot
+   * moves: the arrival is the `transform` below, so the two never fight over the same property. */
+  translate: 0 calc(var(--Row-At, 0) * (100% + var(--Space-LeaderboardGap)));
+  transition: translate var(--Duration-LeaderboardReorder) var(--Easing-Smooth);
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  gap: var(--Space-Md);
+  padding: 0 var(--Space-Lg);
+  /* The row measures itself, so the figures in it are shares of the room it was given. */
+  container-type: size;
+  /* The row arrives with the wave, one after another from the last place to the first. */
+  animation: PlaceAppear var(--Duration-LeaderboardPlace) var(--Easing-Decelerate) both;
+  animation-delay: var(--Place-Delay, 0ms);
+}
+
+/* The row idles once it has arrived: it rocks where it stands, bar and line together, the way
+ * everything else on the page does. The sway takes the row's one `animation` when the arrival
+ * is done, since both write `transform` and a row cannot swing and dive at once. The shorthand
+ * drops the arrival's delay with it, so the swing starts where the row stands rather than
+ * waiting out a wave the row has already had. */
+.Idle {
+  composes: Moving from '../../Primitives/Sway/Sway.module.css';
+  --Sway-Lean: 0;
+  animation: var(--Sway-Animation);
+}
+
+@keyframes PlaceAppear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* The wave held where it is, for a room that has been held: the rows stand where they got to
+ * rather than carrying on arriving under a hold that says the game has stopped. */
+.Paused {
+  animation-play-state: paused;
+}
+
+/* A player the host has lost. Held back rather than removed, and by the same half the player
+ * bar holds back a seat that dropped: the place is still theirs and they may be back, and a
+ * list that loses a line reads as a smaller room rather than as a player who went. The half is
+ * worn as a filter rather than as the row's own opacity, because the arrival is a fade of its
+ * own and a row that arrived at full strength and dimmed after would be a player leaving in
+ * front of the room. */
+.Offline {
+  filter: opacity(0.5);
+}
+
+/* The character, drawn on the paper rather than on a hexagon of its own: the drawing is what a
+ * row is recognised by, and it stands between the place the player holds and the name they hold
+ * it under. */
+.Figure {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(64cqh, 120px);
+  aspect-ratio: 1;
+  container-type: size;
+}
+
+/* The place, leading the line rather than standing behind the player: the figure the room is
+ * ranked by, in the player's own colour and washed back, so it says where the row stands
+ * without shouting over the name it belongs to. The column is as wide as the last place needs
+ * and the figure is centred in it, so the places make a column down the list, the row is inset
+ * by the same padding at both ends, and no digit's worth of space stands between the place and
+ * the player. */
+.Place {
+  position: relative;
+  z-index: 1;
+  width: var(--Place-Width, 1ch);
+  font-family: var(--FontFamily-Display);
+  font-size: min(72cqh, 52px);
+  font-weight: bold;
+  line-height: 1;
+  text-align: center;
+  color: color-mix(
+    in srgb,
+    var(--Character-Tint) 70%,
+    var(--Color-Page-Fill, var(--Color-Surface-Default))
+  );
+  user-select: none;
+}
+
+/* The name, in the room's own body face: it is the thing being read, and it is read before the
+ * figure at the end of the line. Above the track, which is under everything. */
+.Name {
+  position: relative;
+  z-index: 1;
+  font-size: min(34cqh, 22px);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--Color-Text-Default);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* What the player has, at the end of the line: what this round paid them, and what they have
+ * altogether. The round's figure is in the room's own green, so a line that gained something
+ * says so at a glance, and it stands to the left of the standing the line is read for. */
+.Score {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: var(--Space-Sm);
+  line-height: 1;
+  text-align: right;
+}
+
+/* What the round paid, in the room's own green: the figure is smaller than the standing it
+ * stands beside, since the standing is what the line is for. */
+.Round {
+  font-family: var(--FontFamily-Display);
+  font-size: min(52cqh, 44px);
+  font-weight: 700;
+  color: var(--Color-Feedback-Success);
+}
+
+/* The standing itself: the figure the line is read for. */
+.Total {
+  font-family: var(--FontFamily-Display);
+  font-size: min(72cqh, 52px);
+  font-weight: 700;
+  color: var(--Color-Text-Default);
+}
+
+/* Our own line, and only ours: the player looking at the screen finds their name and their
+ * standing written in their own accent — the colour they chose, which the game answers them in
+ * — rather than the ink every panel is written in. */
+.Mine .Name,
+.Mine .Total {
+  color: var(--Accent-Tint);
+}

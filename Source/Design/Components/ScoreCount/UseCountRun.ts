@@ -21,6 +21,15 @@ export interface CountRunSpec {
   durationMs: number;
   paused: boolean;
   run: number;
+  /** Whether the walk is heard. A count is heard by default, since one figure counting up is one
+   * thing for the room to listen to; a caller that counts a roomful of figures at once turns it
+   * off on all but one of them, so the sound is a count rather than a roomful of counts. */
+  silent?: boolean;
+}
+
+/** What one frame of a count is given: the line it walks, and whether the walk is heard. */
+interface FrameSpec extends CountSpec {
+  silent?: boolean;
 }
 
 /** Beginning the count again from the start of its line: the figure goes back to the figure it
@@ -48,7 +57,7 @@ function useCountRestart(
  * count moves with. The walk's own place is carried by the refs rather than recomputed, since
  * the loop is the only thing that knows how far it has got. */
 function walkFrame(
-  spec: CountSpec,
+  spec: FrameSpec,
   refs: CountRefs,
   begin: number,
   setValue: (value: number) => void,
@@ -60,7 +69,7 @@ function walkFrame(
   if (shown !== refs.lastValue.current) {
     refs.lastValue.current = shown;
     setStep((step) => step + 1);
-    playSound('Pop');
+    if (spec.silent !== true) playSound('Pop');
   }
   setValue(shown);
   if (refs.runUp.current < spec.durationMs) {
@@ -82,14 +91,14 @@ function useCountFrames(
   setValue: (value: number) => void,
   setStep: (step: (step: number) => number) => void
 ): void {
-  const { from, to, durationMs, paused, run } = spec;
+  const { from, to, durationMs, paused, run, silent } = spec;
   useEffect(() => {
     if (from === to || paused) {
       return;
     }
     const begin = performance.now() - refs.runUp.current;
     const tick = (now: number): void =>
-      walkFrame({ from, to, durationMs }, refs, begin, setValue, setStep, now);
+      walkFrame({ from, to, durationMs, silent }, refs, begin, setValue, setStep, now);
     refs.frame.current = requestAnimationFrame(tick);
     return () => {
       if (refs.frame.current !== 0) {

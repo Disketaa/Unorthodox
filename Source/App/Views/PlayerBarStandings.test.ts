@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { readScores, readShownScores, payoutsOf, type BarBoard } from './PlayerBarView';
+import {
+  readScores,
+  readShownScores,
+  payoutsOf,
+  settledTotals,
+  type BarBoard,
+} from './PlayerBarView';
 import type { PublicRoom, PublicState } from '@/Game';
 
 /** One seat's figure, which every standing and every round total below is a row of. */
@@ -132,6 +138,83 @@ describe('what the bar reads at the edge of the count', () => {
         }
       }
     }
+  });
+});
+
+describe('what the bar reads of a round with rounds behind it', () => {
+  // A room that walked into this round on 30 and 40, with the board about to pay one 32 and the
+  // other 8: the round turns the two of them over, which is the whole reason the two figures are
+  // not the same figure.
+  const carried = [
+    { id: 'p1', score: 62 },
+    { id: 'p2', score: 48 },
+  ];
+
+  it('stands every seat where it came into the round, ahead of the first card', () => {
+    // The round comes out of the seat that earned it and not out of the board: a room with rounds
+    // behind it read its own cards off the whole board's worth, so it walked into the count on a
+    // figure it never held and the count ended below what it had before the round began.
+    const before = readShownScores(between('Scores', { cumulative: carried }), board, true, -1);
+    expect(before.get('p1')).toBe(30);
+    expect(before.get('p2')).toBe(40);
+  });
+
+  it('lands on the standing the round earned once the whole board is counted', () => {
+    const landed = readShownScores(between('Scores', { cumulative: carried }), board, true, 2);
+    expect(landed.get('p1')).toBe(62);
+    expect(landed.get('p2')).toBe(48);
+  });
+
+  it('moves only the seats the count has reached, card by card', () => {
+    // The seat whose card is being counted is already standing on what that card paid it, and the
+    // seat the count has not reached is still on what it walked in with, which is what the count
+    // climbs from when it gets there.
+    const midCount = readShownScores(
+      between('Scores', { cumulative: carried }),
+      board,
+      true,
+      0
+    );
+    expect(midCount.get('p1')).toBe(62);
+    expect(midCount.get('p2')).toBe(40);
+  });
+});
+
+describe('the order the bar deals itself in', () => {
+  // The room comes into the round on 30 and 40, and the round turns it over: the standings the
+  // leaderboard settles put the seat that was behind in front.
+  const settled = [
+    { id: 'p1', score: 62 },
+    { id: 'p2', score: 48 },
+  ];
+
+  it('is dealt by the standings a round left the room with, and not the one it is counting', () => {
+    // A row that reordered itself as the cards were paid would be the standings arriving a card at
+    // a time. The room's order is read on the leaderboard, so the bar takes it from there, in one
+    // cut, on a phase that draws no bar at all.
+    const counted = settledTotals(between('Scores', { cumulative: settled }), board);
+    expect(counted.get('p1')).toBe(30);
+    expect(counted.get('p2')).toBe(40);
+
+    const shown = settledTotals(between('Choosing', { standings: settled }), undefined);
+    expect(shown.get('p1')).toBe(62);
+    expect(shown.get('p2')).toBe(48);
+  });
+
+  it('deals a room nobody has scored yet from nowhere at all', () => {
+    // The first round has no standings to take a round out of, so every seat comes into it on
+    // nothing and the bar is the room's own order until the leaderboard says otherwise.
+    const first = settledTotals(
+      between('Scores', {
+        cumulative: [
+          { id: 'p1', score: 32 },
+          { id: 'p2', score: 8 },
+        ],
+      }),
+      board
+    );
+    expect(first.get('p1')).toBe(0);
+    expect(first.get('p2')).toBe(0);
   });
 });
 

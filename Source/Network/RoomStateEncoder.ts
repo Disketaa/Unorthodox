@@ -97,6 +97,39 @@ function choosingOf(state: Extract<HostState, { phase: 'Choosing' }>, members: M
   };
 }
 
+/** The round counted: the board travels with the count, not just the count, since this phase
+ * draws the same cards the review did and a host that refreshed here would come back to an
+ * empty stage. */
+function scoresOf(
+  state: Extract<HostState, { phase: 'Scores' }>,
+  members: Members,
+  clock: { durationMs: number; startedAt: number }
+) {
+  return {
+    ...members,
+    ...clock,
+    phase: state.phase,
+    ...topicOf(state),
+    rejections: groupVotesOut(state.groupRejections),
+    likes: groupVotesOut(state.groupLikes),
+    round: [...state.scores],
+    ...themeOf(state),
+  };
+}
+
+/** The room's places and the clock they are read against. The totals travel in the members every
+ * phase carries, so a host that refreshed here comes back to the same standings the room is
+ * looking at. */
+function leaderboardOf(state: Extract<HostState, { phase: 'Leaderboard' }>, members: Members) {
+  return {
+    ...members,
+    ...clockOf(state),
+    phase: state.phase,
+    round: [...state.scores],
+    ...themeOf(state),
+  };
+}
+
 export function encodeRoomState(state: HostState): Record<string, unknown> {
   const members = membersOf(state);
   if (state.phase === 'Lobby') {
@@ -124,18 +157,10 @@ export function encodeRoomState(state: HostState): Record<string, unknown> {
     };
   }
   if (state.phase === 'Scores') {
-    // The board travels with the count, not just the count: this phase draws the same cards the
-    // review did, and a host that refreshed here would come back to an empty stage.
-    return {
-      ...members,
-      ...clock,
-      phase: state.phase,
-      ...topicOf(state),
-      rejections: groupVotesOut(state.groupRejections),
-      likes: groupVotesOut(state.groupLikes),
-      round: [...state.scores],
-      ...themeOf(state),
-    };
+    return scoresOf(state, members, clock);
+  }
+  if (state.phase === 'Leaderboard') {
+    return leaderboardOf(state, members);
   }
   // unreachable
   return {};

@@ -26,3 +26,4 @@ export * from './ThemeCards';
 export * from './ThemeLabel';
 export * from './Keyboard';
 export * from './GlintFlash';
+export * from './Leaderboard';

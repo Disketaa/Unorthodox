@@ -168,6 +168,16 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
       return { phase: 'Reviewing', ...common, ...reviewMarks(fields), theme };
     case 'Scores':
       return scoresFrom(fields, common, theme);
+    case 'Leaderboard':
+      // The places and the clock: a room resumed here comes back into the standings it was
+      // looking at, and the totals it is showing are the members' own.
+      return {
+        phase: 'Leaderboard',
+        ...clockOf(fields),
+        ...commonOf(members),
+        scores: toMap(rawPairs(fields, 'round'), isNumber),
+        theme,
+      };
     default:
       return undefined;
   }

@@ -103,7 +103,7 @@ describe('the host', () => {
 });
 
 describe('the score', () => {
-  it("is drawn in the label, beside the name, in the room's own order", () => {
+  it('is drawn in the label, beside the name, so one walk reads both', () => {
     // Both are always in the DOM and the stylesheet swaps which one is visible, so a client that
     // walks the label reads the score even where a pointer cannot reach it.
     const label = mounted(

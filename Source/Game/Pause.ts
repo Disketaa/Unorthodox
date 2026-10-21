@@ -28,6 +28,7 @@ function shifted(state: HostState, byMs: number): HostState {
     case 'Writing':
     case 'Reviewing':
     case 'Scores':
+    case 'Leaderboard':
       return { ...state, startedAt: state.startedAt + byMs };
     default:
       return assertNever(state);

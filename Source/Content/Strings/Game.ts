@@ -126,6 +126,9 @@ export const phase = {
   writing: 'Все пишут ответы…',
   reviewing: 'Смотрим ответы…',
   scores: 'Считаем очки…',
+  /** Said over the places once the round has been counted, which is the phase that follows the
+   * scores: the board is read and what is left is the order. */
+  leaderboard: 'Смотрим места…',
   final: 'Игра закончена',
   connecting: 'Подключаемся…',
 };

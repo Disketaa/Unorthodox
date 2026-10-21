@@ -13,11 +13,27 @@ import {
 import type { PhaseName } from './PhaseFlow';
 
 /** Every phase, in the order the table declares them. */
-const phases: PhaseName[] = ['Lobby', 'Choosing', 'Writing', 'Reviewing', 'Scores', 'Final'];
+const phases: PhaseName[] = [
+  'Lobby',
+  'Choosing',
+  'Writing',
+  'Reviewing',
+  'Scores',
+  'Leaderboard',
+  'Final',
+];
 
 describe('the phase table', () => {
   it('names a phase for every row, and nothing that is not a row', () => {
-    expect(phases).toEqual(['Lobby', 'Choosing', 'Writing', 'Reviewing', 'Scores', 'Final']);
+    expect(phases).toEqual([
+      'Lobby',
+      'Choosing',
+      'Writing',
+      'Reviewing',
+      'Scores',
+      'Leaderboard',
+      'Final',
+    ]);
     expect(isPhaseName('Choosing')).toBe(true);
     expect(isPhaseName('Connecting')).toBe(false);
   });
@@ -30,7 +46,13 @@ describe('the phase table', () => {
   });
 
   it('times the phases a player waits through, and only those', () => {
-    expect(phases.filter(isTimedPhase)).toEqual(['Choosing', 'Writing', 'Reviewing', 'Scores']);
+    expect(phases.filter(isTimedPhase)).toEqual([
+      'Choosing',
+      'Writing',
+      'Reviewing',
+      'Scores',
+      'Leaderboard',
+    ]);
   });
 
   it('gives every timed phase a wait the room can measure', () => {
@@ -69,14 +91,16 @@ describe('the phase table', () => {
     expect(phaseAfter('Choosing')).toBe('Writing');
     expect(phaseAfter('Writing')).toBe('Reviewing');
     expect(phaseAfter('Reviewing')).toBe('Scores');
-    // The round ends by choosing again rather than by ending the game.
-    expect(phaseAfter('Scores')).toBe('Choosing');
+    // The round is counted, then the room is shown where it stands, and only then does the round
+    // end by choosing again rather than by ending the game.
+    expect(phaseAfter('Scores')).toBe('Leaderboard');
+    expect(phaseAfter('Leaderboard')).toBe('Choosing');
     expect(phaseAfter('Final')).toBeNull();
   });
 
   it('cycles back to the first phase where the table runs out', () => {
     expect(phaseAfterCycling('Final')).toBe('Lobby');
-    expect(phaseAfterCycling('Scores')).toBe('Choosing');
+    expect(phaseAfterCycling('Leaderboard')).toBe('Choosing');
   });
 });
 
@@ -89,9 +113,12 @@ describe('the splash column', () => {
 
   it('leaves the phases that have no such moment alone', () => {
     // Writing follows the theme being picked, which the room has already watched happen, and a
-    // splash over the end of a round would cover the scores the room is still reading.
+    // splash over the end of a round would cover the scores the room is still reading. The places
+    // are read the same way: the room is looking at where it stands, and a splash over that
+    // would cover the very thing the phase is for.
     expect(splashesOnArrival('Writing')).toBe(false);
     expect(splashesOnArrival('Scores')).toBe(false);
+    expect(splashesOnArrival('Leaderboard')).toBe(false);
     expect(splashesOnArrival('Lobby')).toBe(false);
   });
 

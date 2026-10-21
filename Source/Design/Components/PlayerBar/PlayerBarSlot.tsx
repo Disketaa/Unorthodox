@@ -138,10 +138,7 @@ export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
   const glintClass = `${styles.Glint} ${styles[`Glint${variant}`]}`;
 
   return (
-    // The seat's own id on the element, which is how the row finds a seat again when the count has
-    // moved it: a seat is identified by who it is rather than by where it was drawn, since the
-    // place it was drawn at is the one thing about it the count is about to change.
-    <div class={seatClasses(entry, isSelf, atWork)} data-seat={entry.id}>
+    <div class={seatClasses(entry, isSelf, atWork)}>
       <span class={styles.Slot}>
         <Face
           entry={entry}

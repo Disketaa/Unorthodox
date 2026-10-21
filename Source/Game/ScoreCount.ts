@@ -14,8 +14,8 @@ export function countStepMs(): number {
 }
 
 /** How long the count runs for a board of this many cards, and so how long the phase drawing it
- * has to last: the drama beat before the first card is its own, then one turn per card, then a
- * moment to look at the finished board. Derived from the animation rather than written down. */
+ * has to last: the drama beat, one turn per card, and the board left standing. Where the room
+ * is shown its places is a phase of its own, and its own length. */
 export function scoresDurationMs(cards: number): number {
   return (
     GameConfig.timing.scoreDramaDelayMs +
