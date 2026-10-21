@@ -61,6 +61,27 @@ describe('the room standing', () => {
     expect(root.textContent).toContain('42');
   });
 
+  it('writes the round’s figure beside the name, and the standing at the end of the line', () => {
+    // The green figure is a note on the name rather than a figure of its own: it stands beside
+    // the name on the same line, and the standing the row is ranked by stands at the end of the
+    // line on its own.
+    const board = rows();
+    board[1].round = 20;
+    const root = mounted(board);
+    const row = root.querySelectorAll('li')[1];
+    const name = row?.querySelector('[class*="NameText"]');
+    expect(name?.textContent).toBe('Berenice');
+    expect(row?.lastElementChild?.className).toContain('Score');
+    expect(row?.lastElementChild?.textContent).not.toContain('+');
+    // The figure belongs to the count, so it is there once the wave has come up and the count runs.
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+    const round = name?.nextElementSibling;
+    expect(round?.className).toContain('Round');
+    expect(round?.textContent).toBe('(+20)');
+  });
+
   it('holds a lost player’s line back without dropping it', () => {
     // A player the host has lost still stands in the list — the place is theirs — and their line
     // is held back the way the bar holds back a seat that dropped, so one held-back thing means

@@ -763,6 +763,10 @@ body.PageFade {
   /* The gap between the places, the same clamp the bank of theme cards uses: the gap is what a
    * place's width is measured from, so it cannot be a share of the place. */
   --Space-LeaderboardGap: clamp(4px, 1.2vw, 10px);
+  /* How tall a place may stand before the list stops growing: a room of three is three places
+   * rather than three rows the size of a room of twelve, and the list stands at the top of the
+   * stage rather than filling it. */
+  --Size-LeaderboardRowMax: 100px;
   /* The wave the places arrive in and how long one takes to come up: the list is built from the
    * last place up, and nothing on it is counted until the wave is standing. */
   --Duration-LeaderboardWave: 90ms;

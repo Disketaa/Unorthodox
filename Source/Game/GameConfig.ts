@@ -132,7 +132,7 @@ const timing = {
   /** How long the rearranged list stands after the move: every figure is on the list, and the
    * room is given the time to read where everybody ended up rather than only to see that they
    * moved. */
-  leaderboardLingerMs: 4500,
+  leaderboardLingerMs: 2500,
 };
 
 /** How many players a room holds. The bar of hexes across the top of a game holds this many in

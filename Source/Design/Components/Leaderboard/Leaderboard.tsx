@@ -11,7 +11,7 @@ import {
   leaderboardWaveMs,
   loudPlace,
   priorOrder,
-  useArrivalNotes,
+  useSceneNote,
   useShowStage,
   useStanding,
   type ShowStage,
@@ -110,9 +110,11 @@ function Place({ row, at, delay, top, stage, countMs, silent, paused, run }: Pla
       <span class={styles.Figure}>
         <Character character={row.character} color={row.color} size="Fill" />
       </span>
-      <span class={styles.Name}>{row.name}</span>
+      <span class={styles.Name}>
+        <span class={styles.NameText}>{row.name}</span>
+        {showsRound && <span class={styles.Round}>(+{round})</span>}
+      </span>
       <span class={styles.Score}>
-        {showsRound && <span class={styles.Round}>+{round}</span>}
         <span class={styles.Total}>{value}</span>
       </span>
     </li>
@@ -134,7 +136,7 @@ function Places({ rows, run, paused }: PlacesProps) {
   const delays = new Map(
     prior.map((row, index) => [row.id, arrivalMs(places, index + 1, waveMs)])
   );
-  useArrivalNotes([...delays.values()], paused, run);
+  useSceneNote(paused, run);
   // One of the rows counting at once is the one the room hears, rather than every row saying every
   // point of its own.
   const loud = loudPlace(rows);

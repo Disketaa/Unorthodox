@@ -12,6 +12,12 @@
   margin: 0 auto;
   padding: 0;
   list-style: none;
+  /* The list is as tall as its places and no taller: a room of three stands at the top of the
+   * stage rather than filling it, and a room of twelve still fills it. */
+  max-height: calc(
+    var(--Row-Count) * var(--Size-LeaderboardRowMax) + (var(--Row-Count) - 1) *
+      var(--Space-LeaderboardGap)
+  );
 }
 
 /* The track the row is read against: a muted wash of the room's own ink, so the list reads as
@@ -179,39 +185,49 @@
 }
 
 /* The name, in the room's own body face: it is the thing being read, and it is read before the
- * figure at the end of the line. Above the track, which is under everything. */
+ * figure at the end of the line. One line, the name and the round's figure beside it in
+ * brackets, so the room reads who it is and what it just won without its eye leaving the name. */
 .Name {
   position: relative;
   z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: var(--Space-Sm);
+  min-width: 0;
   font-size: min(34cqh, 22px);
   font-weight: 600;
   line-height: 1.2;
   color: var(--Color-Text-Default);
+}
+
+/* The name itself, cut short in the drawing rather than in the data, so a long name stays whole
+ * for anything that can read it. */
+.NameText {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* What the player has, at the end of the line: what this round paid them, and what they have
- * altogether. The round's figure is in the room's own green, so a line that gained something
- * says so at a glance, and it stands to the left of the standing the line is read for. */
+/* What the player has altogether, at the end of the line: the standing the line is read for,
+ * and the one number the room ranks the rows by. */
 .Score {
   position: relative;
   z-index: 1;
   display: flex;
   align-items: baseline;
   justify-content: flex-end;
-  gap: var(--Space-Sm);
   line-height: 1;
   text-align: right;
 }
 
-/* What the round paid, in the room's own green: the figure is smaller than the standing it
- * stands beside, since the standing is what the line is for. */
+/* What the round paid, in the room's own green, in brackets beside the name it was paid to. The
+ * body's own face rather than the display one: this is a note on the name, not a figure the
+ * room is ranked by, and the two big numbers on the row are the only ones that shout. */
 .Round {
-  font-family: var(--FontFamily-Display);
-  font-size: min(52cqh, 44px);
-  font-weight: 700;
+  flex: none;
+  font-size: min(26cqh, 18px);
+  font-weight: 600;
+  line-height: 1.2;
   color: var(--Color-Feedback-Success);
 }
 

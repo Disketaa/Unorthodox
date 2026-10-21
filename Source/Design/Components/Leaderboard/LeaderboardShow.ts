@@ -106,18 +106,14 @@ export function useShowStage(
   return stage;
 }
 
-/** The note each place arrives on: the beat the row itself comes up on, so the room hears the
- * order being built. Said only while the room is running, since a held room is a room that has
+/** The note the scene opens on: one whoosh as the places come up, rather than a card for every
+ * place that lands. Said only while the room is running, since a held room is a room that has
  * stopped. */
-export function useArrivalNotes(delays: readonly number[], paused: boolean, run: number): void {
-  const signature = delays.join(',');
+export function useSceneNote(paused: boolean, run: number): void {
   useEffect(() => {
     if (paused) return;
-    const timers = delays.map((delay) => window.setTimeout(() => playSound('Card'), delay));
-    return () => timers.forEach((id) => window.clearTimeout(id));
-    // The delays are the wave itself: the same places on the same beats are the same wave, and a
-    // new run of it is a new wave.
-  }, [signature, paused, run]);
+    playSound('Whoosh');
+  }, [paused, run]);
 }
 
 /** What one row is read by: the place, the beat the show is on, and whether this row is the one

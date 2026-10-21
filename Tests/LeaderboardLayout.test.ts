@@ -16,6 +16,8 @@ const Row = /\.Row[^{]*\{([^}]*)\}/;
 const Idle = /\.Idle[^{]*\{([^}]*)\}/;
 const Offline = /\.Offline[^{]*\{([^}]*)\}/;
 const Name = /\.Name[^{]*\{([^}]*)\}/;
+const NameText = /\.NameText[^{]*\{([^}]*)\}/;
+const Round = /\.Round[^{]*\{([^}]*)\}/;
 const Total = /\.Total[^{]*\{([^}]*)\}/;
 const MineInk = /\.Mine \.Name,\s*\.Mine \.Total\s*\{([^}]*)\}/;
 const Place = /\.Place[^{]*\{([^}]*)\}/;
@@ -35,6 +37,14 @@ describe('the room standing', () => {
     expect(sheet.declaration(Root, 'position')).toBe('relative');
     expect(sheet.declaration(Row, 'position')).toBe('absolute');
     expect(sheet.declaration(Row, 'height')).toContain('var(--Row-Count)');
+  });
+
+  it('stops the list growing with the stage, so a small room stands at the top', () => {
+    // A room of three is three places and not three rows the size of a room of twelve: the list
+    // is as tall as its places and no taller, and stands at the top of the stage rather than
+    // filling it. A room of twelve still fills it, since the cap is above what the stage gives.
+    expect(sheet.declaration(Root, 'max-height')).toContain('var(--Row-Count)');
+    expect(sheet.declaration(Root, 'max-height')).toContain('var(--Size-LeaderboardRowMax)');
   });
 
   it('moves a place to another slot rather than cutting to it', () => {
@@ -104,6 +114,17 @@ describe('the room standing', () => {
     expect(sheet.declaration(Name, 'color')).toBe('var(--Color-Text-Default)');
     expect(sheet.declaration(Total, 'color')).toBe('var(--Color-Text-Default)');
     expect(sheet.declaration(MineInk, 'color')).toBe('var(--Accent-Tint)');
+  });
+
+  it('writes the round’s figure beside the name, in the room’s own face', () => {
+    // The green figure is a note on the name and not a figure of its own: it stands beside the
+    // name on the same line rather than at the end of the line, and in the body face rather than
+    // the display one, so the two big numbers on the row are the only ones that shout.
+    expect(sheet.declaration(Name, 'align-items')).toBe('baseline');
+    expect(sheet.declares(Name, 'flex-direction')).toBe(false);
+    expect(sheet.declaration(NameText, 'text-overflow')).toBe('ellipsis');
+    expect(sheet.declares(Round, 'font-family')).toBe(false);
+    expect(sheet.declaration(Round, 'color')).toBe('var(--Color-Feedback-Success)');
   });
 
   it('has no hexagon of its own, so the player is drawn on the paper', () => {
