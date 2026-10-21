@@ -41,6 +41,10 @@ export interface RoomMembers {
   /** The seats the round's enchanted card reaches. Empty where the card carried no effect, and
    * empty again the moment a new bank is offered. Optional, so an older save reads as nobody. */
   affectedPlayers?: Set<PlayerId>;
+  /** The multiplier the round's card wears, or absent where it carried none. Beside the seats
+   * the card reaches, since the two are the card's two halves: a plain card reaches nobody and
+   * multiplies nothing. */
+  mult?: number;
   /** Whether the host has held the room, which stops every clock and every answer at once. The
    * room's rather than the host screen's: a player watching a timer run on has to be stopped by
    * the same hand that started it. */
@@ -73,6 +77,7 @@ export function membersOf(state: HostState): RoomMembers {
     customThemes: state.customThemes,
     themeRounds: state.themeRounds,
     affectedPlayers: state.affectedPlayers,
+    mult: state.mult,
     paused: false,
     pausedAt: undefined,
   };
@@ -123,8 +128,6 @@ export type WritingState = RoomMembers & {
    * and that share is the whole of the speed bonus. The share and not the moment, because a
    * moment only means anything beside the clock of the round that took it. */
   answerShares?: Map<PlayerId, number>;
-  /** The multiplier the round's card wears, or absent where it carried none. */
-  mult?: number;
   /** Who among those who have answered is writing over the one they sent. Beside the answers
    * rather than by dropping them from it, so a player who changes their mind and runs out of
    * time still counts as having answered. Optional: a room saved before this reads as nobody. */
@@ -146,8 +149,6 @@ export type BoardState = RoomMembers & {
   /** As in Writing: how far into the writing clock each answer reached the host. The round is
    * scored from here, and the bar shows the running total while the round is still open. */
   answerShares?: Map<PlayerId, number>;
-  /** As in Writing: the multiplier the round's card wears. */
-  mult?: number;
   /** groupId -> the playerIds who voted that group not suitable */
   groupRejections: Map<number, Set<PlayerId>>;
   /** groupId -> the playerIds who liked that group's answer, held per round like the rejections

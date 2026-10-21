@@ -65,6 +65,9 @@ export function handleChooseTheme(
     // Who the card's effect reaches, worked out by the host from the standings and sent with the
     // press. Empty where the card carries no effect, which is the ordinary card and not a bug.
     affectedPlayers: new Set(action.affectedPlayers ?? []),
+    // The multiplier the card wears, which is the other half of the same roll: a card that
+    // reaches nobody multiplies nothing.
+    mult: action.mult ?? state.mult,
   };
 }
 
@@ -95,7 +98,7 @@ export function handleStartWriting(
     startedAt: action.startedAt,
     answers: new Map<PlayerId, string>(),
     answerShares: new Map<PlayerId, number>(),
-    mult: action.mult ?? 1,
+    mult: action.mult ?? state.mult ?? 1,
     theme: state.theme,
     // Handed on as the round starts, which is the only place it can be handed: choosing a theme is
     // the one thing a turn limits, so a turn that never moved would leave every player after the

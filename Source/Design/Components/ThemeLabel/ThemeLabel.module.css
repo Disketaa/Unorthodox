@@ -31,17 +31,14 @@
   white-space: nowrap;
 }
 
-/* The question in the quiet text colour, holding back from the theme's name beside it: the name
- * is what the round is and the question is what it is asking, and two things at the same weight
- * in one line would say they were equally important. Not the title token, which is the local
- * player's own tint and would make the question a different colour per player. */
+/* The question in the display face, the one the game's own words are written in, and at twice
+ * the body's size: it is what the round is asking, and it is said in the room's own voice. The
+ * colour is the draining text's own, which draws the words twice and paints them. */
 .Topic {
   flex: 0 1 auto;
-  font-family: var(--FontFamily-Body);
-  font-size: var(--FontSize-Body);
-  font-weight: 700;
+  font-family: var(--FontFamily-Display);
+  font-size: calc(var(--FontSize-Body) * 2);
   line-height: 1.25;
-  color: var(--Color-Text-Quiet);
   overflow-wrap: break-word;
   hyphens: auto;
   min-width: 0;

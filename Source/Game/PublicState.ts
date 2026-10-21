@@ -49,6 +49,9 @@ export interface PublicRoom {
   /** The seats the round's enchanted card reaches, drawn as a glint on the bar of players.
    * Optional, so a host that sends none reads as nobody reached. */
   affectedPlayerIds?: PlayerId[];
+  /** The multiplier the round's card wears, which the answers it reaches are paid with.
+   * Optional, and left out where the card carries none: a plain card multiplies nothing. */
+  mult?: number;
   /** Whether the host is holding the room. On the wire rather than held per client, since a
    * player who is not held is one still playing against a timer nobody stopped. */
   /** What every seat stands at across the rounds so far, in every phase that has a room. Sent

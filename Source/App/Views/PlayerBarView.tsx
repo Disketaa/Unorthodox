@@ -52,6 +52,9 @@ function barEntries(view: PhaseViewProps['view'], marks: BarMarks): PlayerBarEnt
       payout: marks.settled ? marks.payouts.get(id) : undefined,
       pulse: marks.named.get(id) ?? 0,
       glinted: marks.glinted.has(id),
+      // The multiplier the card wears, on the seats it reaches and nowhere else: a plain card
+      // multiplies nothing, and a seat the card did not reach is paid nothing by it.
+      mult: marks.glinted.has(id) ? view.publicState?.mult : undefined,
       // Every seat still at work, and not only this browser's own: the room says who has written,
       // so a row of seats fills up as the answers come in. Writing over an answer already sent
       // counts as work again, and the room is told that too, so it holds for everybody's bar.

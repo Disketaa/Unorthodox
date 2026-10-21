@@ -22,6 +22,7 @@ export function EnchantmentBar({ note, mult, glinted }: EnchantmentBarProps) {
       variant="Muted"
       glinted={glinted}
       badge={mult === undefined ? undefined : `x${mult}`}
+      bold
     >
       {note}
     </Banner>

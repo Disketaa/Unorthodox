@@ -83,6 +83,7 @@ export function resolveRandomPick(
   return Game.reducer(state, {
     type: 'RESOLVE_RANDOM_PICK',
     at: Date.now(),
+    mult: multByChoice(state, roomCode, state.picking.theme),
     ...(affected === undefined ? {} : { affectedPlayers: affected }),
   });
 }
@@ -101,6 +102,7 @@ export function chooseTheme(
     playerId,
     theme,
     at: Date.now(),
+    mult: multByChoice(state, roomCode, theme),
     ...(affected === undefined ? {} : { affectedPlayers: affected }),
   });
 }

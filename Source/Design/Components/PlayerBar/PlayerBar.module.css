@@ -257,6 +257,24 @@
   }
 }
 
+/* The multiplier the round's card wears, on the seat of a player it reaches: the figure the
+ * seat's shine stands for, written on the hexagon's bottom point in the display face. The
+ * name's own ink and stroke, so it reads as part of the seat's label and not as chrome. */
+.Mult {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  translate: -50% 0;
+  font-family: var(--FontFamily-Display);
+  font-size: var(--FontSize-Sm);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--Color-PlayerBarNameInk);
+  -webkit-text-stroke: var(--Size-PlayerBarNameStroke) var(--Color-PlayerBarNameStroke);
+  paint-order: stroke fill;
+  pointer-events: none;
+}
+
 /* The name drawn on the hexagon's top point, with the score over it under the pointer. Over the
  * slot rather than above it, so a seat's name belongs to that seat instead of hanging over the
  * row — which is why it is out of the flow: in it, the label would be a second line and every

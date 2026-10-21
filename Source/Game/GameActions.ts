@@ -33,6 +33,8 @@ export type GameAction =
       theme: ThemeId;
       at: number;
       affectedPlayers?: PlayerId[];
+      /** What multiplier the card wears, worked out by the host from the room's own roll. */
+      mult?: number;
     }
   /** Nobody answered the bank before its clock ran out, so the room is answering it. Carries the
    * theme rather than rolling one here, since the reducer is the rule and not the dice. The
@@ -40,7 +42,13 @@ export type GameAction =
   | { type: 'START_RANDOM_PICK'; theme: ThemeId; startedAt: number }
   /** The room's roll commits, once the sweep has run. No player to name: the room chose it, not
    * one of the seats. Carries the seats the card's effect reaches, worked out by the host. */
-  | { type: 'RESOLVE_RANDOM_PICK'; at: number; affectedPlayers?: PlayerId[] }
+  | {
+      type: 'RESOLVE_RANDOM_PICK';
+      at: number;
+      affectedPlayers?: PlayerId[];
+      /** What multiplier the card wears, worked out by the host from the room's own roll. */
+      mult?: number;
+    }
   /** The theme answered, so the round's question is drawn from its bank and starts arriving. The
    * question travels on the action rather than being read from a catalogue here: what a theme
    * asks about is the content's business, and the reducer is the rule and not the dice. */

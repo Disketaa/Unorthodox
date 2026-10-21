@@ -44,6 +44,9 @@ export interface PlayerBarEntry {
   /** Whether the round's enchanted card reaches this seat, which draws the glint over them. The
    * room's own roll says who, so it is the same on every screen rather than each browser's. */
   glinted?: boolean;
+  /** The multiplier the round's card wears, which the answers it reaches are paid with. On the
+   * seat of a player the card reaches, and left out where the card carries none. */
+  mult?: number;
 }
 
 export interface PlayerBarProps {

@@ -153,6 +153,7 @@ export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
         <span class={styles.Name}>{entry.name}</span>
         <span class={styles.Score}>{entry.score}</span>
       </span>
+      {entry.mult !== undefined && <span class={styles.Mult}>{entry.mult}</span>}
     </div>
   );
 }

@@ -28,9 +28,11 @@ export function ThemeLabel({
   totalMs = 0,
 }: ThemeLabelProps) {
   const question = (
-    <DrainingText remainingMs={remainingMs} totalMs={totalMs}>
-      {topic}
-    </DrainingText>
+    <span class={styles.Topic}>
+      <DrainingText remainingMs={remainingMs} totalMs={totalMs}>
+        {topic}
+      </DrainingText>
+    </span>
   );
   return (
     <div class={styles.Row}>

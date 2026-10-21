@@ -40,6 +40,9 @@ export function room(state: HostState): PublicRoom {
     ...(state.affectedPlayers !== undefined && state.affectedPlayers.size > 0
       ? { affectedPlayerIds: [...state.affectedPlayers] }
       : {}),
+    // The multiplier the round's card wears, which the answers it reaches are paid with. Left
+    // out where the card carries none, since a plain card multiplies nothing.
+    ...(state.mult !== undefined && state.mult > 1 ? { mult: state.mult } : {}),
     paused: state.paused,
     ...(state.pausedAt === undefined ? {} : { pausedAt: state.pausedAt }),
     // What every seat stands at across the rounds so far, in every phase. Omitted before the

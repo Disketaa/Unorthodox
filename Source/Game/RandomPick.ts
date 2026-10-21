@@ -51,5 +51,8 @@ export function handleResolveRandomPick(
     // Who the card's effect reaches, worked out by the host and sent with the commit. Empty where
     // the card carries no effect, which is the ordinary card.
     affectedPlayers: new Set(action.affectedPlayers ?? []),
+    // The multiplier the card wears, which is the other half of the same roll: a card that
+    // reaches nobody multiplies nothing.
+    mult: action.mult ?? state.mult,
   };
 }

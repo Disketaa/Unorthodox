@@ -35,6 +35,9 @@ export interface BannerProps {
   /** Whether the round's enchanted card reaches this player, which lays the glint over the
    * banner. */
   glinted?: boolean;
+  /** Whether the words are said in a heavier hand. For a line the room has to act on rather than
+   * read: a demand on the player is not a note about the room. */
+  bold?: boolean;
 }
 
 /** A short note in a coloured block, or a named setting with its value. The mark leads the text
@@ -49,6 +52,7 @@ export function Banner({
   children,
   wrap = false,
   glinted = false,
+  bold = false,
 }: BannerProps) {
   const variantClass = useGlintVariant();
   const glintClass = glinted ? `${styles.Glint} ${styles[`Glint${variantClass}`]}` : '';
@@ -64,7 +68,9 @@ export function Banner({
         />
       )}
       {badge !== undefined && <span class={styles.Badge}>{badge}</span>}
-      <span class={`${styles.Text} ${wrap ? styles.Wrap : ''}`}>{children}</span>
+      <span class={`${styles.Text} ${wrap ? styles.Wrap : ''} ${bold ? styles.Bold : ''}`}>
+        {children}
+      </span>
       {value !== undefined && <span class={styles.Value}>{value}</span>}
     </div>
   );

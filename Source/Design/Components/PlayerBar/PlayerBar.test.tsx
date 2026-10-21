@@ -50,6 +50,19 @@ describe('the bar of hexes', () => {
     expect(root.querySelector('[class*="Name"]')?.textContent).toBe('Maximiliana');
   });
 
+  it('writes the card’s multiplier on a seat the enchantment reached', () => {
+    // The figure the seat's shine stands for, on the seat of a player the round's card reaches.
+    // The number itself and nothing else: the card's own corner says what the figure is, and
+    // this is the same number on the seat.
+    const root = mounted(<PlayerBar players={[player({ mult: 1.25 })]} />);
+    expect(root.querySelector('[class*="Mult"]')?.textContent).toBe('1.25');
+  });
+
+  it('writes no multiplier on a seat the enchantment did not reach', () => {
+    const root = mounted(<PlayerBar players={[player()]} />);
+    expect(root.querySelector('[class*="Mult"]')).toBeNull();
+  });
+
   it('is drawn once, whatever the room holds', () => {
     const players = Array.from({ length: 6 }, (_, index) => player({ id: `p${index}` }));
     expect(mounted(<PlayerBar players={players} />).children).toHaveLength(1);

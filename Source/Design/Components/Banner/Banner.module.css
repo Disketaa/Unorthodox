@@ -107,6 +107,12 @@
   text-overflow: ellipsis;
 }
 
+/* The words said in a heavier hand, for a line the room has to act on rather than read: a
+ * demand on the player is not a note about the room. */
+.Bold {
+  font-weight: 700;
+}
+
 /* A wording that wraps. On the text rather than on the row, so the mark stays put and the words
  * below it run the block's full width. `anywhere` rather than `break-word` because the things
  * that overflow a note here are parser messages, which carry long unbroken runs, and those have
