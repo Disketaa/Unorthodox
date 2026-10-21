@@ -33,7 +33,15 @@ export function useCountUp(
   useEffect(() => {
     const before = previousPayout.current;
     previousPayout.current = payout;
-    if (before?.added === true && payout?.added === false && before.value !== payout.value) {
+    // The addition has to have added something. A card that paid nothing — one the room turned
+    // down, or one two people wrote — leaves the seat where it was, and a note saying it was
+    // paid is the game announcing a figure it is not paying.
+    if (
+      before?.added === true &&
+      before.value !== 0 &&
+      payout?.added === false &&
+      before.value !== payout.value
+    ) {
       countStart.current = payout.from ?? previousTotal.current;
       setCounting(countStart.current);
       playSound('Pop');
