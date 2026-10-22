@@ -18,6 +18,9 @@ const RelayWarmupRoom = '_relay-warmup';
 let warmRoom: ReturnType<typeof joinRoom> | null = null;
 
 export function resetWarmRelays(): void {
+  if (warmRoom !== null) {
+    void warmRoom.leave();
+  }
   warmRoom = null;
 }
 

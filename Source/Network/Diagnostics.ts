@@ -1,8 +1,9 @@
 import { createLogger, setLogLevel } from '@/Core';
-import { relayPool } from './Signaling';
+import { relayPool, iceServers } from './Signaling';
 import { fold, note, reportLine } from './Report';
 import { reportClockSkew, reportIceGathering } from './PeerWatch';
 import { getRelaySockets } from 'trystero';
+import { watchRelayFrames, probeEnvironment, frameCountSnapshot } from './ConnectionWatch';
 
 const log = createLogger('Diagnostics');
 
@@ -71,7 +72,9 @@ function relayStates(): Record<string, string> {
     return states;
   }
   for (const [url, entry] of Object.entries(table)) {
-    states[url] = socketState(readSocket(entry));
+    const socket = readSocket(entry);
+    if (socket) watchRelayFrames(url, socket);
+    states[url] = socketState(socket);
   }
   return states;
 }
@@ -128,7 +131,9 @@ function snapshot(label: string, getPeers: () => Record<string, RTCPeerConnectio
     `[${label}] relays open ${open}/${Object.keys(relays).length}`,
     relays,
     'peers',
-    peers
+    peers,
+    'frames',
+    frameCountSnapshot()
   );
   reportRelayChanges(relays);
   const peerIds = Object.keys(peers);
@@ -154,6 +159,7 @@ export function startDiagnostics(
   log('info', 'href', window.location.href);
   const relays = relayPool();
   log('info', 'relay pool', relays.length, 'first', relays[0] ?? 'none');
+  probeEnvironment(iceServers());
 
   // Trystero announces a relay it has given up on through the console, and those lines are why
   // a room would not open. The logger writes through the console too, so the copy goes straight

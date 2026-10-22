@@ -1,4 +1,5 @@
 import type { JoinRoomConfig } from 'trystero';
+import { KeepPristineOffer } from './KeepPristineOffer';
 
 /** The relay this project runs, on a dedicated IP in Moscow. Announcing on it first means the
  * two peers of a room most likely meet here, and the public pool behind it only has to cover a
@@ -25,7 +26,11 @@ export const StunUrls = ['stun:stun.cloudflare.com:3478', 'stun:stun.miwifi.com:
 /** Our TURN server, which is what a peer behind carrier NAT connects through, since no direct
  * route exists from inside one. Over UDP and TCP at once, because a network that blocks one is
  * more common than one that blocks both. */
-export const TurnUrls = ['turn:144.31.61.203:3478', 'turn:144.31.61.203:3478?transport=tcp'];
+export const TurnUrls = [
+  'turn:144.31.61.203:3478',
+  'turn:144.31.61.203:3478?transport=tcp',
+  'turns:144.31.61.203:5349?transport=tcp',
+];
 
 /** The TURN credential, which coturn matches against its own `user=` line. Read from the build
  * environment so it is not committed; the fallback is for local work without a `.env`. */
@@ -51,6 +56,8 @@ export function iceServers(): RTCIceServer[] {
 export function roomConfig(appId: string): JoinRoomConfig {
   return {
     appId,
+    // @ts-expect-error - KeepPristineOffer is a compatible RTCPeerConnection constructor
+    rtcPolyfill: KeepPristineOffer,
     relayConfig: { urls: relayPool(), warnOnRelayFailure: true },
     rtcConfig: { iceServers: iceServers() },
   };
