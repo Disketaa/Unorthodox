@@ -54,9 +54,7 @@ export function winningClockOf(
 export function gameOverOf(view: GameSessionView): boolean {
   const publicState = view.publicState;
   if (publicState === undefined) return false;
-  const played = new Map(
-    (publicState.spent ?? []).map((entry) => [entry.theme, entry.rounds])
-  );
+  const played = new Map((publicState.spent ?? []).map((entry) => [entry.theme, entry.rounds]));
   const themes = roomThemes({
     roomCode: view.roomCode,
     pace: publicState.pace,

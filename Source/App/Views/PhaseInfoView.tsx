@@ -57,7 +57,15 @@ function clockOf(view: GameSessionView): {
     totalMs,
     deadline: endsAt,
     ringing: answeredAt === undefined && isPhaseName(view.phase) && isTimedPhase(view.phase),
-    remainingMs: useCountdown(totalMs, startedAt, view.clockOffsetMs, true, answeredAt, view.paused, view.pausedAt),
+    remainingMs: useCountdown(
+      totalMs,
+      startedAt,
+      view.clockOffsetMs,
+      true,
+      answeredAt,
+      view.paused,
+      view.pausedAt
+    ),
   };
 }
 
@@ -91,10 +99,7 @@ function sentenceFor(
 function useNoWinnerWash(noWinner: boolean): void {
   useEffect(() => {
     if (!noWinner) return;
-    document.body.style.setProperty(
-      '--Color-Page-Fill',
-      'var(--Color-Feedback-Muted-Wash)'
-    );
+    document.body.style.setProperty('--Color-Page-Fill', 'var(--Color-Feedback-Muted-Wash)');
     return () => document.body.style.removeProperty('--Color-Page-Fill');
   }, [noWinner]);
 }
@@ -114,19 +119,55 @@ function phaseInfo(
   const endgame = over && (view.phase === 'Winning' || view.phase === 'Leaderboard');
   const winning = winningClockOf(view);
   const winningRemaining = winning?.remainingMs ?? 0;
-  const revealed = endgame && (view.phase === 'Leaderboard' || (winning !== undefined && winningRemaining <= 0));
+  const revealed =
+    endgame &&
+    (view.phase === 'Leaderboard' || (winning !== undefined && winningRemaining <= 0));
   const winnerLook = revealed ? winnerLookOf(view) : undefined;
   const noWinner = revealed && winnerLook === undefined;
   const winnerName = winnerLook === undefined ? undefined : view.playerNames.get(winnerLook.id);
-  const sentence = revealed && winnerName === undefined ? Strings.phase.noWinner : winnerName === undefined ? sentenceFor(view, choosing, turnName) : Strings.phase.winner(winnerName);
+  const sentence =
+    revealed && winnerName === undefined
+      ? Strings.phase.noWinner
+      : winnerName === undefined
+        ? sentenceFor(view, choosing, turnName)
+        : Strings.phase.winner(winnerName);
   const counting = winning !== undefined && winningRemaining > 0;
-  const timerRemainingMs = counting ? winningRemaining : endgame ? clock.totalMs : clock.remainingMs;
+  const timerRemainingMs = counting
+    ? winningRemaining
+    : endgame
+      ? clock.totalMs
+      : clock.remainingMs;
   const timerTotalMs = counting ? (winning?.totalMs ?? clock.totalMs) : clock.totalMs;
   const secondsLeft = Math.ceil(timerRemainingMs / 1000);
   const urgentSeconds = Math.ceil(GameConfig.timing.countdownUrgentMs / 1000);
-  const beatSemitones = endgame ? 0 : Math.max(0, urgentSeconds - secondsLeft) * GameConfig.timing.countdownPitchStepSemitones;
-  const tint = revealed ? (winnerLook === undefined ? 'var(--Color-Feedback-Error)' : accentFor(winnerLook.look.color).tint) : tintOf(view, choosing?.question !== undefined);
-  return { turnName, choosing, over, endgame, winning, winningRemaining, revealed, winnerLook, noWinner, winnerName, sentence, counting, timerRemainingMs, timerTotalMs, secondsLeft, urgentSeconds, beatSemitones, tint };
+  const beatSemitones = endgame
+    ? 0
+    : Math.max(0, urgentSeconds - secondsLeft) * GameConfig.timing.countdownPitchStepSemitones;
+  const tint = revealed
+    ? winnerLook === undefined
+      ? 'var(--Color-Feedback-Error)'
+      : accentFor(winnerLook.look.color).tint
+    : tintOf(view, choosing?.question !== undefined);
+  return {
+    turnName,
+    choosing,
+    over,
+    endgame,
+    winning,
+    winningRemaining,
+    revealed,
+    winnerLook,
+    noWinner,
+    winnerName,
+    sentence,
+    counting,
+    timerRemainingMs,
+    timerTotalMs,
+    secondsLeft,
+    urgentSeconds,
+    beatSemitones,
+    tint,
+  };
 }
 
 export function PhaseInfoView({ view }: PhaseViewProps) {
@@ -140,7 +181,9 @@ export function PhaseInfoView({ view }: PhaseViewProps) {
       <Timer
         remainingMs={info.timerRemainingMs}
         totalMs={info.timerTotalMs}
-        seconds={info.endgame && !info.counting ? '' : Strings.common.secondsLeft(info.secondsLeft)}
+        seconds={
+          info.endgame && !info.counting ? '' : Strings.common.secondsLeft(info.secondsLeft)
+        }
         badge={
           info.revealed && info.winnerLook !== undefined ? (
             <Character
@@ -150,7 +193,9 @@ export function PhaseInfoView({ view }: PhaseViewProps) {
             />
           ) : undefined
         }
-        urgent={info.endgame ? false : info.timerRemainingMs <= GameConfig.timing.countdownUrgentMs}
+        urgent={
+          info.endgame ? false : info.timerRemainingMs <= GameConfig.timing.countdownUrgentMs
+        }
         beatSemitones={info.beatSemitones}
         tint={info.tint}
       >

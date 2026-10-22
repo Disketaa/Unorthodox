@@ -57,7 +57,8 @@ function showAt(
  * left standing in the middle of it. The cards leave on the room's own clock, so every screen
  * in the room empties the same bank at the same moment. */
 function useWinningShow(view: PhaseViewProps['view']) {
-  const state = view.publicState?.phase === 'Winning' ? view.publicState : undefined; const themes = bankThemes(
+  const state = view.publicState?.phase === 'Winning' ? view.publicState : undefined;
+  const themes = bankThemes(
     view.roomCode,
     state?.themeMode ?? 'Random',
     state?.themes ?? [],
@@ -68,7 +69,8 @@ function useWinningShow(view: PhaseViewProps['view']) {
     themes: state?.themes ?? [],
     customThemes: state?.customThemes ?? [],
   });
-  const now = useNow(state !== undefined && view.paused !== true); const moment = view.paused && view.pausedAt !== undefined ? view.pausedAt : now;
+  const now = useNow(state !== undefined && view.paused !== true);
+  const moment = view.paused && view.pausedAt !== undefined ? view.pausedAt : now;
   const elapsed = Math.max(0, moment - view.phaseStartedAt);
   const timing = GameConfig.timing;
   const show = showAt(
@@ -79,8 +81,10 @@ function useWinningShow(view: PhaseViewProps['view']) {
     timing.winningRevealMs,
     themes
   );
-  const winner = winnerOf(state?.scores ?? []); const hasWinner = winner !== undefined;
-  const [quiet, setQuiet] = useState(true); useQuietMusic(quiet);
+  const winner = winnerOf(state?.scores ?? []);
+  const hasWinner = winner !== undefined;
+  const [quiet, setQuiet] = useState(true);
+  useQuietMusic(quiet);
   useEffect(() => {
     if (show.shown && hasWinner) {
       setQuiet(false);
@@ -139,9 +143,13 @@ function WinnerPanel({
     winner === undefined
       ? Strings.phase.noWinner
       : (view.playerNames.get(winner.id) ?? winner.id);
-  const [behindName, aboveName] = [useRef<HTMLSpanElement>(null), useRef<HTMLSpanElement>(null)];
+  const [behindName, aboveName] = [
+    useRef<HTMLSpanElement>(null),
+    useRef<HTMLSpanElement>(null),
+  ];
   const sway = useSwayMotion<HTMLDivElement>();
-  useFittedText(behindName, name, '--WinnerName-Fit', 0.08); useFittedText(aboveName, name, '--WinnerName-Fit', 0.08);
+  useFittedText(behindName, name, '--WinnerName-Fit', 0.08);
+  useFittedText(aboveName, name, '--WinnerName-Fit', 0.08);
   return (
     <div class={styles.Winner} ref={sway}>
       {winner !== undefined && <Confetti paused={paused} />}

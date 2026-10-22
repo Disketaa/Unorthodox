@@ -85,7 +85,8 @@ interface PlacesProps {
 function Place({ row, at, delay, top, stage, countMs, silent, paused, run }: PlaceProps) {
   const sway = useSwayMotion<HTMLLIElement>();
   const value = useStanding({ row, stage, countMs, silent, paused, run });
-  const round = row.round ?? 0; const share = top > 0 ? value / top : 0;
+  const round = row.round ?? 0;
+  const share = top > 0 ? value / top : 0;
   // The round's figure arrives with the count it belongs to; a line the round paid nothing has
   // nothing to count and nothing to say.
   const showsRound = stage !== 'Arrived' && round > 0;
@@ -178,8 +179,11 @@ function Places({ rows, run, paused, noWinner }: PlacesProps) {
 /** The room's places, one row each. The rows come up from the last place to the first, every
  * standing counts what the round added to it, and the list slides into the order that leaves
  * the room in. Keyed on the run. */
-export function Leaderboard({ rows, run = 0, paused = false, noWinner = false }: LeaderboardProps) {
-  return (
-    <Places key={run} rows={rows} run={run} paused={paused} noWinner={noWinner} />
-  );
+export function Leaderboard({
+  rows,
+  run = 0,
+  paused = false,
+  noWinner = false,
+}: LeaderboardProps) {
+  return <Places key={run} rows={rows} run={run} paused={paused} noWinner={noWinner} />;
 }

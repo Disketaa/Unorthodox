@@ -94,5 +94,3 @@ export function WinningScene({ view }: PhaseViewProps) {
     </GameScene>
   );
 }
-
-

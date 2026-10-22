@@ -43,8 +43,7 @@ export function playableTheme(
   // the card on it is spent out, and a room handed a question it has already answered is a round
   // nobody can play.
   const inPlay = themes.filter(
-    (theme) =>
-      (state.themeRounds.get(theme) ?? 0) < ceiling && themeIsPlayable(state, theme)
+    (theme) => (state.themeRounds.get(theme) ?? 0) < ceiling && themeIsPlayable(state, theme)
   );
   return inPlay[Math.floor(random() * inPlay.length)];
 }

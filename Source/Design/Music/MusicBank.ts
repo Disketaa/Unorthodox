@@ -77,11 +77,7 @@ function loadMusic(name: MusicName): Promise<void> {
 
 /** Starts one looping voice of the track at silence, ready to be faded up. Nothing is returned
  * where the track has not been decoded yet, since starting it later is the caller's decision. */
-function startTrack(
-  context: AudioContext,
-  name: MusicName,
-  loop: boolean
-): Track | undefined {
+function startTrack(context: AudioContext, name: MusicName, loop: boolean): Track | undefined {
   const buffer = buffers.get(name);
   if (!buffer) return undefined;
   // The bus is asked for before the fader, so the gains come out in the order a test reads them:

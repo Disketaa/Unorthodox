@@ -75,9 +75,7 @@ export function bankSize(state: {
 export function winningRevealAtMs(cards: number): number {
   const timing = GameConfig.timing;
   return (
-    timing.winningLeadInMs +
-    Math.max(0, cards) * timing.winningCardMs +
-    timing.winningRevealMs
+    timing.winningLeadInMs + Math.max(0, cards) * timing.winningCardMs + timing.winningRevealMs
   );
 }
 

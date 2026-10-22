@@ -1,7 +1,14 @@
 import { Transport } from './Transport';
 import { describeMessage, preparePayload } from './Payload';
 import { startDiagnostics } from './Diagnostics';
-import { openRoom, warmRelays, resetWarmRelays, HostRole, PlayerRole, type RoomHandlers } from './TrysteroRoom';
+import {
+  openRoom,
+  warmRelays,
+  resetWarmRelays,
+  HostRole,
+  PlayerRole,
+  type RoomHandlers,
+} from './TrysteroRoom';
 import { createLogger } from '@/Core';
 import { joinRoom, selfId, type JsonValue, type MessageAction } from 'trystero';
 

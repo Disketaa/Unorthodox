@@ -74,8 +74,14 @@ export function Timer({
   tint,
   children,
 }: TimerProps) {
-  const [rootRef, barRef, inkRef] = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)]; const pct = shareLeft(remainingMs, totalMs);
-  useTimerFill(rootRef, barRef, inkRef, pct, tint); useCountdownBeat({ remainingMs, totalMs, seconds, beatSemitones });
+  const [rootRef, barRef, inkRef] = [
+    useRef<HTMLDivElement>(null),
+    useRef<HTMLDivElement>(null),
+    useRef<HTMLDivElement>(null),
+  ];
+  const pct = shareLeft(remainingMs, totalMs);
+  useTimerFill(rootRef, barRef, inkRef, pct, tint);
+  useCountdownBeat({ remainingMs, totalMs, seconds, beatSemitones });
 
   return (
     <div
