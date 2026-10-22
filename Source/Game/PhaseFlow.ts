@@ -6,6 +6,7 @@ import type { HostState } from './GameState';
 import { standingsDurationMs } from './Leaderboard';
 import { reviewingDurationMs } from './Reveal';
 import { scoresDurationMs } from './ScoreCount';
+import { winningDurationMs } from './Winning';
 
 /** Every phase name, in the order the game runs them. A tuple rather than a literal union so a
  * caller can ask for the first phase: the host's clock has to land somewhere even at the end. */
@@ -16,7 +17,7 @@ const PhaseNames = [
   'Reviewing',
   'Scores',
   'Leaderboard',
-  'Final',
+  'Winning',
 ] as const;
 
 /** The names a phase goes by, taken off the table rather than written out again. */
@@ -89,7 +90,16 @@ export const PhaseFlow: Record<PhaseName, PhaseSpec> = {
     next: 'Choosing',
     splash: false,
   },
-  Final: { timed: false, waitMs: () => null, graceMs: 0, next: null, splash: false },
+  Winning: {
+    timed: true,
+    /** The floor of the show, for a bank of no cards: the room's beat of looking at the winner.
+     * The real length is a fact about the bank rather than the pace, so the host works it out
+     * from the cards; quoted here so the table still answers. */
+    waitMs: () => winningDurationMs(0),
+    graceMs: 0,
+    next: 'Leaderboard',
+    splash: false,
+  },
 };
 
 /** Whether a name is a phase the game runs, as opposed to `Connecting`, which is this browser's

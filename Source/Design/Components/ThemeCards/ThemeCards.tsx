@@ -1,8 +1,7 @@
-import { ThemeId, ThemeModifierId, themeAccent, themeName, themeQuestions } from '@/Core';
+import { ThemeId, ThemeModifierId, themeAccent } from '@/Core';
 import { useEffect, useRef } from 'preact/hooks';
 import type { RefObject } from 'preact';
-import { Pop } from '@/Design/Primitives';
-import { ThemeCard } from '../ThemeCard';
+import { ThemeSlot, type SlotProps } from './ThemeSlot';
 import styles from './ThemeCards.module.css';
 
 export interface ThemeCardsProps {
@@ -36,16 +35,12 @@ export interface ThemeCardsProps {
   /** What each card's effect is called, by theme. Passed in rather than read here, since the
    * words are the content's and a card is drawn in Design. */
   effectLabels?: ReadonlyMap<ThemeId, string>;
-}
-
-/** Raised over `--Pop-Stagger`, which is sized for a row of characters standing close: six large
- * cards at it arrive as one movement rather than a wave. */
-const SlotStagger = '40ms';
-
-function slotClass(theme: ThemeId, picked: ThemeId | undefined): string {
-  if (theme === picked) return `${styles.Slot} ${styles.Chosen}`;
-  if (picked !== undefined) return `${styles.Slot} ${styles.Gone}`;
-  return styles.Slot;
+  /** The cards the winning show has already taken away, which keep their cells so the bank does
+   * not close up under the room's eyes. */
+  gone?: ReadonlySet<ThemeId>;
+  /** The card the winning show is taking away at this moment: it shrinks and goes, the way an
+   * answer card leaves the board when the count has been through it. */
+  leaving?: ThemeId;
 }
 
 /** The wash of the theme the room settled on, written onto the page behind everything and onto
@@ -63,76 +58,37 @@ function useWash(picked: ThemeId | undefined, bank: RefObject<HTMLDivElement>): 
   }, [picked, bank]);
 }
 
-/** What one slot is told: the bank's own props, with the two that are the bank's decision rather
- * than a card's added. */
-type SlotProps = Pick<
-  ThemeCardsProps,
-  'roundsPerTheme' | 'spent' | 'modifiers' | 'mults' | 'effectLabels' | 'picked' | 'onPick'
-> & {
-  theme: ThemeId;
-  index: number;
-  swept: ThemeId | undefined;
-  waiting: boolean;
-};
-
-/** One card's slot in the bank: its cell in the grid, the room's roll arriving on it, and the
- * card. A function rather than more markup in the map, since both the slot's own class and the
- * card's dozen props belong to a card rather than to the bank. */
-function ThemeSlot({
-  theme,
-  index,
-  roundsPerTheme,
-  spent,
-  modifiers,
-  mults,
-  effectLabels,
-  picked,
-  swept,
-  onPick,
-  waiting,
-}: SlotProps) {
-  const chosen = theme === picked;
-  // The round being played is counted against the theme already but has not been played, and
-  // showing it spent drains the chosen card on the very press that expands it — a theme on its
-  // last round comes up greyed while still being answered. It catches up on the next bank.
-  const played = Math.max(0, (spent?.get(theme) ?? 0) - (chosen ? 1 : 0));
-  return (
-    <div class={slotClass(theme, picked)} key={theme}>
-      {/* The same arrival the characters have, keyed on the theme so a bank that is dealt a new
-       * set pops the way a roster that turns up new players does, and the card's place in the
-       * bank as its place in the row, so six cards ripple rather than fire in unison. */}
-      <Pop trigger={theme} index={index} stagger={SlotStagger}>
-        <ThemeCard
-          theme={theme}
-          name={themeName(theme)}
-          index={index + 1}
-          rounds={playableRounds(theme, roundsPerTheme)}
-          spent={played}
-          modifiers={modifiers?.get(theme)}
-          mult={mults?.get(theme)}
-          effectLabel={effectLabels?.get(theme)}
-          chosen={chosen}
-          swept={theme === swept}
-          locked={picked !== undefined}
-          waiting={waiting}
-          onPick={onPick}
-        />
-      </Pop>
-    </div>
-  );
-}
-
-/** How many rounds a theme can actually be played for: the fewer of what the pace allows and
- * what the theme has questions for, since a round is dealt one question and never repeats one. */
-function playableRounds(theme: ThemeId, roundsPerTheme: number): number {
-  const asked = themeQuestions(theme)?.length;
-  return asked === undefined ? roundsPerTheme : Math.min(roundsPerTheme, asked);
-}
-
 /** The bank's own box, which is the plain bank or the one the room has settled on: the chosen
  * card fills it and the wash behind it is that theme's own. */
 function bankClass(settled: boolean): string {
   return settled ? `${styles.Root} ${styles.Settled}` : styles.Root;
+}
+
+/** The bank's slots, one per theme it was dealt. */
+function BankSlots(props: {
+  themes: readonly ThemeId[];
+  swept: ThemeId | undefined;
+  waiting: boolean;
+  gone: ReadonlySet<ThemeId> | undefined;
+  leaving: ThemeId | undefined;
+  shared: Omit<SlotProps, 'theme' | 'index' | 'swept' | 'waiting' | 'gone' | 'leaving'>;
+}) {
+  return (
+    <>
+      {props.themes.map((theme, index) => (
+        <ThemeSlot
+          key={theme}
+          theme={theme}
+          index={index}
+          swept={props.swept}
+          waiting={props.waiting}
+          gone={props.gone?.has(theme) === true}
+          leaving={props.leaving === theme}
+          {...props.shared}
+        />
+      ))}
+    </>
+  );
 }
 
 /** The themes a lobby is being offered, six cards in a bank, lying flat: the bank was once six *
@@ -149,6 +105,8 @@ export function ThemeCards({
   picked,
   picking = false,
   swept,
+  gone,
+  leaving,
 }: ThemeCardsProps) {
   const bank = useRef<HTMLDivElement>(null);
   const settled = picked !== undefined;
@@ -156,30 +114,25 @@ export function ThemeCards({
   // back rather than dead, and a bank the room is answering itself is being read too.
   const waiting = !settled && (picking || onPick === undefined);
   // The bank's own figures, which every slot is told alike: one object rather than seven named
-  // per card, and a slot added later cannot be handed the room's data in a different order.
+  // per card, so a slot added later cannot be handed the room's data in a different order.
   const shared = { roundsPerTheme, spent, modifiers, mults, effectLabels, picked, onPick };
-
   useWash(picked, bank);
 
   return (
     <div
       class={bankClass(settled)}
-      // How many cards the bank has, which the grid reads to cut itself to the smaller of this
-      // and what the screen fits.
       style={{ '--ThemeCards-Count': themes.length }}
       ref={bank}
       role="group"
     >
-      {themes.map((theme, index) => (
-        <ThemeSlot
-          key={theme}
-          theme={theme}
-          index={index}
-          swept={swept}
-          waiting={waiting}
-          {...shared}
-        />
-      ))}
+      <BankSlots
+        themes={themes}
+        swept={swept}
+        waiting={waiting}
+        gone={gone}
+        leaving={leaving}
+        shared={shared}
+      />
     </div>
   );
 }

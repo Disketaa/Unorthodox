@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'preact/hooks';
-import { GameConfig, Pace, PublicState, questionFor } from '@/Game';
+import { Pace, PublicState, questionFor } from '@/Game';
 import { CharacterColor, CharacterId, ThemeId, ThemeMode } from '@/Core';
 import { topicAt } from '@/Content';
 import { Session } from '../Session';
@@ -114,13 +114,11 @@ function useRoundMoves(session: Session, roundsRef: { current: number }) {
 
   const chooseTheme = useCallback((theme: ThemeId) => session.chooseTheme(theme), [session]);
 
+  // The round is over and the host decides what comes next: another round, or the show that
+  // names the winner. The room is not told here, since the host is the one who knows whether
+  // the game has another round in it.
   const nextRound = useCallback(() => {
-    const next = roundsRef.current + 1;
-    roundsRef.current = next;
-    if (next >= GameConfig.rounds.count) {
-      session.finish();
-      return;
-    }
+    roundsRef.current += 1;
     session.nextRound();
   }, [session]);
 

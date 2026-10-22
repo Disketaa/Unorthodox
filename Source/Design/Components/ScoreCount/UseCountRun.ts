@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { createLogger } from '@/Core';
 import { playSound } from '../../Sounds';
 import { frameAt, type CountSpec } from './CountAt';
-
-const log = createLogger('ScoreCount');
 
 /** The three things the effects of a count share, since the restart and the frame loop both
  * speak about the same run of the same line. */
@@ -109,19 +106,6 @@ function useCountFrames(
   }, [from, to, durationMs, paused, run]);
 }
 
-/** What the count was asked for, said once when it is asked: a line per frame of a count would
- * be a log the room waited on rather than one it could read. */
-function useCountLog(spec: CountRunSpec): void {
-  const { from, to, run, paused, durationMs } = spec;
-  useEffect(() => {
-    log(
-      'info',
-      `${from}→${to} run=${run} paused=${paused}`,
-      from === to ? 'no count, the figure is already there' : `counting over ${durationMs}ms`
-    );
-  }, [from, to, run, paused, durationMs]);
-}
-
 /** One line of a card being paid, as the component shows it: the figure, and a number to key the
  * pop on so the figure is a new element every arrival. */
 export interface CountState {
@@ -139,6 +123,5 @@ export function useCountRun(spec: CountRunSpec): CountState {
   const refs: CountRefs = { frame, lastValue, runUp };
   useCountRestart(spec, refs, setValue);
   useCountFrames(spec, refs, setValue, setStep);
-  useCountLog(spec);
   return { value, step };
 }

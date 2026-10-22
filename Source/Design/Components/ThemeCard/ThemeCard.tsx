@@ -53,6 +53,9 @@ export interface ThemeCardProps {
   /** Whether the card belongs to another player's turn. Held back and given the pointer, rather
    * than `locked`, which takes the hover with it: the bank is still being read while it waits. */
   waiting?: boolean;
+  /** Whether the winning show is taking this card away: it shrinks and goes, the way an answer
+   * card leaves the board when the count has been through it. */
+  leaving?: boolean;
 }
 
 /** The card's own place in the turn of the blink, as places from the first, so the wave is one
@@ -74,7 +77,8 @@ function cardClasses(
   chosen: boolean,
   swept: boolean,
   waiting: boolean,
-  spentOut: boolean
+  spentOut: boolean,
+  leaving: boolean
 ): string {
   const classes = [styles.Root, moving ? styles.Moving : styles.Still];
   if (blink && !chosen) classes.push(styles.Blink);
@@ -82,6 +86,7 @@ function cardClasses(
   if (swept) classes.push(styles.Swept);
   if (waiting || spentOut) classes.push(styles.Waiting);
   if (spentOut) classes.push(styles.SpentOut);
+  if (leaving) classes.push(styles.Leaving);
   return classes.join(' ');
 }
 
@@ -149,6 +154,7 @@ function ThemeCardButton({
   onPick,
   buttonRef,
   spentOut,
+  leaving = false,
   ...face
 }: ThemeCardProps & {
   buttonRef: (node: HTMLButtonElement | null) => void;
@@ -161,7 +167,7 @@ function ThemeCardButton({
     <button
       type="button"
       ref={buttonRef}
-      class={cardClasses(moving, blink, chosen, swept, waiting, spentOut)}
+      class={cardClasses(moving, blink, chosen, swept, waiting, spentOut, leaving)}
       disabled={locked}
       aria-disabled={waiting || spentOut || swept || undefined}
       onClick={() => pressCard(theme, onPick, waiting || spentOut || swept)}

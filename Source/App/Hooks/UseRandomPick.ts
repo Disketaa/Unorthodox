@@ -18,6 +18,8 @@ function onElapsed(
   if (!isPhaseName(name)) {
     return () => {};
   }
+  // The places are the end of a round: the room has read where it stands, and the host decides
+  // whether there is another round in it.
   if (name === 'Leaderboard') {
     return onRoundDone;
   }

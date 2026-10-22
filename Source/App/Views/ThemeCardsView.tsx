@@ -1,16 +1,8 @@
-import {
-  ThemeId,
-  ThemeMode,
-  ThemeModifierId,
-  effectOf,
-  themePool,
-  themesForRoom,
-  type CustomTheme,
-} from '@/Core';
+import { ThemeId, ThemeMode, ThemeModifierId, effectOf, type CustomTheme } from '@/Core';
 import { useMemo } from 'preact/hooks';
 import { useThemeSweep } from '../Hooks/UseThemeSweep';
 import { ThemeCards } from '@/Design/Components';
-import { GameConfig, Pace, multForTheme, modifiersForRound } from '@/Game';
+import { Pace, bankThemes, multForTheme, modifiersForRound } from '@/Game';
 import { effectLabelOf } from './EffectLabels';
 
 export interface ThemeCardsViewProps {
@@ -47,6 +39,10 @@ export interface ThemeCardsViewProps {
   customThemes?: readonly CustomTheme[];
   /** The pace the room plays at, which decides how many rounds each theme gets. */
   pace: Pace;
+  /** The cards the winning show has already taken away, which keep their cells. */
+  gone?: ReadonlySet<ThemeId>;
+  /** The card the winning show is taking away at this moment. */
+  leaving?: ThemeId;
 }
 
 /** The themes this lobby is playing, on the game screen. Rolled from the room code rather than
@@ -114,13 +110,9 @@ function useBank(
   picking: { theme: ThemeId; startedAt: number } | undefined,
   clockOffsetMs: number
 ) {
-  const pool = useMemo(
-    () => themePool(themeMode, enabledThemes, customThemes ?? []),
-    [themeMode, enabledThemes, customThemes]
-  );
   const themes = useMemo(
-    () => themesForRoom(roomCode, GameConfig.themes.cardsPerLobby, pool),
-    [roomCode, pool]
+    () => bankThemes(roomCode, themeMode, enabledThemes, customThemes ?? []),
+    [roomCode, themeMode, enabledThemes, customThemes]
   );
   const { looking } = useThemeSweep(picking, themes, clockOffsetMs);
   const round = spentRounds(spent);
@@ -132,43 +124,33 @@ function useBank(
   return { themes, looking, ...bank };
 }
 
-export function ThemeCardsView({
-  roomCode,
-  choosing,
-  myTurn,
-  theme,
-  picking,
-  clockOffsetMs,
-  paused = false,
-  onPickTheme,
-  spent,
-  themeMode,
-  enabledThemes,
-  customThemes,
-  pace,
-}: ThemeCardsViewProps) {
+export function ThemeCardsView(props: ThemeCardsViewProps) {
   const bank = useBank(
-    roomCode,
-    themeMode,
-    enabledThemes,
-    customThemes,
-    spent,
-    theme,
-    picking,
-    clockOffsetMs
+    props.roomCode,
+    props.themeMode,
+    props.enabledThemes,
+    props.customThemes,
+    props.spent,
+    props.theme,
+    props.picking,
+    props.clockOffsetMs
   );
+  const pressable =
+    props.choosing && props.myTurn && props.picking === undefined && props.paused !== true;
   return (
     <ThemeCards
       themes={bank.themes}
-      roundsPerTheme={pace === 'Fast' ? 5 : 10}
-      spent={spent}
+      roundsPerTheme={props.pace === 'Fast' ? 5 : 10}
+      spent={props.spent}
       modifiers={bank.modifiers}
       mults={bank.mults}
       effectLabels={bank.effectLabels}
-      picked={theme}
-      picking={picking !== undefined}
+      picked={props.theme}
+      picking={props.picking !== undefined}
       swept={bank.looking}
-      onPick={choosing && myTurn && picking === undefined && !paused ? onPickTheme : undefined}
+      gone={props.gone}
+      leaving={props.leaving}
+      onPick={pressable ? props.onPickTheme : undefined}
     />
   );
 }

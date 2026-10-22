@@ -2,8 +2,10 @@
  * Its own file because reading a phase and guarding its fields are two different jobs, and only
  * one of them changes when a phase gains a field. */
 import type { HostState, RandomPick, RoomMembers } from '@/Game';
-import { isThemeId, type ThemeId } from '@/Core';
+import { type ThemeId } from '@/Core';
+import type { PlayerId } from '@/Core';
 import { toGroupVotes } from './RoomGroupVotes';
+import { commonOf } from './RoomStateCommon';
 
 /** The marks a board of answers carries when a room is restored mid-round: which cards were
  * muted and which were liked. Both read the same way and under different names, since they are
@@ -21,6 +23,7 @@ import {
   clockOf,
   fieldsOf,
   isNumber,
+  isThemeKey,
   number,
   rawPairs,
   text,
@@ -38,7 +41,7 @@ function pickingFrom(fields: Fields): RandomPick | undefined {
   const record = fieldsOf(fields.get('picking'));
   const theme = record.get('theme');
   const startedAt = record.get('startedAt');
-  return isThemeId(theme) && isNumber(startedAt) ? { theme, startedAt } : undefined;
+  return isThemeKey(theme) && isNumber(startedAt) ? { theme, startedAt } : undefined;
 }
 
 /** When the room answered its bank, where it has. A resumed room has to stop its clock where the
@@ -48,35 +51,18 @@ function answeredFrom(fields: Fields): number | undefined {
   return isNumber(value) ? value : undefined;
 }
 
-/** The roster, totals, turn and pace every phase carries, read once out of the stored members.
- * The scores are the running totals here rather than the round's own, which is why they are
- * renamed on the way out. */
-function commonOf(members: Members): RoomMembers {
-  const {
-    scores,
-    players,
-    turnPlayerId,
-    pace,
-    themes,
-    themeMode,
-    themeRounds,
-    affectedPlayers,
-    paused,
-    pausedAt,
-    customThemes,
-  } = members;
+/** The places, the totals and the theme of a resumed standings: the standings are read the same
+ * way as the show, since neither carries a board of answers. */
+function standingFrom(
+  fields: Fields,
+  members: Members,
+  theme: ThemeId | undefined
+): Omit<Extract<HostState, { phase: 'Leaderboard' }>, 'phase'> {
   return {
-    players,
-    cumulativeScores: scores,
-    turnPlayerId,
-    pace,
-    themes,
-    themeMode,
-    customThemes,
-    themeRounds,
-    affectedPlayers,
-    paused,
-    pausedAt,
+    ...clockOf(fields),
+    ...commonOf(members),
+    scores: toMap(rawPairs(fields, 'round'), isNumber),
+    theme,
   };
 }
 
@@ -86,8 +72,6 @@ function plainFrom(fields: Fields, members: Members): HostState | undefined {
   switch (fields.get('phase')) {
     case 'Lobby':
       return { phase: 'Lobby', ...common };
-    case 'Final':
-      return { phase: 'Final', ...common, theme: themeFrom(fields) };
     default:
       return undefined;
   }
@@ -111,12 +95,13 @@ function questionFrom(fields: Fields): {
  * when the bank was answered, and the question being read out. */
 function choosingFrom(
   fields: Fields,
-  common: RoomMembers & { durationMs: number; startedAt: number }
+  common: RoomMembers & { durationMs: number; startedAt: number },
+  theme: ThemeId | undefined
 ): HostState {
   return {
     phase: 'Choosing',
     ...common,
-    theme: themeFrom(fields),
+    theme,
     picking: pickingFrom(fields),
     answeredAt: answeredFrom(fields),
     ...questionFrom(fields),
@@ -158,10 +143,10 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
     answerShares: toMap(rawPairs(fields, 'answerShares'), isNumber),
     ...commonOf(members),
   };
-  const theme = themeFrom(fields);
+  const theme = themeFrom(fields, members);
   switch (fields.get('phase')) {
     case 'Choosing':
-      return choosingFrom(fields, common);
+      return choosingFrom(fields, common, theme);
     case 'Writing':
       return { phase: 'Writing', ...common, theme };
     case 'Reviewing':
@@ -171,11 +156,15 @@ function timedFrom(fields: Fields, members: Members): HostState | undefined {
     case 'Leaderboard':
       // The places and the clock: a room resumed here comes back into the standings it was
       // looking at, and the totals it is showing are the members' own.
+      return { phase: 'Leaderboard', ...standingFrom(fields, members, theme) };
+    case 'Winning':
+      // The show and the clock: a room resumed here comes back into the show it was watching.
+      // The show names the winner off the members' totals rather than a round of its own.
       return {
-        phase: 'Leaderboard',
+        phase: 'Winning',
         ...clockOf(fields),
         ...commonOf(members),
-        scores: toMap(rawPairs(fields, 'round'), isNumber),
+        scores: new Map<PlayerId, number>(),
         theme,
       };
     default:

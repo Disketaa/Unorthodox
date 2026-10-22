@@ -9,6 +9,12 @@ import { stylesheet, tokenReader } from './Stylesheet';
  * each one is drawn. */
 const sheet = stylesheet('../Source/Design/Components/AnswerCards/AnswerCards.module.css');
 const card = stylesheet('../Source/Design/Components/AnswerCard/AnswerCard.module.css');
+/** The movement a card is taken away in, shared with the bank so a theme leaving it and an
+ * answer leaving the board are one movement and not two that look alike. */
+const flyOut = readFileSync(
+  new URL('../Source/Design/Primitives/FlyOut/FlyOut.css', import.meta.url),
+  'utf8'
+);
 const tokens = readFileSync(new URL('../Source/Design/Tokens.css', import.meta.url), 'utf8');
 const tokenValue = tokenReader(tokens);
 
@@ -152,7 +158,7 @@ describe('a card the count has been through', () => {
   it('draws in on itself and goes out, rather than being switched off where it stands', () => {
     // A sheet lifted off a pile closes up as it is taken: the card draws in around its own centre
     // while it dissolves, so the room sees it go rather than seeing it stop being there.
-    const shrink = sheet.text.match(/@keyframes CardFlyOutShrink \{([\s\S]*?)\n\}/)?.[1] ?? '';
+    const shrink = flyOut.match(/@keyframes CardFlyOutShrink \{([\s\S]*?)\n\}/)?.[1] ?? '';
     const last = shrink.match(/to\s*\{([^}]*)\}/)?.[1]?.replace(/\s+/g, '') ?? '';
     expect(last).toContain('transform:scale(var(--Scale-AnswerCardFlyOut))');
     // And it starts at its own size: a card that began the shrink already smaller is a card that
@@ -164,7 +170,7 @@ describe('a card the count has been through', () => {
   it('loses its ink on a straight line, so it dissolves while it is still closing up', () => {
     // A fade that ran on the same curve as the shrink would have the card nearly gone before it
     // had visibly moved, which is a card switched off rather than a card taken away.
-    const fade = sheet.text.match(/@keyframes CardFlyOutFade \{([\s\S]*?)\n\}/)?.[1] ?? '';
+    const fade = flyOut.match(/@keyframes CardFlyOutFade \{([\s\S]*?)\n\}/)?.[1] ?? '';
     const last = fade.match(/to\s*\{([^}]*)\}/)?.[1]?.replace(/\s+/g, '') ?? '';
     expect(last).toContain('opacity:0');
     expect(sheet.declaration(Fleeing, 'animation')).toContain('var(--Duration-AnswerCardFlyOut)');

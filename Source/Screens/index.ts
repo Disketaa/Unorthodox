@@ -9,5 +9,4 @@ export * from './WritingScreen';
 export * from './ReviewScreen';
 export * from './ScoresScreen';
 export * from './LeaderboardScreen';
-export * from './FinalScreen';
 export * from './InfoScreen';

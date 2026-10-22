@@ -1,0 +1,25 @@
+/* A card taken off the board and gone: the same two movements wherever it happens, so an answer
+ * leaving the board and a theme leaving the bank are one movement and not two that look alike.
+ * The keyframes live here rather than in either module, since a name a module makes for itself
+ * cannot be read from another one. The scale and the length are tokens, so both cards are gone
+ * at the same tempo whatever they are. */
+
+@keyframes CardFlyOutShrink {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(var(--Scale-AnswerCardFlyOut));
+  }
+}
+
+@keyframes CardFlyOutFade {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}

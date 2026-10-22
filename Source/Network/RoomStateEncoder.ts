@@ -2,7 +2,7 @@
  * side because what a phase writes is a small table, while the guards that read it back are the
  * fiddly half. */
 import type { HostState, Pace, Player, RandomPick } from '@/Game';
-import type { PlayerId, ThemeId, ThemeMode } from '@/Core';
+import type { PlayerId, ThemeId, ThemeMode, CustomTheme } from '@/Core';
 import { groupVotesOut } from './RoomGroupVotes';
 
 /** The phases that carry a clock, which is every phase but Lobby and Final. */
@@ -17,6 +17,9 @@ interface Members {
   themes: ThemeId[];
   themeMode: ThemeMode;
   themeRounds: [ThemeId, number][];
+  /** The themes the room named for itself, which are its own and not files this build has: a
+   * room that lost them comes back into a bank its custom cards are not on. */
+  customThemes: CustomTheme[];
   affected?: PlayerId[];
 }
 
@@ -32,6 +35,7 @@ function membersOf(state: HostState): Members {
     themes: [...state.themes],
     themeMode: state.themeMode,
     themeRounds: [...state.themeRounds.entries()],
+    customThemes: [...(state.customThemes?.values() ?? [])],
     ...(state.affectedPlayers !== undefined && state.affectedPlayers.size > 0
       ? { affected: [...state.affectedPlayers] }
       : {}),
@@ -130,13 +134,21 @@ function leaderboardOf(state: Extract<HostState, { phase: 'Leaderboard' }>, memb
   };
 }
 
+/** The show and the standings under it: the same clock the leaderboard is read against, so a
+ * host that refreshed here comes back into the show where the room is watching it. */
+function winningOf(state: Extract<HostState, { phase: 'Winning' }>, members: Members) {
+  return {
+    ...members,
+    ...clockOf(state),
+    phase: state.phase,
+    ...themeOf(state),
+  };
+}
+
 export function encodeRoomState(state: HostState): Record<string, unknown> {
   const members = membersOf(state);
   if (state.phase === 'Lobby') {
     return { ...members, phase: state.phase, pace: state.pace };
-  }
-  if (state.phase === 'Final') {
-    return { ...members, phase: state.phase, ...themeOf(state) };
   }
   const clock = clockOf(state);
   if (state.phase === 'Choosing') {
@@ -161,6 +173,9 @@ export function encodeRoomState(state: HostState): Record<string, unknown> {
   }
   if (state.phase === 'Leaderboard') {
     return leaderboardOf(state, members);
+  }
+  if (state.phase === 'Winning') {
+    return winningOf(state, members);
   }
   // unreachable
   return {};

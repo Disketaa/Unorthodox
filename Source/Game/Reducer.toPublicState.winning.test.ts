@@ -2,10 +2,10 @@
 import { toPublicState } from './PublicState';
 import { HostState } from './GameState';
 
-describe('toPublicState Final state', () => {
+describe('toPublicState Winning state', () => {
   test('converts correctly', () => {
     const state: HostState = {
-      phase: 'Final',
+      phase: 'Winning',
       players: new Map(),
       cumulativeScores: new Map([
         ['p1', 10],
@@ -20,13 +20,16 @@ describe('toPublicState Final state', () => {
       paused: false,
 
       pausedAt: undefined,
+      durationMs: 8200,
+      startedAt: 1000,
+      scores: new Map(),
       theme: undefined,
     };
     const publicState = toPublicState(state);
-    expect(publicState.phase).toBe('Final');
-    if (publicState.phase === 'Final') {
-      // After checking phase, TypeScript should narrow the type to PublicFinalState
-      expect(publicState.durationMs).toBe(0);
+    expect(publicState.phase).toBe('Winning');
+    if (publicState.phase === 'Winning') {
+      // After checking phase, TypeScript should narrow the type to PublicWinningState
+      expect(publicState.durationMs).toBe(8200);
       expect(publicState.scores.length).toBe(2);
       expect(publicState.scores).toContainEqual({ id: 'p1', score: 10 });
       expect(publicState.scores).toContainEqual({ id: 'p2', score: 5 });

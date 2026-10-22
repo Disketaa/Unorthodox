@@ -129,6 +129,9 @@ export const phase = {
   /** Said over the places once the round has been counted, which is the phase that follows the
    * scores: the board is read and what is left is the order. */
   leaderboard: 'Смотрим места…',
+  /** Said over the show that names the room's winner, which is the phase between the last round
+   * and the final standings: the bank is taken away and somebody is left standing in it. */
+  winning: 'Называем победителя…',
   final: 'Игра закончена',
   connecting: 'Подключаемся…',
 };

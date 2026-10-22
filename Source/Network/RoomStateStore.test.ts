@@ -92,8 +92,8 @@ const scoresPhase: HostState = {
   theme: 'Природа' as const,
 };
 
-const finalPhase: HostState = {
-  phase: 'Final',
+const winningPhase: HostState = {
+  phase: 'Winning',
   players: new Map(),
   cumulativeScores: new Map([['host', 10]]),
   turnPlayerId: null,
@@ -106,6 +106,9 @@ const finalPhase: HostState = {
   paused: false,
 
   pausedAt: undefined,
+  durationMs: 8200,
+  startedAt: 1000,
+  scores: new Map(),
   theme: 'Природа' as const,
 };
 
@@ -147,11 +150,11 @@ describe('a room that outlives its tab', () => {
     expect(loadRoomState('1234')).toEqual(reviewingPhase);
   });
 
-  it('comes back on the scores and on the last table', () => {
+  it('comes back on the scores and on the show', () => {
     saveRoomState('1', scoresPhase);
-    saveRoomState('2', finalPhase);
+    saveRoomState('2', winningPhase);
     expect(loadRoomState('1')).toEqual(scoresPhase);
-    expect(loadRoomState('2')).toEqual(finalPhase);
+    expect(loadRoomState('2')).toEqual(winningPhase);
   });
 
   it('comes back with the theme, since the bank is drawn from it and not from the room code', () => {
@@ -181,6 +184,26 @@ describe('a room that outlives its tab', () => {
     expect(
       state !== undefined && state.phase !== 'Lobby' ? state.theme : 'missing'
     ).toBeUndefined();
+  });
+
+  it('comes back with the rounds a custom theme was played for', () => {
+    // A custom theme has no file to take an id from, so its id is its name rather than one of the
+    // authored ones. A count filed under it is still a count the room can read: a host that lost
+    // it would refill every row of ticks on the bank and offer a theme the room had already
+    // finished.
+    const custom: CustomTheme = { name: 'Мой', color: 'Coral', questions: ['одно', 'другое'] };
+    const withCustom: HostState = {
+      ...writingPhase,
+      theme: custom.name,
+      customThemes: new Map([[custom.name, custom]]),
+      themeRounds: new Map([[custom.name, 2]]),
+    };
+    saveRoomState('1234', withCustom);
+    const state = loadRoomState('1234');
+    expect(state?.themeRounds.get(custom.name)).toBe(2);
+    expect(state !== undefined && state.phase !== 'Lobby' ? state.theme : null).toBe(
+      custom.name
+    );
   });
 
   it('is forgotten when the room is left, and kept apart from other rooms', () => {

@@ -7,6 +7,7 @@ import { PlayerBarView } from './PlayerBarView';
 import { QuestionOverlay } from './QuestionOverlay';
 import { ThemeCardsView } from './ThemeCardsView';
 import { LeaderboardView } from './LeaderboardView';
+import { WinningView } from './WinningView';
 import { ReviewView } from './ReviewView';
 import { WritingView } from './WritingView';
 import type { PhaseViewProps } from './LobbyView';
@@ -82,6 +83,16 @@ export function LeaderboardScene({ view }: PhaseViewProps) {
   return (
     <GameScene view={view} bar={false}>
       <LeaderboardView view={view} />
+    </GameScene>
+  );
+}
+
+/** Winning: the stage with the show on it, which is what the room is shown once the game is
+ * over: the bank taken away and the winner left standing in it. */
+export function WinningScene({ view }: PhaseViewProps) {
+  return (
+    <GameScene view={view} bar={false}>
+      <WinningView view={view} />
     </GameScene>
   );
 }

@@ -11,7 +11,6 @@ import type { ActionOf, GameAction } from './GameActions';
 function shifted(state: HostState, byMs: number): HostState {
   switch (state.phase) {
     case 'Lobby':
-    case 'Final':
       // Nothing is being counted here, so there is nothing to move on.
       return state;
     case 'Choosing':
@@ -29,6 +28,7 @@ function shifted(state: HostState, byMs: number): HostState {
     case 'Reviewing':
     case 'Scores':
     case 'Leaderboard':
+    case 'Winning':
       return { ...state, startedAt: state.startedAt + byMs };
     default:
       return assertNever(state);

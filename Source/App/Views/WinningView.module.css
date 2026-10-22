@@ -1,0 +1,68 @@
+/* The winning show: the room's bank taken away and the player who won the game left standing in
+ * the middle of it. The bank is the stage the show is played on, so it is drawn where the bank
+ * is always drawn, and the winner is laid over it rather than beside it — the room is looking
+ * at one player, not at a list with a picture on it. */
+.Root {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  width: 100%;
+  gap: var(--Space-Lg);
+}
+
+/* The winner, over the bank: the drawing as big as the room will give it and the name under it,
+ * in the game's own face. A player rather than a card: this is the one thing the room is
+ * looking at, and it is a person. */
+.Winner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--Space-Md);
+  pointer-events: none;
+  animation: WinnerIn var(--Duration-Winner) var(--Easing-Decelerate) both;
+  /* The winner's picture must fit whatever screen the room is shown on: measured against its
+   * own box so one figure fits on a phone and a wide screen alike. */
+  container-type: size;
+}
+
+/* The character that stands where the bank was: wide enough to be seen on a phone, short enough
+ * to fit beside the name on a wide screen, square either way. */
+.Portrait {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.Portrait > * {
+  width: min(100cqw, 100cqh);
+  aspect-ratio: 1;
+}
+
+.Name {
+  font-family: var(--FontFamily-Display);
+  font-size: clamp(var(--FontSize-2xl, 32px), 8vw, var(--FontSize-4xl));
+  font-weight: 700;
+  color: var(--Color-Text-Default);
+  text-align: center;
+}
+
+@keyframes WinnerIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

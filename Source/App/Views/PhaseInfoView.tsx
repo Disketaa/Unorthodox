@@ -34,7 +34,7 @@ const PhaseSentences: Record<SessionPhaseName, (story: PhaseStory) => string> = 
   Reviewing: () => Strings.phase.reviewing,
   Scores: () => Strings.phase.scores,
   Leaderboard: () => Strings.phase.leaderboard,
-  Final: () => Strings.phase.final,
+  Winning: () => Strings.phase.winning,
 };
 
 /** The clock the block at the top is counting, and how long it runs. The question is its own

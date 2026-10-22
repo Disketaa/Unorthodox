@@ -20,7 +20,7 @@ const phases: PhaseName[] = [
   'Reviewing',
   'Scores',
   'Leaderboard',
-  'Final',
+  'Winning',
 ];
 
 describe('the phase table', () => {
@@ -32,7 +32,7 @@ describe('the phase table', () => {
       'Reviewing',
       'Scores',
       'Leaderboard',
-      'Final',
+      'Winning',
     ]);
     expect(isPhaseName('Choosing')).toBe(true);
     expect(isPhaseName('Connecting')).toBe(false);
@@ -52,6 +52,7 @@ describe('the phase table', () => {
       'Reviewing',
       'Scores',
       'Leaderboard',
+      'Winning',
     ]);
   });
 
@@ -74,7 +75,6 @@ describe('the phase table', () => {
 
   it('measures no wait at all for a phase nobody waits out', () => {
     expect(phaseDurationMs('Lobby', 'Standard')).toBe(0);
-    expect(phaseDurationMs('Final', 'Standard')).toBe(0);
   });
 
   it('scores the scores table off the clock rather than off the pace', () => {
@@ -91,15 +91,15 @@ describe('the phase table', () => {
     expect(phaseAfter('Choosing')).toBe('Writing');
     expect(phaseAfter('Writing')).toBe('Reviewing');
     expect(phaseAfter('Reviewing')).toBe('Scores');
-    // The round is counted, then the room is shown where it stands, and only then does the round
-    // end by choosing again rather than by ending the game.
+    // The round is counted, then the room is shown where it stands, and the show that names the
+    // winner comes after the standings rather than in place of them.
     expect(phaseAfter('Scores')).toBe('Leaderboard');
     expect(phaseAfter('Leaderboard')).toBe('Choosing');
-    expect(phaseAfter('Final')).toBeNull();
+    expect(phaseAfter('Winning')).toBe('Leaderboard');
   });
 
   it('cycles back to the first phase where the table runs out', () => {
-    expect(phaseAfterCycling('Final')).toBe('Lobby');
+    expect(phaseAfterCycling('Winning')).toBe('Leaderboard');
     expect(phaseAfterCycling('Leaderboard')).toBe('Choosing');
   });
 });

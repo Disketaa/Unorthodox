@@ -780,6 +780,10 @@ body.PageFade {
    * figure rather than as a surface, and the stone is only there to say what the bar is made
    * of. */
   --Opacity-LeaderboardStone: 0.1;
+  /** How long one card of the bank takes to be taken away in the winning show, and how long the
+   * winner takes to stand in the room's eyes once the bank is empty. */
+  --Duration-WinningCard: 700ms;
+  --Duration-Winner: 600ms;
 
   /* Layout, and how wide one container of a screen may be, and how many may sit side by side.
    * The width is what a card's text is measured against, so it is the readable line length

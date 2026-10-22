@@ -6,9 +6,9 @@ import {
   toPublicChoosingState,
 } from './PublicPhases';
 import {
-  toPublicFinalState,
   toPublicLeaderboardState,
   toPublicScoresState,
+  toPublicWinningState,
 } from './PublicEndgame';
 import { PlayerId, PlayerLook, ThemeId, ThemeMode, CustomTheme, assertNever } from '@/Core';
 import type { RandomPick } from './GameState';
@@ -196,10 +196,12 @@ export type PublicLeaderboardState = PublicRoom & {
   theme?: ThemeId;
 };
 
-export type PublicFinalState = PublicRoom & {
-  phase: 'Final';
+export type PublicWinningState = PublicRoom & {
+  phase: 'Winning';
   durationMs: number;
+  startedAt: number;
   players: PublicPlayer[];
+  /** Where every player stands over the game, which is the standing the winner is taken from. */
   scores: { id: PlayerId; score: number }[];
   theme?: ThemeId;
 };
@@ -211,7 +213,7 @@ export type PublicState =
   | PublicReviewingState
   | PublicScoresState
   | PublicLeaderboardState
-  | PublicFinalState;
+  | PublicWinningState;
 
 export function toPublicState(hostState: HostState): PublicState {
   switch (hostState.phase) {
@@ -227,8 +229,8 @@ export function toPublicState(hostState: HostState): PublicState {
       return toPublicScoresState(hostState);
     case 'Leaderboard':
       return toPublicLeaderboardState(hostState);
-    case 'Final':
-      return toPublicFinalState(hostState);
+    case 'Winning':
+      return toPublicWinningState(hostState);
     default:
       // The exhaustive switch ensures we never reach here.
       return assertNever(hostState);

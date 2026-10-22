@@ -61,14 +61,20 @@ export const isNumber = (value: unknown): value is number => typeof value === 'n
 export const isPlayer = (value: unknown): value is Player =>
   typeof value === 'object' && value !== null;
 
+/** Whether a name is one the room can file a count under, or hold a choice in. The room's own
+ * themes count: a custom theme's id is its name rather than one of the authored ones. */
+export function isThemeKey(value: unknown): value is ThemeId {
+  return typeof value === 'string' && value !== '';
+}
+
 /** The rounds played in each theme, keyed by theme. The key is guarded as well as the count: a
- * count filed under a name this build has no card for is a count nothing can ever read. */
+ * count filed under no name at all is a count nothing can ever read. */
 export function themeRoundsFrom(fields: Fields): Map<ThemeId, number> {
   const counts = new Map<ThemeId, number>();
   for (const pair of rawPairs(fields, 'themeRounds')) {
     if (!Array.isArray(pair) || pair.length !== 2) continue;
     const [theme, count] = pair;
-    if (isThemeId(theme) && isNumber(count)) counts.set(theme, count);
+    if (isThemeKey(theme) && isNumber(count)) counts.set(theme, count);
   }
   return counts;
 }
@@ -98,12 +104,14 @@ export function themeModeFrom(fields: Fields): ThemeMode {
   return isThemeMode(mode) ? mode : 'Random';
 }
 
-/** The theme the room settled on, or undefined when nothing is stored or what is stored is not
- * one this build has. The bank is drawn from the theme, so a theme that cannot be named is a
- * card that cannot be drawn, which is the same as no theme having been chosen. */
-export function themeFrom(fields: Fields): ThemeId | undefined {
+/** The theme the room settled on, or undefined when nothing is stored or what is stored is not a
+ * theme the room has. The room's own custom themes count, since a custom theme's id is its name
+ * rather than one of the authored ones. */
+export function themeFrom(fields: Fields, members: Members): ThemeId | undefined {
   const value = fields.get('theme');
-  return isThemeId(value) ? value : undefined;
+  if (!isThemeKey(value)) return undefined;
+  if (isThemeId(value)) return value;
+  return members.customThemes?.has(value) === true ? value : undefined;
 }
 
 /** The clock every timed phase carries, counted from the host that started it. */

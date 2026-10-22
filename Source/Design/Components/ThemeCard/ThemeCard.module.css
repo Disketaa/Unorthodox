@@ -1,3 +1,5 @@
+@import '../../Primitives/FlyOut/FlyOut.css';
+
 /* One theme card: the frame the `Card` variant would draw, plus the hover. The frame is
  * re-declared because the card has to be the thing the wash lands on: `Card` paints an opaque
  * surface and takes no `className`, so a button wrapped in one would hide the hover. Same
@@ -260,6 +262,16 @@
 .Root:hover .Noise,
 .Root.Swept .Noise {
   opacity: var(--Opacity-ThemeCardNoiseHover);
+}
+
+/* A card the winning show is taking away: the same movement an answer card makes when the count
+ * has been through it, so a theme leaving the bank and an answer leaving the board are one
+ * movement and not two that look alike. */
+.Leaving {
+  animation:
+    CardFlyOutShrink var(--Duration-AnswerCardFlyOut) var(--Easing-Decelerate) both,
+    CardFlyOutFade var(--Duration-AnswerCardFlyOut) linear both;
+  pointer-events: none;
 }
 
 /* The glint on a card the round has enchanted, over the grain and over the name: a shine that

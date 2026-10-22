@@ -3,7 +3,7 @@ import { reducer } from './Reducer';
 import { HostState } from './GameState';
 
 describe('reducer FINAL action', () => {
-  test('moves Scores to Final keeping cumulative totals', () => {
+  test('moves the room back to the lobby, keeping cumulative totals', () => {
     const state: HostState = {
       phase: 'Scores',
       topic: 'a topic',
@@ -30,12 +30,11 @@ describe('reducer FINAL action', () => {
       theme: undefined,
     };
     const next = reducer(state, { type: 'FINAL' });
-    expect(next.phase).toBe('Final');
-    if (next.phase === 'Final') {
-      expect(Array.from(next.cumulativeScores.entries())).toEqual([
-        ['p1', 6],
-        ['p2', 2],
-      ]);
-    }
+    // The game is over: the room goes back to where it started, so the host may deal a new one.
+    expect(next.phase).toBe('Lobby');
+    expect(Array.from(next.cumulativeScores.entries())).toEqual([
+      ['p1', 6],
+      ['p2', 2],
+    ]);
   });
 });

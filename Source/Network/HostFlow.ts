@@ -4,6 +4,15 @@
 import * as Game from '@/Game';
 import type { HostState } from '@/Game';
 import type { PlayerId, ThemeId } from '@/Core';
+import { playableTheme } from './HostThemePool';
+import {
+  countInMs,
+  reviewingMs,
+  scoresMs,
+  openingMs,
+  bankSize,
+  roomThemes,
+} from './HostDurations';
 import {
   startGame,
   startWriting,
@@ -25,14 +34,6 @@ export interface FlowHost {
   /** How many players have to answer before Writing is allowed to close. */
   expectedAnswers(): number;
   commit(state: HostState): void;
-}
-
-/** How long the count-in runs, shade and numbers together. It plays out over the lobby the room
- * just left, and the theme clock starts the instant Start is pressed, so the first Choosing is
- * given this much extra. Later rounds have no count-in to pay for. */
-function countInMs(): number {
-  const { startVeilMs, startCountdownMs } = Game.GameConfig.timing;
-  return startVeilMs + startCountdownMs;
 }
 
 /** Start the game: out of the lobby and into the theme choice. */
@@ -73,6 +74,13 @@ export function startWritingFrom(host: FlowHost, roomCode: string, topic: string
 export function startRandomPickFrom(host: FlowHost, roomCode: string): void {
   const state = host.getState();
   if (state === undefined) return;
+  // Nothing left to answer: the sweep would land on a spent card, so the show that names the
+  // winner ends the game instead.
+  if (playableTheme(state, roomCode, Math.random) === undefined) {
+    const showMs = Game.winningDurationMs(bankSize(state));
+    host.commit(nextPhase(state, 'Winning', '', showMs));
+    return;
+  }
   host.commit(startRandomPick(state, roomCode));
 }
 
@@ -95,35 +103,6 @@ export function chooseThemeFrom(
   host.commit(chooseTheme(state, roomCode, theme, playerId));
 }
 
-/** How long the reviewing round runs for the room: a floor for being in it at all — five seconds
- * briskly, ten slowly — and five more for every player after the first. Read here rather than
- * off the phase table, which has one figure per pace where the room needs one per room size. */
-function reviewingMs(state: HostState): number {
-  if (state.phase !== 'Writing') return Game.phaseDurationMs('Reviewing', state.pace);
-  const board = Game.boardWriterCounts(state);
-  return Game.reviewingDurationMs(board, Game.GameConfig.paces[state.pace]);
-}
-
-/** How long the count runs for the board the room is about to be shown: one turn per card it
- * actually has. Read here rather than off the phase table for the same reason `reviewingMs` is:
- * the length is a fact about this round, and the table has one figure per pace. */
-function scoresMs(state: HostState): number {
-  if (state.phase !== 'Reviewing' && state.phase !== 'Scores') {
-    return Game.phaseDurationMs('Scores', state.pace);
-  }
-  return Game.scoresDurationMs(Game.boardCardCount(state));
-}
-
-/** How long the standing list runs for the room about to be shown it: the wave the places arrive
- * in, and then the show itself. Read here rather than off the phase table for the same reason
- * `scoresMs` is: the length is a fact about this room. */
-function standingsMs(state: HostState): number {
-  if (state.phase !== 'Scores' && state.phase !== 'Leaderboard') {
-    return Game.phaseDurationMs('Leaderboard', state.pace);
-  }
-  return Game.standingsDurationMs(state.cumulativeScores.size);
-}
-
 /** Advance out of Writing once everyone has answered, or out of Reviewing once its clock is up.
  * The opened phase's length is worked out from the room rather than taken in: both are facts
  * about the round, and a figure passed in would stop being true the moment the room changed. */
@@ -137,10 +116,24 @@ export function endReviewingFrom(host: FlowHost): void {
   host.commit(next);
 }
 
-/** The next round's theme choice, from the round that just scored. */
+/** The next round's theme choice, from the round that just scored. The last round of a game gets
+ * the show that names the winner instead: the room is not dealt a theme that is not there. */
 export function nextRoundFrom(host: FlowHost): void {
   const state = host.getState();
   if (state === undefined) return;
+  const over = Game.roomIsOver(state.themeRounds, roomThemes(state));
+  // The show that names the winner is the last thing the room sees of the game: a room already on
+  // those standings has seen it, and a room with nothing left to play goes straight to the show.
+  if (over) {
+    const next =
+      state.phase === 'Leaderboard'
+        ? 'Lobby'
+        : state.phase === 'Winning'
+          ? 'Leaderboard'
+          : 'Winning';
+    host.commit(nextPhase(state, next, '', openingMs(state, next)));
+    return;
+  }
   host.commit(nextRound(state, Game.phaseDurationMs('Choosing', state.pace)));
 }
 
@@ -152,14 +145,24 @@ export function reloadPhaseFrom(host: FlowHost): void {
   host.commit(Game.reducer(state, { type: 'RELOAD_PHASE', startedAt: Date.now() }));
 }
 
-/** How long the phase about to be opened runs for this room. Three of them are a fact about the
- * round rather than the pace — the review follows the room, the count the board, the standings
- * what the round paid — so they are read here rather than taken off the table. */
-function openingMs(state: HostState, next: Game.PhaseName): number {
-  if (next === 'Reviewing') return reviewingMs(state);
-  if (next === 'Scores') return scoresMs(state);
-  if (next === 'Leaderboard') return standingsMs(state);
-  return Game.phaseDurationMs(next, state.pace);
+/** The phases where the room is in the middle of a round. The game is not over while one of them
+ * is on: the last round is still being played. */
+const InPlay: readonly Game.PhaseName[] = ['Choosing', 'Writing', 'Reviewing'];
+
+/** Where the room goes when a phase ends on its own: the table's own order, except where the
+ * game is over — the last count ends in the show that names the winner, the standings after it
+ * are the game's, and a bank with nothing playable left cannot start another round at all. */
+function nextAfter(state: HostState): Game.PhaseName {
+  const over = Game.roomIsOver(state.themeRounds, roomThemes(state));
+  if (state.phase === 'Lobby') return Game.phaseAfterCycling(state.phase);
+  if (over) {
+    if (state.phase === 'Scores') return 'Winning';
+    if (state.phase === 'Winning') return 'Leaderboard';
+    if (state.phase === 'Choosing') return 'Winning';
+    return 'Lobby';
+  }
+  if (InPlay.includes(state.phase)) return Game.phaseAfterCycling(state.phase);
+  return Game.phaseAfterCycling(state.phase);
 }
 
 /** Wherever the phase table says goes next, which is how the host's clock ends a phase without
@@ -167,6 +170,6 @@ function openingMs(state: HostState, next: Game.PhaseName): number {
 export function nextPhaseFrom(host: FlowHost, topic: string): void {
   const state = host.getState();
   if (state === undefined) return;
-  const next = Game.phaseAfterCycling(state.phase);
+  const next = nextAfter(state);
   host.commit(nextPhase(state, next, topic, openingMs(state, next)));
 }

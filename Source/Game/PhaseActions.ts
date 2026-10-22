@@ -178,8 +178,9 @@ export function handleFinal(state: HostState): HostState {
   }
   return {
     ...membersOf(state),
-    phase: 'Final',
-    theme: state.theme,
+    // The game is over, so the room goes back to where it started: the standings it has just been
+    // shown are the last thing it needs, and the host may deal a new game from the lobby.
+    phase: 'Lobby',
     // The game is over, so nothing is reaching anybody: the last round's spread goes with it.
     affectedPlayers: new Set(),
   };

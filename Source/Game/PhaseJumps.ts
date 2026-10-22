@@ -156,8 +156,10 @@ function phaseBody(
       // The places and the round they were paid in: a jump here has no board to draw, only
       // the totals the room has settled so far and what this round gave.
       return { phase, ...base, scores: new Map<PlayerId, number>() };
-    case 'Final':
-      return { phase, ...membersOf(state) };
+    case 'Winning':
+      // The show and the standings under it: a jump here has no board to draw, only where the
+      // room ended up.
+      return { phase, ...base, scores: new Map<PlayerId, number>() };
     default:
       return assertNever(phase);
   }

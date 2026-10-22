@@ -187,10 +187,16 @@ export type LeaderboardState = RoomMembers & {
   theme: ThemeId | undefined;
 };
 
-export type FinalState = RoomMembers & {
-  phase: 'Final';
-  /** The theme the game was finally played in. The bank is on the last screen too, and a bank
-   * with nothing chosen on it reads as a game that was never about anything. */
+/** The room's winner, and the show that says so: the bank's cards are taken away one at a time
+ * and the player who won the game is left standing in the middle of it. A phase of its own, so
+ * the room is given the moment before the standings are read to it. */
+export type WinningState = RoomMembers & {
+  phase: 'Winning';
+  durationMs: number;
+  startedAt: number;
+  /** Where every player stands over the game, which is the standing the winner is taken from. */
+  scores: Map<PlayerId, number>;
+  /** The theme the game was finally played in, which the bank is still showing behind the show. */
   theme: ThemeId | undefined;
 };
 
@@ -201,7 +207,7 @@ export type HostState =
   | ReviewingState
   | ScoresState
   | LeaderboardState
-  | FinalState;
+  | WinningState;
 
 /** A room with nobody in it and nobody holding the turn. One function rather than three
  * literals, so a new room cannot be shaped differently from a resumed one. */

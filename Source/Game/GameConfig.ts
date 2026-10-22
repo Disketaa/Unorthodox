@@ -122,6 +122,10 @@ const timing = {
    * room is given the time to read where everybody ended up rather than only to see that they
    * moved. */
   leaderboardLingerMs: 2500,
+  /** How long one card of the bank takes to be taken away in the winning show, and how long the
+   * winner stands in the room's eyes afterwards before the standings are read. */
+  winningCardMs: 700,
+  winningHoldMs: 4000,
 };
 
 /** How many players a room holds. The bar of hexes across the top of a game holds this many in

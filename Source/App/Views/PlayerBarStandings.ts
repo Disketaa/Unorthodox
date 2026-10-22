@@ -50,9 +50,6 @@ export function readScores(state: PublicState | undefined): ReadonlyMap<PlayerId
   if (state?.phase === 'Scores') {
     return new Map(state.cumulative.map((row) => [row.id, row.score]));
   }
-  if (state?.phase === 'Final') {
-    return new Map(state.scores.map((row) => [row.id, row.score]));
-  }
   return new Map((state?.standings ?? []).map((row) => [row.id, row.score]));
 }
 

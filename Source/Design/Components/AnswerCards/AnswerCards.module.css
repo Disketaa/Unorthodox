@@ -1,3 +1,5 @@
+@import '../../Primitives/FlyOut/FlyOut.css';
+
 /* The room's answers on a board, filling the room it is given in both directions. `1fr` on both
  * axes, so a card is the width and the height that is actually there rather than one predicted
  * from the window before the board was laid out. The rows are floored so a card never becomes a
@@ -112,31 +114,6 @@
     CardFlyOutShrink var(--Duration-AnswerCardFlyOut) var(--Easing-Decelerate) both,
     CardFlyOutFade var(--Duration-AnswerCardFlyOut) linear both;
   pointer-events: none;
-}
-
-/* The card drawing in on itself, on the room's own easing: it is taken off the pile rather than
- * pushed, so it is already moving at once and settles into the end of its shrink. */
-@keyframes CardFlyOutShrink {
-  from {
-    transform: scale(1);
-  }
-
-  to {
-    transform: scale(var(--Scale-AnswerCardFlyOut));
-  }
-}
-
-/* The ink going out on its own straight line, so the card dissolves while it is still visibly
- * growing: a fade that ran on the same curve as the swell would have the card nearly gone
- * before it had visibly come forward. */
-@keyframes CardFlyOutFade {
-  from {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 0;
-  }
 }
 
 @keyframes VeilIn {

@@ -1,7 +1,7 @@
 import * as Game from '@/Game';
 import { createLogger, type PlayerId, type Random, type ThemeId } from '@/Core';
 import { affectedByChoice, multByChoice } from './HostIncoming';
-import { drawableTheme } from './HostThemePool';
+import { drawableTheme, themeIsPlayable } from './HostThemePool';
 
 const log = createLogger('HostPhases');
 
@@ -66,6 +66,9 @@ export function startRandomPick(
     return state ?? Game.freshLobbyState();
   }
   const theme = drawableTheme(state, roomCode, random);
+  // The sweep would land on a spent card only when the room has nothing left to play; the host
+  // ends the game there rather than starting a round nobody can answer.
+  if (theme === undefined) return state;
   log('info', 'bank left open, room is picking', theme);
   return Game.reducer(state, { type: 'START_RANDOM_PICK', theme, startedAt: Date.now() });
 }
@@ -88,7 +91,9 @@ export function resolveRandomPick(
   });
 }
 
-/** A seat answering the bank, with the seats the card's effect reaches worked out beside it. */
+/** A seat answering the bank, with the seats the card's effect reaches worked out beside it. A
+ * theme out of questions is refused: the card on it is spent out, and a room handed a question
+ * it has already answered is a round nobody can play. */
 export function chooseTheme(
   state: Game.HostState | undefined,
   roomCode: string | undefined,
@@ -96,6 +101,10 @@ export function chooseTheme(
   playerId: PlayerId
 ): Game.HostState {
   if (state === undefined) return Game.freshLobbyState();
+  if (!themeIsPlayable(state, theme)) {
+    log('info', 'theme is out of questions', theme);
+    return state;
+  }
   const affected = affectedByChoice(state, roomCode, theme, playerId);
   return Game.reducer(state, {
     type: 'CHOOSE_THEME',
@@ -153,7 +162,6 @@ export function nextRound(
   if (state === undefined || !Game.endsRound(state)) {
     return state ?? Game.freshLobbyState();
   }
-  log('info', 'starting next round');
   // The topic is not carried: Choosing has none, and the next round is given its own when the
   // theme is picked. Only the phase move is decided here.
   return Game.reducer(state, { type: 'NEXT_ROUND', durationMs, startedAt: Date.now() });

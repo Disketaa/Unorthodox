@@ -3,8 +3,8 @@ import { publicPlayers, room, themeOf, boardOf } from './PublicPhases';
 import type { HostState } from './GameState';
 import type {
   PublicScoresState,
-  PublicFinalState,
   PublicLeaderboardState,
+  PublicWinningState,
 } from './PublicState';
 
 /** A score map as the pairs a client reads, in the room's own order. */
@@ -39,14 +39,17 @@ export function toPublicScoresState(state: HostState): PublicScoresState {
   };
 }
 
-export function toPublicFinalState(state: HostState): PublicFinalState {
-  if (state.phase !== 'Final') {
-    throw new Error('Invalid state for Final');
+/** The room's winner, and where the room stands to name it. The same figures the last screen
+ * settles on, sent in the same shape, so the two read as one number rather than as two. */
+export function toPublicWinningState(state: HostState): PublicWinningState {
+  if (state.phase !== 'Winning') {
+    throw new Error('Invalid state for Winning');
   }
   return {
     ...room(state),
-    phase: 'Final',
-    durationMs: 0,
+    phase: 'Winning',
+    durationMs: state.durationMs,
+    startedAt: state.startedAt,
     players: publicPlayers(state),
     scores: totalsOf(state.cumulativeScores),
     ...themeOf(state),

@@ -23,7 +23,13 @@ import type { SessionPhaseName } from './Hooks/UseSessionPhase';
 import { SessionRole, BlockedReason } from './Session';
 import { LobbyView } from './Views/LobbyView';
 import { EnchantFlash } from './Views/EnchantFlash';
-import { GameScene, WritingScene, ReviewScene, LeaderboardScene } from './Views/GameScene';
+import {
+  GameScene,
+  WritingScene,
+  ReviewScene,
+  LeaderboardScene,
+  WinningScene,
+} from './Views/GameScene';
 
 export interface GameRoomProps {
   roomCode: string;
@@ -83,13 +89,12 @@ function ConnectingScreen({ view }: { view: GameSessionView }) {
   );
 }
 
+type PhaseScreenFn = (props: { view: GameSessionView }) => ComponentChildren;
+
 /** The screen each phase plays on. The lobby is the only one that is not the game stage, and the
  * round counted is the board again rather than a screen of its own, so a room is never shown a
  * table of numbers where its answers were a moment ago. */
-const PhaseScreens: Record<
-  SessionPhaseName,
-  (props: { view: GameSessionView }) => ComponentChildren
-> = {
+const PhaseScreens: Record<SessionPhaseName, PhaseScreenFn> = {
   Connecting: ConnectingScreen,
   Lobby: LobbyView,
   Choosing: GameScene,
@@ -97,7 +102,7 @@ const PhaseScreens: Record<
   Reviewing: ReviewScene,
   Scores: ReviewScene,
   Leaderboard: LeaderboardScene,
-  Final: GameScene,
+  Winning: WinningScene,
 };
 
 /** Pick the screen that matches the current phase. */
