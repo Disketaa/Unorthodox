@@ -8,7 +8,10 @@ import { LeaderboardView } from './LeaderboardView';
 import { WinningView } from './WinningView';
 import { ReviewView } from './ReviewView';
 import { WritingView } from './WritingView';
+import { createLogger } from '@/Core';
 import type { PhaseViewProps } from './LobbyView';
+
+const log = createLogger('GameScene');
 
 /** The stage the game plays on: what the room is doing at the very top, the room's hexes under
  * it, and the themes below. The row of players is off where the stage is the room itself, since
@@ -19,6 +22,7 @@ export function GameScene({
   bar = true,
 }: PhaseViewProps & { children?: ComponentChildren; bar?: boolean }) {
   const choosing = view.publicState?.phase === 'Choosing' ? view.publicState : undefined;
+  log('info', 'playerId', view.playerId, 'turnPlayerId', view.turnPlayerId);
   // The bank leaves once the question is on screen. It was never going to be answered then, and it
   // takes the whole window, which is the one place the question has to be read.
   const bankOpen = view.phase === 'Choosing' && choosing?.question === undefined;
