@@ -120,8 +120,8 @@ body.PageFade {
  * the entry screen is worth centring, and the lobby is a page of controls belonging at the top.
  * `min-height` rather than `height`, so a screen taller than the viewport scrolls. */
 #root {
-  /* The app's own layer, above the confetti sky that falls behind it on the body: everything the
-   * app draws covers the pieces, and the transparent stretches let them show through. */
+  /* The app's own layer, above the confetti sky that falls behind it on the body: everything
+   * the app draws covers the pieces, and the transparent stretches let them show through. */
   position: relative;
   z-index: 1;
   display: flex;

@@ -1,9 +1,6 @@
 import { CharacterColor, CharacterId, PlayerId } from '@/Core';
-import { useSwayMotion } from '@/Design/Primitives';
-import { TextureOverlay } from '../../Overlays/TextureOverlay';
-import { Character } from '../Character';
-import characterStyles from '../Character/Character.module.css';
 import { scoreCountMs } from '../ScoreTiming';
+import { PlaceRow } from './PlaceRow';
 import {
   arrivalMs,
   finalOrder,
@@ -13,8 +10,6 @@ import {
   priorOrder,
   useSceneNote,
   useShowStage,
-  useStanding,
-  type ShowStage,
 } from './LeaderboardShow';
 import styles from './Leaderboard.module.css';
 
@@ -54,80 +49,11 @@ export interface LeaderboardProps {
   noWinner?: boolean;
 }
 
-interface PlaceProps {
-  row: LeaderboardRow;
-  /** Which slot the row stands in, which it slides between when the list is rearranged. */
-  at: number;
-  /** How long into the show this place comes up, off the wave it is part of. */
-  delay: number;
-  /** The top standing in the room, which fills the track the rows are read against. */
-  top: number;
-  /** Which of the show's three beats the list is on. */
-  stage: ShowStage;
-  /** How long a standing takes to count up, read once for the list. */
-  countMs: number;
-  /** Whether this row is the one that carries the count's sound. */
-  silent: boolean;
-  paused: boolean;
-  run: number;
-}
-
 interface PlacesProps {
   rows: readonly LeaderboardRow[];
   run: number;
   paused: boolean;
   noWinner: boolean;
-}
-
-/** One place: where the player stands, the player themselves, their name, and what they have.
- * The place leads the line and the player is drawn beside it rather than over it. The row rocks
- * in place once it has arrived, the way a room of characters does. */
-function Place({ row, at, delay, top, stage, countMs, silent, paused, run }: PlaceProps) {
-  const sway = useSwayMotion<HTMLLIElement>();
-  const value = useStanding({ row, stage, countMs, silent, paused, run });
-  const round = row.round ?? 0;
-  const share = top > 0 ? value / top : 0;
-  // The round's figure arrives with the count it belongs to; a line the round paid nothing has
-  // nothing to count and nothing to say.
-  const showsRound = stage !== 'Arrived' && round > 0;
-  // The bar wears the player the figure is about while that figure is being counted, and is the
-  // wash it was once the count is over.
-  const counting = stage === 'Counting' && round > 0;
-  // The row holds still while it arrives and rocks only once it is standing: the show's first beat
-  // is the only one where the row is moving under its own steam.
-  const idle = stage !== 'Arrived';
-  return (
-    <li
-      ref={sway}
-      class={`${styles.Row} ${characterStyles[row.color]} ${
-        row.isSelf === true ? styles.Mine : ''
-      } ${row.isWinner === true ? styles.Winner : ''} ${counting ? styles.Counting : ''} ${
-        idle ? styles.Idle : ''
-      } ${row.isOnline === false ? styles.Offline : ''} ${
-        paused && !idle ? styles.Paused : ''
-      }`}
-      style={{ '--Place-Delay': `${delay}ms`, '--Place-Share': share, '--Row-At': at }}
-    >
-      <div class={styles.Track} aria-hidden="true">
-        <div class={styles.Fill}>
-          <TextureOverlay variant="Stone" placement="Local" />
-        </div>
-      </div>
-      <span class={styles.Place} aria-hidden="true">
-        {at + 1}
-      </span>
-      <span class={styles.Figure}>
-        <Character character={row.character} color={row.color} size="Fill" />
-      </span>
-      <span class={styles.Name}>
-        <span class={styles.NameText}>{row.name}</span>
-        {showsRound && <span class={styles.Round}>(+{round})</span>}
-      </span>
-      <span class={styles.Score}>
-        <span class={styles.Total}>{value}</span>
-      </span>
-    </li>
-  );
 }
 
 /** The list itself, running the show: the places arrive where the room left them, every figure
@@ -159,7 +85,7 @@ function Places({ rows, run, paused, noWinner }: PlacesProps) {
       style={{ '--Row-Count': places, '--Place-Width': placeWidth }}
     >
       {rows.map((row) => (
-        <Place
+        <PlaceRow
           key={row.id}
           row={row}
           at={at.get(row.id) ?? 0}

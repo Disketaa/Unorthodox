@@ -1,9 +1,9 @@
-import { ComponentChildren, Ref } from 'preact';
+import { ComponentChildren } from 'preact';
 import { useRef } from 'preact/hooks';
 import { useCountdownBeat } from './UseCountdownBeat';
 import { shareLeft } from './DrainingText';
 import { useTimerFill } from './UseTimerFill';
-import styles from './Timer.module.css';
+import { TimerRoot } from './TimerRoot';
 
 export interface TimerProps {
   /** What the host says is left, counted on the host's clock, so every device in the room draws
@@ -27,43 +27,7 @@ export interface TimerProps {
   children?: ComponentChildren;
 }
 
-/** The mark and the words, drawn twice: dark for the paper, and light where the fill has
- * reached. Keyed on the figure, so a new second remounts it and its turn starts again — an
- * animation restarted by a class or a re-render would not restart at all. */
-function Content({
-  seconds,
-  badge,
-  className,
-  hidden,
-  clipRef,
-  children,
-}: {
-  seconds: string;
-  badge?: ComponentChildren;
-  className: string;
-  hidden?: boolean;
-  clipRef?: Ref<HTMLDivElement>;
-  children: ComponentChildren;
-}) {
-  return (
-    <div class={className} aria-hidden={hidden} ref={clipRef}>
-      {badge !== undefined ? (
-        <span class={styles.Seconds} key="badge">
-          {badge}
-        </span>
-      ) : seconds !== '' ? (
-        <span class={styles.Seconds} key={seconds}>
-          {seconds}
-        </span>
-      ) : null}
-      <span class={styles.Text}>{children}</span>
-    </div>
-  );
-}
-
-/** The phase draining away: a banner of its own, with the time left filling it from the left.
- * The words go from dark to light as the fill reaches them, which is why they are drawn twice
- * and the upper copy clipped to the fill rather than one copy tinted over two colours. */
+/** The phase draining away. */
 export function Timer({
   remainingMs,
   totalMs,
@@ -84,27 +48,16 @@ export function Timer({
   useCountdownBeat({ remainingMs, totalMs, seconds, beatSemitones });
 
   return (
-    <div
-      ref={rootRef}
-      class={`${styles.Root} ${urgent ? styles.Urgent : ''}`}
-      role="progressbar"
-      aria-valuenow={Math.ceil(pct)}
-      aria-valuemin={0}
-      aria-valuemax={100}
+    <TimerRoot
+      rootRef={rootRef}
+      barRef={barRef}
+      inkRef={inkRef}
+      pct={pct}
+      urgent={urgent}
+      seconds={seconds}
+      badge={badge}
     >
-      <div class={styles.Bar} ref={barRef} aria-hidden="true" />
-      <Content seconds={seconds} badge={badge} className={styles.Content}>
-        {children}
-      </Content>
-      <Content
-        seconds={seconds}
-        badge={badge}
-        className={`${styles.Content} ${styles.Filled}`}
-        clipRef={inkRef}
-        hidden
-      >
-        {children}
-      </Content>
-    </div>
+      {children}
+    </TimerRoot>
   );
 }

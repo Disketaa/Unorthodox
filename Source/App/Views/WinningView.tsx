@@ -1,15 +1,11 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { Character, Confetti, useFittedText } from '@/Design/Components';
 import { playSound } from '@/Design/Sounds';
 import { playMusic, useQuietMusic } from '@/Design/Music';
-import { useSwayMotion } from '@/Design/Primitives';
-import { Strings } from '@/Content';
-import { lookFor } from '@/Screens';
 import { GameConfig, bankSize, bankThemes } from '@/Game';
 import { ThemeCardsView, spentByTheme } from './ThemeCardsView';
-import { winnerOf, type RoomWinner } from './GameOver';
+import { WinnerPanel } from './WinnerPanel';
+import { winnerOf } from './GameOver';
 import type { PhaseViewProps } from './LobbyView';
-import type { GameSessionView } from '../Hooks/GameSessionView';
 import styles from './WinningView.module.css';
 
 /** The room's own clock, which is the show's as well: the cards leave on the room's time and the
@@ -56,6 +52,25 @@ function showAt(
 /** The show: the room's bank taken away one card at a time, and then the player who won the game
  * left standing in the middle of it. The cards leave on the room's own clock, so every screen
  * in the room empties the same bank at the same moment. */
+function useWinningSounds(show: Show, hasWinner: boolean) {
+  const [quiet, setQuiet] = useState(true);
+  useQuietMusic(quiet);
+  useEffect(() => {
+    if (show.shown && hasWinner) {
+      setQuiet(false);
+      playSound('Confetti');
+      playMusic('Winner', GameConfig.timing.winningHoldMs / 1000, false);
+    }
+  }, [show.shown, hasWinner]);
+  const sounding = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (show.leaving === sounding.current) return;
+    sounding.current = show.leaving;
+    if (show.leaving !== undefined) playSound('Break');
+  }, [show.leaving]);
+  return quiet;
+}
+
 function useWinningShow(view: PhaseViewProps['view']) {
   const state = view.publicState?.phase === 'Winning' ? view.publicState : undefined;
   const themes = bankThemes(
@@ -83,21 +98,7 @@ function useWinningShow(view: PhaseViewProps['view']) {
   );
   const winner = winnerOf(state?.scores ?? []);
   const hasWinner = winner !== undefined;
-  const [quiet, setQuiet] = useState(true);
-  useQuietMusic(quiet);
-  useEffect(() => {
-    if (show.shown && hasWinner) {
-      setQuiet(false);
-      playSound('Confetti');
-      playMusic('Winner', GameConfig.timing.winningHoldMs / 1000, false);
-    }
-  }, [show.shown, hasWinner]);
-  const sounding = useRef<string | undefined>(undefined);
-  useEffect(() => {
-    if (show.leaving === sounding.current) return;
-    sounding.current = show.leaving;
-    if (show.leaving !== undefined) playSound('Break');
-  }, [show.leaving]);
+  useWinningSounds(show, hasWinner);
   return { state, show, winner };
 }
 
@@ -123,53 +124,6 @@ export function WinningView({ view }: PhaseViewProps) {
         leaving={show.leaving}
       />
       {show.shown && <WinnerPanel view={view} winner={winner} paused={view.paused} />}
-    </div>
-  );
-}
-
-/** The winner's panel: their face and their name, once the bank is empty. A room that scored
- * nothing has nobody to stand there, so the space wears the room's cross instead of a player. */
-function WinnerPanel({
-  view,
-  winner,
-  paused,
-}: {
-  view: GameSessionView;
-  winner: RoomWinner | undefined;
-  paused: boolean;
-}) {
-  const look = winner === undefined ? undefined : lookFor(view.playerLooks, winner.id);
-  const name =
-    winner === undefined
-      ? Strings.phase.noWinner
-      : (view.playerNames.get(winner.id) ?? winner.id);
-  const [behindName, aboveName] = [
-    useRef<HTMLSpanElement>(null),
-    useRef<HTMLSpanElement>(null),
-  ];
-  const sway = useSwayMotion<HTMLDivElement>();
-  useFittedText(behindName, name, '--WinnerName-Fit', 0.08);
-  useFittedText(aboveName, name, '--WinnerName-Fit', 0.08);
-  return (
-    <div class={styles.Winner} ref={sway}>
-      {winner !== undefined && <Confetti paused={paused} />}
-      <span class={`${styles.Name} ${styles.NameBehind}`}>
-        <span class={styles.NameText} ref={behindName}>
-          {name}
-        </span>
-      </span>
-      <div class={styles.Portrait}>
-        {look === undefined ? (
-          <span class={styles.NoWinner} aria-hidden="true" />
-        ) : (
-          <Character character={look.character} color={look.color} size="Fill" />
-        )}
-      </div>
-      <span class={`${styles.Name} ${styles.NameAbove}`} aria-hidden="true">
-        <span class={styles.NameText} ref={aboveName}>
-          {name}
-        </span>
-      </span>
     </div>
   );
 }

@@ -249,9 +249,9 @@
 
 /* The room's winner, and only the board that ends the game names one: the line is worn in the
  * room's own yellow rather than in the player's colour, so every screen in the room shows the
- * same winner in the same wash and the win reads as the room's fact rather than as one
- * viewer's accent. Written after the played line's own rule so the win outranks the accent the
- * winner would otherwise be answered in on their own screen. */
+ * same winner in the same wash and the win reads as the room's fact rather than as one viewer's
+ * accent. Written after the played line's own rule so the win outranks the accent the winner
+ * would otherwise be answered in on their own screen. */
 .Winner .Track {
   background: var(--Color-Room-Yellow-Wash);
 }

@@ -1,6 +1,6 @@
-/* A burst of confetti over the winner: the pieces fall from the top of the window, each on its own
- * column, colour, shape, length and start. The field is the window rather than the screen's box,
- * so the fall is measured in the window's height and covers the same sky on every screen. */
+/* A burst of confetti over the winner: the pieces fall from the top of the window, each on its
+ * own column, colour, shape, length and start. The field is the window rather than the screen's
+ * box, so the fall is measured in the window's height and covers the same sky on every screen. */
 .Field {
   position: fixed;
   inset: 0;
@@ -9,8 +9,8 @@
   container-type: size;
 }
 
-/* Two skies from one burst: one behind the app and its figure, one over it. The field in front is
- * given a stacking order above the app, the one behind is left below it. */
+/* Two skies from one burst: one behind the app and its figure, one over it. The field in front
+ * is given a stacking order above the app, the one behind is left below it. */
 .Behind {
   z-index: 0;
 }
@@ -19,8 +19,8 @@
   z-index: 3;
 }
 
-/* A piece stands at its own column, given by the caller, and the negative top lifts it above the
- * frame so it enters rather than appears. */
+/* A piece stands at its own column, given by the caller, and the negative top lifts it above
+ * the frame so it enters rather than appears. */
 .Piece {
   position: absolute;
   top: -18px;

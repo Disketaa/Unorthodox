@@ -14,8 +14,9 @@
   gap: var(--Space-Lg);
 }
 
-/* A held room stops the show where it stands: the card in flight keeps its pose and the winner's
- * sway waits, rather than carrying on under the veil. The show's clock stops in the view. */
+/* A held room stops the show where it stands: the card in flight keeps its pose and the
+ * winner's sway waits, rather than carrying on under the veil. The show's clock stops in the
+ * view. */
 .Paused,
 .Paused * {
   animation-play-state: paused !important;
@@ -80,8 +81,8 @@
   animation: var(--Sway-Animation);
 }
 
-/* One line of the name, measured into the stage by the same fit an answer on a card uses: a name
- * wider than the screen is shrunk until it fits rather than cut off at the edge. */
+/* One line of the name, measured into the stage by the same fit an answer on a card uses: a
+ * name wider than the screen is shrunk until it fits rather than cut off at the edge. */
 .NameText {
   display: block;
   width: 100%;
