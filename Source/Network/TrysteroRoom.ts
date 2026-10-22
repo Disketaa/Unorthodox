@@ -143,6 +143,10 @@ let warmRoom: ReturnType<typeof joinRoom> | null = null;
 /** Open the relay sockets before anyone asks to join a room. A phone takes about three seconds
  * to open them, while the burst announcing a peer to a room is over inside one and a third, so
  * joining first spends it on nothing. Passive keeps the room dormant: it never announces. */
+export function resetWarmRelays(): void {
+  warmRoom = null;
+}
+
 export function warmRelays(): void {
   if (warmRoom !== null) {
     return;

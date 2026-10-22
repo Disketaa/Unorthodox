@@ -1,7 +1,7 @@
 import { Transport } from './Transport';
 import { describeMessage, preparePayload } from './Payload';
 import { startDiagnostics } from './Diagnostics';
-import { openRoom, warmRelays, HostRole, PlayerRole, type RoomHandlers } from './TrysteroRoom';
+import { openRoom, warmRelays, resetWarmRelays, HostRole, PlayerRole, type RoomHandlers } from './TrysteroRoom';
 import { createLogger } from '@/Core';
 import { joinRoom, selfId, type JsonValue, type MessageAction } from 'trystero';
 
@@ -16,7 +16,7 @@ export class TrysteroTransport implements Transport {
   /** The game-level id of this peer, assigned by the host on Join. */
   private playerId: string | null = null;
   /** Not the game playerId: the host is `host` in game state but its selfId on the wire. */
-  private peerId: string = selfId;
+  private peerId: string = '';
 
   private hostToClientAction: MessageAction<JsonValue> | null = null;
   private clientToHostAction: MessageAction<JsonValue> | null = null;
@@ -39,6 +39,7 @@ export class TrysteroTransport implements Transport {
 
   start(roomCode: string, _playerName: string, isHost: boolean): void {
     warmRelays();
+    this.peerId = selfId;
     this.roomId = roomCode;
     this.isHost = isHost;
     const opened = openRoom({
@@ -81,6 +82,7 @@ export class TrysteroTransport implements Transport {
 
   stop(): void {
     void this.room?.leave();
+    resetWarmRelays();
     this.room = null;
     this.stopDiagnostics?.();
     this.stopDiagnostics = null;
