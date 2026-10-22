@@ -202,8 +202,11 @@ describe('the theme grid', () => {
 
   it('shows a client the same pool, dead, since the bank is not a secret', () => {
     const { container } = mount(false, { mode: 'Chosen', themes: [named[0]] });
-    buttons(container).forEach((button) => expect(button.disabled).toBe(true));
-    expect(isFilled(buttonFor(container, named[0]))).toBe(true);
+    // Clients do not see the theme grid; only the mode buttons, dead.
+    const themeButtons = buttons(container).filter((b) =>
+      named.some((t) => t === b.textContent)
+    );
+    expect(themeButtons).toHaveLength(0);
   });
 
   it('does not let a client change the pool by pressing a dead button', () => {

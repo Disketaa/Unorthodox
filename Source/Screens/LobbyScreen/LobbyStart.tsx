@@ -11,7 +11,11 @@ export interface LobbyStartProps {
 /** Start button for the host, muted when the room is not ready. */
 export function LobbyStart({ enoughPlayers, isHost, onStart }: LobbyStartProps) {
   if (!isHost) {
-    return <Banner variant="Info">{Strings.lobby.waitingForHost}</Banner>;
+    return (
+      <Banner variant="Info" fill>
+        {Strings.lobby.waitingForHost}
+      </Banner>
+    );
   }
   return (
     <Stack gap="Md" align="Stretch">

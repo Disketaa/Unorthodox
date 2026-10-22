@@ -68,22 +68,26 @@ function ChosenThemes({
 }) {
   return (
     <>
-      <ThemeGrid
-        themeMode={themeMode}
-        named={named}
-        isHost={isHost}
-        full={full}
-        pick={rules.pick}
-      />
-      <PastedThemes
-        customThemes={customThemes}
-        named={named}
-        isHost={isHost}
-        full={full}
-        onPickCustom={rules.pickCustom}
-        onEditCustomThemes={onEditCustomThemes}
-        onLoadCustomThemes={onLoadCustomThemes}
-      />
+      {isHost && (
+        <ThemeGrid
+          themeMode={themeMode}
+          named={named}
+          isHost={isHost}
+          full={full}
+          pick={rules.pick}
+        />
+      )}
+      {isHost && (
+        <PastedThemes
+          customThemes={customThemes}
+          named={named}
+          isHost={isHost}
+          full={full}
+          onPickCustom={rules.pickCustom}
+          onEditCustomThemes={onEditCustomThemes}
+          onLoadCustomThemes={onLoadCustomThemes}
+        />
+      )}
     </>
   );
 }

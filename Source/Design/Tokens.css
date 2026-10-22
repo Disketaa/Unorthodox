@@ -817,14 +817,14 @@ body.PageFade {
    * stylesheet: `Tests/ScreenLayout.test.ts` resolves the tokens and compares them against it. */
   --Layout-ColumnThreshold: 1056px;
 
-  --Layout-ContentPadding: var(--Space-Md);
+  --Layout-ContentPadding: clamp(var(--Space-Sm), 2vw, var(--Space-Md));
   /* The margin around the whole screen, from the edge of the viewport to its first container.
    * Its own token rather than the card's, because the two are not the same distance and sharing
    * one number made them move together: a card's padding is inside its own frame and a body's
    * step is right for it, while a screen's is the only margin a top-aligned screen has. Across
    * the page the container is already centred, so this is only what keeps a wide one off the
    * edge. */
-  --Layout-ScreenPaddingVertical: clamp(var(--Space-Lg), min(9vw, 7dvh), var(--Space-2xl));
+  --Layout-ScreenPaddingVertical: clamp(var(--Space-Md), min(4.5vw, 3.5dvh), var(--Space-Xl));
   --Layout-ScreenPaddingHorizontal: var(--Space-Lg);
 
   /* How many hexes the bar across the top of a game holds, as a count rather than a length: a
@@ -947,5 +947,11 @@ body.PageFade {
     --Cursor-Pointer: url('./Cursors/Finger.svg') 12 0, pointer;
     --Cursor-NotAllowed: url('./Cursors/Unavailable.svg') 2 3, not-allowed;
     --Cursor-Text: url('./Cursors/Text.svg') 16 16, text;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --Layout-ScreenPaddingHorizontal: var(--Space-Md);
   }
 }

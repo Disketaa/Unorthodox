@@ -66,8 +66,15 @@ export interface PlayerBarProps {
  * guards it cannot drift from the values the drawing is actually made of. */
 function fitsLine(seats: number): boolean {
   const view = document.documentElement;
-  const num = (token: string) =>
-    Number.parseFloat(getComputedStyle(view).getPropertyValue(token));
+  const num = (token: string) => {
+    let value = getComputedStyle(view).getPropertyValue(token).trim();
+    // Resolve var() references, since getComputedStyle returns the raw value for custom properties.
+    while (value.startsWith('var(')) {
+      const inner = value.slice(4, -1).trim();
+      value = getComputedStyle(view).getPropertyValue(inner).trim();
+    }
+    return Number.parseFloat(value);
+  };
   const room = view.clientWidth - 2 * num('--Layout-ScreenPaddingHorizontal');
   return seats * num('--Layout-PlayerBarStraight') * num('--Size-PlayerBarSeatMin') <= room;
 }
