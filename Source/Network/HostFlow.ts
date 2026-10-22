@@ -118,19 +118,17 @@ export function endReviewingFrom(host: FlowHost): void {
 
 /** The next round's theme choice, from the round that just scored. The last round of a game gets
  * the show that names the winner instead: the room is not dealt a theme that is not there. */
-export function nextRoundFrom(host: FlowHost): void {
+export function nextRoundFrom(host: FlowHost, roomCode: string): void {
   const state = host.getState();
   if (state === undefined) return;
-  const over = Game.roomIsOver(state.themeRounds, roomThemes(state));
+  const over = Game.roomIsOver(state.themeRounds, roomThemes(state, roomCode));
   // The show that names the winner is the last thing the room sees of the game: a room already on
   // those standings has seen it, and a room with nothing left to play goes straight to the show.
   if (over) {
-    const next =
-      state.phase === 'Leaderboard'
-        ? 'Lobby'
-        : state.phase === 'Winning'
-          ? 'Leaderboard'
-          : 'Winning';
+    // The leaderboard after the winning show is the last phase the room sees: it does not go
+    // back to the lobby, and the room is not dealt another theme that is not there.
+    if (state.phase === 'Leaderboard') return;
+    const next = state.phase === 'Winning' ? 'Leaderboard' : 'Winning';
     host.commit(nextPhase(state, next, '', openingMs(state, next)));
     return;
   }
@@ -145,31 +143,34 @@ export function reloadPhaseFrom(host: FlowHost): void {
   host.commit(Game.reducer(state, { type: 'RELOAD_PHASE', startedAt: Date.now() }));
 }
 
-/** The phases where the room is in the middle of a round. The game is not over while one of them
- * is on: the last round is still being played. */
-const InPlay: readonly Game.PhaseName[] = ['Choosing', 'Writing', 'Reviewing'];
-
 /** Where the room goes when a phase ends on its own: the table's own order, except where the
  * game is over — the last count ends in the show that names the winner, the standings after it
  * are the game's, and a bank with nothing playable left cannot start another round at all. */
-function nextAfter(state: HostState): Game.PhaseName {
-  const over = Game.roomIsOver(state.themeRounds, roomThemes(state));
+function nextAfter(state: HostState, roomCode: string): Game.PhaseName {
   if (state.phase === 'Lobby') return Game.phaseAfterCycling(state.phase);
-  if (over) {
-    if (state.phase === 'Scores') return 'Winning';
-    if (state.phase === 'Winning') return 'Leaderboard';
-    if (state.phase === 'Choosing') return 'Winning';
-    return 'Lobby';
-  }
-  if (InPlay.includes(state.phase)) return Game.phaseAfterCycling(state.phase);
-  return Game.phaseAfterCycling(state.phase);
+  // Writing and Reviewing always finish the round, even when the game is over: the last round
+  // still reaches its count and its places before the show.
+  if (state.phase === 'Writing') return 'Reviewing';
+  if (state.phase === 'Reviewing') return 'Scores';
+  // A Choosing the room has already answered is a round under way: the theme is picked and the
+  // question is being read, so even the game's last round is still written, reviewed and counted
+  // before its winner is named. Choosing with no theme picked has no round to play.
+  if (state.phase === 'Choosing' && state.theme !== undefined) return 'Writing';
+  const over = Game.roomIsOver(state.themeRounds, roomThemes(state, roomCode));
+  if (!over) return Game.phaseAfterCycling(state.phase);
+  // The count of the last round ends in the show, then the game's standings. The standings are
+  // the last phase the room sees: they do not lead back to the lobby.
+  if (state.phase === 'Scores') return 'Winning';
+  if (state.phase === 'Winning') return 'Leaderboard';
+  if (state.phase === 'Choosing') return 'Winning';
+  return state.phase;
 }
 
 /** Wherever the phase table says goes next, which is how the host's clock ends a phase without
  * this file having to know any phase by name. */
-export function nextPhaseFrom(host: FlowHost, topic: string): void {
+export function nextPhaseFrom(host: FlowHost, roomCode: string, topic: string): void {
   const state = host.getState();
   if (state === undefined) return;
-  const next = nextAfter(state);
+  const next = nextAfter(state, roomCode);
   host.commit(nextPhase(state, next, topic, openingMs(state, next)));
 }

@@ -132,6 +132,12 @@ export const phase = {
   /** Said over the show that names the room's winner, which is the phase between the last round
    * and the final standings: the bank is taken away and somebody is left standing in it. */
   winning: 'Называем победителя…',
+  /** The sentence the endgame's block carries instead of a phase: the winner named, in the past
+   * tense, since the game is over and there is nothing left being done. */
+  winner: (name: string) => `${name} победил`,
+  /** The same sentence for a room that scored nothing: there is no player to name, so the block
+   * says the room itself did not produce a winner. */
+  noWinner: 'Никто не победил',
   final: 'Игра закончена',
   connecting: 'Подключаемся…',
 };

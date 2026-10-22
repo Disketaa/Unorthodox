@@ -120,6 +120,10 @@ body.PageFade {
  * the entry screen is worth centring, and the lobby is a page of controls belonging at the top.
  * `min-height` rather than `height`, so a screen taller than the viewport scrolls. */
 #root {
+  /* The app's own layer, above the confetti sky that falls behind it on the body: everything the
+   * app draws covers the pieces, and the transparent stretches let them show through. */
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
@@ -780,9 +784,7 @@ body.PageFade {
    * figure rather than as a surface, and the stone is only there to say what the bar is made
    * of. */
   --Opacity-LeaderboardStone: 0.1;
-  /** How long one card of the bank takes to be taken away in the winning show, and how long the
-   * winner takes to stand in the room's eyes once the bank is empty. */
-  --Duration-WinningCard: 700ms;
+  /** How long the winner takes to stand in the room's eyes once the bank is empty. */
   --Duration-Winner: 600ms;
 
   /* Layout, and how wide one container of a screen may be, and how many may sit side by side.

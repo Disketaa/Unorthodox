@@ -2,7 +2,7 @@ import { ThemeId, ThemeMode, ThemeModifierId, effectOf, type CustomTheme } from 
 import { useMemo } from 'preact/hooks';
 import { useThemeSweep } from '../Hooks/UseThemeSweep';
 import { ThemeCards } from '@/Design/Components';
-import { Pace, bankThemes, multForTheme, modifiersForRound } from '@/Game';
+import { GameConfig, Pace, bankThemes, multForTheme, modifiersForRound } from '@/Game';
 import { effectLabelOf } from './EffectLabels';
 
 export interface ThemeCardsViewProps {
@@ -43,6 +43,9 @@ export interface ThemeCardsViewProps {
   gone?: ReadonlySet<ThemeId>;
   /** The card the winning show is taking away at this moment. */
   leaving?: ThemeId;
+  /** Whether the round's enchantment is drawn on the bank. Off while the winning show takes the
+   * cards away: the round it belonged to is over, and its multiplier is no longer in play. */
+  enchant?: boolean;
 }
 
 /** The themes this lobby is playing, on the game screen. Rolled from the room code rather than
@@ -83,12 +86,16 @@ function labelsFor(
 function bankFor(
   roomCode: string,
   themes: readonly ThemeId[],
-  bankRound: number
+  bankRound: number,
+  enchant: boolean
 ): {
   modifiers: ReadonlyMap<ThemeId, readonly ThemeModifierId[]>;
   mults: ReadonlyMap<ThemeId, number>;
   effectLabels: ReadonlyMap<ThemeId, string>;
 } {
+  if (!enchant) {
+    return { modifiers: new Map(), mults: new Map(), effectLabels: new Map() };
+  }
   const modifiers = modifiersForRound(roomCode, themes, bankRound);
   return {
     modifiers,
@@ -108,7 +115,8 @@ function useBank(
   spent: ReadonlyMap<ThemeId, number> | undefined,
   theme: ThemeId | undefined,
   picking: { theme: ThemeId; startedAt: number } | undefined,
-  clockOffsetMs: number
+  clockOffsetMs: number,
+  enchant: boolean
 ) {
   const themes = useMemo(
     () => bankThemes(roomCode, themeMode, enabledThemes, customThemes ?? []),
@@ -118,8 +126,8 @@ function useBank(
   const round = spentRounds(spent);
   const bankRound = theme !== undefined ? Math.max(0, round - 1) : round;
   const bank = useMemo(
-    () => bankFor(roomCode, themes, bankRound),
-    [roomCode, themes, bankRound]
+    () => bankFor(roomCode, themes, bankRound, enchant),
+    [roomCode, themes, bankRound, enchant]
   );
   return { themes, looking, ...bank };
 }
@@ -133,14 +141,15 @@ export function ThemeCardsView(props: ThemeCardsViewProps) {
     props.spent,
     props.theme,
     props.picking,
-    props.clockOffsetMs
+    props.clockOffsetMs,
+    props.enchant !== false
   );
   const pressable =
     props.choosing && props.myTurn && props.picking === undefined && props.paused !== true;
   return (
     <ThemeCards
       themes={bank.themes}
-      roundsPerTheme={props.pace === 'Fast' ? 5 : 10}
+      roundsPerTheme={GameConfig.themes.roundsPerPace[props.pace]}
       spent={props.spent}
       modifiers={bank.modifiers}
       mults={bank.mults}
@@ -153,6 +162,15 @@ export function ThemeCardsView(props: ThemeCardsViewProps) {
       onPick={pressable ? props.onPickTheme : undefined}
     />
   );
+}
+
+/** The room's per-theme round counts as the map the cards read, built here because the state
+ * arrives as the pairs it went out as. Nothing counted is empty, which draws full bars. */
+export function spentByTheme(
+  state: { spent: readonly { theme: ThemeId; rounds: number }[] } | undefined
+): Map<ThemeId, number> | undefined {
+  if (state === undefined) return undefined;
+  return new Map(state.spent.map(({ theme, rounds }) => [theme, rounds]));
 }
 
 /** How many rounds the room has played, which is the number the next round is rolled against.

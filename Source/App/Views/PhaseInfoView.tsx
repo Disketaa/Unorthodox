@@ -1,4 +1,5 @@
-﻿import { Banner, Timer } from '@/Design/Components';
+﻿import { useEffect } from 'preact/hooks';
+import { Character, Timer } from '@/Design/Components';
 import { Stack } from '@/Design/Primitives';
 import { Strings } from '@/Content';
 import {
@@ -13,6 +14,7 @@ import { useCountdown } from '../Hooks/UseCountdown';
 import { usePhaseAlarm } from '../Hooks/UsePhaseAlarm';
 import type { SessionPhaseName } from '../Hooks/UseSessionPhase';
 import type { GameSessionView } from '../Hooks/UseGameSession';
+import { gameOverOf, winnerLookOf, winningClockOf } from './GameOver';
 import type { PhaseViewProps } from './LobbyView';
 
 /** What naming a phase takes: whose turn it is, and whether this player has answered. Every
@@ -55,15 +57,7 @@ function clockOf(view: GameSessionView): {
     totalMs,
     deadline: endsAt,
     ringing: answeredAt === undefined && isPhaseName(view.phase) && isTimedPhase(view.phase),
-    remainingMs: useCountdown(
-      totalMs,
-      startedAt,
-      view.clockOffsetMs,
-      true,
-      answeredAt,
-      view.paused,
-      view.pausedAt
-    ),
+    remainingMs: useCountdown(totalMs, startedAt, view.clockOffsetMs, true, answeredAt, view.paused, view.pausedAt),
   };
 }
 
@@ -91,43 +85,77 @@ function sentenceFor(
   return PhaseSentences[view.phase]({ turnName, hasSubmitted: view.hasSubmitted });
 }
 
+/** The page behind a room that ends without a winner: washed in the same pink a seat the round
+ * gave nothing to wears, written onto the page the way a chosen theme's wash is, and taken away
+ * on the way out so the next screen starts on its own paper. */
+function useNoWinnerWash(noWinner: boolean): void {
+  useEffect(() => {
+    if (!noWinner) return;
+    document.body.style.setProperty(
+      '--Color-Page-Fill',
+      'var(--Color-Feedback-Muted-Wash)'
+    );
+    return () => document.body.style.removeProperty('--Color-Page-Fill');
+  }, [noWinner]);
+}
+
 /** The note at the top of a game screen: what is happening, with the mark saying it still is.
  * The countdown is drawn behind the sentence rather than under it, so a timed phase is one
  * block and a phase nobody waits out is the same block with no bar in it. */
-export function PhaseInfoView({ view }: PhaseViewProps) {
-  const { remainingMs, totalMs, deadline, ringing } = clockOf(view);
-  usePhaseAlarm({ deadline, ringing, paused: view.paused });
+/** Computed values for the phase note, kept out of the component so it stays short. */
+function phaseInfo(
+  view: GameSessionView,
+  clock: { remainingMs: number; totalMs: number; deadline: number; ringing: boolean }
+) {
   const turnName =
     view.turnPlayerId === null ? '' : (view.playerNames.get(view.turnPlayerId) ?? '');
   const choosing = view.publicState?.phase === 'Choosing' ? view.publicState : undefined;
-  const sentence = sentenceFor(view, choosing, turnName);
-  // Connecting is not a game phase, so the table has no row for it and nothing is timed.
-  const timed = view.phase !== 'Connecting' && isTimedPhase(view.phase);
-  const secondsLeft = Math.ceil(remainingMs / 1000);
-  // A step up per closing second, so the phase is heard running out in the beat already playing.
+  const over = gameOverOf(view);
+  const endgame = over && (view.phase === 'Winning' || view.phase === 'Leaderboard');
+  const winning = winningClockOf(view);
+  const winningRemaining = winning?.remainingMs ?? 0;
+  const revealed = endgame && (view.phase === 'Leaderboard' || (winning !== undefined && winningRemaining <= 0));
+  const winnerLook = revealed ? winnerLookOf(view) : undefined;
+  const noWinner = revealed && winnerLook === undefined;
+  const winnerName = winnerLook === undefined ? undefined : view.playerNames.get(winnerLook.id);
+  const sentence = revealed && winnerName === undefined ? Strings.phase.noWinner : winnerName === undefined ? sentenceFor(view, choosing, turnName) : Strings.phase.winner(winnerName);
+  const counting = winning !== undefined && winningRemaining > 0;
+  const timerRemainingMs = counting ? winningRemaining : endgame ? clock.totalMs : clock.remainingMs;
+  const timerTotalMs = counting ? (winning?.totalMs ?? clock.totalMs) : clock.totalMs;
+  const secondsLeft = Math.ceil(timerRemainingMs / 1000);
   const urgentSeconds = Math.ceil(GameConfig.timing.countdownUrgentMs / 1000);
-  const beatSemitones =
-    Math.max(0, urgentSeconds - secondsLeft) * GameConfig.timing.countdownPitchStepSemitones;
-  const tint = tintOf(view, choosing?.question !== undefined);
+  const beatSemitones = endgame ? 0 : Math.max(0, urgentSeconds - secondsLeft) * GameConfig.timing.countdownPitchStepSemitones;
+  const tint = revealed ? (winnerLook === undefined ? 'var(--Color-Feedback-Error)' : accentFor(winnerLook.look.color).tint) : tintOf(view, choosing?.question !== undefined);
+  return { turnName, choosing, over, endgame, winning, winningRemaining, revealed, winnerLook, noWinner, winnerName, sentence, counting, timerRemainingMs, timerTotalMs, secondsLeft, urgentSeconds, beatSemitones, tint };
+}
 
+export function PhaseInfoView({ view }: PhaseViewProps) {
+  const clock = clockOf(view);
+  const { deadline, ringing } = clock;
+  usePhaseAlarm({ deadline, ringing, paused: view.paused });
+  const info = phaseInfo(view, clock);
+  useNoWinnerWash(info.noWinner);
   return (
     <Stack align="Center" gap="Sm">
-      {timed ? (
-        <Timer
-          remainingMs={remainingMs}
-          totalMs={totalMs}
-          seconds={Strings.common.secondsLeft(secondsLeft)}
-          urgent={remainingMs <= GameConfig.timing.countdownUrgentMs}
-          beatSemitones={beatSemitones}
-          tint={tint}
-        >
-          {sentence}
-        </Timer>
-      ) : (
-        <Banner align="Center" mark="Loading">
-          {sentence}
-        </Banner>
-      )}
+      <Timer
+        remainingMs={info.timerRemainingMs}
+        totalMs={info.timerTotalMs}
+        seconds={info.endgame && !info.counting ? '' : Strings.common.secondsLeft(info.secondsLeft)}
+        badge={
+          info.revealed && info.winnerLook !== undefined ? (
+            <Character
+              character={info.winnerLook.look.character}
+              color={info.winnerLook.look.color}
+              size="Medium"
+            />
+          ) : undefined
+        }
+        urgent={info.endgame ? false : info.timerRemainingMs <= GameConfig.timing.countdownUrgentMs}
+        beatSemitones={info.beatSemitones}
+        tint={info.tint}
+      >
+        {info.sentence}
+      </Timer>
     </Stack>
   );
 }

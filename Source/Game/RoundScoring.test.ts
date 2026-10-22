@@ -43,7 +43,7 @@ function reviewing(times: Record<string, number>, mult?: number): ReviewingState
     groupRejections: new Map(),
     groupLikes: new Map(),
     theme: undefined,
-    ...(mult === undefined ? {} : { mult }),
+    ...(mult === undefined ? {} : { mult, affectedPlayers: new Set(ANSWERED) }),
   };
 }
 

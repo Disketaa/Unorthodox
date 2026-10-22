@@ -46,8 +46,8 @@ export function hostFlowMoves(
     resolveRandomPick: () => resolveRandomPickFrom(flow(), roomCode()),
     setPaused: (paused) => setPausedFrom(flow(), paused),
     endReviewing: () => endReviewingFrom(flow()),
-    nextRound: () => nextRoundFrom(flow()),
-    nextPhase: (topic) => nextPhaseFrom(flow(), topic),
+    nextRound: () => nextRoundFrom(flow(), roomCode()),
+    nextPhase: (topic) => nextPhaseFrom(flow(), roomCode(), topic),
     reloadPhase: () => reloadPhaseFrom(flow()),
   };
 }

@@ -21,10 +21,13 @@ export function offeredThemes(state: Game.HostState, roomCode: string): ThemeId[
  * out of the room: the card on it is spent out, and a room handed a question it has already
  * answered is a round nobody can play. */
 export function themeIsPlayable(state: Game.HostState, theme: ThemeId): boolean {
-  const { roundsPerTheme } = Game.GameConfig.themes;
+  const ceiling = Game.GameConfig.themes.roundsPerPace[state.pace];
   const played = state.themeRounds.get(theme) ?? 0;
-  const asked = themeQuestions(theme)?.length ?? roundsPerTheme;
-  return played < roundsPerTheme && played < asked;
+  const asked =
+    state.customThemes?.get(theme)?.questions.length ??
+    themeQuestions(theme)?.length ??
+    ceiling;
+  return played < ceiling && played < asked;
 }
 
 /** A theme the room can still be asked about, chosen from its bank, or undefined where every
@@ -34,14 +37,14 @@ export function playableTheme(
   roomCode: string,
   random: Random
 ): ThemeId | undefined {
-  const { roundsPerTheme } = Game.GameConfig.themes;
+  const ceiling = Game.GameConfig.themes.roundsPerPace[state.pace];
   const themes = offeredThemes(state, roomCode);
   // A theme whose questions are used up is not dealt again, whatever the room's own count says:
   // the card on it is spent out, and a room handed a question it has already answered is a round
   // nobody can play.
   const inPlay = themes.filter(
     (theme) =>
-      (state.themeRounds.get(theme) ?? 0) < roundsPerTheme && themeIsPlayable(state, theme)
+      (state.themeRounds.get(theme) ?? 0) < ceiling && themeIsPlayable(state, theme)
   );
   return inPlay[Math.floor(random() * inPlay.length)];
 }

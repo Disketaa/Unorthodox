@@ -1,0 +1,209 @@
+/* A burst of confetti over the winner: the pieces fall from the top of the window, each on its own
+ * column, colour, shape, length and start. The field is the window rather than the screen's box,
+ * so the fall is measured in the window's height and covers the same sky on every screen. */
+.Field {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  container-type: size;
+}
+
+/* Two skies from one burst: one behind the app and its figure, one over it. The field in front is
+ * given a stacking order above the app, the one behind is left below it. */
+.Behind {
+  z-index: 0;
+}
+
+.Above {
+  z-index: 3;
+}
+
+/* A piece stands at its own column, given by the caller, and the negative top lifts it above the
+ * frame so it enters rather than appears. */
+.Piece {
+  position: absolute;
+  top: -18px;
+  flex: 0 0 auto;
+  border-radius: 4px;
+  opacity: 0;
+  animation-name: ConfettiFall;
+  animation-duration: 1.8s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* A held room stops the fall where it is, so the burst waits with the show rather than raining
+ * over a screen nobody is playing. */
+.Paused .Piece {
+  animation-play-state: paused;
+}
+
+/* Colour repeats every 8 and shape every 5, so no two neighbouring pieces match. */
+.Piece:nth-child(8n + 1) {
+  background: var(--Color-Character-Coral);
+}
+
+.Piece:nth-child(8n + 2) {
+  background: var(--Color-Character-Sky);
+}
+
+.Piece:nth-child(8n + 3) {
+  background: var(--Color-Character-Yellow);
+}
+
+.Piece:nth-child(8n + 4) {
+  background: var(--Color-Character-Lime);
+}
+
+.Piece:nth-child(8n + 5) {
+  background: var(--Color-Character-Rose);
+}
+
+.Piece:nth-child(8n + 6) {
+  background: var(--Color-Character-Mint);
+}
+
+.Piece:nth-child(8n + 7) {
+  background: var(--Color-Character-Violet);
+}
+
+.Piece:nth-child(8n) {
+  background: var(--Color-Character-Amber);
+}
+
+.Piece:nth-child(5n + 1) {
+  width: 16px;
+  height: 24px;
+}
+
+.Piece:nth-child(5n + 2) {
+  width: 24px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.Piece:nth-child(5n + 3) {
+  width: 12px;
+  height: 28px;
+}
+
+.Piece:nth-child(5n + 4) {
+  width: 28px;
+  height: 12px;
+}
+
+.Piece:nth-child(5n) {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+}
+
+/* Length and start each cycle on lengths that share no factor with the colours and shapes, so
+ * pieces line up again only after the whole set has gone round. */
+.Piece:nth-child(7n + 1) {
+  animation-duration: 1.86s;
+}
+
+.Piece:nth-child(7n + 2) {
+  animation-duration: 1.5s;
+}
+
+.Piece:nth-child(7n + 3) {
+  animation-duration: 2.1s;
+}
+
+.Piece:nth-child(7n + 4) {
+  animation-duration: 1.62s;
+}
+
+.Piece:nth-child(7n + 5) {
+  animation-duration: 2.22s;
+}
+
+.Piece:nth-child(7n + 6) {
+  animation-duration: 1.74s;
+}
+
+.Piece:nth-child(7n) {
+  animation-duration: 1.98s;
+}
+
+/* All negative, so the first frame is already a full sky rather than an empty one filling up. */
+.Piece:nth-child(11n + 1) {
+  animation-delay: -0.9s;
+}
+
+.Piece:nth-child(11n + 2) {
+  animation-delay: -1.7s;
+}
+
+.Piece:nth-child(11n + 3) {
+  animation-delay: -0.3s;
+}
+
+.Piece:nth-child(11n + 4) {
+  animation-delay: -2.05s;
+}
+
+.Piece:nth-child(11n + 5) {
+  animation-delay: -1.2s;
+}
+
+.Piece:nth-child(11n + 6) {
+  animation-delay: -0.55s;
+}
+
+.Piece:nth-child(11n + 7) {
+  animation-delay: -1.95s;
+}
+
+.Piece:nth-child(11n + 8) {
+  animation-delay: -0.75s;
+}
+
+.Piece:nth-child(11n + 9) {
+  animation-delay: -1.45s;
+}
+
+.Piece:nth-child(11n + 10) {
+  animation-delay: -0.15s;
+}
+
+.Piece:nth-child(11n) {
+  animation-delay: -2.3s;
+}
+
+/* The acceleration lives in the distances rather than the curve: a timing function restarts at
+ * every stop, and a piece that eased each segment would stall mid-fall. */
+@keyframes ConfettiFall {
+  0% {
+    transform: translateY(-12cqh) rotate(0deg) scaleX(1);
+    opacity: 1;
+  }
+
+  25% {
+    transform: translateY(-2cqh) rotate(90deg) scaleX(0);
+  }
+
+  50% {
+    transform: translateY(28cqh) rotate(180deg) scaleX(-1);
+  }
+
+  75% {
+    transform: translateY(65cqh) rotate(270deg) scaleX(0);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(112cqh) rotate(360deg) scaleX(1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No falling confetti for a room that asked for less motion: it is decoration, not the win. */
+  .Piece {
+    display: none;
+  }
+}

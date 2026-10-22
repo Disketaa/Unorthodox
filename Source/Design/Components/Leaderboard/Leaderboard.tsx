@@ -32,6 +32,10 @@ export interface LeaderboardRow {
   rank: number;
   /** Whether this is the player looking at the screen, whose row is worn in their own colour. */
   isSelf?: boolean;
+  /** Whether this is the room's winner, which only the board after the game is over names. The
+   * row is worn in the room's own yellow rather than the player's colour, so every screen shows
+   * the same winner in the same wash. */
+  isWinner?: boolean;
   /** Whether the player is still in the room. One the host has lost keeps their line — the place
    * is still theirs — held back the way the bar holds back a seat that dropped. */
   isOnline?: boolean;
@@ -45,6 +49,9 @@ export interface LeaderboardProps {
   run?: number;
   /** Whether the room is held, which stands the show where it is. */
   paused?: boolean;
+  /** Whether the game ended with nobody to name, in which case the whole list is washed in the
+   * room's error pink rather than left as a grey table on the washed page. */
+  noWinner?: boolean;
 }
 
 interface PlaceProps {
@@ -69,6 +76,7 @@ interface PlacesProps {
   rows: readonly LeaderboardRow[];
   run: number;
   paused: boolean;
+  noWinner: boolean;
 }
 
 /** One place: where the player stands, the player themselves, their name, and what they have.
@@ -77,11 +85,9 @@ interface PlacesProps {
 function Place({ row, at, delay, top, stage, countMs, silent, paused, run }: PlaceProps) {
   const sway = useSwayMotion<HTMLLIElement>();
   const value = useStanding({ row, stage, countMs, silent, paused, run });
-  const round = row.round ?? 0;
-  const share = top > 0 ? value / top : 0;
-  // The round's figure arrives with the count it belongs to: a line that gained something says so
-  // from the moment the standing it gained it for starts climbing. A line the round paid nothing
-  // has nothing to count and nothing to say.
+  const round = row.round ?? 0; const share = top > 0 ? value / top : 0;
+  // The round's figure arrives with the count it belongs to; a line the round paid nothing has
+  // nothing to count and nothing to say.
   const showsRound = stage !== 'Arrived' && round > 0;
   // The bar wears the player the figure is about while that figure is being counted, and is the
   // wash it was once the count is over.
@@ -94,9 +100,11 @@ function Place({ row, at, delay, top, stage, countMs, silent, paused, run }: Pla
       ref={sway}
       class={`${styles.Row} ${characterStyles[row.color]} ${
         row.isSelf === true ? styles.Mine : ''
-      } ${counting ? styles.Counting : ''} ${idle ? styles.Idle : ''} ${
-        row.isOnline === false ? styles.Offline : ''
-      } ${paused && !idle ? styles.Paused : ''}`}
+      } ${row.isWinner === true ? styles.Winner : ''} ${counting ? styles.Counting : ''} ${
+        idle ? styles.Idle : ''
+      } ${row.isOnline === false ? styles.Offline : ''} ${
+        paused && !idle ? styles.Paused : ''
+      }`}
       style={{ '--Place-Delay': `${delay}ms`, '--Place-Share': share, '--Row-At': at }}
     >
       <div class={styles.Track} aria-hidden="true">
@@ -124,7 +132,7 @@ function Place({ row, at, delay, top, stage, countMs, silent, paused, run }: Pla
 /** The list itself, running the show: the places arrive where the room left them, every figure
  * is counted up to what the round made it, and then the list slides into the order the figures
  * put it in. Every row is in the list from the start, at the slot it holds at that moment. */
-function Places({ rows, run, paused }: PlacesProps) {
+function Places({ rows, run, paused, noWinner }: PlacesProps) {
   const places = rows.length;
   const countMs = scoreCountMs();
   const waveMs = leaderboardWaveMs();
@@ -145,7 +153,10 @@ function Places({ rows, run, paused }: PlacesProps) {
   // digit's worth of room standing between the place and the player.
   const placeWidth = `${String(places).length}ch`;
   return (
-    <ol class={styles.Root} style={{ '--Row-Count': places, '--Place-Width': placeWidth }}>
+    <ol
+      class={`${styles.Root} ${noWinner ? styles.NoWinner : ''}`}
+      style={{ '--Row-Count': places, '--Place-Width': placeWidth }}
+    >
       {rows.map((row) => (
         <Place
           key={row.id}
@@ -167,6 +178,8 @@ function Places({ rows, run, paused }: PlacesProps) {
 /** The room's places, one row each. The rows come up from the last place to the first, every
  * standing counts what the round added to it, and the list slides into the order that leaves
  * the room in. Keyed on the run. */
-export function Leaderboard({ rows, run = 0, paused = false }: LeaderboardProps) {
-  return <Places key={run} rows={rows} run={run} paused={paused} />;
+export function Leaderboard({ rows, run = 0, paused = false, noWinner = false }: LeaderboardProps) {
+  return (
+    <Places key={run} rows={rows} run={run} paused={paused} noWinner={noWinner} />
+  );
 }

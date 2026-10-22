@@ -55,7 +55,7 @@ describe('the bar of hexes', () => {
     // The number itself and nothing else: the card's own corner says what the figure is, and
     // this is the same number on the seat.
     const root = mounted(<PlayerBar players={[player({ mult: 1.25 })]} />);
-    expect(root.querySelector('[class*="Mult"]')?.textContent).toBe('1.25');
+    expect(root.querySelector('[class*="Mult"]')?.textContent).toBe('1.25x');
   });
 
   it('writes no multiplier on a seat the enchantment did not reach', () => {

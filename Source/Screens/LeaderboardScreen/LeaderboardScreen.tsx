@@ -1,4 +1,4 @@
-import { Leaderboard, type LeaderboardRow } from '@/Design/Components';
+import { Confetti, Leaderboard, type LeaderboardRow } from '@/Design/Components';
 import styles from './LeaderboardScreen.module.css';
 
 export interface LeaderboardScreenProps {
@@ -8,14 +8,25 @@ export interface LeaderboardScreenProps {
   run?: number;
   /** Whether the room is held, which stands the wave where it is. */
   paused?: boolean;
+  /** Whether the game ended with nobody to name, which washes the whole list error pink. */
+  noWinner?: boolean;
+  /** Whether the game ended with a winner, which throws the same confetti over the room. */
+  celebrate?: boolean;
 }
 
 /** Where the room stands after a round: the places, one row each, and what they have. The
  * figures are on the rows rather than above them, so a line reads as one thing. */
-export function LeaderboardScreen({ rows, run = 0, paused = false }: LeaderboardScreenProps) {
+export function LeaderboardScreen({
+  rows,
+  run = 0,
+  paused = false,
+  noWinner = false,
+  celebrate = false,
+}: LeaderboardScreenProps) {
   return (
     <div class={styles.Frame}>
-      <Leaderboard rows={rows} run={run} paused={paused} />
+      <Leaderboard rows={rows} run={run} paused={paused} noWinner={noWinner} />
+      {celebrate && <Confetti paused={paused} />}
     </div>
   );
 }

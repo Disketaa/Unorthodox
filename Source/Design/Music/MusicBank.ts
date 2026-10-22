@@ -1,20 +1,22 @@
 import menuUrl from './Jumpin June - The Soundlings.ogg';
 import gameUrl from "./The Plan's Working - Cooper Cannell.ogg";
 import votingUrl from './Hopeful - Nat Keefe.ogg';
+import winnerUrl from './Big Top - Sir Cubworth.ogg';
 import { audioContext, resumeAudio } from '../Audio/Context';
 import { fade, musicBusFor } from './MusicBus';
 
 /** The three places the game can be in, rather than one per screen: the entry and the lobby
  * share a track, the round has its own, and the voting has a third, since that is the one phase
  * where everybody is reading the same board at once. */
-export type MusicName = 'Menu' | 'Game' | 'Voting';
+export type MusicName = 'Menu' | 'Game' | 'Voting' | 'Winner';
 
-export const MusicNames: readonly MusicName[] = ['Menu', 'Game', 'Voting'];
+export const MusicNames: readonly MusicName[] = ['Menu', 'Game', 'Voting', 'Winner'];
 
 const Sources: Record<MusicName, string> = {
   Menu: menuUrl,
   Game: gameUrl,
   Voting: votingUrl,
+  Winner: winnerUrl,
 };
 
 /** Per track, since the three are recorded at different loudnesses and the room's clips already
@@ -23,6 +25,7 @@ const Levels: Record<MusicName, number> = {
   Menu: 0.175,
   Game: 0.15,
   Voting: 0.075,
+  Winner: 0.125,
 };
 
 /** How long one track takes to hand the room to the next. A cut on the one step everybody plays
@@ -74,7 +77,11 @@ function loadMusic(name: MusicName): Promise<void> {
 
 /** Starts one looping voice of the track at silence, ready to be faded up. Nothing is returned
  * where the track has not been decoded yet, since starting it later is the caller's decision. */
-function startTrack(context: AudioContext, name: MusicName): Track | undefined {
+function startTrack(
+  context: AudioContext,
+  name: MusicName,
+  loop: boolean
+): Track | undefined {
   const buffer = buffers.get(name);
   if (!buffer) return undefined;
   // The bus is asked for before the fader, so the gains come out in the order a test reads them:
@@ -82,7 +89,7 @@ function startTrack(context: AudioContext, name: MusicName): Track | undefined {
   const destination = musicBusFor(context);
   const source = context.createBufferSource();
   source.buffer = buffer;
-  source.loop = true;
+  source.loop = loop;
   const fader = context.createGain();
   fader.gain.value = 0;
   const duck = context.createGain();
@@ -104,21 +111,25 @@ export function duckMusic(next: boolean): void {
   fade(context, made, next ? 0 : 1, DuckFadeSeconds);
 }
 
-/** Hands the room to one track, fading the one under it out as the new one comes up. Asking for
- * the track already sounding changes nothing, or every re-render would restart the music as a
- * dip. `seconds` is the handover's length, so a change under a transition can finish with it. */
-export function playMusic(name: MusicName, seconds: number = CrossfadeSeconds): void {
+/** Hands the room to one track, fading the one under it out. Asking for the track already
+ * sounding changes nothing. `seconds` is the handover's length; `loop` decides whether it
+ * repeats. */
+export function playMusic(
+  name: MusicName,
+  seconds: number = CrossfadeSeconds,
+  loop: boolean = true
+): void {
   if (current?.name === name) return;
   const context = audioContext();
   if (!context) return;
   resumeAudio();
 
-  const starting = startTrack(context, name);
+  const starting = startTrack(context, name, loop);
   if (!starting) {
     // Not decoded yet. The load runs to the end either way, and the ask is
     // remembered by the screen asking again on its next render.
     void loadMusic(name).then(() => {
-      if (current?.name !== name) playMusic(name);
+      if (current?.name !== name) playMusic(name, seconds, loop);
     });
     return;
   }

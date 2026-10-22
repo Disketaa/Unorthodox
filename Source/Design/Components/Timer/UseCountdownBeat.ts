@@ -22,7 +22,7 @@ export function useCountdownBeat({
   beatSemitones,
 }: BeatProps): void {
   useEffect(() => {
-    if (totalMs <= 0 || remainingMs <= 0) return;
+    if (seconds === '' || totalMs <= 0 || remainingMs <= 0) return;
     // Asked for by pitch only where the height carries the countdown; elsewhere left to the bank's
     // own scatter, since a run of identical notes is a printed loop.
     playSound('Tick', beatSemitones === 0 ? undefined : beatSemitones);

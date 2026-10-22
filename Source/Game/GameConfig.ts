@@ -126,6 +126,11 @@ const timing = {
    * winner stands in the room's eyes afterwards before the standings are read. */
   winningCardMs: 700,
   winningHoldMs: 4000,
+  /** How long the bank is held before the first card leaves: the room reads what it had before
+   * it starts going. */
+  winningLeadInMs: 600,
+  /** How long the empty stage is held after the last card before the winner stands in it. */
+  winningRevealMs: 800,
 };
 
 /** How many players a room holds. The bar of hexes across the top of a game holds this many in
@@ -217,6 +222,9 @@ export const GameConfig = {
      * and the number of topics the theme answers for. Ten because the game is five rounds and
      * two themes to a round fills it. */
     roundsPerTheme: 10,
+    /** The same figure by pace: the ceiling a theme's bank card counts down from. A theme with
+     * fewer questions than this stops at its own count instead. */
+    roundsPerPace: { Fast: 5, Standard: 10 } satisfies Record<Pace, number>,
     /** Options for rounds per theme the host can pick in the lobby. Five is the floor: at three,
      * what one good round pays is more than the whole gap between first and second at the end. */
     roundsPerThemeOptions: [5, 10] as const,

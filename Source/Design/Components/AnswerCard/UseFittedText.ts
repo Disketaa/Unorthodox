@@ -1,5 +1,5 @@
 import type { RefObject } from 'preact';
-import { useEffect } from 'preact/hooks';
+import { useCallback, useEffect } from 'preact/hooks';
 import { useViewportMeasure } from '@/Design/Primitives';
 
 /** How much of the writing a card may give up before it is drawn too small to read at all. A
@@ -26,19 +26,25 @@ const FitProperty = '--AnswerCard-Fit';
 export function useFittedText(
   node: RefObject<HTMLElement | null>,
   text: string,
-  property: string = FitProperty
+  property: string = FitProperty,
+  minScale: number = MinScale
 ): void {
-  useEffect(fit(node, property), [node, text, property]);
+  const measure = useCallback(fit(node, property, minScale), [node, property, minScale]);
+  useEffect(measure, [measure, text]);
   // The box changes under the writing whenever the card is laid out, the window moves, or its
   // row is resized. An observer rather than a measurement on mount, because a card measured
   // before its font has loaded reports a size it never had and nothing afterwards would ask again.
-  useBoxResize(node, fit(node, property));
-  useViewportMeasure(node, fit(node, property));
+  useBoxResize(node, measure);
+  useViewportMeasure(node, measure);
 }
 
 /** The fitter for one element. A function rather than one body shared by three callers, because
  * the effect, the observer and the window measurement each hold it and each lets it go. */
-function fit(node: RefObject<HTMLElement | null>, property: string): () => void {
+function fit(
+  node: RefObject<HTMLElement | null>,
+  property: string,
+  minScale: number
+): () => void {
   return () => {
     const element = node.current;
     // A box with no layout cannot be fitted to. Reporting that and stopping is what the observer
@@ -47,20 +53,20 @@ function fit(node: RefObject<HTMLElement | null>, property: string): () => void 
       return;
     }
     element.style.setProperty(property, '1');
-    scaleTo(element, property);
+    scaleTo(element, property, minScale);
   };
 }
 
 /** How much of its full size the writing is drawn at. Each pass multiplies the size by what is
  * measured to be left over, rather than dividing by a ratio taken once at the larger size. */
-function scaleTo(element: HTMLElement, property: string): void {
+function scaleTo(element: HTMLElement, property: string, minScale: number): void {
   let scale = 1;
   for (let pass = 0; pass < Passes; pass += 1) {
     element.style.setProperty(property, String(scale));
     if (fits(element)) {
       return;
     }
-    scale = Math.max(MinScale, scale * shortfall(element));
+    scale = Math.max(minScale, scale * shortfall(element));
   }
   element.style.setProperty(property, String(scale));
 }
@@ -73,7 +79,8 @@ function shortfall(element: HTMLElement): number {
   const lines = linesIn(element);
   const byHeight = height > 0 ? roomOf(element).clientHeight / height : 1;
   const byLines = lines > 0 ? MaxLines / lines : 1;
-  const byWidth = element.clientWidth > 0 ? element.clientWidth / element.scrollWidth : 1;
+  const width = textWidth(element);
+  const byWidth = width > 0 ? element.clientWidth / width : 1;
   return Math.min(1, byHeight, byLines, byWidth);
 }
 
@@ -84,7 +91,7 @@ function fits(element: HTMLElement): boolean {
   return (
     textHeight(element) <= roomOf(element).clientHeight + 1 &&
     linesIn(element) <= MaxLines &&
-    element.scrollWidth <= element.clientWidth + 1
+    textWidth(element) <= element.clientWidth + 1
   );
 }
 
@@ -103,6 +110,14 @@ function textHeight(element: HTMLElement): number {
   const height = range.getBoundingClientRect().height;
   range.detach();
   return height;
+}
+
+/** How wide the writing itself is rather than the box around it. A centred line that outgrows
+ * its box spills both ways while `scrollWidth` counts only the far side, so double it back
+ * using layout widths rather than painted ones: a transform must not change the fit. */
+function textWidth(element: HTMLElement): number {
+  const overflow = element.scrollWidth - element.clientWidth;
+  return overflow > 0 ? element.scrollWidth + overflow : element.clientWidth;
 }
 
 /** How many lines of itself the answer is at the size it is currently drawn, against its own

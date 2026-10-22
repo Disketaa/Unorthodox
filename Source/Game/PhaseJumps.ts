@@ -61,8 +61,8 @@ export function handleGoToPhase(state: HostState, action: ActionOf<'GO_TO_PHASE'
   };
 }
 
-/** A round enters the count settled, whichever way the room got there. Counted on the way in and
- * nowhere else, so a dock pressing skip and a clock running out settle it at the same figure. */
+/** A round enters the count settled, whichever way the room got there. END_REVIEWING already
+ * folded it into `cumulativeScores`, so only an unsettled round is scored here. */
 function settledBy(
   state: HostState,
   phase: PhaseName
@@ -73,6 +73,10 @@ function settledBy(
     state.phase === 'Reviewing' || state.phase === 'Writing' || state.phase === 'Scores';
   if ((phase !== 'Scores' && phase !== 'Leaderboard') || !playingRound) {
     return {};
+  }
+  // Scores already holds the settled round: carry it as-is and leave the totals alone.
+  if ('scores' in state) {
+    return { scores: state.scores, cumulativeScores: state.cumulativeScores };
   }
   const { roundScores, cumulativeScores } = scoreRound(state);
   return { scores: roundScores, cumulativeScores };

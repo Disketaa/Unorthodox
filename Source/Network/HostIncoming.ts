@@ -53,19 +53,22 @@ export function affectedByChoice(
   return [...affected];
 }
 
-/** What multiplier the chosen card wears, or 1 where the round's card carried none. Rolled from
- * the same roll `affectedByChoice` reads, so the card's effect and its multiplier are one
- * card's two halves and cannot come from two different deals. */
+/** What multiplier the chosen card wears, or 1 where it carried none. Rolled from the same roll
+ * `affectedByChoice` reads, so effect and multiplier are one card's halves. */
 export function multByChoice(
   state: HostState,
   roomCode: string | undefined,
   theme: ThemeId | undefined
 ): number {
-  if (roomCode === undefined || theme === undefined) {
-    return 1;
-  }
+  if (roomCode === undefined || theme === undefined) return 1;
+  const pool = themePool(state.themeMode, state.themes, [
+    ...(state.customThemes ?? []).values(),
+  ]);
+  const themes = themesForRoom(roomCode, GameConfig.themes.cardsPerLobby, pool);
   let round = 0;
   for (const count of state.themeRounds.values()) round += count;
+  const carried = modifiersForRound(roomCode, themes, round).get(theme) ?? [];
+  if (!carried.includes('Enchanted')) return 1;
   return multForTheme(roomCode, theme, round);
 }
 
@@ -150,13 +153,14 @@ export function toAction(context: IncomingContext): GameAction | undefined {
     case 'SetLook':
       return { type: 'SET_LOOK', playerId: message.playerId, look: message.look };
     case 'ChooseTheme':
-      // Stamped as it lands rather than when it is applied: the countdown stops at the press, and
-      // a message held in a queue would otherwise stop the clock later than the room pressed.
+      // Stamped as it lands: the countdown stops at the press. The multiplier is rolled here so
+      // the host applies the same figure the client showed, rather than carrying last round's.
       return {
         type: 'CHOOSE_THEME',
         playerId: message.playerId,
         theme: message.theme,
         at: Date.now(),
+        mult: multByChoice(context.state, context.roomCode, message.theme),
         affectedPlayers: affectedByChoice(
           context.state,
           context.roomCode,

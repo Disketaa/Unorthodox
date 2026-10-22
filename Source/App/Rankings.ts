@@ -23,7 +23,8 @@ export function toScoreEntries(
 }
 
 /** Where the room stands, as the leaderboard draws it: the room's roster, so a player who wrote
- * nothing still stands and one the room has lost keeps their line. */
+ * nothing still stands and one the room has lost keeps their line. `gameOver` marks the top
+ * standing as the room's winner, which is the only time the board names one. */
 export function toLeaderboardRows(
   roster: readonly PlayerId[],
   totals: ReadonlyMap<PlayerId, number>,
@@ -31,7 +32,8 @@ export function toLeaderboardRows(
   names: ReadonlyMap<PlayerId, string>,
   looks: ReadonlyMap<PlayerId, PlayerLook>,
   presence: ReadonlyMap<PlayerId, boolean>,
-  selfId: PlayerId | null
+  selfId: PlayerId | null,
+  gameOver: boolean
 ): LeaderboardRow[] {
   return roster
     .map((id) => {
@@ -48,5 +50,10 @@ export function toLeaderboardRows(
       };
     })
     .sort((left, right) => right.score - left.score)
-    .map((entry, index) => ({ ...entry, rank: index + 1, isSelf: entry.id === selfId }));
+    .map((entry, index) => ({
+      ...entry,
+      rank: index + 1,
+      isWinner: gameOver && index === 0 && entry.score > 0,
+      isSelf: entry.id === selfId,
+    }));
 }

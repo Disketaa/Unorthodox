@@ -49,11 +49,6 @@ function waits(pace: Pace) {
   ];
 }
 
-/** How many questions each theme asks, by pace. Fast gets fewer, Standard gets more. */
-function questionsPerTheme(pace: Pace): number {
-  return pace === 'Fast' ? 5 : 10;
-}
-
 /** The waits a pace decides, one row each, under the pace buttons that decide them. */
 function WaitRows({ pace }: Pick<LobbyPaceProps, 'pace'>) {
   return (
@@ -69,7 +64,12 @@ function WaitRows({ pace }: Pick<LobbyPaceProps, 'pace'>) {
           {wait.label}
         </Banner>
       ))}
-      <Banner variant="Muted" mark="Question" fill value={String(questionsPerTheme(pace))}>
+      <Banner
+        variant="Muted"
+        mark="Question"
+        fill
+        value={String(GameConfig.themes.roundsPerPace[pace])}
+      >
         {Strings.lobby.settings.roundsPerTheme}
       </Banner>
     </Stack>

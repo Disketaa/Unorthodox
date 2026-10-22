@@ -62,11 +62,13 @@ export function openingMs(state: HostState, next: Game.PhaseName): number {
   return Game.phaseDurationMs(next, state.pace);
 }
 
-/** The themes the room has switched on, and how many rounds each of them can still be played
- * for. The pool rather than the bank it was dealt out of, since the pool is what the host and
- * every client can both work out without knowing how the room's own roll came out. */
-export function roomThemes(state: HostState): Game.RoomTheme[] {
+/** The themes the room's bank actually holds, and how many rounds each of them can be played
+ * for. The dealt bank rather than the pool: a theme nobody was dealt cannot keep the room open.
+ * The deal is rolled from the code, so the host and every client reach the same bank. */
+export function roomThemes(state: HostState, roomCode: string): Game.RoomTheme[] {
   return Game.roomThemes({
+    roomCode,
+    pace: state.pace,
     themeMode: state.themeMode,
     themes: state.themes,
     customThemes: [...(state.customThemes?.values() ?? [])],

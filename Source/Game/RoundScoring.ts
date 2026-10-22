@@ -74,6 +74,7 @@ export function toCardScore(
   group: { playerIds: PlayerId[]; groupId: number; isEmpty?: boolean }
 ): CardScore {
   const author = group.playerIds[0];
+  const reached = author !== undefined && state.affectedPlayers?.has(author) === true;
   return {
     groupSize: group.playerIds.length,
     isRejected: state.groupRejections?.has(group.groupId) === true,
@@ -83,7 +84,7 @@ export function toCardScore(
     isEmpty: group.isEmpty === true,
     speedShare: author === undefined ? 0 : speedShareOf(state, author),
     likes: state.groupLikes?.get(group.groupId)?.size ?? 0,
-    mult: state.mult ?? 1,
+    mult: reached ? (state.mult ?? 1) : 1,
   };
 }
 

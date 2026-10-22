@@ -246,3 +246,45 @@
 .Mine .Total {
   color: var(--Accent-Tint);
 }
+
+/* The room's winner, and only the board that ends the game names one: the line is worn in the
+ * room's own yellow rather than in the player's colour, so every screen in the room shows the
+ * same winner in the same wash and the win reads as the room's fact rather than as one
+ * viewer's accent. Written after the played line's own rule so the win outranks the accent the
+ * winner would otherwise be answered in on their own screen. */
+.Winner .Track {
+  background: var(--Color-Room-Yellow-Wash);
+}
+
+.Winner .Fill {
+  background-color: var(--Color-Room-Yellow-Wash-Hover);
+}
+
+.Winner .Place,
+.Winner .Name,
+.Winner .Total,
+.Winner .Round {
+  color: var(--Color-Room-Yellow-Ink);
+}
+
+/* A board that ended with nobody to name: the list wears the room's error pink, but mixed onto
+ * the page's own surface rather than on the same wash the page is painted in, so the rows read
+ * as cards standing above the wash instead of disappearing into it. Written last so it outranks
+ * even the local player's own row, which is still pink here. */
+.NoWinner .Track {
+  background: color-mix(in srgb, var(--Color-Feedback-Error) 8%, var(--Color-Surface-Default));
+}
+
+.NoWinner .Fill {
+  background-color: color-mix(
+    in srgb,
+    var(--Color-Feedback-Error) 18%,
+    var(--Color-Surface-Default)
+  );
+}
+
+.NoWinner .Name,
+.NoWinner .Total,
+.NoWinner .Round {
+  color: var(--Color-Feedback-Error);
+}

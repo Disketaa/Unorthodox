@@ -13,6 +13,9 @@ export interface TimerProps {
   /** How many seconds that is, as the room writes it. Passed in because a design component does
    * not know how a count is written in this room. */
   seconds: string;
+  /** The figure at the head of the line instead of the seconds: the winner's character where the
+   * phase names a player rather than counting down. */
+  badge?: ComponentChildren;
   /** Whether the phase is nearly out, which reddens the fill. The threshold is the game's
    * number, not this component's. */
   urgent?: boolean;
@@ -29,12 +32,14 @@ export interface TimerProps {
  * animation restarted by a class or a re-render would not restart at all. */
 function Content({
   seconds,
+  badge,
   className,
   hidden,
   clipRef,
   children,
 }: {
   seconds: string;
+  badge?: ComponentChildren;
   className: string;
   hidden?: boolean;
   clipRef?: Ref<HTMLDivElement>;
@@ -42,9 +47,15 @@ function Content({
 }) {
   return (
     <div class={className} aria-hidden={hidden} ref={clipRef}>
-      <span class={styles.Seconds} key={seconds}>
-        {seconds}
-      </span>
+      {badge !== undefined ? (
+        <span class={styles.Seconds} key="badge">
+          {badge}
+        </span>
+      ) : seconds !== '' ? (
+        <span class={styles.Seconds} key={seconds}>
+          {seconds}
+        </span>
+      ) : null}
       <span class={styles.Text}>{children}</span>
     </div>
   );
@@ -57,18 +68,14 @@ export function Timer({
   remainingMs,
   totalMs,
   seconds,
+  badge,
   urgent = false,
   beatSemitones = 0,
   tint,
   children,
 }: TimerProps) {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const barRef = useRef<HTMLDivElement>(null);
-  const inkRef = useRef<HTMLDivElement>(null);
-  const pct = shareLeft(remainingMs, totalMs);
-
-  useTimerFill(rootRef, barRef, inkRef, pct, tint);
-  useCountdownBeat({ remainingMs, totalMs, seconds, beatSemitones });
+  const [rootRef, barRef, inkRef] = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)]; const pct = shareLeft(remainingMs, totalMs);
+  useTimerFill(rootRef, barRef, inkRef, pct, tint); useCountdownBeat({ remainingMs, totalMs, seconds, beatSemitones });
 
   return (
     <div
@@ -80,11 +87,12 @@ export function Timer({
       aria-valuemax={100}
     >
       <div class={styles.Bar} ref={barRef} aria-hidden="true" />
-      <Content seconds={seconds} className={styles.Content}>
+      <Content seconds={seconds} badge={badge} className={styles.Content}>
         {children}
       </Content>
       <Content
         seconds={seconds}
+        badge={badge}
         className={`${styles.Content} ${styles.Filled}`}
         clipRef={inkRef}
         hidden

@@ -9,6 +9,7 @@ import breakUrl from './Break.ogg';
 import enchantUrl from './Enchant.ogg';
 import sadUrl from './Sad.ogg';
 import eatUrl from './Eat.ogg';
+import confettiUrl from './Confetti.ogg';
 
 export type SoundName =
   | 'Pop'
@@ -21,7 +22,8 @@ export type SoundName =
   | 'Break'
   | 'Enchant'
   | 'Sad'
-  | 'Eat';
+  | 'Eat'
+  | 'Confetti';
 
 export const SoundNames: readonly SoundName[] = [
   'Pop',
@@ -35,6 +37,7 @@ export const SoundNames: readonly SoundName[] = [
   'Enchant',
   'Sad',
   'Eat',
+  'Confetti',
 ];
 
 export const Sources: Record<SoundName, string> = {
@@ -49,6 +52,7 @@ export const Sources: Record<SoundName, string> = {
   Enchant: enchantUrl,
   Sad: sadUrl,
   Eat: eatUrl,
+  Confetti: confettiUrl,
 };
 
 /** Per clip, since the countdown's beat sits under the words rather than beside them: a tick at
@@ -65,6 +69,7 @@ export const Volumes: Record<SoundName, number> = {
   Enchant: 0.3,
   Sad: 0.3,
   Eat: 0.3,
+  Confetti: 0.3,
 };
 
 /** How far either side of the recorded pitch a press may land, in semitones. Wide enough that
@@ -99,4 +104,6 @@ export const PitchSpreads: Record<SoundName, number> = {
   /** Once a seat, and it is the moment a card pays the player: a clip that wandered in pitch
    * would say the round valued two different answers differently, which it did not. */
   Eat: 0,
+  /** Once a win, and it is the win itself: the same note every room hears. */
+  Confetti: 0,
 };

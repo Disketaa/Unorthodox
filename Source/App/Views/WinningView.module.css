@@ -14,6 +14,13 @@
   gap: var(--Space-Lg);
 }
 
+/* A held room stops the show where it stands: the card in flight keeps its pose and the winner's
+ * sway waits, rather than carrying on under the veil. The show's clock stops in the view. */
+.Paused,
+.Paused * {
+  animation-play-state: paused !important;
+}
+
 /* The winner, over the bank: the drawing as big as the room will give it and the name under it,
  * in the game's own face. A player rather than a card: this is the one thing the room is
  * looking at, and it is a person. */
@@ -35,6 +42,8 @@
 /* The character that stands where the bank was: wide enough to be seen on a phone, short enough
  * to fit beside the name on a wide screen, square either way. */
 .Portrait {
+  position: relative;
+  z-index: 1;
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
@@ -43,16 +52,58 @@
   justify-content: center;
 }
 .Portrait > * {
-  width: min(100cqw, 100cqh);
+  width: min(64cqw, 55cqh);
   aspect-ratio: 1;
 }
 
+/* The room that scored nothing has no winner to stand here, so the winner's place wears the
+ * room's cross instead of a player's drawing: the same mark a seat the round gave nothing to
+ * wears, so no winner is the one thing the room already knows it by. */
+.NoWinner {
+  background-color: var(--Color-Feedback-Error);
+  mask: url('../../Design/Icons/X.svg') center / contain no-repeat;
+}
+
+/* The name as a backdrop: the same word twice, once dark behind the figure and once a
+ * quarter-white over it, so the player stands inside their own name. Each copy fills the stage
+ * and centres the word on the figure, which is what lets the middle of the letters disappear
+ * behind the player and come back out around them. */
 .Name {
+  composes: Moving from '../../Design/Primitives/Sway/Sway.module.css';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 0 var(--Space-Md);
+  overflow: hidden;
+  pointer-events: none;
+  animation: var(--Sway-Animation);
+}
+
+/* One line of the name, measured into the stage by the same fit an answer on a card uses: a name
+ * wider than the screen is shrunk until it fits rather than cut off at the edge. */
+.NameText {
+  display: block;
+  width: 100%;
   font-family: var(--FontFamily-Display);
-  font-size: clamp(var(--FontSize-2xl, 32px), 8vw, var(--FontSize-4xl));
-  font-weight: 700;
-  color: var(--Color-Text-Default);
+  font-size: calc(min(30cqh, 26cqw) * var(--WinnerName-Fit, 1));
+  font-weight: 800;
+  line-height: 0.95;
   text-align: center;
+  white-space: nowrap;
+}
+
+.NameBehind {
+  z-index: 0;
+  color: var(--Color-Text-Default);
+}
+
+.NameAbove {
+  z-index: 2;
+  /* A tenth of black rather than a quarter white: over the black name behind it this only makes
+   * black a touch deeper, and over the wash it reads as the name's own faint shadow. */
+  color: var(--Color-Text-Default);
+  opacity: 0.1;
 }
 
 @keyframes WinnerIn {

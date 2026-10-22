@@ -1,11 +1,9 @@
 import type { ComponentChildren } from 'preact';
-import { ThemeId } from '@/Core';
 import { Stack } from '@/Design/Primitives';
-import type { GameSessionView } from '../Hooks/UseGameSession';
 import { PhaseInfoView } from './PhaseInfoView';
 import { PlayerBarView } from './PlayerBarView';
 import { QuestionOverlay } from './QuestionOverlay';
-import { ThemeCardsView } from './ThemeCardsView';
+import { ThemeCardsView, spentByTheme } from './ThemeCardsView';
 import { LeaderboardView } from './LeaderboardView';
 import { WinningView } from './WinningView';
 import { ReviewView } from './ReviewView';
@@ -97,12 +95,4 @@ export function WinningScene({ view }: PhaseViewProps) {
   );
 }
 
-/** The room's per-theme round counts as the map the cards read, built here because the state
- * arrives as the pairs it went out as. Nothing counted is an empty map rather than a full one,
- * so a room that has not played a round draws a bank of full bars. */
-function spentByTheme(state: GameSessionView['publicState']): Map<ThemeId, number> | undefined {
-  if (state === undefined) {
-    return undefined;
-  }
-  return new Map(state.spent.map(({ theme, rounds }) => [theme, rounds]));
-}
+

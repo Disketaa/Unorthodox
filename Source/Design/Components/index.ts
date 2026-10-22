@@ -27,3 +27,4 @@ export * from './ThemeLabel';
 export * from './Keyboard';
 export * from './GlintFlash';
 export * from './Leaderboard';
+export * from './Confetti';

@@ -46,13 +46,14 @@ export function startWriting(
   if (state?.phase !== 'Choosing') {
     return state ?? Game.freshLobbyState();
   }
+  void roomCode;
   log('info', 'starting writing', topic);
   return Game.reducer(state, {
     type: 'START_WRITING',
     topic,
     durationMs,
     startedAt: Date.now(),
-    mult: multByChoice(state, roomCode, state.theme),
+    // mult already committed by CHOOSE_THEME / RESOLVE_RANDOM_PICK
   });
 }
 
