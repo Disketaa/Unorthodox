@@ -1,6 +1,3 @@
-import type { JoinRoomConfig } from 'trystero';
-import { KeepPristineOffer } from './KeepPristineOffer';
-
 /** The relay this project runs, on a dedicated IP in Moscow. Announcing on it first means the
  * two peers of a room most likely meet here, and the public pool behind it only has to cover a
  * network this one is blocked from. */
@@ -48,17 +45,4 @@ export function iceServers(): RTCIceServer[] {
     ...StunUrls.map((url) => ({ urls: url })),
     { urls: TurnUrls, username: 'game', credential: TurnCredential },
   ];
-}
-
-/** Full trystero room configuration. `redundancy` is deliberately absent: trystero applies it
- * only when it picks relays from its own defaults, so setting it would look like a guarantee
- * that was never in effect. */
-export function roomConfig(appId: string): JoinRoomConfig {
-  return {
-    appId,
-    // @ts-expect-error - KeepPristineOffer is a compatible RTCPeerConnection constructor
-    rtcPolyfill: KeepPristineOffer,
-    relayConfig: { urls: relayPool(), warnOnRelayFailure: true },
-    rtcConfig: { iceServers: iceServers() },
-  };
 }

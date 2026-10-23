@@ -7,10 +7,10 @@ Do not improvise beyond this document. If something is missing, pick the simples
 - Room creator is the "host". Their browser owns game state and broadcasts it to others. Their UI is the same as everyone else's, plus a "Start" button.
 - Cycle: Lobby → Writing (topic, 60s, input field) → Reviewing (answers open simultaneously, duplicates grouped, players can reject) → Scores → next round → Final.
 - Scoring: 1 unique answer → 3 points, 2 → 1, 3+ → 0. Rejected group → 0. All numbers live ONLY in `GameConfig`.
-- No backend. Static only.
+- No backend beyond one stateless relay on own VPS. It forwards messages and holds no game state.
 
 # STACK (fixed)
-Vite, TypeScript (strict), Preact, CSS Modules, Vitest, ESLint, Prettier, Trystero.
+Vite, TypeScript (strict), Preact, CSS Modules, Vitest, ESLint, Prettier, ws (relay server only).
 No UI libraries, Tailwind, CSS-in-JS, state managers. New dependency only with the reason stated where it is added.
 Before writing network adapter, read current Trystero docs (pin exact version, no `^`). Do not write its API from memory.
 
@@ -48,7 +48,7 @@ Source/
   Core/        Base types (PlayerId, GroupId), Result, assertNever. Depends on nothing.
   Content/     Topics.ts (topic bank), Strings.ts (all UI text).
   Game/        PURE logic: phases, reducer, scoring, normalization, GameConfig.
-  Network/     Transport (interface), TrysteroTransport, InMemoryTransport, Protocol, HostSession, ClientSession.
+  Network/     Transport (interface), RelayTransport, InMemoryTransport, Protocol, HostSession, ClientSession.
   Design/      Tokens.css, Primitives/, Components/. Knows nothing about Game and Network.
   Screens/     JoinScreen, LobbyScreen, WritingScreen, ReviewScreen, ScoresScreen, FinalScreen, HostLeftScreen. Receive data ONLY via props.
                Screens may hold local UI state only inside a sub-component (e.g. the answer draft in `AnswerInput`), never game state.
@@ -82,12 +82,12 @@ Naming rules enforced by linter (`@typescript-eslint/naming-convention` + `eslin
 6. Mobile-first: `dvh` instead of `vh`, font size in inputs ≥16px, touch targets ≥44px, `:focus-visible` states described by tokens.
 
 # NETWORK AND PROTOCOL
-- All network hidden behind `Transport` interface: `sendToHost`, `sendToPlayer`, `broadcast`, `onMessage`, `onPeerLeave`. Implementations: `TrysteroTransport` (only place `trystero` is imported) and `InMemoryTransport` (for whole-game tests without network).
+- All network hidden behind `Transport` interface: `sendToHost`, `sendToPlayer`, `broadcast`, `onMessage`, `onPeerLeave`. Implementations: `RelayTransport` (only place `ws` is imported) and `InMemoryTransport` (for whole-game tests without network).
 - Messages are discriminated unions (`ClientMessage`, `HostMessage`) in `Network/Protocol.ts`. Every incoming message passes type guard. Invalid silently discarded.
 - Host is authoritative. `HostGameState` (with all answers) never leaves host. Outside goes only `PublicGameState`, assembled by `toPublicState` per phase. In Writing, clients see only `submittedCount`, answers only in Reviewing.
 - Time: host sends `{ phase: "Writing", durationMs }` once. Client records `performance.now()` on receipt and counts remainder locally (device clocks not synced). Host closes phase by its timer and accepts late answers until `GameConfig.timing.graceMs`.
 - Player input: name ≤16 chars, answer ≤80, all trimmed. User text rendered as text only, `dangerouslySetInnerHTML` forbidden.
-- Room code: 4 letters, no lookalikes (no O/0, I/1). Also Trystero room name. `appId` unique to project, lives in constant.
+- Room code: 4 letters, no lookalikes (no O/0, I/1). Also relay room name. `appId` unique to project, lives in constant.
 - Group ids are plain `number`s end to end (they are indices into the grouped answer list). The `GroupId` string type in `Core/Types.ts` is unused and exists only as a placeholder.
 - Routing: hash (`#/Join/ABCD`, `#/Gallery`), because GitHub Pages does not SPA path rewriting.
 - Out of v1 scope (do not implement, only do not block): player reconnect, host migration. If host leaves, show "Host left" screen.

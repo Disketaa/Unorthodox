@@ -10,7 +10,6 @@ import { useMusic, useQuietMusic } from '@/Design/Music';
 import { DiagnosticsPanel } from './Views/DiagnosticsPanel';
 import { useAccent } from './Hooks/UseAccent';
 import { hostsRoom, rememberHosting } from '@/Network/RoomOwnership';
-import { warmRelays } from '@/Network';
 import { createRoomCode, normalizeRoomCode } from './RoomCode';
 import { loadLook } from './LookStorage';
 import { navigate, parseRoute, roomPath, Route } from './Routes';
@@ -140,10 +139,6 @@ export function App() {
   const [look, setLook] = useState<PlayerLook>(() => loadLook() ?? randomLook(Math.random));
   const { accent, onLook: onAccentLook } = useAccent();
 
-  // Dialing the relays takes a phone about three seconds, so it starts with the page rather
-  // than with the join: by the time a name and a code are typed, the burst that introduces this
-  // peer to a room lands on sockets that are already open.
-  useEffect(warmRelays, []);
   // The gallery is the one place that asks for no music in as many words; every
   // other screen shares its track with the last one or hands over to another.
   useQuietMusic(route.kind === 'Gallery');

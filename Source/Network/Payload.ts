@@ -1,4 +1,5 @@
-import type { JsonValue } from 'trystero';
+/** JSON-serialisable value, the only thing the relay carries. */
+type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
 /** Best-effort label for a protocol message, used only in log lines. Falls back to the primitive
  * type for anything that is not a tagged protocol message. */

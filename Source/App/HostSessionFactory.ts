@@ -1,4 +1,4 @@
-import { HostPlayerId, HostSession, TrysteroTransport } from '@/Network';
+import { HostPlayerId, HostSession, RelayTransport } from '@/Network';
 import { GameConfig, toPublicState } from '@/Game';
 import { PlayerLook } from '@/Core';
 import { Session } from './Session';
@@ -122,7 +122,7 @@ export function createHostSession(
   playerName: string,
   look: PlayerLook
 ): Session {
-  const hostSession = new HostSession(new TrysteroTransport());
+  const hostSession = new HostSession(new RelayTransport());
   hostSession.start(roomCode, playerName, look);
   return {
     ...hostIdentity(hostSession),

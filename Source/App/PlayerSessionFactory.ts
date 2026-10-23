@@ -1,4 +1,4 @@
-import { ClientSession, TrysteroTransport } from '@/Network';
+import { ClientSession, RelayTransport } from '@/Network';
 import { PlayerLook } from '@/Core';
 import { Session } from './Session';
 
@@ -110,7 +110,7 @@ export function createPlayerSession(
   playerName: string,
   look: PlayerLook
 ): Session {
-  const clientSession = new ClientSession(new TrysteroTransport());
+  const clientSession = new ClientSession(new RelayTransport());
   clientSession.start(roomCode, playerName);
   clientSession.join(playerName.trim(), look);
   return {

@@ -2,8 +2,7 @@ import { createLogger, setLogLevel } from '@/Core';
 import { relayPool, iceServers } from './Signaling';
 import { fold, note, reportLine } from './Report';
 import { reportClockSkew, reportIceGathering } from './PeerWatch';
-import { getRelaySockets } from 'trystero';
-import { watchRelayFrames, probeEnvironment, frameCountSnapshot } from './ConnectionWatch';
+import { probeEnvironment, frameCountSnapshot } from './ConnectionWatch';
 
 const log = createLogger('Diagnostics');
 
@@ -62,34 +61,11 @@ export function setDebugEnabled(enabled: boolean): void {
   log(enabled ? 'info' : 'warn', enabled ? 'debug logging on' : 'debug logging off');
 }
 
-/** Read the relay socket table from the installed trystero nostr strategy. The table maps a
- * relay URL to the live `WebSocket` for it, so a missing entry means the relay has not been
- * dialled yet, or has been dropped for good. */
+/** Relay socket states. With the self-hosted relay there is no trystero socket table to inspect,
+ * so this returns an empty record. Relay frame watching is wired per-connection in
+ * RelayTransport instead. */
 function relayStates(): Record<string, string> {
-  const states: Record<string, string> = {};
-  const table = getRelaySockets();
-  if (typeof table !== 'object' || table === null) {
-    return states;
-  }
-  for (const [url, entry] of Object.entries(table)) {
-    const socket = readSocket(entry);
-    if (socket) watchRelayFrames(url, socket);
-    states[url] = socketState(socket);
-  }
-  return states;
-}
-
-/** Read a readyState off a socket table entry without casting it. */
-function readSocket(entry: unknown): WebSocket | undefined {
-  return entry instanceof WebSocket ? entry : undefined;
-}
-
-/** WebSocket readyState as a readable label. */
-function socketState(socket: WebSocket | undefined): string {
-  if (!socket) {
-    return 'absent';
-  }
-  return ['connecting', 'open', 'closing', 'closed'][socket.readyState] ?? 'unknown';
+  return {};
 }
 
 function peerStates(getPeers: () => Record<string, RTCPeerConnection>): Record<string, string> {

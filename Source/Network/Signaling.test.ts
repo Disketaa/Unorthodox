@@ -1,15 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  OwnRelayUrl,
-  RelayUrls,
-  StunUrls,
-  TurnUrls,
-  iceServers,
-  relayPool,
-  roomConfig,
-} from './Signaling';
-
-const appId = 'unorthodox-game';
+import { OwnRelayUrl, RelayUrls, StunUrls, TurnUrls, iceServers, relayPool } from './Signaling';
 
 function urlsOf(servers: RTCIceServer[]): string[] {
   return servers.map(
@@ -47,10 +37,6 @@ describe('Signaling relays', () => {
       false
     );
   });
-
-  it('carries the pool into the room configuration', () => {
-    expect(roomConfig(appId).relayConfig?.urls).toEqual(relayPool());
-  });
 });
 
 describe('ICE servers', () => {
@@ -82,23 +68,5 @@ describe('ICE servers', () => {
     // fallback only exists so a clone runs locally without an env file.
     expect(TurnUrls).toBeDefined();
     expect(iceServers().some((server) => server.username === 'game')).toBe(true);
-  });
-});
-
-describe('Room configuration', () => {
-  it('passes an explicit ICE server list, so the library defaults are replaced', () => {
-    expect(roomConfig(appId).rtcConfig?.iceServers).toBeDefined();
-  });
-
-  it('keeps the relay failure warnings on, since they are the only signal', () => {
-    expect(roomConfig(appId).relayConfig?.warnOnRelayFailure).toBe(true);
-  });
-
-  it('sets no redundancy, which trystero would ignore once urls are given', () => {
-    expect(roomConfig(appId).relayConfig?.redundancy).toBeUndefined();
-  });
-
-  it('carries the app id through, so peers find the same room', () => {
-    expect(roomConfig(appId).appId).toBe(appId);
   });
 });
