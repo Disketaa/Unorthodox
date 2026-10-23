@@ -1,3 +1,4 @@
+import { ComponentChildren } from 'preact';
 import { Banner, BannerMark, BannerVariant, Button } from '@/Design/Components';
 import { Screen, Stack } from '@/Design/Primitives';
 import { Strings } from '@/Content';
@@ -19,6 +20,9 @@ export interface InfoScreenProps {
    * A screen reporting that the wait has failed takes the error fill, so the colour is what
    * says the wait is over rather than the sentence having to. */
   variant?: BannerVariant;
+  /** Anything the screen needs to offer besides the way out, such as copying the connection
+   * report. Kept below the action so the way out stays the last thing under the thumb. */
+  children?: ComponentChildren;
 }
 
 /** The screen shown in place of the game when there is nothing to play. One screen for every
@@ -30,6 +34,7 @@ export function InfoScreen({
   mark = 'Info',
   action,
   variant = 'Info',
+  children,
 }: InfoScreenProps) {
   return (
     <Screen vertical="Center">
@@ -40,6 +45,7 @@ export function InfoScreen({
         <Button variant="Primary" size="Large" onClick={onAcknowledge}>
           {action ?? Strings.common.ok}
         </Button>
+        {children}
       </Stack>
     </Screen>
   );

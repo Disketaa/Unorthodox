@@ -1,21 +1,20 @@
 import { Transport } from './Transport';
+import {
+  RelayUrl,
+  relayClosed,
+  relayConnecting,
+  relayDropped,
+  relayError,
+  relayHostLeft,
+  relayIdle,
+  relayOpen,
+  relayOpened,
+  relayReconnectScheduled,
+} from './RelayLog';
+import type { ClientFrame, ServerFrame } from './RelayFrames';
 
-type ClientFrame =
-  | { type: 'Open'; room: string; role: 'Host' | 'Player' }
-  | { type: 'ToHost'; data: unknown }
-  | { type: 'ToPeer'; peerId: string; data: unknown }
-  | { type: 'Broadcast'; data: unknown };
-
-type ServerFrame =
-  | { type: 'Opened'; peerId: string; hostPresent: boolean }
-  | { type: 'HostReady' }
-  | { type: 'PeerLeft'; peerId: string }
-  | { type: 'HostLeft' }
-  | { type: 'Data'; fromHost: boolean; peerId: string; data: unknown };
-
-/** WebSocket transport to the self-hosted relay on the VPS. Replaces TrysteroTransport. One
- * WebSocket per browser, one room per WebSocket. The relay routes messages between host and
- * clients; the host is authoritative and never leaves. */
+/** WebSocket transport to the self-hosted relay on the VPS. One WebSocket per browser, one room
+ * per WebSocket. The relay routes messages between host and clients. */
 export class RelayTransport implements Transport {
   private ws: WebSocket | null = null;
   private playerId = '';
@@ -66,23 +65,27 @@ export class RelayTransport implements Transport {
   }
 
   private connect(roomCode: string, isHost: boolean): void {
-    const url = `wss://relay.144-31-61-203.sslip.io/game`;
+    const url = RelayUrl;
+    relayConnecting(this.reconnectAttempts + 1);
     const ws = new WebSocket(url);
     this.ws = ws;
     ws.binaryType = 'arraybuffer';
     ws.onopen = () => {
       if (this.ws !== ws) return;
       this.reconnectAttempts = 0;
+      relayOpen();
       this.send({ type: 'Open', room: roomCode, role: isHost ? 'Host' : 'Player' });
     };
     ws.onmessage = (event: MessageEvent) => this.onWebSocketMessage(event);
-    ws.onclose = () => {
+    ws.onclose = (event: CloseEvent) => {
       if (this.ws !== ws) return;
       this.hostPresent = false;
       this.ws = null;
+      relayClosed(event.code, event.reason, event.wasClean);
       this.scheduleReconnect(roomCode, isHost);
     };
     ws.onerror = () => {
+      relayError(ws.readyState);
       this.hostPresent = false;
       ws.close();
     };
@@ -99,6 +102,7 @@ export class RelayTransport implements Transport {
     switch (frame.type) {
       case 'Opened':
         this.hostPresent = frame.hostPresent;
+        relayOpened(frame.hostPresent);
         if (frame.hostPresent && this.onHostReadyCb) this.onHostReadyCb();
         break;
       case 'HostReady':
@@ -110,6 +114,7 @@ export class RelayTransport implements Transport {
         break;
       case 'HostLeft':
         this.hostPresent = false;
+        relayHostLeft();
         if (this.onHostLeaveCb) this.onHostLeaveCb();
         break;
       case 'Data':
@@ -126,6 +131,7 @@ export class RelayTransport implements Transport {
     const ws = this.ws;
     this.ws = null;
     this.hostPresent = false;
+    relayIdle();
     if (ws) {
       ws.onopen = ws.onmessage = ws.onclose = ws.onerror = null;
       ws.close();
@@ -143,6 +149,8 @@ export class RelayTransport implements Transport {
   private send(frame: ClientFrame): void {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(frame));
+    } else {
+      relayDropped(frame.type);
     }
   }
 
@@ -150,6 +158,7 @@ export class RelayTransport implements Transport {
     if (this.reconnectTimeout !== null) return;
     this.reconnectAttempts++;
     const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts - 1), 30_000);
+    relayReconnectScheduled(delay, this.reconnectAttempts);
     this.reconnectTimeout = setTimeout(() => {
       this.reconnectTimeout = null;
       this.connect(roomCode, isHost);

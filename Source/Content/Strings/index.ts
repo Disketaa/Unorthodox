@@ -11,6 +11,7 @@ import { phase } from './Game';
 import { final } from './Game';
 import { status } from './Game';
 import { effects } from './Game';
+import { diagnostics } from './Game';
 
 /** All user-visible text. Screens and App must not contain literal strings. */
 export const Strings = {
@@ -44,5 +45,6 @@ export const Strings = {
   phase,
   final,
   status,
+  diagnostics,
   effects,
 } as const;

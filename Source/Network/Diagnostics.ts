@@ -3,6 +3,7 @@ import { relayPool, iceServers } from './Signaling';
 import { fold, note, reportLine } from './Report';
 import { reportClockSkew, reportIceGathering } from './PeerWatch';
 import { probeEnvironment, frameCountSnapshot } from './ConnectionWatch';
+import { relayStateSnapshot } from './RelayLog';
 
 const log = createLogger('Diagnostics');
 
@@ -61,13 +62,6 @@ export function setDebugEnabled(enabled: boolean): void {
   log(enabled ? 'info' : 'warn', enabled ? 'debug logging on' : 'debug logging off');
 }
 
-/** Relay socket states. With the self-hosted relay there is no trystero socket table to inspect,
- * so this returns an empty record. Relay frame watching is wired per-connection in
- * RelayTransport instead. */
-function relayStates(): Record<string, string> {
-  return {};
-}
-
 function peerStates(getPeers: () => Record<string, RTCPeerConnection>): Record<string, string> {
   const states: Record<string, string> = {};
   for (const [peerId, connection] of Object.entries(getPeers())) {
@@ -76,9 +70,7 @@ function peerStates(getPeers: () => Record<string, RTCPeerConnection>): Record<s
   return states;
 }
 
-/** Last state reported for each relay, so a change is logged once instead of on every tick.
- * Trystero retires a relay permanently once its reconnect backoff runs out, so one going from
- * open to closed never comes back this session and is worth saying out loud. */
+/** Last state reported for each relay, so a change is logged once instead of on every tick. */
 const lastRelayState = new Map<string, string>();
 
 /** Log a relay transition the first time it is seen. */
@@ -88,18 +80,20 @@ function reportRelayChanges(states: Record<string, string>): void {
       continue;
     }
     lastRelayState.set(url, state);
-    if (state === 'closed') {
-      note('warn', `relay ${url} closed and will not be retried until reload`);
-    } else if (state === 'open') {
+    if (state === 'open') {
       note('info', `relay ${url} is open`);
-    } else if (state === 'failed') {
-      note('warn', `relay ${url} could not be reached`);
+    } else if (state === 'connecting') {
+      note('info', `relay ${url} is connecting`);
+    } else if (state === 'closed') {
+      note('warn', `relay ${url} is closed, retrying`);
+    } else if (state === 'error') {
+      note('warn', `relay ${url} reported an error`);
     }
   }
 }
 
 function snapshot(label: string, getPeers: () => Record<string, RTCPeerConnection>): void {
-  const relays = relayStates();
+  const relays = relayStateSnapshot();
   const peers = peerStates(getPeers);
   const open = Object.values(relays).filter((state) => state === 'open').length;
   note(
@@ -142,7 +136,7 @@ export function startDiagnostics(
   // into the report and only the original call is passed on; logging here would recurse.
   const consoleWarn = console.warn.bind(console);
   console.warn = (...args: unknown[]) => {
-    const { stamp, body } = reportLine('warn', 'trystero', args);
+    const { stamp, body } = reportLine('warn', 'console', args);
     fold(stamp, body);
     consoleWarn(...args);
   };

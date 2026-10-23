@@ -1,1 +1,1 @@
-export { DiagnosticsPanel } from './DiagnosticsPanel';
+export { CopyConnectionReport } from './DiagnosticsPanel';

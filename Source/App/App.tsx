@@ -7,7 +7,6 @@ import type { JoinScreenProps } from '@/Screens';
 import { AccentProvider } from '@/Design/Accent';
 import { GlyphField, PaperBackground } from '@/Design/Overlays';
 import { useMusic, useQuietMusic } from '@/Design/Music';
-import { DiagnosticsPanel } from './Views/DiagnosticsPanel';
 import { useAccent } from './Hooks/UseAccent';
 import { hostsRoom, rememberHosting } from '@/Network/RoomOwnership';
 import { createRoomCode, normalizeRoomCode } from './RoomCode';
@@ -81,7 +80,7 @@ function Entry(props: JoinScreenProps) {
   useMusic('Menu');
   return (
     <WithBackground>
-      <JoinScreen {...props} diagnostics={<DiagnosticsPanel />} />
+      <JoinScreen {...props} />
     </WithBackground>
   );
 }

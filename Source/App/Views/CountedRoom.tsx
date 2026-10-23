@@ -19,6 +19,7 @@ import { useStartCountdown } from '../Hooks/UseStartCountdown';
 import { usePhaseSplash } from '../Hooks/UsePhaseSplash';
 import { useEnchantedArrival } from '../Hooks/UseEnchantedArrival';
 import { BlockedReason } from '../Session';
+import { CopyConnectionReport } from './DiagnosticsPanel';
 import { gameOverOf } from './GameOver';
 import { LobbyView } from './LobbyView';
 import { EnchantFlash } from './EnchantFlash';
@@ -47,7 +48,9 @@ function ConnectingScreen({ view }: { view: GameSessionView }) {
         variant="Error"
         action={Strings.common.cancel}
         onAcknowledge={view.exitRoom}
-      />
+      >
+        <CopyConnectionReport />
+      </InfoScreen>
     );
   }
   return (
@@ -56,7 +59,9 @@ function ConnectingScreen({ view }: { view: GameSessionView }) {
       mark="Loading"
       action={Strings.common.cancel}
       onAcknowledge={view.exitRoom}
-    />
+    >
+      <CopyConnectionReport />
+    </InfoScreen>
   );
 }
 

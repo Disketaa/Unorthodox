@@ -169,6 +169,13 @@ export const status = {
   clockUnchecked: 'Время не синхронизировано.',
 };
 
+/** The one control that hands a stuck join over to whoever can read it. */
+export const diagnostics = {
+  copy: 'Скопировать отчёт о соединении',
+  copied: 'Отчёт скопирован',
+  failed: 'Не удалось скопировать',
+};
+
 /** What each enchantment is called, in the player's language. */
 export const effects = {
   alone: 'Выбирающему',
