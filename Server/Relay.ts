@@ -20,6 +20,10 @@ interface Room {
   hostGone?: ReturnType<typeof setTimeout>;
 }
 
+/** How long a room survives its host's socket dropping. A phone or a VPN tunnel blips for longer
+ * than a second, and a room torn down on the first blip is worse than one that waits. */
+const HostGraceMs = 10_000;
+
 const rooms = new Map<string, Room>();
 const peerIdOf = new WeakMap<WebSocket, string>();
 const roomOf = new WeakMap<WebSocket, string>();
@@ -66,13 +70,18 @@ function onOpen(ws: WebSocket): void {
           if (r.hostGone) {
             clearTimeout(r.hostGone);
             r.hostGone = undefined;
+            console.log(`host returned room=${room} peer=${peerId}`);
           }
           r.host = ws;
           send(ws, { type: 'Opened', peerId, hostPresent: true });
           broadcastRoom(room, { type: 'HostReady' }, ws);
+          console.log(`open room=${room} role=Host peer=${peerId} peers=${r.peers.size}`);
         } else {
           r.peers.set(peerId, ws);
           send(ws, { type: 'Opened', peerId, hostPresent: r.host !== null });
+          console.log(
+            `open room=${room} role=Player peer=${peerId} host=${r.host !== null} peers=${r.peers.size}`
+          );
         }
         break;
       }
@@ -98,19 +107,26 @@ function onOpen(ws: WebSocket): void {
       }
     }
   });
-  ws.on('close', () => {
+  ws.on('close', (code: number, reason: Buffer) => {
     const room = roomOf.get(ws);
     if (!room) return;
     const r = rooms.get(room);
     if (!r) return;
-    if (r.host === ws) {
+    const wasHost = r.host === ws;
+    console.log(
+      `close room=${room} peer=${peerId} code=${code} reason=${reason.toString() || '(none)'} role=${
+        wasHost ? 'Host' : 'Player'
+      }`
+    );
+    if (wasHost) {
       r.host = null;
       r.hostGone = setTimeout(() => {
         r.hostGone = undefined;
         if (r.host !== null) return;
+        console.log(`host gone room=${room} telling ${r.peers.size} peers`);
         broadcastRoom(room, { type: 'HostLeft' });
         if (r.peers.size === 0) rooms.delete(room);
-      }, 3000);
+      }, HostGraceMs);
     } else if (r.peers.delete(peerId)) {
       broadcastRoom(room, { type: 'PeerLeft', peerId }, ws);
       if (r.host === null && r.peers.size === 0) rooms.delete(room);

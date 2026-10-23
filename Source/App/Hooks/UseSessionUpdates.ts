@@ -12,6 +12,7 @@ export function useSessionUpdates(
   useEffect(() => {
     session.onUpdate(() => setVersion((version) => version + 1));
     session.onHostLeave(() => setHostLeft(true));
+    session.onHostBack(() => setHostLeft(false));
     return () => session.stop();
   }, [session]);
 }

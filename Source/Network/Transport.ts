@@ -13,6 +13,9 @@ export interface Transport {
   onPeerLeave(callback: (playerId: string) => void): void;
   /** Set callback for when the host leaves */
   onHostLeave(callback: () => void): void;
+  /** Set callback for when the host is reachable again after a leave, so a transient tunnel blip
+   * does not leave the room closed on this device forever. */
+  onHostBack?(callback: () => void): void;
   /** Set callback for when the host first becomes addressable, so a message held back for lack
    * of a route can be sent straight away rather than on the next retry. Only clients receive
    * this. */

@@ -21,6 +21,8 @@ export interface Session {
   getClockOffsetMs(): number;
   onUpdate(listener: () => void): void;
   onHostLeave(listener: () => void): void;
+  /** The host is reachable again after a leave, so the room can reopen on this screen. */
+  onHostBack(listener: () => void): void;
   /** Why this player is not in the room, or undefined if they are in one. */
   getBlocked(): BlockedReason | undefined;
   /** What this device can say about a wait that is going on too long, or undefined while it is

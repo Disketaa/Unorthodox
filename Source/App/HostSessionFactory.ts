@@ -25,6 +25,7 @@ function hostIdentity(
   | 'getClockOffsetMs'
   | 'onUpdate'
   | 'onHostLeave'
+  | 'onHostBack'
   | 'getBlocked'
   | 'getConnectionHint'
   | 'getRoomLimit'
@@ -37,6 +38,7 @@ function hostIdentity(
     getClockOffsetMs: () => 0,
     onUpdate: (listener) => hostSession.onUpdate(listener),
     onHostLeave: () => {},
+    onHostBack: () => {},
     getBlocked: () => undefined,
     getConnectionHint: () => undefined,
     getRoomLimit: () => GameConfig.limits.maxPlayers,

@@ -43,6 +43,7 @@ function playerSeat(
   | 'getClockOffsetMs'
   | 'onUpdate'
   | 'onHostLeave'
+  | 'onHostBack'
   | 'getBlocked'
   | 'getConnectionHint'
   | 'getRoomLimit'
@@ -55,6 +56,7 @@ function playerSeat(
     getClockOffsetMs: () => clientSession.getClockOffsetMs(),
     onUpdate: (listener) => clientSession.onUpdate(listener),
     onHostLeave: (listener) => clientSession.onHostLeave(listener),
+    onHostBack: (listener) => clientSession.onHostBack(listener),
     getBlocked: () => clientSession.getBlocked(),
     getConnectionHint: () => clientSession.getConnectionHint(),
     getRoomLimit: () => clientSession.getRoomLimit(),

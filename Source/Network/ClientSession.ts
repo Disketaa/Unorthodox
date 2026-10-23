@@ -63,6 +63,11 @@ export class ClientSession {
     this.transport.onHostLeave(() => listener());
   }
 
+  /** The host is back; the screen that said the room had closed can go away. */
+  onHostBack(listener: () => void): void {
+    this.transport.onHostBack?.(() => listener());
+  }
+
   requestSync(): void {
     if (this.inbox.playerId === null) return;
     log('debug', 'asking the host for a state sync');

@@ -14,6 +14,7 @@ export class RelayTransport implements Transport {
   private onPeerLeaveCb: ((playerId: string) => void) | undefined;
   private onHostReadyCb: (() => void) | undefined;
   private onHostLeaveCb: (() => void) | undefined;
+  private onHostBackCb: (() => void) | undefined;
 
   sendToHost(message: unknown): void {
     this.socket?.send({ type: 'ToHost', data: message });
@@ -41,6 +42,10 @@ export class RelayTransport implements Transport {
 
   onHostLeave(callback: () => void): void {
     this.onHostLeaveCb = callback;
+  }
+
+  onHostBack(callback: () => void): void {
+    this.onHostBackCb = callback;
   }
 
   isHostAddressable(): boolean {
@@ -72,12 +77,16 @@ export class RelayTransport implements Transport {
       opened: (hostPresent) => {
         this.hostPresent = hostPresent;
         relayOpened(hostPresent);
-        if (hostPresent) this.onHostReadyCb?.();
+        if (hostPresent) {
+          this.onHostReadyCb?.();
+          this.onHostBackCb?.();
+        }
       },
       hostReady: () => {
         this.hostPresent = true;
         relayHostReady();
         this.onHostReadyCb?.();
+        this.onHostBackCb?.();
       },
       peerLeft: (peerId) => {
         relayPeerLeft(peerId);
