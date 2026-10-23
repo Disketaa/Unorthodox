@@ -1,22 +1,12 @@
 import { Transport } from './Transport';
-import {
-  RelayUrl,
-  relayClosed,
-  relayConnecting,
-  relayDropped,
-  relayError,
-  relayHostLeft,
-  relayIdle,
-  relayOpen,
-  relayOpened,
-  relayReconnectScheduled,
-} from './RelayLog';
-import type { ClientFrame, ServerFrame } from './RelayFrames';
+import { dispatchFrame, type ServerFrame } from './RelayFrames';
+import { RelaySocket } from './RelaySocket';
+import { relayHostLeft, relayOpened, relayReachable } from './RelayLog';
 
-/** WebSocket transport to the self-hosted relay on the VPS. One WebSocket per browser, one room
- * per WebSocket. The relay routes messages between host and clients. */
+/** WebSocket transport to the self-hosted relay on the VPS. One socket per browser and one room
+ * per socket; the host is authoritative and the relay only routes between the two sides. */
 export class RelayTransport implements Transport {
-  private ws: WebSocket | null = null;
+  private socket: RelaySocket | null = null;
   private playerId = '';
   private hostPresent = false;
   private onMessageCb:
@@ -24,19 +14,17 @@ export class RelayTransport implements Transport {
   private onPeerLeaveCb: ((playerId: string) => void) | undefined;
   private onHostReadyCb: (() => void) | undefined;
   private onHostLeaveCb: (() => void) | undefined;
-  private reconnectTimeout: number | null = null;
-  private reconnectAttempts = 0;
 
   sendToHost(message: unknown): void {
-    this.send({ type: 'ToHost', data: message });
+    this.socket?.send({ type: 'ToHost', data: message });
   }
 
   sendToPeer(peerId: string, message: unknown): void {
-    this.send({ type: 'ToPeer', peerId, data: message });
+    this.socket?.send({ type: 'ToPeer', peerId, data: message });
   }
 
   broadcast(message: unknown): void {
-    this.send({ type: 'Broadcast', data: message });
+    this.socket?.send({ type: 'Broadcast', data: message });
   }
 
   onMessage(callback: (message: unknown, fromHost: boolean, peerId: string) => void): void {
@@ -59,39 +47,19 @@ export class RelayTransport implements Transport {
     return this.hostPresent;
   }
 
+  isRelayReachable(): boolean {
+    return relayReachable();
+  }
+
   start(roomCode: string, _playerName: string, isHost: boolean): void {
     this.stop();
-    this.connect(roomCode, isHost);
+    this.socket = new RelaySocket(roomCode, isHost, {
+      onFrame: (event) => this.onFrame(event),
+    });
+    this.socket.start();
   }
 
-  private connect(roomCode: string, isHost: boolean): void {
-    const url = RelayUrl;
-    relayConnecting(this.reconnectAttempts + 1);
-    const ws = new WebSocket(url);
-    this.ws = ws;
-    ws.binaryType = 'arraybuffer';
-    ws.onopen = () => {
-      if (this.ws !== ws) return;
-      this.reconnectAttempts = 0;
-      relayOpen();
-      this.send({ type: 'Open', room: roomCode, role: isHost ? 'Host' : 'Player' });
-    };
-    ws.onmessage = (event: MessageEvent) => this.onWebSocketMessage(event);
-    ws.onclose = (event: CloseEvent) => {
-      if (this.ws !== ws) return;
-      this.hostPresent = false;
-      this.ws = null;
-      relayClosed(event.code, event.reason, event.wasClean);
-      this.scheduleReconnect(roomCode, isHost);
-    };
-    ws.onerror = () => {
-      relayError(ws.readyState);
-      this.hostPresent = false;
-      ws.close();
-    };
-  }
-
-  private onWebSocketMessage(event: MessageEvent): void {
+  private onFrame(event: MessageEvent): void {
     if (typeof event.data !== 'string') return;
     let frame: ServerFrame;
     try {
@@ -99,43 +67,30 @@ export class RelayTransport implements Transport {
     } catch {
       return;
     }
-    switch (frame.type) {
-      case 'Opened':
-        this.hostPresent = frame.hostPresent;
-        relayOpened(frame.hostPresent);
-        if (frame.hostPresent && this.onHostReadyCb) this.onHostReadyCb();
-        break;
-      case 'HostReady':
+    dispatchFrame(frame, {
+      opened: (hostPresent) => {
+        this.hostPresent = hostPresent;
+        relayOpened(hostPresent);
+        if (hostPresent) this.onHostReadyCb?.();
+      },
+      hostReady: () => {
         this.hostPresent = true;
-        if (this.onHostReadyCb) this.onHostReadyCb();
-        break;
-      case 'PeerLeft':
-        if (this.onPeerLeaveCb) this.onPeerLeaveCb(frame.peerId);
-        break;
-      case 'HostLeft':
+        this.onHostReadyCb?.();
+      },
+      peerLeft: (peerId) => this.onPeerLeaveCb?.(peerId),
+      hostLeft: () => {
         this.hostPresent = false;
         relayHostLeft();
-        if (this.onHostLeaveCb) this.onHostLeaveCb();
-        break;
-      case 'Data':
-        if (this.onMessageCb) this.onMessageCb(frame.data, frame.fromHost, frame.peerId);
-        break;
-    }
+        this.onHostLeaveCb?.();
+      },
+      data: (data, fromHost, peerId) => this.onMessageCb?.(data, fromHost, peerId),
+    });
   }
 
   stop(): void {
-    if (this.reconnectTimeout !== null) {
-      clearTimeout(this.reconnectTimeout);
-      this.reconnectTimeout = null;
-    }
-    const ws = this.ws;
-    this.ws = null;
+    this.socket?.stop();
+    this.socket = null;
     this.hostPresent = false;
-    relayIdle();
-    if (ws) {
-      ws.onopen = ws.onmessage = ws.onclose = ws.onerror = null;
-      ws.close();
-    }
   }
 
   setPlayerId(playerId: string): void {
@@ -144,24 +99,5 @@ export class RelayTransport implements Transport {
 
   getPlayerId(): string | null {
     return this.playerId || null;
-  }
-
-  private send(frame: ClientFrame): void {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(frame));
-    } else {
-      relayDropped(frame.type);
-    }
-  }
-
-  private scheduleReconnect(roomCode: string, isHost: boolean): void {
-    if (this.reconnectTimeout !== null) return;
-    this.reconnectAttempts++;
-    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts - 1), 30_000);
-    relayReconnectScheduled(delay, this.reconnectAttempts);
-    this.reconnectTimeout = setTimeout(() => {
-      this.reconnectTimeout = null;
-      this.connect(roomCode, isHost);
-    }, delay);
   }
 }

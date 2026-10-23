@@ -167,6 +167,9 @@ export const status = {
   /** The stronger version: this device's clock could not be measured at all, so it is still the
    * first thing to suspect rather than one thing among several. */
   clockUnchecked: 'Время не синхронизировано.',
+  /** The relay socket never opened: usually a VPN, proxy, or DNS filter swallowing the upgrade,
+   * which looks nothing like a missing room. */
+  relayUnreachable: 'Не удалось подключиться к серверу. Проверьте VPN или сеть.',
 };
 
 /** The one control that hands a stuck join over to whoever can read it. */

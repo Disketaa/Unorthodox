@@ -20,6 +20,7 @@ import { usePhaseSplash } from '../Hooks/UsePhaseSplash';
 import { useEnchantedArrival } from '../Hooks/UseEnchantedArrival';
 import { BlockedReason } from '../Session';
 import { CopyConnectionReport } from './DiagnosticsPanel';
+import styles from './CountedRoom.module.css';
 import { gameOverOf } from './GameOver';
 import { LobbyView } from './LobbyView';
 import { EnchantFlash } from './EnchantFlash';
@@ -40,17 +41,22 @@ function ConnectingScreen({ view }: { view: GameSessionView }) {
       ? Strings.status.clockUnchecked
       : view.connectionHint === 'noPeers'
         ? Strings.status.stillLooking
-        : undefined;
+        : view.connectionHint === 'relayUnreachable'
+          ? Strings.status.relayUnreachable
+          : undefined;
   if (failure !== undefined) {
     return (
-      <InfoScreen
-        message={failure}
-        variant="Error"
-        action={Strings.common.cancel}
-        onAcknowledge={view.exitRoom}
-      >
-        <CopyConnectionReport />
-      </InfoScreen>
+      <>
+        <InfoScreen
+          message={failure}
+          variant="Error"
+          action={Strings.common.cancel}
+          onAcknowledge={view.exitRoom}
+        />
+        <div class={styles.ReportAction}>
+          <CopyConnectionReport />
+        </div>
+      </>
     );
   }
   return (
@@ -59,9 +65,7 @@ function ConnectingScreen({ view }: { view: GameSessionView }) {
       mark="Loading"
       action={Strings.common.cancel}
       onAcknowledge={view.exitRoom}
-    >
-      <CopyConnectionReport />
-    </InfoScreen>
+    />
   );
 }
 

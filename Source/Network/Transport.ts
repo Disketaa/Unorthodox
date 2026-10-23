@@ -21,6 +21,9 @@ export interface Transport {
    * it has answered, so this is how a caller tells "sent" apart from "queued for later". Hosts
    * report false, since they address clients directly. */
   isHostAddressable(): boolean;
+  /** Whether the socket carrying this transport is open right now. Optional because in-memory
+   * transports have nothing to reach; absent is not the same as unreachable. */
+  isRelayReachable?(): boolean;
   /** Start the transport. This is where it learns whether it is the host. */
   start(roomCode: string, playerName: string, isHost: boolean): void;
   /** Stop the transport and clean up */

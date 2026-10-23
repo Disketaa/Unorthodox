@@ -49,7 +49,7 @@ export class ClientSession {
     this.syncTimer = setInterval(() => this.requestSync(), SyncIntervalMs);
     this.stallTimer = setTimeout(() => {
       if (this.inbox.playerId !== null) return;
-      this.connectionHint = stallHint();
+      this.connectionHint = stallHint(this.transport.isRelayReachable?.());
       log('warn', 'still no answer; hinting', this.connectionHint);
       this.updateListener?.();
     }, StallHintMs);

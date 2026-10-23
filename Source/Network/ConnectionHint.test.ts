@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ClientSession } from './ClientSession';
 import { InMemoryTransport } from './InMemoryTransport';
+import { stallHint } from './ConnectionHint';
 import { PlayerLook } from '@/Core';
 
 const roomCode = '4403';
@@ -44,6 +45,14 @@ describe('a client waiting too long', () => {
     expect(session.getConnectionHint()).toBe('noPeers');
     session.stop();
     expect(session.getConnectionHint()).toBeUndefined();
+  });
+
+  it('names the relay when the socket never opened, ahead of a clock that cannot explain it', () => {
+    // A VPN can swallow the upgrade while DNS and HTTPS still work, so a player waiting on a
+    // relay that never opened must not be told the room does not exist.
+    expect(stallHint(false)).toBe('relayUnreachable');
+    expect(stallHint(true)).toBe('noPeers');
+    expect(stallHint(undefined)).toBe('noPeers');
   });
 
   it('forgets the hint on stop, so a fresh room never inherits the last one', () => {

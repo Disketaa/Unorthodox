@@ -53,7 +53,7 @@ export function CopyConnectionReport() {
   };
 
   return (
-    <Button variant="Secondary" size="Medium" onClick={() => void onCopy()}>
+    <Button variant="Muted" size="Medium" onClick={() => void onCopy()}>
       {state === 'copied'
         ? Strings.diagnostics.copied
         : state === 'failed'
