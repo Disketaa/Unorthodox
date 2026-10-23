@@ -10,6 +10,7 @@ type ServerFrame =
   | { type: 'Opened'; peerId: string; hostPresent: boolean }
   | { type: 'HostReady' }
   | { type: 'PeerLeft'; peerId: string }
+  | { type: 'HostLeft' }
   | { type: 'Data'; fromHost: boolean; peerId: string; data: unknown };
 
 interface Room {
@@ -66,7 +67,6 @@ function onOpen(ws: WebSocket): void {
         } else {
           r.peers.set(peerId, ws);
           send(ws, { type: 'Opened', peerId, hostPresent: r.host !== null });
-          broadcastRoom(room, { type: 'PeerLeft', peerId }, ws);
         }
         break;
       }
@@ -97,11 +97,11 @@ function onOpen(ws: WebSocket): void {
     if (!room) return;
     const r = rooms.get(room);
     if (!r) return;
-    if (r.host === ws) {
-      r.host = null;
-      broadcastRoom(room, { type: 'PeerLeft', peerId }, ws);
-      if (r.peers.size === 0) rooms.delete(room);
-    } else {
+  if (r.host === ws) {
+    r.host = null;
+    broadcastRoom(room, { type: 'HostLeft' }, ws);
+    if (r.peers.size === 0) rooms.delete(room);
+  } else {
       r.peers.delete(peerId);
       broadcastRoom(room, { type: 'PeerLeft', peerId }, ws);
       if (r.host === null && r.peers.size === 0) rooms.delete(room);

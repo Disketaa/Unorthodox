@@ -10,6 +10,7 @@ type ServerFrame =
   | { type: 'Opened'; peerId: string; hostPresent: boolean }
   | { type: 'HostReady' }
   | { type: 'PeerLeft'; peerId: string }
+  | { type: 'HostLeft' }
   | { type: 'Data'; fromHost: boolean; peerId: string; data: unknown };
 
 /** WebSocket transport to the self-hosted relay on the VPS. Replaces TrysteroTransport. One
@@ -23,6 +24,7 @@ export class RelayTransport implements Transport {
     ((message: unknown, fromHost: boolean, peerId: string) => void) | undefined;
   private onPeerLeaveCb: ((playerId: string) => void) | undefined;
   private onHostReadyCb: (() => void) | undefined;
+  private onHostLeaveCb: (() => void) | undefined;
   private reconnectTimeout: number | null = null;
   private reconnectAttempts = 0;
 
@@ -48,6 +50,10 @@ export class RelayTransport implements Transport {
 
   onHostReady(callback: () => void): void {
     this.onHostReadyCb = callback;
+  }
+
+  onHostLeave(callback: () => void): void {
+    this.onHostLeaveCb = callback;
   }
 
   isHostAddressable(): boolean {
@@ -98,6 +104,10 @@ export class RelayTransport implements Transport {
         break;
       case 'PeerLeft':
         if (this.onPeerLeaveCb) this.onPeerLeaveCb(frame.peerId);
+        break;
+      case 'HostLeft':
+        this.hostPresent = false;
+        if (this.onHostLeaveCb) this.onHostLeaveCb();
         break;
       case 'Data':
         if (this.onMessageCb) this.onMessageCb(frame.data, frame.fromHost, frame.peerId);

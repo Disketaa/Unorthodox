@@ -60,7 +60,7 @@ export class ClientSession {
   }
 
   onHostLeave(listener: () => void): void {
-    this.transport.onPeerLeave(() => listener());
+    this.transport.onHostLeave(() => listener());
   }
 
   requestSync(): void {

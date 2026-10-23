@@ -30,6 +30,7 @@ export class InMemoryTransport implements Transport {
   private onMessageCallback:
     ((message: unknown, fromHost: boolean, peerId: string) => void) | null = null;
   private onPeerLeaveCallback: ((playerId: string) => void) | null = null;
+  private onHostLeaveCallback: (() => void) | null = null;
   private onHostReadyCallback: (() => void) | null = null;
 
   private receiveCallback: (message: unknown, fromHost: boolean, peerId: string) => void;
@@ -130,6 +131,10 @@ export class InMemoryTransport implements Transport {
     this.onPeerLeaveCallback = callback;
   }
 
+  onHostLeave(callback: () => void): void {
+    this.onHostLeaveCallback = callback;
+  }
+
   onHostReady(callback: () => void): void {
     // The broker has no connection phase, so the host is always addressable
     // the moment it registers. Tests drive delivery explicitly instead.
@@ -151,9 +156,14 @@ export class InMemoryTransport implements Transport {
     if (address === null) {
       return;
     }
+    const wasHost = this.isHost;
     this.stop();
     for (const [, entry] of InMemoryTransport.peersByPeer) {
-      entry.transport.onPeerLeaveCallback?.(address);
+      if (wasHost) {
+        entry.transport.onHostLeaveCallback?.();
+      } else {
+        entry.transport.onPeerLeaveCallback?.(address);
+      }
     }
   }
 }
