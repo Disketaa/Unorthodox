@@ -258,9 +258,8 @@ export const GameConfig = {
      * written the wrong game. */
     answerMaxLength: 20,
     roomCodeLength: 4,
-    /** Three, not two: in a room of two the winner takes so little that the pair finish level in
-     * one game in eight, and one name on the final screen is the whole point of the scoring. */
-    minPlayers: 3,
+    /** Two is the least that is still a room: one player has nobody to answer. */
+    minPlayers: 2,
     maxPlayers: MaxPlayers,
   },
 };

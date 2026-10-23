@@ -35,8 +35,8 @@ describe('Two player game', () => {
     InMemoryTransport.resetPeers();
   });
 
-  it('holds a room to three players, since two is where the winner is not one', () => {
-    expect(GameConfig.limits.minPlayers).toBe(3);
+  it('lets a room start with two players, so a pair can play without a third', () => {
+    expect(GameConfig.limits.minPlayers).toBe(2);
   });
 
   it('counts the host as a player, so a solo room is one short', () => {
