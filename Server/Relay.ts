@@ -85,7 +85,7 @@ function onOpen(ws: WebSocket): void {
       case 'ToPeer': {
         const r = rooms.get(roomOf.get(ws) ?? '');
         const target = r?.peers.get(frame.peerId);
-        if (target && target.readyState === WebSocket.OPEN) {
+        if (r && target && target.readyState === WebSocket.OPEN) {
           target.send(JSON.stringify({ type: 'Data', fromHost: r.host === ws, peerId, data: frame.data }));
         }
         break;
