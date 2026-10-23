@@ -1,7 +1,7 @@
 import { Transport } from './Transport';
 import { dispatchFrame, type ServerFrame } from './RelayFrames';
 import { RelaySocket } from './RelaySocket';
-import { relayHostLeft, relayOpened, relayReachable } from './RelayLog';
+import { relayHostLeft, relayHostReady, relayOpened, relayPeerLeft, relayReachable, relayReceived } from './RelayLog';
 
 /** WebSocket transport to the self-hosted relay on the VPS. One socket per browser and one room
  * per socket; the host is authoritative and the relay only routes between the two sides. */
@@ -67,6 +67,7 @@ export class RelayTransport implements Transport {
     } catch {
       return;
     }
+    relayReceived(frame);
     dispatchFrame(frame, {
       opened: (hostPresent) => {
         this.hostPresent = hostPresent;
@@ -75,9 +76,13 @@ export class RelayTransport implements Transport {
       },
       hostReady: () => {
         this.hostPresent = true;
+        relayHostReady();
         this.onHostReadyCb?.();
       },
-      peerLeft: (peerId) => this.onPeerLeaveCb?.(peerId),
+      peerLeft: (peerId) => {
+        relayPeerLeft(peerId);
+        this.onPeerLeaveCb?.(peerId);
+      },
       hostLeft: () => {
         this.hostPresent = false;
         relayHostLeft();

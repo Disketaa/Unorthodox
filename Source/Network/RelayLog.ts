@@ -1,4 +1,5 @@
 import { note } from './Report';
+import type { ServerFrame } from './RelayFrames';
 
 /** The one relay this build talks to. Kept here so the report names the same address the socket
  * opened, instead of a copy that can drift from it. */
@@ -81,4 +82,33 @@ export function relayOpened(hostPresent: boolean): void {
 
 export function relayHostLeft(): void {
   note('warn', 'relay said the host left');
+}
+
+export function relayHostReady(): void {
+  note('info', 'relay host ready');
+}
+
+export function relayPeerLeft(peerId: string): void {
+  note('info', 'relay peer left', peerId);
+}
+
+/** Every frame the transport hands the socket, so the report shows whether a Join ever left. */
+export function relaySent(type: string, peerId?: string): void {
+  note('debug', 'relay sent', type, peerId ?? '');
+}
+
+/** The payload's own kind, read without trusting its shape. */
+function payloadKind(data: unknown): string {
+  if (typeof data !== 'object' || data === null) return 'unknown';
+  const kind = Reflect.get(data, 'type');
+  return typeof kind === 'string' ? kind : 'unknown';
+}
+
+/** Every frame the socket hands the transport, with the payload's own kind where it has one. */
+export function relayReceived(frame: ServerFrame): void {
+  if (frame.type !== 'Data') {
+    note('debug', 'relay received', frame.type);
+    return;
+  }
+  note('debug', 'relay received', `Data ${payloadKind(frame.data)}`, frame.fromHost ? 'from host' : 'from peer');
 }

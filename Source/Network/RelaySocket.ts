@@ -8,6 +8,7 @@ import {
   relayIdle,
   relayOpen,
   relayReconnectScheduled,
+  relaySent,
   watchRelayConnect,
 } from './RelayLog';
 
@@ -51,6 +52,7 @@ export class RelaySocket {
   send(frame: ClientFrame): void {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(frame));
+      relaySent(frame.type, 'peerId' in frame ? frame.peerId : undefined);
     } else {
       relayDropped(frame.type);
     }
