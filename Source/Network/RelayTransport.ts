@@ -1,7 +1,14 @@
 import { Transport } from './Transport';
 import { dispatchFrame, type ServerFrame } from './RelayFrames';
 import { RelaySocket } from './RelaySocket';
-import { relayHostLeft, relayHostReady, relayOpened, relayPeerLeft, relayReachable, relayReceived } from './RelayLog';
+import {
+  relayHostLeft,
+  relayHostReady,
+  relayOpened,
+  relayPeerLeft,
+  relayReachable,
+  relayReceived,
+} from './RelayLog';
 
 /** WebSocket transport to the self-hosted relay on the VPS. One socket per browser and one room
  * per socket; the host is authoritative and the relay only routes between the two sides. */

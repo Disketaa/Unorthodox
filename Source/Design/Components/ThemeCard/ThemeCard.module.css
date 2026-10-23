@@ -47,6 +47,11 @@
   border: none;
   border-radius: var(--Radius-Card);
   cursor: var(--Cursor-Pointer);
+  /* A tap is a press rather than the first half of a double-tap zoom. Safari otherwise spends
+   * the first tap showing the hover and the second zooming the page, and the card never answers
+   * a finger at all. Panning and pinching still work; only the browser's own double-tap gesture
+   * is taken off the card. */
+  touch-action: manipulation;
   /* The card's own sizes, as shares of its width, resolved here rather than in the token file.
    * A custom property's value is substituted where it is declared, not where it is used, so a
    * chain at the root resolves against whatever the width token holds there — and it holds
@@ -69,11 +74,23 @@
  * since using the ink made the hovered card a different colour from the theme it belongs to.
  * All three values are written by the component from `Core`, so the fallbacks here are only
  * what a card looks like before it has been written to. */
-.Root:hover,
 .Root.Swept {
   --ThemeCard-Surface: var(--ThemeCard-Wash, var(--Accent-Wash));
   background: var(--ThemeCard-Surface);
   color: var(--ThemeCard-Tint, var(--Accent-Tint));
+}
+
+/* The hover is for a device that can actually hover. iOS applies `:hover` on the first tap,
+ * which leaves a card opening its name under a finger that meant to press it, and a second tap
+ * lands on no control at all. A touch device gets the press and the card's `:active` answer
+ * instead. `pointer: fine` as well, because a touchscreen laptop reports that it hovers while
+ * the finger is what is touching it. */
+@media (hover: hover) and (pointer: fine) {
+  .Root:hover {
+    --ThemeCard-Surface: var(--ThemeCard-Wash, var(--Accent-Wash));
+    background: var(--ThemeCard-Surface);
+    color: var(--ThemeCard-Tint, var(--Accent-Tint));
+  }
 }
 
 /* The idle sway and the still pose, both of which the characters and the wordmark wear too.
@@ -233,9 +250,14 @@
  * tint. The card has already gone to the wash under the pointer, so a mark in the wash would be
  * the one thing on it that did not answer, and the theme's own tint is the change that says
  * which theme the card is. */
-.Root:hover .Mult,
 .Root.Swept .Mult {
   color: var(--ThemeCard-Tint, var(--Accent-Tint));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .Root:hover .Mult {
+    color: var(--ThemeCard-Tint, var(--Accent-Tint));
+  }
 }
 
 /* The grain, laid over the card the way the paper is laid over the page. Blended rather than
@@ -259,9 +281,14 @@
 /* The grain comes up a little under the pointer, on the card's own timing. The panel is the
  * thing being looked at, and a finish that does not respond to that reads as a surface that did
  * not notice. Faintly, because it is a finish and not a highlight. */
-.Root:hover .Noise,
 .Root.Swept .Noise {
   opacity: var(--Opacity-ThemeCardNoiseHover);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .Root:hover .Noise {
+    opacity: var(--Opacity-ThemeCardNoiseHover);
+  }
 }
 
 /* A card the winning show is taking away: the same movement an answer card makes when the count
@@ -318,9 +345,14 @@
   transition: filter var(--Transition-Standard);
 }
 
-.Root:hover .Effect,
 .Root.Swept .Effect {
   filter: grayscale(0) brightness(1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .Root:hover .Effect {
+    filter: grayscale(0) brightness(1);
+  }
 }
 
 .EffectLabel {
@@ -343,9 +375,14 @@
     font-size var(--Transition-Standard);
 }
 
-.Root:hover .EffectLabel,
 .Root.Swept .EffectLabel {
   color: var(--ThemeCard-Tint, var(--Accent-Tint));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .Root:hover .EffectLabel {
+    color: var(--ThemeCard-Tint, var(--Accent-Tint));
+  }
 }
 
 /* The name on the card, which is the whole content of it, and the tint it takes on hover along
@@ -421,16 +458,28 @@
  * did not. Two shares rather than one, since a clipped figure and a line of text cannot answer
  * to the same amount: the mark is already larger than the card, so the name's scale is
  * invisible on it and it needs four times as much to shift inside the crop. */
-.Root:hover .Name,
 .Root.Swept .Name {
   font-size: calc(var(--FontSize-ThemeCard) * var(--Scale-ThemeCardHover));
 }
 
-.Root:hover .Mark,
+@media (hover: hover) and (pointer: fine) {
+  .Root:hover .Name {
+    font-size: calc(var(--FontSize-ThemeCard) * var(--Scale-ThemeCardHover));
+  }
+}
+
 .Root.Swept .Mark {
   transform: scale(var(--Scale-ThemeCardMarkHover));
   opacity: var(--Opacity-ThemeCardMarkHover);
   color: var(--ThemeCard-Tint, var(--Accent-Tint));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .Root:hover .Mark {
+    transform: scale(var(--Scale-ThemeCardMarkHover));
+    opacity: var(--Opacity-ThemeCardMarkHover);
+    color: var(--ThemeCard-Tint, var(--Accent-Tint));
+  }
 }
 
 /* The chosen card, which is the hover's values held after the pointer leaves. A class rather
@@ -487,9 +536,14 @@
 /* Lifted back to full over the hover, so a card nobody may press still opens under the pointer
  * like any other. Without it the held-back card is the one card in the bank that does not
  * answer, which reads as broken rather than as waiting. */
-.Waiting:hover,
 .Waiting.Swept {
   opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .Waiting:hover {
+    opacity: 1;
+  }
 }
 
 /* A theme the room has spent every round it had. The same held-back look as a card on somebody
@@ -504,29 +558,31 @@
  * that card is still being read and has a theme to be identified by, this one has nothing left
  * to name. Each hover value is put back rather than the hover switched off, since `:hover`
  * matches the card whatever else it is. */
-.SpentOut:hover {
-  --ThemeCard-Surface: var(--Color-Surface-Hover);
-  opacity: var(--Opacity-ThemeCardSpentOut);
-  background: var(--ThemeCard-Surface);
-  color: var(--Color-Text-Default);
-}
+@media (hover: hover) and (pointer: fine) {
+  .SpentOut:hover {
+    --ThemeCard-Surface: var(--Color-Surface-Hover);
+    opacity: var(--Opacity-ThemeCardSpentOut);
+    background: var(--ThemeCard-Surface);
+    color: var(--Color-Text-Default);
+  }
 
-.SpentOut:hover .Name {
-  font-size: var(--FontSize-ThemeCard);
-}
+  .SpentOut:hover .Name {
+    font-size: var(--FontSize-ThemeCard);
+  }
 
-.SpentOut:hover .Mark {
-  transform: scale(1);
-  opacity: var(--Opacity-ThemeCardMark);
-  color: var(--Color-Text-Quiet);
-}
+  .SpentOut:hover .Mark {
+    transform: scale(1);
+    opacity: var(--Opacity-ThemeCardMark);
+    color: var(--Color-Text-Quiet);
+  }
 
-.SpentOut:hover .Mult {
-  color: var(--Color-Room-Yellow);
-}
+  .SpentOut:hover .Mult {
+    color: var(--Color-Room-Yellow);
+  }
 
-.SpentOut:hover .Noise {
-  opacity: var(--Opacity-ThemeCardNoise);
+  .SpentOut:hover .Noise {
+    opacity: var(--Opacity-ThemeCardNoise);
+  }
 }
 
 /* Nor does it press: a card with nothing left has no answer to give, so it must not look like

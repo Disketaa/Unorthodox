@@ -110,5 +110,10 @@ export function relayReceived(frame: ServerFrame): void {
     note('debug', 'relay received', frame.type);
     return;
   }
-  note('debug', 'relay received', `Data ${payloadKind(frame.data)}`, frame.fromHost ? 'from host' : 'from peer');
+  note(
+    'debug',
+    'relay received',
+    `Data ${payloadKind(frame.data)}`,
+    frame.fromHost ? 'from host' : 'from peer'
+  );
 }

@@ -247,6 +247,20 @@ describe('the theme cards', () => {
       'var(--Duration-Fast) var(--Easing-Standard)'
     );
   });
+  it('gives the hover to a device with a pointer, so a finger presses rather than hovers', () => {
+    // iOS Safari applies `:hover` on the first tap. The card opened its name under the finger,
+    // the click was spent on the hover, and tapping again zoomed the page instead of picking a
+    // theme. The hover is therefore behind the same pointer query the rest of the design uses,
+    // and the card takes the browser's double-tap gesture away so a tap is always a press.
+    expect(card.text).toMatch(
+      /@media \(hover: hover\) and \(pointer: fine\) \{\s*\.Root:hover/
+    );
+    expect(card.declaration(Card, 'touch-action')).toBe('manipulation');
+    // The room's own sweep is not a hover and still opens the card on a touch screen.
+    expect(card.ruleBody(/\.Root\.Swept\s*\{([^}]*)\}/)).toContain(
+      '--ThemeCard-Surface:var(--ThemeCard-Wash,var(--Accent-Wash))'
+    );
+  });
   it('has no frame, and is one step off the page rather than white on it', () => {
     // The border and the off-white both lift the card off the page, and a card this large does
     // not need both: with the frame gone the rounded corner and the fill are the whole edge,
@@ -643,7 +657,9 @@ describe('the deal', () => {
     const deal = dealThemes(createRandom(11), GameConfig.themes.cardsPerLobby);
     expect(deal).toHaveLength(GameConfig.themes.cardsPerLobby);
     expect(new Set(deal).size).toBe(deal.length);
-    expect(deal.every((theme) => typeof theme === 'string' && ThemeIds.includes(theme))).toBe(true);
+    expect(deal.every((theme) => typeof theme === 'string' && ThemeIds.includes(theme))).toBe(
+      true
+    );
   });
   it('never offers more themes than exist', () => {
     const deal = dealThemes(createRandom(3), ThemeIds.length + 5);
