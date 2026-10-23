@@ -67,21 +67,24 @@ export class RelayTransport implements Transport {
 
   private connect(roomCode: string, isHost: boolean): void {
     const url = `wss://relay.144-31-61-203.sslip.io/game`;
-    this.ws = new WebSocket(url);
-    this.ws.binaryType = 'arraybuffer';
-    this.ws.onopen = () => {
+    const ws = new WebSocket(url);
+    this.ws = ws;
+    ws.binaryType = 'arraybuffer';
+    ws.onopen = () => {
+      if (this.ws !== ws) return;
       this.reconnectAttempts = 0;
       this.send({ type: 'Open', room: roomCode, role: isHost ? 'Host' : 'Player' });
     };
-    this.ws.onmessage = (event: MessageEvent) => this.onWebSocketMessage(event);
-    this.ws.onclose = () => {
+    ws.onmessage = (event: MessageEvent) => this.onWebSocketMessage(event);
+    ws.onclose = () => {
+      if (this.ws !== ws) return;
       this.hostPresent = false;
       this.ws = null;
       this.scheduleReconnect(roomCode, isHost);
     };
-    this.ws.onerror = () => {
+    ws.onerror = () => {
       this.hostPresent = false;
-      this.ws?.close();
+      ws.close();
     };
   }
 
@@ -120,9 +123,13 @@ export class RelayTransport implements Transport {
       clearTimeout(this.reconnectTimeout);
       this.reconnectTimeout = null;
     }
-    this.ws?.close();
+    const ws = this.ws;
     this.ws = null;
     this.hostPresent = false;
+    if (ws) {
+      ws.onopen = ws.onmessage = ws.onclose = ws.onerror = null;
+      ws.close();
+    }
   }
 
   setPlayerId(playerId: string): void {

@@ -16,6 +16,7 @@ type ServerFrame =
 interface Room {
   host: WebSocket | null;
   peers: Map<string, WebSocket>;
+  hostGone?: ReturnType<typeof setTimeout>;
 }
 
 const rooms = new Map<string, Room>();
@@ -61,6 +62,10 @@ function onOpen(ws: WebSocket): void {
           rooms.set(room, r);
         }
         if (role === 'Host') {
+          if (r.hostGone) {
+            clearTimeout(r.hostGone);
+            r.hostGone = undefined;
+          }
           r.host = ws;
           send(ws, { type: 'Opened', peerId, hostPresent: true });
           broadcastRoom(room, { type: 'HostReady' }, ws);
@@ -81,13 +86,13 @@ function onOpen(ws: WebSocket): void {
         const r = rooms.get(roomOf.get(ws) ?? '');
         const target = r?.peers.get(frame.peerId);
         if (target && target.readyState === WebSocket.OPEN) {
-          target.send(JSON.stringify({ type: 'Data', fromHost: false, peerId, data: frame.data }));
+          target.send(JSON.stringify({ type: 'Data', fromHost: r.host === ws, peerId, data: frame.data }));
         }
         break;
       }
       case 'Broadcast': {
         const r = rooms.get(roomOf.get(ws) ?? '');
-        if (r) broadcastRoom(roomOf.get(ws) ?? '', { type: 'Data', fromHost: false, peerId, data: frame.data });
+        if (r) broadcastRoom(roomOf.get(ws) ?? '', { type: 'Data', fromHost: r.host === ws, peerId, data: frame.data }, ws);
         break;
       }
     }
@@ -97,12 +102,15 @@ function onOpen(ws: WebSocket): void {
     if (!room) return;
     const r = rooms.get(room);
     if (!r) return;
-  if (r.host === ws) {
-    r.host = null;
-    broadcastRoom(room, { type: 'HostLeft' }, ws);
-    if (r.peers.size === 0) rooms.delete(room);
-  } else {
-      r.peers.delete(peerId);
+    if (r.host === ws) {
+      r.host = null;
+      r.hostGone = setTimeout(() => {
+        r.hostGone = undefined;
+        if (r.host !== null) return;
+        broadcastRoom(room, { type: 'HostLeft' });
+        if (r.peers.size === 0) rooms.delete(room);
+      }, 3000);
+    } else if (r.peers.delete(peerId)) {
       broadcastRoom(room, { type: 'PeerLeft', peerId }, ws);
       if (r.host === null && r.peers.size === 0) rooms.delete(room);
     }
