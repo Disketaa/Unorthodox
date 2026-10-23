@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { WebSocketServer, WebSocket } from 'ws';
 
 type ClientFrame =
@@ -43,7 +44,7 @@ function broadcastRoom(room: string, frame: ServerFrame, except?: WebSocket): vo
 }
 
 function onOpen(ws: WebSocket): void {
-  const peerId = crypto.randomUUID();
+  const peerId = randomUUID();
   peerIdOf.set(ws, peerId);
   ws.on('message', (raw: string) => {
     let frame: ClientFrame;
