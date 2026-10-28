@@ -13,7 +13,7 @@ function partlySpent(first: ThemeId | undefined): Map<ThemeId, number> {
 function withOneFinished(themes: readonly ThemeId[], first: ThemeId | undefined) {
   const spent = partlySpent(first);
   const second = themes[1] ?? first;
-  if (second !== undefined) spent.set(second, 10);
+  if (second !== undefined) spent.set(second, 8);
   return spent;
 }
 
@@ -28,7 +28,7 @@ function galleryMults(themes: readonly ThemeId[]): Map<ThemeId, number> {
  * banks is four blocks of the same props, and one of them being edited without the other is how
  * a gallery stops showing the component it is a gallery of. */
 function Bank(rest: Partial<ThemeCardsProps> & Pick<ThemeCardsProps, 'themes' | 'spent'>) {
-  return <ThemeCards roundsPerTheme={10} {...rest} />;
+  return <ThemeCards roundsPerTheme={8} {...rest} />;
 }
 
 export function ThemeCardsGallery() {

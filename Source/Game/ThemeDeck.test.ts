@@ -15,9 +15,11 @@ describe('the questions one room plays in one theme', () => {
   });
 
   it('never asks the same question twice in one run of the theme', () => {
-    for (const theme of ['Еда', 'Природа']) {
-      const deck = deckFor('WXYZ', theme);
-      expect(new Set(deck).size, theme).toBe(deck.length);
+    for (const theme of ThemeBanks.keys()) {
+      for (let room = 0; room < 200; room += 1) {
+        const deck = deckFor(`R${room}`, theme);
+        expect(new Set(deck).size, `${theme} in R${room}`).toBe(deck.length);
+      }
     }
   });
 

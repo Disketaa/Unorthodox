@@ -3,7 +3,6 @@ import {
   PlayerLook,
   ThemeId,
   isPlayerLook,
-  isThemeId,
   CustomTheme,
   isCustomTheme,
 } from '@/Core';
@@ -79,9 +78,13 @@ export function isClientMessage(value: unknown): value is ClientMessage {
     case 'SetLook':
       return typeof record.playerId === 'string' && isPlayerLook(record.look);
     case 'ChooseTheme':
-      // The theme is checked against the whole set rather than accepted as a string: the host
-      // turns it into a card, and a theme nobody has heard of is a card that cannot be drawn.
-      return isThemeId(record.theme) && typeof record.playerId === 'string';
+      // A custom theme's id is its own name, so any non-empty string passes here; the host turns
+      // it into a card, and a blank one cannot be drawn.
+      return (
+        typeof record.theme === 'string' &&
+        record.theme.length > 0 &&
+        typeof record.playerId === 'string'
+      );
     case 'SubmitAnswer':
       return typeof record.text === 'string' && typeof record.playerId === 'string';
     case 'EditingAnswer':

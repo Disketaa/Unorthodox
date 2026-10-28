@@ -10,7 +10,7 @@ export interface BalanceParams {
   /** Room sizes to run. The real game holds 2 to 12, and the tables are only interesting at the
    * ends of that, so these are the sizes asked for. */
   playerCounts: readonly number[];
-  /** How many rounds each room plays. The game itself is 5 to 10; longer runs are here to show
+  /** How many rounds each room plays. The game itself is 4 to 8; longer runs are here to show
    * where a formula's spread settles rather than where it lands after one lucky round. */
   roundCounts: readonly number[];
   /** Repeats of the same configuration, each on its own seed. One room is an anecdote. */

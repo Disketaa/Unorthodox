@@ -171,12 +171,12 @@ export const GameConfig = {
   paces: {
     Standard: {
       writingMs: timing.writingDurationMs,
-      categoryMs: 20000,
+      categoryMs: 10000,
       reviewTailMs: 10000,
     },
     Fast: {
       writingMs: 40000,
-      categoryMs: 15000,
+      categoryMs: 5000,
       reviewTailMs: 5000,
     },
   } satisfies Record<Pace, PaceTimings>,
@@ -211,7 +211,7 @@ export const GameConfig = {
     strayRunMin: 3,
   },
   rounds: {
-    count: 5,
+    count: 4,
   },
   themes: {
     /** How many themes a lobby is offered at once. Six because they are drawn three across and
@@ -219,15 +219,15 @@ export const GameConfig = {
      * would be a different arrangement. */
     cardsPerLobby: 6,
     /** How many rounds a theme is played for. The number of ticks along the bottom of a card,
-     * and the number of topics the theme answers for. Ten because the game is five rounds and
+     * and the number of topics the theme answers for. Eight because the game is four rounds and
      * two themes to a round fills it. */
-    roundsPerTheme: 10,
+    roundsPerTheme: 8,
     /** The same figure by pace: the ceiling a theme's bank card counts down from. A theme with
      * fewer questions than this stops at its own count instead. */
-    roundsPerPace: { Fast: 5, Standard: 10 } satisfies Record<Pace, number>,
-    /** Options for rounds per theme the host can pick in the lobby. Five is the floor: at three,
+    roundsPerPace: { Fast: 4, Standard: 8 } satisfies Record<Pace, number>,
+    /** Options for rounds per theme the host can pick in the lobby. Four is the floor: at three,
      * what one good round pays is more than the whole gap between first and second at the end. */
-    roundsPerThemeOptions: [5, 10] as const,
+    roundsPerThemeOptions: [4, 8] as const,
     /** What a round's bank may carry on top of its six themes: how likely it is to enchant
      * anything, and how many cards it may reach. A cap rather than a count, since a bank where
      * every card is enchanted has nothing left to choose between. */

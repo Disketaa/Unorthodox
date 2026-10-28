@@ -16,7 +16,7 @@ export interface RoomTheme {
 
 /** Whether the room has anything left to play: every theme in its bank has been played for every
  * round the game gives it. A theme gets its own question count up to the pace's ceiling, so a
- * one-question theme is one round and a ten-question theme is five or ten. */
+ * one-question theme is one round and an eight-question theme is four or eight. */
 export function roomIsOver(
   played: ReadonlyMap<ThemeId, number>,
   themes: readonly RoomTheme[]

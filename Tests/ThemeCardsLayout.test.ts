@@ -59,7 +59,8 @@ const Glint = /\.Glint[^{]*\{([^}]*)\}/;
 const GlintA = /\.GlintA[^{]*\{([^}]*)\}/;
 const GlintB = /\.GlintB[^{]*\{([^}]*)\}/;
 const GlintC = /\.GlintC[^{]*\{([^}]*)\}/;
-const Name = /\.Name[^{]*\{([^}]*)\}/;
+const Name = /\.Name\s*\{([^}]*)\}/;
+const NameRoom = /\.NameRoom[^{]*\{([^}]*)\}/;
 describe('the row of theme cards', () => {
   it('fills the width it is given rather than sizing itself to its cards', () => {
     // A row of `1fr` tracks cannot measure itself: the tracks are fractions of the row, and the
@@ -173,21 +174,16 @@ describe('the row of theme cards', () => {
     expect(sheet.declares(Slot, '--Size-ThemeCardWidth')).toBe(false);
     expect(sheet.declares(Root, '--Size-ThemeCardWidth')).toBe(false);
   });
-  it('takes the ticks and gives the height to the name, at one card height', () => {
-    // Six cards stacked are short: the name and the ticks do not fit together, and the ticks are
-    // the half that goes — ten pipes of detail under a word that has to be read. The name then
-    // takes the card and centres itself in it. Both are asked of the card rather than the window,
-    // since it is the card that ran out of height and a wide screen can hold either.
-    //
-    // The threshold is written out twice, in two components, because a container query holds no
-    // `var()`. Checked here rather than trusted: if the meter hides itself at a height the name
-    // does not know about, one card gets a word pinned to the top and a stub of panel under it.
-    const hiding = meter.text.match(/@container \(max-height: (\d+)px\)/);
-    const filling = card.text.match(/@container \(max-height: (\d+)px\)/);
-    expect(hiding?.[1]).toBeDefined();
-    expect(filling?.[1]).toBe(hiding?.[1]);
-    expect(meter.flat).toContain('display:none');
+  it('keeps the ticks on a short card, where a small bar is still worth having', () => {
+    // A card stacked in a short row has less height than a theme card usually gets, but the bar
+    // is what says how many rounds the theme has. Hiding it makes the theme look shorter than it
+    // is; a few pixels under the name is the better trade.
+    expect(meter.text).not.toContain('@container');
+    expect(meter.text).not.toContain('display:none');
     expect(card.flat).toContain('flex:11auto');
+    const short = card.text.match(/@container \(max-height: (\d+)px\)/);
+    expect(short?.[1]).toBeDefined();
+    expect(card.flat).toContain('--Size-ThemeCardWidth:100cqw');
   });
   it('puts the card own sizes on the card, since a share resolves where it is declared', () => {
     // A custom property''s value is substituted where it is declared, not where it is used: a
@@ -208,13 +204,20 @@ describe('the row of theme cards', () => {
       expect(cardToken(name)).toBe(`calc(var(--Size-ThemeCardWidth)*${share})`);
     }
   });
-  it('cuts a name that will not fit rather than wrapping it onto two lines', () => {
-    // A wrap is a second line on the cards that need one and not on the cards that do not: a
-    // bank where one word is on two lines and the five beside it are on one has its middle in
-    // the wrong place, and the name and the row of rounds stop being a centred pair.
-    expect(card.text).toContain('Truncate from');
-    expect(card.declares(Name, 'white-space')).toBe(false);
-    expect(card.declares(Name, 'text-overflow')).toBe(false);
+  it('fits a name to its room rather than cutting it short', () => {
+    // A theme is named in full on its card, whatever it is called. The answer cards' fitter is
+    // reused here: the name is measured against the room above the ticks and made smaller until
+    // it holds, which is a font size no stylesheet can express on its own.
+    expect(card.text).not.toContain('Truncate from');
+    expect(card.declaration(Name, 'white-space')).toBe('normal');
+    expect(card.declaration(Name, 'overflow-wrap')).toBe('normal');
+    expect(card.declaration(Name, 'font-size')).toContain('--ThemeCard-Fit');
+    const fitted = readFileSync(
+      new URL('../Source/Design/Components/ThemeCard/FittedThemeName.tsx', import.meta.url),
+      'utf8'
+    );
+    expect(fitted).toContain('useFittedText');
+    expect(fitted).toContain("'--ThemeCard-Fit'");
   });
   it('lays the cards flat, with nothing turning them towards the middle of the screen', () => {
     // The row was a ring of panels and needed a measurement per card on every resize to keep
@@ -491,8 +494,9 @@ describe('the theme cards', () => {
   });
   it('opens with the name by one ratio, or the panel is one image changing size', () => {
     expect(card.declaration(/\.Root:hover\s+\.Name[^{]*\{([^}]*)\}/, 'font-size')).toBe(
-      'calc(var(--FontSize-ThemeCard)*var(--Scale-ThemeCardHover))'
+      'calc(var(--FontSize-ThemeCard)*var(--ThemeCard-Fit,1)*var(--Scale-ThemeCardHover))'
     );
+    expect(card.declaration(Name, 'transition')).toContain('font-size');
   });
   it('lays the glint over the grain, since a shine under the grain is a shine nothing sees', () => {
     // The enchantment is the top finish on the card. Under the grain it would be blended into
@@ -541,21 +545,20 @@ describe('the theme cards', () => {
   });
 });
 describe('the round ticks along the bottom of a card', () => {
-  it('sits directly under the name, as the second line of one thing', () => {
-    // The card centres the name and the bar together as a column. Neither may grow, or one of
-    // them takes the room and leaves the other against an edge в— a growing name pinned the bar
-    // to the bottom of the card with the word centred in whatever was left over, which read as
-    // a centred name and a bottom-aligned bar rather than one thing read downwards.
+  it('sits under the name\'s room, which takes the height above it', () => {
+    // The name's room fills the card above the bar and centres the fitted name in it. It must
+    // not size itself to the writing: the fitter writes a font size onto the name, and a room
+    // that grew and shrank with it would answer every fit with another fit — the flicker this
+    // arrangement replaces. The bar stays a line under that room, at the card's own gap.
     expect(card.declaration(Card, 'flex-direction')).toBe('column');
     expect(card.declaration(Card, 'justify-content')).toBe('center');
-    expect(card.declaration(Name, 'flex')).toBe('00auto');
+    expect(card.declaration(NameRoom, 'flex')).toBe('11auto');
   });
   it('lets the card hold the gap to the name, rather than the bar holding a margin of its own', () => {
-    // `margin-top: auto` would put the bar back at the bottom edge, and a negative top margin
-    // centres the pair by its margin rather than by its box — which is how a word ends
-    // up high on a card with its bar low and neither of them at the middle. One `gap` on the card
-    // is the whole of it, and no width on the bar: stretching it across the card would put the
-    // card's padding back into the centring.
+    // The room already takes the spare height, so the bar needs no `margin-top: auto`, and a
+    // negative top margin would centre a pair by its margin rather than by its box. One `gap` on
+    // the card is the whole of it, and no width on the bar: stretching it across the card would
+    // put the card's padding back into the centring.
     expect(card.declaration(Card, 'gap')).toBe('var(--Space-Xs)');
     expect(meter.declares(Meter, 'margin-top')).toBe(false);
     expect(meter.declares(Meter, 'width')).toBe(false);
@@ -595,7 +598,7 @@ describe('the round ticks along the bottom of a card', () => {
     expect(spent).toBeLessThan(resting / 4);
   });
   it('draws the ticks as pipes rather than dots', () => {
-    // A row of dots on a card this size reads as a rating or a strength meter, and ten of one
+    // A row of dots on a card this size reads as a rating or a strength meter, and eight of one
     // shape is too many to count at a glance. A pipe is a mark in a list, which a round is.
     const width = Number(tokenValue('--Size-RoundMarkWidth').replace('em', ''));
     const height = Number(tokenValue('--Size-RoundMarkHeight').replace('em', ''));
@@ -615,12 +618,12 @@ describe('the round ticks along the bottom of a card', () => {
       expect(tokenValue(token)).toMatch(/em$/);
     }
   });
-  it('plays ten rounds of a theme, which is what fills a round of the game', () => {
-    // `GameConfig.rounds.count` is five rounds of the whole game, and two themes to a round is
-    // what fills it: ten topics across the themes on offer, which is a set of themes big
+  it('plays eight rounds of a theme, which is what fills a round of the game', () => {
+    // `GameConfig.rounds.count` is four rounds of the whole game, and two themes to a round is
+    // what fills it: eight topics across the themes on offer, which is a set of themes big
     // enough that the cards are a choice rather than a formality.
     expect(GameConfig.themes.roundsPerTheme).toBe(GameConfig.rounds.count * 2);
-    expect(GameConfig.themes.roundsPerTheme).toBe(10);
+    expect(GameConfig.themes.roundsPerTheme).toBe(8);
   });
 });
 describe('the tokens behind the bank', () => {
@@ -630,7 +633,9 @@ describe('the tokens behind the bank', () => {
     // own: the card narrows on a phone, and a flat size would be a caption again there.
     const size = cardToken('--FontSize-ThemeCard').replace(/\s+/g, '');
     expect(size).toBe('calc(var(--Size-ThemeCardWidth)*0.14)');
-    expect(card.declaration(Name, 'font-size')).toBe('var(--FontSize-ThemeCard)');
+    expect(card.declaration(Name, 'font-size')).toBe(
+      'calc(var(--FontSize-ThemeCard)*var(--ThemeCard-Fit,1))'
+    );
   });
   it('keeps the name off the frame of its own card', () => {
     // At zero the longest word touches the edge, and the edge is the one part of a card that

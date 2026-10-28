@@ -20,7 +20,7 @@ function mount(props: {
   document.body.appendChild(container);
   act(() => {
     render(
-      <ThemeCards themes={themes} roundsPerTheme={10} spent={spent} {...props} />,
+      <ThemeCards themes={themes} roundsPerTheme={8} spent={spent} {...props} />,
       container
     );
   });
@@ -66,7 +66,7 @@ describe('a bank nobody may press', () => {
         <ThemeCards
           themes={themes}
 
-          roundsPerTheme={10}
+          roundsPerTheme={8}
           onPick={() => {}}
           picking
           swept={themes[1]}

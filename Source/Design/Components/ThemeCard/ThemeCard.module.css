@@ -385,6 +385,20 @@
   }
 }
 
+/* The name's own room, holding it and centring it under the figure and above the ticks. Its own
+ * box rather than the card: the fitter measures the writing against its parent, and the card's
+ * ticks are not part of the space a name has to be written into. It fills that space rather
+ * than growing with its writing: a room whose height moved with the font would answer every fit
+ * with another fit, and the name would flicker between sizes. */
+.NameRoom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+}
+
 /* The name on the card, which is the whole content of it, and the tint it takes on hover along
  * with the ticks and the number. All three the same value rather than the tint here and the ink
  * there: `Accents` gives one of each per theme for exactly this, the tint being the accent as
@@ -392,63 +406,41 @@
  * wash. Centred, and in the display face rather than the body one: six lines of body text at
  * reading size read as a paragraph rather than as six things to pick from. */
 .Name {
-  /* The shared cut, rather than a wrap. The name is one or two words and the card is a fixed
-   * width that narrows on a phone, so a wrap is a second line on the cards that need one and
-   * not on the cards that do not: a bank where one card's word is on two lines and the five
-   * beside it are on one is a bank whose centre of gravity is in the wrong place. A cut is the
-   * same on all six. */
-  composes: Truncate from '../../Primitives/Truncate/Truncate.module.css';
   position: relative;
   z-index: 1;
-  /* A block rather than a flex row, which is what lets the cut be a cut. As a flex container
-   * the name is an anonymous flex item, and `text-overflow: ellipsis` has nothing to draw on
-   * there: the item is clipped by the box and no ellipsis appears, so a long theme name ran to
-   * the card's edge and stopped. A block is what the shared `Truncate` is written against.
-   * Centred by `align-self` and the card's own `justify-content`, in place of the `align-items`
-   * and `justify-content` this used to carry. */
+  /* A block rather than a flex row, so the writing has one width to wrap and be measured
+   * against. The fitter below shrinks it until the name holds rather than cutting the end off:
+   * a theme is named in full on its card, whatever it is called. */
   display: block;
-  align-self: center;
-  /* Not growing, which is the whole of the bar sitting under the word. This was `flex: 1`, so
-   * the name took every pixel above the bar and the bar was left at the bottom of the card with
-   * the word centred in whatever was left over — which looked like a centred name and a
-   * bottom-aligned bar rather than one thing read downwards. The card's own `justify-content:
-   * center` centres the two of them together once neither grows, and the bar falls directly
-   * under the name with the same gap whichever way the name is cut. */
-  flex: 0 0 auto;
   width: 100%;
-  min-height: 0;
+  min-width: 0;
   font-family: var(--FontFamily-Display);
-  font-size: var(--FontSize-ThemeCard);
+  font-size: calc(var(--FontSize-ThemeCard) * var(--ThemeCard-Fit, 1));
   line-height: 1.1;
   text-align: center;
   color: inherit;
+  white-space: normal;
+  overflow: hidden;
+  overflow-wrap: normal;
+  hyphens: none;
+  /* The hover growth is a font size, eased. The fitter writes that same size on every pass, so
+   * it turns transitions off for the synchronous measurement and puts them back once the fit is
+   * settled; otherwise every pass would measure the size it was leaving rather than the size it
+   * had asked for, and a long word would be fitted to a fraction of the room it had. */
   transition: font-size var(--Transition-Standard);
 }
 
-/* A card too short for the ticks takes them, so the name takes the height instead and centres
- * itself in it — a word in the middle of a panel rather than a word and a stub of panel. It
- * grows only here: on a card that kept its ticks, a growing name leaves them at the bottom edge
- * rather than directly under it, which is the whole reason the name does not grow above. The
- * threshold is the one `RoundMeter` hides itself at, restated because a container query holds
- * no `var()`; `Tests/ThemeCardsLayout.test.ts` checks the two have not drifted apart. */
+/* A card stacked in a short row takes the row's whole width rather than staying in the tall
+ * card's proportion, which would leave it a narrow sliver. It keeps its ticks: a card only a
+ * little tall still says how many rounds its theme has, even if that leaves the bar and the
+ * name close together. */
 @container (max-height: 110px) {
   /* The card itself, not the name: the background figure and the hover size are both read from
    * the card's own token, and an override on the name alone would put the two on different
    * scales and shrink the word again the moment it was hovered. Width alone, because height is
-   * no longer what limits the type — the name below wraps rather than fitting itself to one
-   * line — so the height cap would only shrink text that already fits. */
+   * no longer what limits the type — the name fits itself rather than the card doing it. */
   .Root {
     --Size-ThemeCardWidth: 100cqw;
-  }
-
-  .Name {
-    flex: 1 1 auto;
-    /* Wrapping is what lets the name fill a card far wider than it is tall, and there is no bar
-     * under it here to be pushed out of place by a second line: the ticks are hidden at this
-     * height. */
-    white-space: normal;
-    overflow: visible;
-    text-overflow: clip;
   }
 }
 
@@ -459,12 +451,16 @@
  * to the same amount: the mark is already larger than the card, so the name's scale is
  * invisible on it and it needs four times as much to shift inside the crop. */
 .Root.Swept .Name {
-  font-size: calc(var(--FontSize-ThemeCard) * var(--Scale-ThemeCardHover));
+  font-size: calc(
+    var(--FontSize-ThemeCard) * var(--ThemeCard-Fit, 1) * var(--Scale-ThemeCardHover)
+  );
 }
 
 @media (hover: hover) and (pointer: fine) {
   .Root:hover .Name {
-    font-size: calc(var(--FontSize-ThemeCard) * var(--Scale-ThemeCardHover));
+    font-size: calc(
+      var(--FontSize-ThemeCard) * var(--ThemeCard-Fit, 1) * var(--Scale-ThemeCardHover)
+    );
   }
 }
 
@@ -492,7 +488,9 @@
 }
 
 .Chosen .Name {
-  font-size: calc(var(--FontSize-ThemeCard) * var(--Scale-ThemeCardHover));
+  font-size: calc(
+    var(--FontSize-ThemeCard) * var(--ThemeCard-Fit, 1) * var(--Scale-ThemeCardHover)
+  );
 }
 
 .Chosen .Mark {
@@ -567,7 +565,7 @@
   }
 
   .SpentOut:hover .Name {
-    font-size: var(--FontSize-ThemeCard);
+    font-size: calc(var(--FontSize-ThemeCard) * var(--ThemeCard-Fit, 1));
   }
 
   .SpentOut:hover .Mark {

@@ -1,15 +1,19 @@
 import type { RefObject } from 'preact';
 import { useCallback, useEffect } from 'preact/hooks';
-import { useViewportMeasure } from '@/Design/Primitives';
 
 /** How much of the writing a card may give up before it is drawn too small to read at all. A
  * floor on the size rather than on the search, since the search measures what is left over. */
 const MinScale = 0.2;
 
-/** How many times the writing may be measured and shrunk before it is accepted as is. Every pass
- * is a forced layout, so the count is kept low, and it is a bound rather than a way out: a card
- * that cannot hold its answer within them was asked to hold something it was never going to. */
+/** How many sizes the writing may be measured at before the fit is accepted. Every pass is a
+ * forced layout, so the count is kept low, and it is a bound rather than a way out: a card that
+ * cannot hold its answer within them was asked to hold something it was never going to. */
 const Passes = 6;
+
+/** How long a resized room rests before writing is refit. Dragging sizes the room every frame,
+ * and fitting every frame is a measurement per card per pass, so the old fit stands until it
+ * settles. Longer than the name's easing, so an expanding card finishes before measuring. */
+const ResizeSettleMs = 200;
 
 /** How many lines of itself an answer may take up before the writing is made smaller. The cards
  * are taller than they are wide and most of that height goes unused, so a long answer is two
@@ -20,9 +24,9 @@ const MaxLines = 2;
  * size stays a share of the card's width and only the reading of it is fitted. */
 const FitProperty = '--AnswerCard-Fit';
 
-/** Shrinks the writing until the answer fits, rather than cutting the end off: a font size that
- * fits its box is not expressible in CSS. `property` is where the result lands, and is passed
- * in because the two things that need fitting sit against different boxes. */
+/** Fits the writing into its room, rather than cutting the end off: a font size that fits its
+ * box is not expressible in CSS. `property` is where the result lands, and is passed in because
+ * the things that need fitting sit against different boxes. */
 export function useFittedText(
   node: RefObject<HTMLElement | null>,
   text: string,
@@ -31,15 +35,16 @@ export function useFittedText(
 ): void {
   const measure = useCallback(fit(node, property, minScale), [node, property, minScale]);
   useEffect(measure, [measure, text]);
-  // The box changes under the writing whenever the card is laid out, the window moves, or its
-  // row is resized. An observer rather than a measurement on mount, because a card measured
-  // before its font has loaded reports a size it never had and nothing afterwards would ask again.
+  // The room changes under the writing whenever the card is laid out or its row is resized, and
+  // the room's own observer catches both without asking every card to listen to the window.
   useBoxResize(node, measure);
-  useViewportMeasure(node, measure);
+  // A face that has not arrived yet is measured in its fallback and then never asked again: the
+  // room itself need not change when only the writing inside it does.
+  useFontsReady(node, measure);
 }
 
-/** The fitter for one element. A function rather than one body shared by three callers, because
- * the effect, the observer and the window measurement each hold it and each lets it go. */
+/** The fitter for one element. A function rather than one body shared by every caller, because
+ * the effect, the observer and the face-loading measurement each hold it and each lets it go. */
 function fit(
   node: RefObject<HTMLElement | null>,
   property: string,
@@ -52,36 +57,35 @@ function fit(
     if (element === null || roomOf(element).clientHeight === 0) {
       return;
     }
-    element.style.setProperty(property, '1');
+    // Turn the transition off while measuring, then restore it: a transition would make each
+    // pass measure the size being left rather than the one just set.
+    const easing = element.style.transition;
+    element.style.transition = 'none';
     scaleTo(element, property, minScale);
+    void element.offsetWidth;
+    element.style.transition = easing;
   };
 }
 
-/** How much of its full size the writing is drawn at. Each pass multiplies the size by what is
- * measured to be left over, rather than dividing by a ratio taken once at the larger size. */
+/** The largest size that fits rather than the first size a shrinking estimate lands on: sizes
+ * are searched so the writing stays as large as its card can hold. */
 function scaleTo(element: HTMLElement, property: string, minScale: number): void {
-  let scale = 1;
+  element.style.setProperty(property, '1');
+  if (fits(element)) {
+    return;
+  }
+  let smallest = minScale;
+  let largest = 1;
   for (let pass = 0; pass < Passes; pass += 1) {
+    const scale = (smallest + largest) / 2;
     element.style.setProperty(property, String(scale));
     if (fits(element)) {
-      return;
+      smallest = scale;
+    } else {
+      largest = scale;
     }
-    scale = Math.max(minScale, scale * shortfall(element));
   }
-  element.style.setProperty(property, String(scale));
-}
-
-/** How much smaller the writing must be drawn to fit, as a share of what it measures right now,
- * rather than a share of full size: the line count moves in whole lines, so asking against full
- * size answers the same question at every size. The width is asked the same way. */
-function shortfall(element: HTMLElement): number {
-  const height = textHeight(element);
-  const lines = linesIn(element);
-  const byHeight = height > 0 ? roomOf(element).clientHeight / height : 1;
-  const byLines = lines > 0 ? MaxLines / lines : 1;
-  const width = textWidth(element);
-  const byWidth = width > 0 ? element.clientWidth / width : 1;
-  return Math.min(1, byHeight, byLines, byWidth);
+  element.style.setProperty(property, String(smallest));
 }
 
 /** Whether the answer is within the card: as tall as the room gives it, no longer than the lines
@@ -132,9 +136,8 @@ function linesIn(element: HTMLElement): number {
   return height / lineHeight;
 }
 
-/** Call back whenever the element's own box changes size, which is the writing being re-fitted
- * to a room that has moved under it. Silent where the browser has no observer, since a card
- * that is never resized still has to be fitted once. */
+/** Refits the writing after the room it sits in changes size. The room, not the writing itself,
+ * is observed: the fitter changes the writing's box and would answer its own measurement. */
 function useBoxResize(node: RefObject<HTMLElement | null>, measure: () => void): void {
   useEffect(() => {
     const element = node.current;
@@ -142,8 +145,42 @@ function useBoxResize(node: RefObject<HTMLElement | null>, measure: () => void):
     if (element === null || view === undefined || typeof view.ResizeObserver !== 'function') {
       return;
     }
-    const observer = new view.ResizeObserver(measure);
-    observer.observe(element);
-    return () => observer.disconnect();
+    let settle: number | undefined;
+    const observer = new view.ResizeObserver(() => {
+      if (settle !== undefined) {
+        view.clearTimeout(settle);
+      }
+      settle = view.setTimeout(measure, ResizeSettleMs);
+    });
+    observer.observe(roomOf(element));
+    return () => {
+      observer.disconnect();
+      if (settle !== undefined) {
+        view.clearTimeout(settle);
+      }
+    };
+  }, [node, measure]);
+}
+
+/** Refits once the page's faces arrive: a fallback face can fit a room the real face never
+ * needed. */
+function useFontsReady(node: RefObject<HTMLElement | null>, measure: () => void): void {
+  useEffect(() => {
+    const fonts = node.current?.ownerDocument.fonts;
+    if (fonts === undefined) {
+      return;
+    }
+    let live = true;
+    const again = () => {
+      if (live) {
+        measure();
+      }
+    };
+    void fonts.ready.then(again);
+    fonts.addEventListener('loadingdone', again);
+    return () => {
+      live = false;
+      fonts.removeEventListener('loadingdone', again);
+    };
   }, [node, measure]);
 }

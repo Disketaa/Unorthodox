@@ -2,6 +2,7 @@
  * the face is decoration on it and a Stack here would fight the button's own box. Split out of
  * the card so the card's own file stays under the line limit. */
 import type { ThemeCardProps } from './ThemeCard';
+import { FittedThemeName } from './FittedThemeName';
 import styles from './ThemeCard.module.css';
 import { RoundMeter } from '../RoundMeter';
 
@@ -23,7 +24,7 @@ export function CardFace({
         </span>
       </span>
       <span class={styles.Noise} aria-hidden="true" />
-      <span class={styles.Name}>{name}</span>
+      <FittedThemeName name={name} />
       <RoundMeter rounds={rounds ?? 10} spent={spent ?? 0} />
     </>
   );
