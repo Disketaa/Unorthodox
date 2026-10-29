@@ -20,6 +20,11 @@ export class InMemoryTransport implements Transport {
     InMemoryTransport.peersByPeer.clear();
   }
 
+  /** How many peers are registered with the broker. Used to assert no peer leaks after stop(). */
+  static peerCount(): number {
+    return InMemoryTransport.peersByPeer.size;
+  }
+
   /** This peer's transport-level address, assigned when it joins. */
   private peerAddress: string | null = null;
   /** The game player id, which the host assigns and is not routable. */
