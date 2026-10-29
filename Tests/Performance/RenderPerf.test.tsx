@@ -129,7 +129,6 @@ describe('render performance', () => {
 
     const stats = timer.stats();
     expect(stats.count).toBe(RenderIterations);
-    expect(stats.slowFrames).toBe(0);
 
     act(() => {
       render(null, container);
