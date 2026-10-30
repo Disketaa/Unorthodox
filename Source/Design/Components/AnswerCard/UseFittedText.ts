@@ -34,15 +34,11 @@ export function useFittedText(
   minScale: number = MinScale
 ): void {
   const measure = useCallback(fit(node, property, minScale), [node, property, minScale]);
-  // Coalesced to one fit per frame: writing arriving a letter at a time would otherwise force a
-  // full binary search on every letter, at a rate the display can never show.
+  // Measure on every text change: cancelling a pending rAF on each keystroke means the fit
+  // never runs while typing, so the text stays unfitted until the user stops. Only the card
+  // being typed in re-measures, so the cost is bounded.
   useEffect(() => {
-    if (typeof requestAnimationFrame !== 'function') {
-      measure();
-      return;
-    }
-    const frame = requestAnimationFrame(measure);
-    return () => cancelAnimationFrame(frame);
+    measure();
   }, [measure, text]);
   // The room changes under the writing whenever the card is laid out or its row is resized, and
   // the room's own observer catches both without asking every card to listen to the window.
