@@ -6,6 +6,7 @@ import { syncClockFromServer } from '@/Network/Clock';
 import { preloadSounds } from '@/Design/Sounds';
 import { preloadMusic } from '@/Design/Music';
 import { pruneStrayPath } from './Routes';
+import { installPerfInstrumentation } from './PerfInstrumentation';
 import '@/Design/Tokens.css';
 import '@/Design/Reset.css';
 
@@ -31,6 +32,10 @@ void preloadMusic();
  * localStorage, so it works wherever the ?debug ended up. */
 if (isDebugEnabled()) {
   setLogLevel('debug');
+}
+
+if (import.meta.env.DEV) {
+  installPerfInstrumentation();
 }
 
 const root = document.getElementById('root');

@@ -18,6 +18,7 @@ import { loadMarks, saveMarks } from './MarksStorage';
 import { useSessionUpdates } from './UseSessionUpdates';
 import { useLocalFlags } from './UseLocalFlags';
 import { useOwnLook } from './UseOwnLook';
+import { usePerfPhase } from './UsePerfPhase';
 import { exitRoom, readTopic, reportEditing } from './SessionUtils';
 import { GameSessionView } from './GameSessionView';
 
@@ -91,6 +92,18 @@ function sessionActions(session: Session) {
   };
 }
 
+/** Let the performance run step the room into a hidden phase, such as the winning show, through
+ * the host's console jump. Off unless the perf sink is installed, and the host owns the jump. */
+function exposePerfJump(session: Session): void {
+  const perfWindow = window as unknown as {
+    __perf?: unknown;
+    __perfJump?: (phase: PhaseName) => void;
+  };
+  if (!import.meta.env.DEV || perfWindow.__perf === undefined) return;
+  if (session.jumpToPhase === undefined) return;
+  perfWindow.__perfJump = session.jumpToPhase;
+}
+
 /** Join a room and expose one uniform view of the game for the screens. */
 export function useGameSession(
   roomCode: string,
@@ -104,6 +117,8 @@ export function useGameSession(
   useSessionUpdates(session, bump, setHostLeft);
   const publicState = session.getPublicState();
   const { phase, topic } = usePhaseAndTopic(session, publicState);
+  usePerfPhase(phase.phase);
+  exposePerfJump(session);
   const { marks, actions } = useRoundMarks(session, publicState, roomCode, topic);
   useRoundClocks(session, role === 'Host', phase, actions);
   const { ownLook, bank } = useOwnLookAndBank(session, phase, onLook, roomCode, publicState);

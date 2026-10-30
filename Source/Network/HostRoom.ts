@@ -2,6 +2,7 @@
  * write does the same three things in order — reduce, store, tell everybody — which is what
  * stops a new move from writing state the clients never hear about. */
 import type { GameAction, HostState } from '@/Game';
+import { reportCommit } from '@/Core';
 import { HostRoster } from './HostRoster';
 import { publishPublicState } from './HostOutgoing';
 import { forgetRoom, loadRoomState, saveRoomState } from './RoomStateStore';
@@ -69,6 +70,7 @@ export class HostRoom {
    * move the flow made and one the reducer made reach the clients by the same path. */
   commit(next: HostState): void {
     this.state = next;
+    reportCommit();
     // Written on every change rather than on the way out, because a refresh never runs
     // the way out: the tab is gone, and this is what the room comes back to.
     if (this.roomCode !== undefined) {

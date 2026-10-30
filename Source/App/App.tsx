@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { ComponentChildren } from 'preact';
-import { PlayerLook, randomLook } from '@/Core';
+import { PlayerLook, randomLook, type CharacterColor } from '@/Core';
 import { GalleryPage } from '@/Dev/ComponentGallery/GalleryPage';
 import { JoinScreen } from '@/Screens';
 import type { JoinScreenProps } from '@/Screens';
@@ -132,20 +132,7 @@ function roomPropsFor(
   };
 }
 
-export function App() {
-  const route = useHashRoute();
-  const entry = useEntryScreen(route.kind === 'Room' ? route.roomCode : undefined);
-  const [look, setLook] = useState<PlayerLook>(() => loadLook() ?? randomLook(Math.random));
-  const { accent, onLook: onAccentLook } = useAccent();
-
-  // The gallery is the one place that asks for no music in as many words; every
-  // other screen shares its track with the last one or hands over to another.
-  useQuietMusic(route.kind === 'Gallery');
-  const onLook = (next: PlayerLook) => {
-    onAccentLook(next);
-    setLook(next);
-  };
-
+function specialRoute(route: Route, accent: CharacterColor): ComponentChildren | undefined {
   if (route.kind === 'Gallery') {
     return (
       <>
@@ -154,7 +141,26 @@ export function App() {
       </>
     );
   }
-  const room = roomPropsFor(route, entry, look, onLook);
+  return undefined;
+}
+
+function renderRoute(
+  route: Route,
+  entry: ReturnType<typeof useEntryScreen>,
+  look: PlayerLook,
+  setLook: (look: PlayerLook) => void,
+  accent: CharacterColor,
+  onAccentLook: (look: PlayerLook) => void
+): ComponentChildren {
+  const nextLook = (next: PlayerLook) => {
+    onAccentLook(next);
+    setLook(next);
+  };
+
+  const special = specialRoute(route, accent);
+  if (special !== undefined) return special;
+
+  const room = roomPropsFor(route, entry, look, nextLook);
   if (room !== undefined) {
     return (
       <>
@@ -169,4 +175,14 @@ export function App() {
       <Entry {...entry} />
     </>
   );
+}
+
+export function App() {
+  const route = useHashRoute();
+  const entry = useEntryScreen(route.kind === 'Room' ? route.roomCode : undefined);
+  const [look, setLook] = useState<PlayerLook>(() => loadLook() ?? randomLook(Math.random));
+  const { accent, onLook: onAccentLook } = useAccent();
+
+  useQuietMusic(route.kind === 'Gallery');
+  return renderRoute(route, entry, look, setLook, accent, onAccentLook);
 }

@@ -12,3 +12,4 @@ export * from './JsonPaste';
 export * from './JsonSyntax';
 export * from './Modifiers';
 export * from './LetterPairs';
+export * from './PerfHooks';

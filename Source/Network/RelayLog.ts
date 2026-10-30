@@ -3,7 +3,7 @@ import type { ServerFrame } from './RelayFrames';
 
 /** The one relay this build talks to. Kept here so the report names the same address the socket
  * opened, instead of a copy that can drift from it. */
-export const RelayUrl = 'wss://relay.144-31-61-203.sslip.io/game';
+export const RelayUrl = 'ws://localhost:8080';
 
 type RelayStatus = 'idle' | 'connecting' | 'open' | 'closed' | 'error';
 let status: RelayStatus = 'idle';

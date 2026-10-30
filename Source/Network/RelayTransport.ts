@@ -1,3 +1,4 @@
+import { reportWire } from '@/Core';
 import { Transport } from './Transport';
 import { dispatchFrame, type ServerFrame } from './RelayFrames';
 import { RelaySocket } from './RelaySocket';
@@ -24,14 +25,17 @@ export class RelayTransport implements Transport {
   private onHostBackCb: (() => void) | undefined;
 
   sendToHost(message: unknown): void {
+    reportWire('tx', message, bytesOf(message));
     this.socket?.send({ type: 'ToHost', data: message });
   }
 
   sendToPeer(peerId: string, message: unknown): void {
+    reportWire('tx', message, bytesOf(message));
     this.socket?.send({ type: 'ToPeer', peerId, data: message });
   }
 
   broadcast(message: unknown): void {
+    reportWire('tx', message, bytesOf(message));
     this.socket?.send({ type: 'Broadcast', data: message });
   }
 
@@ -80,6 +84,7 @@ export class RelayTransport implements Transport {
       return;
     }
     relayReceived(frame);
+    reportWire('rx', frame.type === 'Data' ? frame.data : frame, event.data.length);
     dispatchFrame(frame, {
       opened: (hostPresent) => {
         this.hostPresent = hostPresent;
@@ -120,5 +125,13 @@ export class RelayTransport implements Transport {
 
   getPlayerId(): string | null {
     return this.playerId || null;
+  }
+}
+
+function bytesOf(message: unknown): number {
+  try {
+    return JSON.stringify(message)?.length ?? 0;
+  } catch {
+    return 0;
   }
 }
