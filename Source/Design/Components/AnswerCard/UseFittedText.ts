@@ -1,5 +1,7 @@
 import type { RefObject } from 'preact';
-import { useCallback, useEffect } from 'preact/hooks';
+import { useCallback, useEffect, useRef } from 'preact/hooks';
+import { measureText } from './MeasureText';
+import type { TextMeasure } from './MeasureText';
 
 /** How much of the writing a card may give up before it is drawn too small to read at all. A
  * floor on the size rather than on the search, since the search measures what is left over. */
@@ -34,11 +36,20 @@ export function useFittedText(
   minScale: number = MinScale
 ): void {
   const measure = useCallback(fit(node, property, minScale), [node, property, minScale]);
-  // Measure on every text change: cancelling a pending rAF on each keystroke means the fit
-  // never runs while typing, so the text stays unfitted until the user stops. Only the card
-  // being typed in re-measures, so the cost is bounded.
+  const frameRef = useRef<number | undefined>(undefined);
+  // Measure after layout (rAF), and never cancel: cancelling on every change kept the fit from
+  // running at all while a count or a keystroke changed the text every frame. One frame is
+  // pending at a time, and it measures the DOM as it stands, latest text included.
   useEffect(() => {
-    measure();
+    if (frameRef.current !== undefined) return;
+    if (typeof requestAnimationFrame !== 'function') {
+      measure();
+      return;
+    }
+    frameRef.current = requestAnimationFrame(() => {
+      frameRef.current = undefined;
+      measure();
+    });
   }, [measure, text]);
   // The room changes under the writing whenever the card is laid out or its row is resized, and
   // the room's own observer catches both without asking every card to listen to the window.
@@ -87,7 +98,8 @@ function scaleTo(element: HTMLElement, property: string, minScale: number): void
   // Glyph advances grow with the size, so a line's own overflow is exactly how far to shrink it:
   // one measurement in place of a search from the middle. Wrapping breaks that ratio, so a room
   // it still does not fit falls back to the search, which never assumes the estimate was right.
-  const estimate = whole.lines === 1 && whole.width > 0 ? Math.min(1, maxWidth / whole.width) : 1;
+  const estimate =
+    whole.lines === 1 && whole.width > 0 ? Math.min(1, maxWidth / whole.width) : 1;
   if (estimate > minScale) {
     element.style.setProperty(property, String(estimate));
     if (within(measureText(element), maxHeight, maxWidth)) {
@@ -114,30 +126,10 @@ function within(text: TextMeasure, maxHeight: number, maxWidth: number): boolean
   return text.height <= maxHeight && text.lines <= MaxLines && text.width <= maxWidth;
 }
 
-/** What the writing measures at the size it is drawn, read in one go: each read is a layout. */
-interface TextMeasure {
-  height: number;
-  lines: number;
-  width: number;
-}
-
 /** The card's inner room, which is the space the answer has to be written into. Its parent by
  * construction: the answer is the only thing in the room, and the room fills the card. */
 function roomOf(element: HTMLElement): HTMLElement {
   return element.parentElement ?? element;
-}
-
-/** What the writing measures at the size it is drawn, read in one go: each read is a layout. The
- * width is the writing's own rather than the box around it, so a centred line that outgrows the
- * box — `scrollWidth` counts only the far side — is doubled back before it is compared. */
-function measureText(element: HTMLElement): TextMeasure {
-  const range = element.ownerDocument.createRange();
-  range.selectNodeContents(element);
-  const height = range.getBoundingClientRect().height;
-  const lines = range.getClientRects().length;
-  const overflow = element.scrollWidth - element.clientWidth;
-  const width = overflow > 0 ? element.scrollWidth + overflow : element.clientWidth;
-  return { height, lines, width };
 }
 
 /** Refits the writing after the room it sits in changes size. The room, not the writing itself,

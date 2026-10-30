@@ -13,6 +13,14 @@ textarea {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Double-tap zoom. A phone answers two quick taps on anything by zooming in, and this game is
+ * played by pressing cards and keys over and over: the second press of the same thing would
+ * zoom the page instead of landing. `manipulation` keeps scrolling and pinching and drops only
+ * that one gesture, so the page still scales for a reader who needs it to. */
+html {
+  touch-action: manipulation;
+}
+
 /* The focus ring. Kept for the keyboard and dropped for the mouse. `:focus-visible` is what
  * tells the two apart, but a plain `outline: none` would take it from the keyboard as well, so
  * the ring comes back for anything focused by keyboard and stays away for a click. */
