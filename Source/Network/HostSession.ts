@@ -1,3 +1,4 @@
+import { reportCommit, reportPhase } from '@/Core/PerfHooks';
 import { Transport } from './Transport';
 import { HostInbox } from './HostInbox';
 import { hostFlowMoves, type HostFlowMoves } from './HostFlowMoves';
@@ -56,6 +57,11 @@ export class HostSession implements HostFlowMoves, HostRoomOpener {
   private write(state: Game.HostState): void {
     this.room.commit(state);
     answerBots(this);
+    reportCommit();
+    reportPhase(state.phase);
+    if (typeof window !== 'undefined' && (window as any).__perfAudit) {
+      (window as any).__perfAudit.push({ phase: state.phase, at: performance.now() });
+    }
   }
   submitOwnAnswer(text: string): void {
     this.apply({ type: 'SUBMIT_ANSWER', playerId: HostPlayerId, text, at: Date.now() });

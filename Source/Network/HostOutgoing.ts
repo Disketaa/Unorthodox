@@ -1,5 +1,6 @@
 import * as Game from '@/Game';
 import { createLogger } from '@/Core';
+import { reportWire } from '@/Core/PerfHooks';
 import type { Transport } from './Transport';
 
 const log = createLogger('HostOutgoing');
@@ -10,5 +11,8 @@ const log = createLogger('HostOutgoing');
 export function publishPublicState(state: Game.HostState, transport: Transport): void {
   const publicState = Game.toPublicState(state);
   log('debug', 'broadcasting', publicState.phase);
-  transport.broadcast({ type: 'State', state: publicState, hostNow: Date.now() });
+  const msg = { type: 'State', state: publicState, hostNow: Date.now() };
+  const bytes = JSON.stringify(msg).length;
+  reportWire('tx', msg, bytes);
+  transport.broadcast(msg);
 }
