@@ -182,7 +182,13 @@ test.describe('game performance', () => {
         shift: P.shift || 0,
         live: [...(P.live || [])],
         longtask: (P.longtask || []).length,
-        loaf: (P.loaf || []).length,
+        loaf: (P.loaf || []).slice(0, 5),
+        loafCount: (P.loaf || []).length,
+        timers: Object.entries(P.timers || {}),
+        renders: P.renders || {},
+        flushes: (P.flushes || []).slice(0, 5),
+        flushCount: (P.flushes || []).length,
+        wire: P.wire || {},
         commits: Object.values(P.commits || {}).reduce((a: number, b: number) => a + b, 0),
       };
     });
@@ -198,8 +204,38 @@ test.describe('game performance', () => {
       console.log(`avg: ${(times.reduce((a, b) => a + b, 0) / times.length).toFixed(1)}ms`);
       console.log(`DOM mutations: ${perfData.mutations}`);
       console.log(`Layout shift sum: ${perfData.shift.toFixed(3)}`);
-      console.log(`Long tasks: ${perfData.longtask}, LoAF: ${perfData.loaf}`);
+      console.log(`Long tasks: ${perfData.longtask}, LoAF: ${perfData.loafCount}`);
       console.log(`Live timers after game: ${perfData.live.length}, Commits: ${perfData.commits}`);
+
+      // Phase 5 reporting
+      console.log(`\n--- Worst LoAF entries ---`);
+      for (const e of perfData.loaf) {
+        const scripts = (e.scripts ?? [])
+          .map((s: any) => s.name || 'unknown')
+          .filter((n: string) => n && n !== 'unknown')
+          .join(',');
+        console.log(`  ${e.phase} blocking=${(e.blockingDuration || 0).toFixed(1)}ms scripts=${scripts || '(none)'}`);
+      }
+
+      console.log(`\n--- Timer census ---`);
+      for (const [key, count] of perfData.timers.slice(0, 10)) {
+        console.log(`  ${count}x ${key}`);
+      }
+
+      console.log(`\n--- Network wire ---`);
+      for (const [key, val] of Object.entries(perfData.wire)) {
+        const v = val as { count: number; bytes: number };
+        console.log(`  ${key}: ${v.count} msgs, ${v.bytes} bytes`);
+      }
+
+      console.log(`\n--- Component renders ---`);
+      for (const [phase, phaseRenders] of Object.entries(perfData.renders)) {
+        const entries = Object.entries(phaseRenders as Record<string, number>)
+          .sort((a: any, b: any) => b[1] - a[1])
+          .slice(0, 5);
+        console.log(`  ${phase}:`);
+        for (const [name, count] of entries) console.log(`    ${count}x ${name}`);
+      }
 
       // Phase 4 assertions — soft so every failure is reported, not just the first.
       // Thresholds set at observed baseline + ~10% margin so a real regression trips them.
@@ -213,6 +249,7 @@ test.describe('game performance', () => {
       expect.soft(perfData.commits).toBeGreaterThan(0);
     }
 
+    await page.screenshot({ path: 'test-results/one-round-1x.png', fullPage: true });
     await context.close();
   });
 

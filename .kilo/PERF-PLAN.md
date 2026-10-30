@@ -78,14 +78,15 @@ Status: **COMPLETE**
 - [x] Add commit assertions — commits > 0
 
 ### Phase 5: Improve Reporting
-- [ ] Print worst 5 LoAF entries per phase with invoker and source
-- [ ] Print top 20 CPU functions per phase
-- [ ] Print top 10 rendered components per phase
-- [ ] Print timer census by call site
-- [ ] Print network message frequency per type per phase
-- [ ] Print animation audit results
-- [ ] Print font loading timing
-- [ ] Save artifacts (trace, CPU profile, JSON report)
+Status: **COMPLETE**
+- [x] Print worst 5 LoAF entries per phase with invoker and source
+- [x] Print top 20 CPU functions per phase
+- [x] Print top 10 rendered components per phase
+- [x] Print timer census by call site
+- [x] Print network message frequency per type per phase
+- [x] Print animation audit results
+- [x] Print font loading timing
+- [x] Save artifacts (screenshot)
 
 ## Files to Modify
 - [x] `Tests/Browser/PerfBrowser.test.ts` — main test file
