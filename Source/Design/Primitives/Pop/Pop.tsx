@@ -1,5 +1,6 @@
 import { ComponentChildren } from 'preact';
 import { useCallback, useRef } from 'preact/hooks';
+import { memo } from 'preact/compat';
 import styles from './Pop.module.css';
 
 export interface PopProps {
@@ -43,10 +44,24 @@ function delayMsOf(delay: string | undefined): number {
   return 0;
 }
 
+/** Compares Pop props, skipping `children`: an inline VNode is a new reference every render, but
+ * when the trigger and timing props are unchanged the pop itself does not need to re-run.
+ * Children's content only changes together with `trigger`, so ignoring `children` is safe. */
+function popPropsEqual(prev: PopProps, next: PopProps): boolean {
+  return (
+    prev.trigger === next.trigger &&
+    prev.index === next.index &&
+    prev.stagger === next.stagger &&
+    prev.delay === next.delay &&
+    prev.squash === next.squash &&
+    prev.onStart === next.onStart
+  );
+}
+
 /** Runs its child through the squash-and-stretch pop, replaying whenever the trigger changes.
  * Uses the individual `scale`, `rotate` and `translate` properties, which compose with an
  * ancestor's `transform`, so a pop plays over an idle sway without either replacing the other. */
-export function Pop({ trigger, index, stagger, delay, squash, onStart, children }: PopProps) {
+export const Pop = memo(function Pop({ trigger, index, stagger, delay, squash, onStart, children }: PopProps) {
   // The sound callback is read through a ref rather than closed over. A caller cannot hold a
   // callback still across renders, and this ref callback re-running on every new identity would
   // put a fresh timer on the node, which fires that callback, which renders, and around again.
@@ -97,4 +112,4 @@ export function Pop({ trigger, index, stagger, delay, squash, onStart, children 
       {children}
     </span>
   );
-}
+}, popPropsEqual);

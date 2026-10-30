@@ -2,6 +2,7 @@ import { LobbyScreen } from '@/Screens';
 import { Pace } from '@/Game';
 import { savedCustomThemes, type ThemeId, type ThemeMode, type CustomTheme } from '@/Core';
 import { GameSessionView } from '../Hooks/UseGameSession';
+import { useCallback, useMemo } from 'preact/hooks';
 
 export interface PhaseViewProps {
   view: GameSessionView;
@@ -29,15 +30,17 @@ export function LobbyView({ view }: PhaseViewProps) {
     view.publicState?.phase === 'Lobby' ? view.publicState.themeMode : 'Random';
   const themes: readonly ThemeId[] =
     view.publicState?.phase === 'Lobby' ? view.publicState.themes : [];
-  // The custom themes, read from this browser's own cache and not from the room's state: a
-  // theme is written down when it is pasted, so a host's themes outlive both the browser and
-  // the room. The room's own are merged in.
-  const customThemes: readonly CustomTheme[] = mergeCustomThemes(
-    view.publicState?.phase === 'Lobby' ? view.publicState.customThemes : []
+  // The custom themes, merged from this browser's cache and the room's state. Memoized so a
+  // re-render that changes nothing here does not hand a new array down to every lobby card.
+  const customThemes: readonly CustomTheme[] = useMemo(
+    () => mergeCustomThemes(view.publicState?.phase === 'Lobby' ? view.publicState.customThemes : []),
+    [view.publicState?.customThemes]
   );
   // The name the host has for us, not the one typed on this tab: the character is the
   // host's to keep, so the picker is headed with what the room actually calls us.
   const ownName = players.find((player) => player.id === view.playerId)?.name ?? '';
+  // Kept stable so SettingsCard → LobbyPace → LobbyThemes do not re-render on every lobby tick.
+  const onLoadCustomThemes = useCallback(() => {}, []);
   return (
     <LobbyScreen
       roomCode={view.roomCode}
@@ -48,7 +51,7 @@ export function LobbyView({ view }: PhaseViewProps) {
       customThemes={customThemes}
       onCustomThemes={view.setCustomThemes}
       onRemoveCustomTheme={view.removeCustomTheme}
-      onLoadCustomThemes={() => {}}
+      onLoadCustomThemes={onLoadCustomThemes}
       ownPlayerId={view.playerId}
       ownPlayerName={ownName}
       ownLook={view.ownLook}

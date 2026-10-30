@@ -101,21 +101,24 @@ Status: **IN PROGRESS**
 
 ### Phase 6.2: Cut Render Cost (7509x Pop renders)
 - [x] Memoize Face, Character — all-primitive props, `memo` skips re-render when props unchanged
-- [ ] Memoize Pop, Key, SeatShine — not done; children are inline VNodes (new reference each render), so `memo` would not skip
-- [x] Stop full re-renders from UseCountdown ticks — `useUiTick` paces to 100ms; memoized children skip most of the render cost
-- [ ] Cache getComputedStyle in UseFittedText — item obsolete; `UseFittedText.ts` has no `getComputedStyle` call. Replaced by `tokenValue` cache in `TokenValues.ts`. Remove from plan.
+- [x] Memoize Key, LangKey — props are stable primitives, `memo` skips re-render when unchanged
+- [x] Memoize Pop — custom comparator skips `children` (inline VNode), compares trigger/timing props only
+- [x] SeatShine — assessed, memo doesn't help (entry is new object ref each render, component is trivial)
+- [x] Stop full re-renders from UseCountdown ticks — `useUiTick` paces to 100ms; memoized children skip most render cost
+- [x] Cache getComputedStyle in UseFittedText — item obsolete; `UseFittedText.ts` has no `getComputedStyle` call. Replaced by `tokenValue` cache in `TokenValues.ts`. Removed from plan.
+- [x] Split UseGameSession.ts into modules — file exceeded 150-line limit; extracted UseRoundMarks, UsePhaseAndTopic, UseOwnLookAndBank, SessionActions, ExposePerfJump, SessionView
 
 ### Phase 6.3: Reduce LoAF Blocking (96.5ms Lobby)
-- [ ] Split Lobby blocking work — defer non-critical work (needs profiling stack trace to target)
-- [ ] Batch perf instrumentation writes — not needed; `reportCommitAt` is an O(1) array push
+- [x] Split Lobby blocking work — `useGameSession` keeps `publicState` in a ref (only changes on session notification), `LobbyView` memoizes `customThemes` and `onLoadCustomThemes`, `LobbyScreen` memoized with `memo`
+- [x] Batch perf instrumentation writes — not needed; `reportCommitAt` is an O(1) array push
 - [x] Defer TextureOverlay shift writes — paced by `performance.now()` already defers under speedup
 
 ## Files to Modify
 - [x] `Tests/Browser/PerfBrowser.test.ts` — main test file
 - [x] `Source/App/PerfInstrumentation.ts` — Preact instrumentation
-- [x] `Source/App/Hooks/UseGameSession.ts` — phase change hooks
+- [x] `Source/App/Hooks/UseGameSession.ts` — phase change hooks (split into modules, publicState ref)
 - [x] `Source/Network/RelayTransport.ts` — wire tracking
-- [x] `Source/App/main.tsx` — install instrumentation
+- [x] `Source/App/main.tsx` — install instrumentation, gated behind debug flag
 - [x] `Source/Core/PerfHooks.ts` — perf hooks
 - [x] `Source/App/Hooks/UseCountdown.ts` — migrate to useUiTick
 - [x] `Source/App/Hooks/UseEnchantFlash.ts` — migrate to useUiTick
@@ -125,21 +128,35 @@ Status: **IN PROGRESS**
 - [x] `Source/App/Hooks/UseReveal.ts` — migrate to useUiTick
 - [x] `Source/App/Views/WinningView.tsx` — migrate to useUiTick
 - [x] `Source/App/App.tsx` — NameStorage import
+- [x] `Source/App/Views/LobbyView.tsx` — memoized customThemes and onLoadCustomThemes
+- [x] `Source/Screens/LobbyScreen/LobbyScreen.tsx` — memoized with memo()
 - [x] `Source/Design/Components/AnswerCard/UseCardPop.ts` — migrate to tokenValue
 - [x] `Source/Design/Components/AnswerCard/UseFittedText.ts` — rAF coalescing, fast path, single measure
+- [x] `Source/Design/Components/AnswerCard/AnswerFace.tsx` — memoized Face
 - [x] `Source/Design/Components/Leaderboard/LeaderboardShow.ts` — migrate to tokenValue
 - [x] `Source/Design/Components/PlayerBar/PlayerBar.tsx` — migrate to tokenValue
 - [x] `Source/Design/Components/PlayerBar/SlotLimit.ts` — migrate to tokenValue
 - [x] `Source/Design/Components/ScoreTiming.ts` — migrate to tokenValue
+- [x] `Source/Design/Components/Character/Character.tsx` — memoized Character
+- [x] `Source/Design/Components/Keyboard/KeyboardKey.tsx` — memoized Key and LangKey
+- [x] `Source/Design/Primitives/Pop/Pop.tsx` — memoized with custom comparator
 - [x] `Source/Design/Overlays/GlyphField/GlyphParallaxDriver.ts` — gated style writes
 - [x] `Source/Design/Overlays/TextureOverlay/TextureOverlay.tsx` — paced shifts
 - [x] `Source/Network/HostSession.ts` — reportCommitAt
+- [x] `Source/App/Hooks/UseRandomPick.ts` — fixed armed timeouts (startedAt dep + ref)
+- [x] `Source/Design/TokenValues.ts` — no empty-value cache, var(--x, fallback) resolver
 - [x] `test-results/full-game.png` — updated screenshot
 
 ## Files to Create
 - [x] `Source/App/Hooks/UseUiTick.ts` — shared paced tick hook
 - [x] `Source/Design/TokenValues.ts` — cached CSS custom property reader
 - [x] `Source/App/NameStorage.ts` — name persistence extracted from App.tsx
+- [x] `Source/App/Hooks/UseRoundMarks.ts` — extracted from UseGameSession
+- [x] `Source/App/Hooks/UsePhaseAndTopic.ts` — extracted from UseGameSession
+- [x] `Source/App/Hooks/UseOwnLookAndBank.ts` — extracted from UseGameSession
+- [x] `Source/App/Hooks/SessionActions.ts` — extracted from UseGameSession
+- [x] `Source/App/Hooks/ExposePerfJump.ts` — extracted from UseGameSession
+- [x] `Source/App/Hooks/SessionView.ts` — extracted from UseGameSession
 
 ## Notes
 - The test runs at 1000x speed, so 60s writing phase = 60ms real time

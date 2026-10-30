@@ -1,4 +1,5 @@
 import { Screen } from '@/Design/Primitives';
+import { memo } from 'preact/compat';
 import { CharacterColor, CharacterId, PlayerId, ThemeId, ThemeMode, CustomTheme } from '@/Core';
 import { Pace, PublicPlayer } from '@/Game';
 import { RoomCard } from './RoomCard';
@@ -49,7 +50,7 @@ export interface LobbyScreenProps {
 }
 
 /** Waiting room: room code, roster, character picker. */
-export function LobbyScreen(props: LobbyScreenProps) {
+export const LobbyScreen = memo(function LobbyScreen(props: LobbyScreenProps) {
   const popup = useCustomThemesPopup(props.onRemoveCustomTheme, props.onCustomThemes);
   return (
     <Screen>
@@ -88,4 +89,4 @@ export function LobbyScreen(props: LobbyScreenProps) {
       />
     </Screen>
   );
-}
+});

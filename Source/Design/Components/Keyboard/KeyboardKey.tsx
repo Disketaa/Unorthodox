@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'preact/hooks';
 import type { VNode } from 'preact';
+import { memo } from 'preact/compat';
 import styles from './Keyboard.module.css';
 import { useGlintVariant } from '../Glint';
 import { Lang, type KeyboardKey } from './Keyboard';
@@ -44,7 +45,7 @@ function useKeyPress(
 }
 
 /** One key: a letter, a glyph, or a drawn mark. */
-export function Key({
+export const Key = memo(function Key({
   keyName,
   pressCount,
   disabled,
@@ -89,7 +90,7 @@ export function Key({
       {icon !== undefined && <span class={styles.Icon} aria-hidden="true" />}
     </button>
   );
-}
+});
 
 /** The classes a key carries. The pop is not one of them: it is put on and taken off the element
  * by hand, so that a second press restarts it rather than leaving it already running. */
@@ -114,6 +115,6 @@ function keyClass(
 
 /** The language key, which swaps the letters rather than typing one, and so is the one key here
  * that a press does not repeat. Split out so the repeating keys carry no condition at all. */
-export function LangKey(props: Omit<KeyProps, 'repeats' | 'keyName'>): VNode {
+export const LangKey = memo(function LangKey(props: Omit<KeyProps, 'repeats' | 'keyName'>): VNode {
   return <Key {...props} keyName={Lang.key} repeats={false} />;
-}
+});
