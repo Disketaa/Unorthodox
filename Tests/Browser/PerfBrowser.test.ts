@@ -65,8 +65,32 @@ test.describe('game performance', () => {
       }) as typeof window.clearInterval;
       new PerformanceObserver((list: any[]) => {
         for (const e of list.getEntries()) {
-          if (e.entryType === 'longtask') P.longtask.push({ ...e, phase: P.phase });
-          if (e.entryType === 'long-animation-frame') P.loaf.push({ ...e, phase: P.phase });
+          const entry: any = {
+            name: e.name,
+            entryType: e.entryType,
+            startTime: e.startTime,
+            duration: e.duration,
+            phase: P.phase,
+          };
+          if (e.entryType === 'longtask') {
+            entry.at = e.startTime;
+            P.longtask.push(entry);
+          }
+          if (e.entryType === 'long-animation-frame') {
+            entry.navigationId = e.navigationId;
+            entry.paintTime = e.paintTime;
+            entry.presentationTime = e.presentationTime;
+            entry.renderStart = e.renderStart;
+            entry.styleAndLayoutStart = e.styleAndLayoutStart;
+            entry.blockingDuration = e.blockingDuration;
+            entry.scripts = (e.scripts ?? []).map((s: any) => ({
+              name: s.name,
+              entryType: s.entryType,
+              startTime: s.startTime,
+              duration: s.duration,
+            }));
+            P.loaf.push(entry);
+          }
           if (e.entryType === 'event') P.event.push({ ...e, phase: P.phase });
           if (e.entryType === 'layout-shift') P.shift += e.value;
           if (e.entryType === 'resource') P.resources.push({ ...e, phase: P.phase });
@@ -214,7 +238,7 @@ test.describe('game performance', () => {
           .map((s: any) => s.name || 'unknown')
           .filter((n: string) => n && n !== 'unknown')
           .join(',');
-        console.log(`  ${e.phase} blocking=${(e.blockingDuration || 0).toFixed(1)}ms scripts=${scripts || '(none)'}`);
+        console.log(`  ${e.phase} blocking=${(e.blockingDuration || 0).toFixed(1)}ms duration=${(e.duration || 0).toFixed(1)}ms scripts=${scripts || '(none)'}`);
       }
 
       console.log(`\n--- Timer census ---`);

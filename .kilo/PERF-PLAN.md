@@ -87,6 +87,7 @@ Status: **COMPLETE**
 - [x] Print animation audit results
 - [x] Print font loading timing
 - [x] Save artifacts (screenshot)
+- [x] Fix LoAF entry serialization — was dropping all fields except phase; now captures blockingDuration, duration, renderStart, scripts
 
 ## Files to Modify
 - [x] `Tests/Browser/PerfBrowser.test.ts` — main test file
