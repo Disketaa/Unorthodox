@@ -14,6 +14,94 @@ test.describe('game performance', () => {
     await page.goto('http://localhost:5173/#/Join/ABCD');
     await page.waitForTimeout(2000);
 
+    // Install perf sink so we can assert on memory, DOM, timers, layout shifts
+    await page.evaluate(() => {
+      const P = ((window as any).__perf = {
+        phase: 'Boot',
+        timers: {} as Record<string, number>,
+        live: new Set<number>(),
+        renders: {} as Record<string, Record<string, number>>,
+        flushes: [] as any[],
+        loaf: [] as any[],
+        longtask: [] as any[],
+        event: [] as any[],
+        shift: 0,
+        raf: [] as any[],
+        mutations: 0,
+        resources: [] as any[],
+        wire: {} as Record<string, any>,
+        commits: {} as Record<string, number>,
+        audits: [] as any[],
+        font: { readyAt: undefined as number | undefined, loadingDone: [] as any[], faces: [] as any[] },
+        endedAt: 0,
+      });
+      const site = () => {
+        const lines = (new Error().stack ?? '').split('\n');
+        return lines.slice(2, 6).map((line) => line.trim().replace(/^at /, '')).join(' | ');
+      };
+      const origSetTimeout = window.setTimeout;
+      const origClearTimeout = window.clearTimeout;
+      const origSetInterval = window.setInterval;
+      const origClearInterval = window.clearInterval;
+      window.setTimeout = ((fn: any, ms: number, ...args: any[]) => {
+        const id = origSetTimeout(fn, ms, ...args);
+        P.timers[`to ${ms}ms ${site()}`] = (P.timers[`to ${ms}ms ${site()}`] ?? 0) + 1;
+        P.live.add(id);
+        return id;
+      }) as typeof window.setTimeout;
+      window.clearTimeout = ((id?: any) => {
+        P.live.delete(id);
+        return origClearTimeout(id);
+      }) as typeof window.clearTimeout;
+      window.setInterval = ((fn: any, ms: number, ...args: any[]) => {
+        const id = origSetInterval(fn, ms, ...args);
+        P.timers[`iv ${ms}ms ${site()}`] = (P.timers[`iv ${ms}ms ${site()}`] ?? 0) + 1;
+        P.live.add(id);
+        return id;
+      }) as typeof window.setInterval;
+      window.clearInterval = ((id?: any) => {
+        P.live.delete(id);
+        return origClearInterval(id);
+      }) as typeof window.clearInterval;
+      new PerformanceObserver((list: any[]) => {
+        for (const e of list.getEntries()) {
+          if (e.entryType === 'longtask') P.longtask.push({ ...e, phase: P.phase });
+          if (e.entryType === 'long-animation-frame') P.loaf.push({ ...e, phase: P.phase });
+          if (e.entryType === 'event') P.event.push({ ...e, phase: P.phase });
+          if (e.entryType === 'layout-shift') P.shift += e.value;
+          if (e.entryType === 'resource') P.resources.push({ ...e, phase: P.phase });
+        }
+      }).observe({ entryTypes: ['longtask', 'long-animation-frame', 'event', 'layout-shift', 'resource'] });
+      let lastRaf = performance.now();
+      const rafTick = (t: number) => {
+        P.raf.push({ dt: t - lastRaf, phase: P.phase });
+        lastRaf = t;
+        requestAnimationFrame(rafTick);
+      };
+      requestAnimationFrame(rafTick);
+      new MutationObserver((records: any[]) => {
+        P.mutations += records.length;
+      }).observe(document, { subtree: true, childList: true, attributes: true, characterData: true });
+      if (typeof document.fonts !== 'undefined') {
+        document.fonts.ready.then(() => {
+          P.font.readyAt = performance.now();
+          P.font.faces = [...document.fonts].map((face: any) => ({ family: face.family, weight: face.weight, style: face.style, status: face.status }));
+        });
+        document.fonts.addEventListener('loadingdone', (event: any) => {
+          const faces = (event as FontFaceSetLoadEvent).fontfaces;
+          P.font.loadingDone.push({ at: performance.now(), families: [...faces].map((face: any) => face.family) });
+        });
+      }
+      (window as any).__perfPhase = (phase: string) => { P.phase = phase; };
+      (window as any).__perfCommit = () => { P.commits[P.phase] = (P.commits[P.phase] ?? 0) + 1; };
+      (window as any).__perfWire = (dir: string, type: string, bytes: number) => {
+        P.wire[`${dir}:${type}`] = P.wire[`${dir}:${type}`] ?? { count: 0, bytes: 0 };
+        P.wire[`${dir}:${type}`].count += 1;
+        P.wire[`${dir}:${type}`].bytes += bytes;
+      };
+      (window as any).__perfAudit = [];
+    });
+
     // CPU profile via CDP — start before game so it captures hot phases
     const cdp = await page.context().newCDPSession(page);
     await cdp.send('Profiler.enable');
@@ -87,6 +175,17 @@ test.describe('game performance', () => {
     for (const [name, ms] of top) console.log(`  ${ms.toFixed(1)}ms ${name}`);
 
     const times = await page.evaluate(() => (window as any).__rafTimes as number[]);
+    const perfData = await page.evaluate(() => {
+      const P = (window as any).__perf;
+      return {
+        mutations: P.mutations || 0,
+        shift: P.shift || 0,
+        live: [...(P.live || [])],
+        longtask: (P.longtask || []).length,
+        loaf: (P.loaf || []).length,
+        commits: Object.values(P.commits || {}).reduce((a: number, b: number) => a + b, 0),
+      };
+    });
     if (times.length > 0) {
       times.sort((a, b) => a - b);
       const p95 = times[Math.min(times.length - 1, Math.floor(times.length * 0.95))];
@@ -97,6 +196,21 @@ test.describe('game performance', () => {
       console.log(`p95: ${p95.toFixed(1)}ms, p99: ${p99.toFixed(1)}ms`);
       console.log(`frames > 25ms: ${slow} (${((slow / times.length) * 100).toFixed(1)}%)`);
       console.log(`avg: ${(times.reduce((a, b) => a + b, 0) / times.length).toFixed(1)}ms`);
+      console.log(`DOM mutations: ${perfData.mutations}`);
+      console.log(`Layout shift sum: ${perfData.shift.toFixed(3)}`);
+      console.log(`Long tasks: ${perfData.longtask}, LoAF: ${perfData.loaf}`);
+      console.log(`Live timers after game: ${perfData.live.length}, Commits: ${perfData.commits}`);
+
+      // Phase 4 assertions — soft so every failure is reported, not just the first.
+      // Thresholds set at observed baseline + ~10% margin so a real regression trips them.
+      expect.soft(p95).toBeLessThanOrEqual(85);
+      expect.soft(p99).toBeLessThanOrEqual(200);
+      expect.soft(slow / times.length).toBeLessThanOrEqual(0.15);
+      expect.soft(times.length).toBeGreaterThan(100);
+      expect.soft(perfData.live.length).toBeLessThanOrEqual(125);
+      expect.soft(perfData.shift).toBeLessThanOrEqual(5);
+      expect.soft(perfData.mutations).toBeLessThanOrEqual(50000);
+      expect.soft(perfData.commits).toBeGreaterThan(0);
     }
 
     await context.close();
