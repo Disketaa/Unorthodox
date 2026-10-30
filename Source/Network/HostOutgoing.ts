@@ -1,6 +1,6 @@
 import * as Game from '@/Game';
 import { createLogger } from '@/Core';
-import { reportWire } from '@/Core/PerfHooks';
+import { reportWire } from '@/Core';
 import type { Transport } from './Transport';
 
 const log = createLogger('HostOutgoing');

@@ -1,4 +1,4 @@
-import { reportCommit, reportPhase } from '@/Core/PerfHooks';
+import { reportCommit, reportPhase } from '@/Core';
 import { Transport } from './Transport';
 import { HostInbox } from './HostInbox';
 import { hostFlowMoves, type HostFlowMoves } from './HostFlowMoves';
@@ -55,13 +55,14 @@ export class HostSession implements HostFlowMoves, HostRoomOpener {
     answerBots(this);
   }
   private write(state: Game.HostState): void {
+    // Report the new phase BEFORE commit: commit triggers the Preact re-render, and the
+    // render counter reads sink.phase during that render. Calling it after would bucket
+    // every render under the previous phase.
+    reportPhase(state.phase);
     this.room.commit(state);
     answerBots(this);
     reportCommit();
-    reportPhase(state.phase);
-    if (typeof window !== 'undefined' && (window as any).__perfAudit) {
-      (window as any).__perfAudit.push({ phase: state.phase, at: performance.now() });
-    }
+    window.__perfAudit?.push({ phase: state.phase, at: performance.now() });
   }
   submitOwnAnswer(text: string): void {
     this.apply({ type: 'SUBMIT_ANSWER', playerId: HostPlayerId, text, at: Date.now() });

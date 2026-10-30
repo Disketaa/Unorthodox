@@ -89,6 +89,26 @@ Status: **COMPLETE**
 - [x] Save artifacts (screenshot)
 - [x] Fix LoAF entry serialization — was dropping all fields except phase; now captures blockingDuration, duration, renderStart, scripts
 
+## Phase 6: Fix Performance Issues (from DeepSeek analysis)
+Status: **IN PROGRESS**
+
+### Phase 6.1: Fix Timer Leak (112 live timers)
+- [ ] Fix UsePhaseSplash interval leak — `setInterval` not cleared on unmount
+- [ ] Fix UseFittedText ResizeObserver timer — `setTimeout` scheduled after cleanup
+- [ ] Fix UseRandomPick armed timeouts — session ref instability
+- [ ] Audit preact_hooks diffed recurring timer (35ms)
+- [ ] Gate PerfInstrumentation behind debug flag
+
+### Phase 6.2: Cut Render Cost (7509x Pop renders)
+- [ ] Memoize Pop, Key, Face, Character, SeatShine
+- [ ] Stop full re-renders from UseCountdown ticks
+- [ ] Cache getComputedStyle in UseFittedText
+
+### Phase 6.3: Reduce LoAF Blocking (96.5ms Lobby)
+- [ ] Split Lobby blocking work — defer non-critical work
+- [ ] Batch perf instrumentation writes
+- [ ] Defer TextureOverlay shift writes
+
 ## Files to Modify
 - [x] `Tests/Browser/PerfBrowser.test.ts` — main test file
 - [x] `Source/App/PerfInstrumentation.ts` — Preact instrumentation

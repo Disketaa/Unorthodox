@@ -1,4 +1,4 @@
-import { reportWire } from '@/Core/PerfHooks';
+import { reportWire } from '@/Core';
 import { Transport } from './Transport';
 import { dispatchFrame, type ServerFrame } from './RelayFrames';
 import { RelaySocket } from './RelaySocket';

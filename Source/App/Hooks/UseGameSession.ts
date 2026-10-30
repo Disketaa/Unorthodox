@@ -3,7 +3,7 @@ import { GameConfig, PublicState } from '@/Game';
 import { PlayerId, PlayerLook, ThemeId, CustomTheme, themePool, themesForRoom } from '@/Core';
 import { createSession } from '../SessionFactory';
 import { Session, SessionRole } from '../Session';
-import { useSessionPhase } from './UseSessionPhase';
+import { useSessionPhase, type SessionPhase } from './UseSessionPhase';
 import { useGameActions, type GameActions } from './UseGameActions';
 import { useRoundClocks } from './UseHostPhaseTimer';
 import {
@@ -95,33 +95,32 @@ function sessionActions(session: Session) {
 /** Let the performance run step the room into a hidden phase, such as the winning show, through
  * the host's console jump. Off unless the perf sink is installed, and the host owns the jump. */
 function exposePerfJump(session: Session): void {
-  const perfWindow = window as unknown as {
-    __perf?: unknown;
-    __perfJump?: (phase: PhaseName) => void;
+  if (!import.meta.env.DEV || window.__perf === undefined) return;
+  window.__perfJump = (phase: string) => {
+    if (phase === 'Leaderboard') {
+      session.finish();
+    } else {
+      session.nextPhase('');
+    }
   };
-  if (!import.meta.env.DEV || perfWindow.__perf === undefined) return;
-  if (session.jumpToPhase === undefined) return;
-  perfWindow.__perfJump = session.jumpToPhase;
 }
 
 /** Join a room and expose one uniform view of the game for the screens. */
-export function useGameSession(
-  roomCode: string,
+function sessionView(
+  session: Session,
   role: SessionRole,
-  playerName: string,
-  look: PlayerLook,
-  onLook: (look: PlayerLook) => void
+  roomCode: string,
+  publicState: PublicState | undefined,
+  phase: SessionPhase,
+  topic: string | null,
+  marks: RoundMarks,
+  actions: GameActions,
+  ownLook: PlayerLook | undefined,
+  bank: readonly ThemeId[],
+  hostLeft: boolean,
+  editing: boolean,
+  markEditing: (editing: boolean) => void
 ): GameSessionView {
-  const [session] = useState<Session>(() => createSession(role, roomCode, playerName, look));
-  const { hostLeft, editing, bump, setHostLeft, markEditing } = useLocalFlags();
-  useSessionUpdates(session, bump, setHostLeft);
-  const publicState = session.getPublicState();
-  const { phase, topic } = usePhaseAndTopic(session, publicState);
-  usePerfPhase(phase.phase);
-  exposePerfJump(session);
-  const { marks, actions } = useRoundMarks(session, publicState, roomCode, topic);
-  useRoundClocks(session, role === 'Host', phase, actions);
-  const { ownLook, bank } = useOwnLookAndBank(session, phase, onLook, roomCode, publicState);
   return {
     ...phase,
     ...actions,
@@ -145,4 +144,25 @@ export function useGameSession(
     exitRoom,
     ...sessionActions(session),
   };
+}
+
+/** Join a room and expose one uniform view of the game for the screens. */
+export function useGameSession(
+  roomCode: string,
+  role: SessionRole,
+  playerName: string,
+  look: PlayerLook,
+  onLook: (look: PlayerLook) => void
+): GameSessionView {
+  const [session] = useState<Session>(() => createSession(role, roomCode, playerName, look));
+  const { hostLeft, editing, bump, setHostLeft, markEditing } = useLocalFlags();
+  useSessionUpdates(session, bump, setHostLeft);
+  const publicState = session.getPublicState();
+  const { phase, topic } = usePhaseAndTopic(session, publicState);
+  usePerfPhase(phase.phase);
+  exposePerfJump(session);
+  const { marks, actions } = useRoundMarks(session, publicState, roomCode, topic);
+  useRoundClocks(session, role === 'Host', phase, actions);
+  const { ownLook, bank } = useOwnLookAndBank(session, phase, onLook, roomCode, publicState);
+  return sessionView(session, role, roomCode, publicState, phase, topic, marks, actions, ownLook, bank, hostLeft, editing, markEditing);
 }

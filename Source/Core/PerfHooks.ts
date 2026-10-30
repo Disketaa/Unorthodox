@@ -5,6 +5,8 @@ declare global {
     __perfPhase?: (phase: string) => void;
     __perfWire?: (direction: 'tx' | 'rx', type: string, bytes: number) => void;
     __perfCommit?: () => void;
+    __perfAudit?: { push: (entry: unknown) => void };
+    __perfJump?: (phase: string) => void;
   }
 }
 

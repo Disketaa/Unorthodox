@@ -3,7 +3,6 @@
  * stops a new move from writing state the clients never hear about. */
 import type { GameAction, HostState } from '@/Game';
 import { reportCommit } from '@/Core';
-import { reportWire } from '@/Core/PerfHooks';
 import { HostRoster } from './HostRoster';
 import { publishPublicState } from './HostOutgoing';
 import { forgetRoom, loadRoomState, saveRoomState } from './RoomStateStore';
