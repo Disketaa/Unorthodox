@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 import { PlayerLook } from '@/Core';
 import { createSession } from '../SessionFactory';
 import { Session, SessionRole } from '../Session';
@@ -26,16 +26,7 @@ export function useGameSession(
   const [session] = useState<Session>(() => createSession(role, roomCode, playerName, look));
   const { hostLeft, editing, bump, setHostLeft, markEditing } = useLocalFlags();
   useSessionUpdates(session, bump, setHostLeft);
-  // Public state is rebuilt from the host state on every call. Keep it in a ref so it only
-  // changes when the session notifies, not on every render. This keeps LobbyView's props
-  // stable between session updates so memoized lobby screens can skip.
-  const publicStateRef = useRef(session.getPublicState());
-  useEffect(() => {
-    session.onUpdate(() => {
-      publicStateRef.current = session.getPublicState();
-    });
-  }, [session]);
-  const publicState = publicStateRef.current;
+  const publicState = session.getPublicState();
   const { phase, topic } = usePhaseAndTopic(session, publicState);
   usePerfPhase(phase.phase);
   exposePerfJump(session);
