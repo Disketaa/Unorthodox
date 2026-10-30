@@ -14,6 +14,12 @@ test.describe('game performance', () => {
     await page.goto('http://localhost:5173/#/Join/ABCD');
     await page.waitForTimeout(2000);
 
+    // CPU profile via CDP — start before game so it captures hot phases
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Profiler.enable');
+    await cdp.send('Profiler.setSamplingInterval', { interval: 100 });
+    await cdp.send('Profiler.start');
+
     const nameInput = page.locator('input[placeholder="Имя"]');
     await nameInput.fill('host');
     await page.click('text=Создать комнату');
@@ -63,6 +69,22 @@ test.describe('game performance', () => {
         break;
       }
     }
+
+    // Stop CPU profile and report top functions
+    const profileResult = await cdp.send('Profiler.stop');
+    await cdp.send('Profiler.disable');
+    const byFunction = new Map<string, number>();
+    for (const node of profileResult.profile.nodes ?? []) {
+      const cf = node.callFrame;
+      const name = cf?.functionName || cf?.url || 'anonymous';
+      const ms = (node.hitCount * 100) / 1000;
+      byFunction.set(name, (byFunction.get(name) ?? 0) + ms);
+    }
+    const top = [...byFunction.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+    console.log(`\nCPU profile: ${profileResult.profile.samples.length} samples`);
+    for (const [name, ms] of top) console.log(`  ${ms.toFixed(1)}ms ${name}`);
 
     const times = await page.evaluate(() => (window as any).__rafTimes as number[]);
     if (times.length > 0) {
