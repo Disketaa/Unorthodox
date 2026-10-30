@@ -49,7 +49,16 @@ export function TextureOverlay({ variant, placement = 'Page' }: TextureOverlayPr
       node.style.setProperty('--Overlay-TextureY', `${y}px`);
     };
     shift();
-    const id = setInterval(shift, ShiftIntervalMs);
+    // Paced by this device's own clock rather than by the timer: a run whose timers are sped up
+    // would otherwise shift the stone hundreds of times a second, and the drift is meant to be
+    // something the eye barely catches.
+    let shiftedAt = performance.now();
+    const id = setInterval(() => {
+      const now = performance.now();
+      if (now - shiftedAt < ShiftIntervalMs) return;
+      shiftedAt = now;
+      shift();
+    }, ShiftIntervalMs);
     return () => clearInterval(id);
   }, [placement]);
 

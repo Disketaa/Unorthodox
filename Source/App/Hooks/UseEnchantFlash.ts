@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'preact/hooks';
-import { GameConfig, type PublicScoreGroup } from '@/Game';
+import type { PublicScoreGroup } from '@/Game';
 import type { PlayerId } from '@/Core';
 import { countBoard } from './CountBoard';
+import { useUiTick } from './UseUiTick';
 import { boardOf } from '../Views/PlayerBarStandings';
 import type { GameSessionView } from './UseGameSession';
 
@@ -26,13 +26,8 @@ export function useEnchantFlash(view: GameSessionView): number | undefined {
   const held = view.paused === true;
   // The room's own watch, so the flash and the board it belongs to are counted from the same
   // moment: a flash a tick away from the card that caused it is a flash of the wrong card.
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    if (!settling || held) return;
-    const id = setInterval(() => setNow(Date.now()), GameConfig.timing.uiTickMs);
-    return () => clearInterval(id);
-  }, [settling, held]);
-  const moment = held && view.pausedAt !== undefined ? view.pausedAt : now;
+  useUiTick(settling && !held);
+  const moment = held && view.pausedAt !== undefined ? view.pausedAt : Date.now();
   const board = countBoard(settling, view.phaseStartedAt, moment);
   const group =
     board.payingIndex === undefined ? undefined : boardOf(view)?.groups[board.payingIndex];

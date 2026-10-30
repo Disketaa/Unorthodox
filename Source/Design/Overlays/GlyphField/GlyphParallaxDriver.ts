@@ -51,6 +51,21 @@ export function startGlyphParallax(node: HTMLDivElement): GlyphParallaxDriver {
   let previous = performance.now();
   let spread = 0;
   let frame = 0;
+  // The last values written, so a resting field writes nothing: `--Glyph-Spread` is inherited by
+  // every mark, and setting it re-styles the whole field on a frame that had no change to show.
+  let spreadText = '';
+  let zoomText = '';
+
+  const write = (nextSpread: string, nextZoom: string) => {
+    if (nextSpread !== spreadText) {
+      spreadText = nextSpread;
+      node.style.setProperty('--Glyph-Spread', nextSpread);
+    }
+    if (nextZoom !== zoomText) {
+      zoomText = nextZoom;
+      node.style.setProperty('--Glyph-Zoom', nextZoom);
+    }
+  };
 
   const tick = (now: number) => {
     frame = requestAnimationFrame(tick);
@@ -61,13 +76,11 @@ export function startGlyphParallax(node: HTMLDivElement): GlyphParallaxDriver {
     // Scrolling writes one vertical spread value that both bands read the same way, so the marks
     // travel down the page with it. Nothing in the field ever moves on the horizontal axis.
     spread = eased(spread, bound(window.scrollY, ScrollRangePx, SpreadMaxPx), deltaS);
-    node.style.setProperty('--Glyph-Spread', `${spread.toFixed(2)}px`);
-    node.style.setProperty('--Glyph-Zoom', readZoom().toFixed(3));
+    write(`${spread.toFixed(2)}px`, readZoom().toFixed(3));
   };
 
   frame = requestAnimationFrame(tick);
-  node.style.setProperty('--Glyph-Spread', '0px');
-  node.style.setProperty('--Glyph-Zoom', readZoom().toFixed(3));
+  write('0px', readZoom().toFixed(3));
 
   return {
     stop: () => {

@@ -11,30 +11,10 @@ import { useAccent } from './Hooks/UseAccent';
 import { hostsRoom, rememberHosting } from '@/Network/RoomOwnership';
 import { createRoomCode, normalizeRoomCode } from './RoomCode';
 import { loadLook } from './LookStorage';
+import { loadName, saveName } from './NameStorage';
 import { navigate, parseRoute, roomPath, Route } from './Routes';
 import { GameRoom } from './GameRoom';
 import type { GameRoomProps } from './GameRoom';
-
-/** The player name is kept in localStorage, so it outlives the tab. Typing does not save it: the
- * name is written when a room is entered, so a half-typed name never becomes the next visit's.
- * Two tabs share it, so the host reads them as one seat. */
-const NameStorageKey = 'unorthodox.playerName';
-
-function loadName(): string {
-  try {
-    return localStorage.getItem(NameStorageKey) ?? '';
-  } catch {
-    return '';
-  }
-}
-
-function saveName(value: string): void {
-  try {
-    localStorage.setItem(NameStorageKey, value);
-  } catch {
-    // Storage may be unavailable in private mode; the name then lasts for the tab only.
-  }
-}
 
 /** Re-render the app whenever the hash changes. */
 function useHashRoute(): Route {

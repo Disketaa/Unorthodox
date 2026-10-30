@@ -1,3 +1,5 @@
+import { tokenValue } from '../TokenValues';
+
 /** The tokens a card's count is measured in, read from the page rather than imported: the design
  * may not read Game, and `GameConfig.timing` holds the same two numbers for the code that walks
  * the board. */
@@ -11,7 +13,7 @@ export const FallbackScoreCountMs = 560;
 export const FallbackFlyOutDelayMs = 200;
 
 function readMs(token: string, fallback: number): number {
-  const declared = getComputedStyle(document.documentElement).getPropertyValue(token);
+  const declared = tokenValue(token);
   const value = Number.parseFloat(declared);
   return Number.isFinite(value) && value > 0 ? value : fallback;
 }

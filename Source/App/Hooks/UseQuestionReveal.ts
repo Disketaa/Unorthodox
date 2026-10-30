@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'preact/hooks';
-import { GameConfig, revealedWordCount } from '@/Game';
 import { hostTimeToLocal } from '@/Core';
+import { revealedWordCount } from '@/Game';
+import { useUiTick } from './UseUiTick';
 
 /** How many words of the round's question this screen is showing. Counted off the host's own
  * moment rather than from when the message arrived, so a screen that joined the reveal late
@@ -11,19 +11,7 @@ export function useQuestionReveal(
   clockOffsetMs: number,
   held: boolean
 ): number {
-  const [shown, setShown] = useState(0);
-
-  useEffect(() => {
-    if (question === undefined || questionAt === undefined || held) {
-      return;
-    }
-    // Read the clock on the way in rather than waiting out the first tick: a question already half
-    // written when this mounted would otherwise start again from its first word.
-    setShown(Date.now());
-    const id = setInterval(() => setShown(Date.now()), GameConfig.timing.uiTickMs);
-    return () => clearInterval(id);
-  }, [question, questionAt, held]);
-
+  useUiTick(question !== undefined && questionAt !== undefined && !held);
   if (question === undefined || questionAt === undefined) {
     return 0;
   }
@@ -31,5 +19,5 @@ export function useQuestionReveal(
   // question's own moment on by the length of the hold, so words landing here anyway would land
   // behind the room and jump forward the moment it let go.
   const startedAt = hostTimeToLocal(questionAt, clockOffsetMs);
-  return revealedWordCount(question, shown - startedAt);
+  return revealedWordCount(question, Date.now() - startedAt);
 }

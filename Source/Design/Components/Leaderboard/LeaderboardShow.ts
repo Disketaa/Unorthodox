@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { PlayerId } from '@/Core';
 import { playSound } from '../../Sounds';
+import { tokenValue } from '../../TokenValues';
 import { useCountRun } from '../ScoreCount';
 import type { LeaderboardRow } from './Leaderboard';
 
@@ -19,7 +20,7 @@ export const FallbackPlaceMs = 300;
 export const FallbackReorderDelayMs = 400;
 
 function readMs(token: string, fallback: number): number {
-  const declared = getComputedStyle(document.documentElement).getPropertyValue(token);
+  const declared = tokenValue(token);
   const value = Number.parseFloat(declared);
   return Number.isFinite(value) && value > 0 ? value : fallback;
 }

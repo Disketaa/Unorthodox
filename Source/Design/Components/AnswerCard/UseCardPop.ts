@@ -1,4 +1,5 @@
 import { useCallback } from 'preact/hooks';
+import { tokenValue } from '../../TokenValues';
 
 /** The card's own pop, played on the beat the count hands over from its figure to the mark of
  * what it is adding and back. Played imperatively rather than by re-keying the `Pop` wrapping
@@ -10,7 +11,7 @@ export function useCardPop(motion: { current: HTMLDivElement | null }): () => vo
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     // Played on the card's individual properties, as the pop primitive plays them, so it
     // composes with the sway underneath instead of replacing it.
-    const token = getComputedStyle(document.documentElement).getPropertyValue('--Duration-Pop');
+    const token = tokenValue('--Duration-Pop');
     const ms = Number.parseFloat(token);
     node.animate([{ scale: '1 1.06' }, { scale: '1 1' }], {
       duration: Number.isNaN(ms) ? 300 : ms,

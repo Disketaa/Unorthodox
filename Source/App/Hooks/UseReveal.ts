@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useUiTick } from './UseUiTick';
 import {
   GameConfig,
   answerRevealBeat,
@@ -37,16 +37,8 @@ export interface RevealState {
 
 /** This device's clock while the board is counting, which stops when the room is held. */
 function useClock(active: boolean, held: boolean): number {
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    if (!active || held) return;
-    setNow(Date.now());
-    const id = setInterval(() => setNow(Date.now()), GameConfig.timing.uiTickMs);
-    return () => clearInterval(id);
-  }, [active, held]);
-
-  return now;
+  useUiTick(active && !held);
+  return Date.now();
 }
 
 /** The board's count of answers turned over, and of the letters of the one being written:

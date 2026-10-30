@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
-import { GameConfig, splashesOnArrival } from '@/Game';
+import { useEffect, useRef } from 'preact/hooks';
+import { splashesOnArrival } from '@/Game';
 import { PhaseSplashCovered, PhaseSplashMs } from '@/Design/Overlays';
 import { playSound } from '@/Design/Sounds';
+import { useUiTick } from './UseUiTick';
 import type { SessionPhase } from './UseSessionPhase';
 
 export interface PhaseSplashControl {
@@ -36,7 +37,7 @@ export function usePhaseSplash(phase: SessionPhase, counting: boolean): PhaseSpl
     elapsedMs < PhaseSplashMs * PhaseSplashCovered.to;
   // Ticked on the room's own interval rather than left to a timeout, since a timeout would hold
   // the layer up on a tab that had been busy.
-  const [, setNow] = useState(() => Date.now());
+  useUiTick(running);
   // Played on the rise, when the whoosh and the mark arriving are the same event. Kept here
   // rather than in the overlay, since a design layer may not reach the sound bank and the sound
   // is a fact about the room rather than about how the mark is drawn.
@@ -49,12 +50,6 @@ export function usePhaseSplash(phase: SessionPhase, counting: boolean): PhaseSpl
     if (soundingRef.current) return;
     soundingRef.current = true;
     playSound('Whoosh');
-  }, [running]);
-  useEffect(() => {
-    if (!running) return;
-    setNow(Date.now());
-    const id = setInterval(() => setNow(Date.now()), GameConfig.timing.uiTickMs);
-    return () => clearInterval(id);
   }, [running]);
   return { splashing: running, covered };
 }

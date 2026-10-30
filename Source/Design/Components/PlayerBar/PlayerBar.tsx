@@ -2,6 +2,7 @@ import { CharacterColor, CharacterId, PlayerId } from '@/Core';
 import { slotLimit } from './SlotLimit';
 import { PlayerBarSlot } from './PlayerBarSlot';
 import { slotsFor } from './PlayerBarSlots';
+import { tokenValue } from '../../TokenValues';
 import styles from './PlayerBar.module.css';
 import { useEffect, useState } from 'preact/hooks';
 
@@ -65,17 +66,8 @@ export interface PlayerBarProps {
  * Read from the stylesheet's own tokens rather than restated here, so the row and the test that
  * guards it cannot drift from the values the drawing is actually made of. */
 function fitsLine(seats: number): boolean {
-  const view = document.documentElement;
-  const num = (token: string) => {
-    let value = getComputedStyle(view).getPropertyValue(token).trim();
-    // Resolve var() references, since getComputedStyle returns the raw value for custom properties.
-    while (value.startsWith('var(')) {
-      const inner = value.slice(4, -1).trim();
-      value = getComputedStyle(view).getPropertyValue(inner).trim();
-    }
-    return Number.parseFloat(value);
-  };
-  const room = view.clientWidth - 2 * num('--Layout-ScreenPaddingHorizontal');
+  const num = (token: string) => Number.parseFloat(tokenValue(token));
+  const room = document.documentElement.clientWidth - 2 * num('--Layout-ScreenPaddingHorizontal');
   return seats * num('--Layout-PlayerBarStraight') * num('--Size-PlayerBarSeatMin') <= room;
 }
 

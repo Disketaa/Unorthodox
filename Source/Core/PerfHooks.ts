@@ -1,5 +1,5 @@
 /** Optional counters a browser performance run installs before the app loads. Every hook is a
- * no-op without one, so the app carries no cost when nothing is listening. */
+ * no-op without one, and without a window at all: a test runner in node runs the same code. */
 declare global {
   interface Window {
     __perfPhase?: (phase: string) => void;
@@ -10,19 +10,29 @@ declare global {
   }
 }
 
+/** The page's hooks, or nothing where there is no page. */
+function perf(): Window | undefined {
+  return typeof window === 'undefined' ? undefined : window;
+}
+
 /** Tell the run which phase the room has entered. */
 export function reportPhase(phase: string): void {
-  window.__perfPhase?.(phase);
+  perf()?.__perfPhase?.(phase);
 }
 
 /** Count one game message at the transport boundary, with the bytes it took. */
 export function reportWire(direction: 'tx' | 'rx', message: unknown, bytes: number): void {
-  window.__perfWire?.(direction, messageType(message), bytes);
+  perf()?.__perfWire?.(direction, messageType(message), bytes);
 }
 
 /** Count one host state commit, which is what a broadcast is allowed to follow. */
 export function reportCommit(): void {
-  window.__perfCommit?.();
+  perf()?.__perfCommit?.();
+}
+
+/** Note the phase the host has committed, and when, for the run's ordering audit. */
+export function reportCommitAt(phase: string, at: number): void {
+  perf()?.__perfAudit?.push({ phase, at });
 }
 
 function messageType(message: unknown): string {

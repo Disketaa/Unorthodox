@@ -1,3 +1,5 @@
+import { tokenValue } from '../../TokenValues';
+
 /** The token the slot count is declared in, read from the page rather than imported. */
 const SlotsToken = '--Layout-PlayerBarSlots';
 
@@ -10,7 +12,7 @@ export const FallbackSlots = 12;
  * rather than a game's: `GameConfig.limits` is about who may sit in a room, and Design may not
  * read Game. The token is the same one the stylesheet would use, so editing it moves the bar. */
 export function slotLimit(): number {
-  const declared = getComputedStyle(document.documentElement).getPropertyValue(SlotsToken);
+  const declared = tokenValue(SlotsToken);
   const value = Number.parseInt(declared, 10);
   return Number.isFinite(value) && value > 0 ? value : FallbackSlots;
 }

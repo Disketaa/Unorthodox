@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { playSound } from '@/Design/Sounds';
 import { playMusic, useQuietMusic } from '@/Design/Music';
 import { GameConfig, bankSize, bankThemes } from '@/Game';
+import { useUiTick } from '../Hooks/UseUiTick';
 import { ThemeCardsView, spentByTheme } from './ThemeCardsView';
 import { WinnerPanel } from './WinnerPanel';
 import { winnerOf } from './GameOver';
@@ -11,13 +12,8 @@ import styles from './WinningView.module.css';
 /** The room's own clock, which is the show's as well: the cards leave on the room's time and the
  * winner stands in the time the room has left. */
 function useNow(active: boolean): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    if (!active) return;
-    const id = setInterval(() => setNow(Date.now()), 100);
-    return () => clearInterval(id);
-  }, [active]);
-  return now;
+  useUiTick(active);
+  return Date.now();
 }
 
 /** What the show has done so far: the cards that are off the board, the one on its way out, and

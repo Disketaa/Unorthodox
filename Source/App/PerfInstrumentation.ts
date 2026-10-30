@@ -13,10 +13,13 @@ declare global {
   }
 }
 
+let installed = false;
+
 /** Count renders and render flushes for the browser performance run only. */
 export function installPerfInstrumentation(): void {
+  if (installed || window.__perf === undefined) return;
+  installed = true;
   const sink = window.__perf;
-  if (sink === undefined) return;
 
   const previousDiffed = options.diffed;
   options.diffed = (vnode) => {

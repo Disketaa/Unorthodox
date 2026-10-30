@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
-import { GameConfig } from '@/Game';
+import { useUiTick } from './UseUiTick';
 
 /** Remaining time of a phase, counted from the host's phase start time through the measured
  * offset, and frozen at `heldAt` — when the room was held — so a hold is not counted away. */
@@ -12,17 +11,10 @@ export function useCountdown(
   held = false,
   heldAt?: number
 ): number {
-  const [now, setNow] = useState(() => Date.now());
-
-  // A held room stops being ticked rather than being ticked slowly, for the reason above.
-  useEffect(() => {
-    if (!active || held) return;
-    // Read the clock on the way in rather than waiting out the first tick: a phase starting while
-    // the tick is stopped would count the whole idle time as phase time.
-    setNow(Date.now());
-    const id = setInterval(() => setNow(Date.now()), GameConfig.timing.uiTickMs);
-    return () => clearInterval(id);
-  }, [active, held]);
+  // Read at render rather than kept in state: the tick only has to say when the next read is due,
+  // and a stale copy would count the idle time a stopped room was not playing.
+  useUiTick(active && !held);
+  const now = Date.now();
 
   // The end of the clock is the answer where there is one, and stops there for good: a bank
   // that has been pressed is being looked at, not still being decided.
