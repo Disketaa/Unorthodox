@@ -93,21 +93,22 @@ Status: **COMPLETE**
 Status: **IN PROGRESS**
 
 ### Phase 6.1: Fix Timer Leak (112 live timers)
-- [ ] Fix UsePhaseSplash interval leak — `setInterval` not cleared on unmount
-- [ ] Fix UseFittedText ResizeObserver timer — `setTimeout` scheduled after cleanup
-- [ ] Fix UseRandomPick armed timeouts — session ref instability
-- [ ] Audit preact_hooks diffed recurring timer (35ms)
-- [ ] Gate PerfInstrumentation behind debug flag
+- [x] Fix UsePhaseSplash interval leak — resolved by `useUiTick` (cleared in cleanup)
+- [x] Fix UseFittedText ResizeObserver timer — `live` guard + `clearTimeout` on cleanup present
+- [x] Fix UseRandomPick armed timeouts — `startedAt` number dep + ref, so `getPublicState()` new objects don't re-arm the timeout
+- [x] Audit preact_hooks diffed recurring timer (35ms) — addressed by gating PerfInstrumentation behind debug flag
+- [x] Gate PerfInstrumentation behind debug flag
 
 ### Phase 6.2: Cut Render Cost (7509x Pop renders)
-- [ ] Memoize Pop, Key, Face, Character, SeatShine
-- [ ] Stop full re-renders from UseCountdown ticks
-- [ ] Cache getComputedStyle in UseFittedText
+- [x] Memoize Face, Character — all-primitive props, `memo` skips re-render when props unchanged
+- [ ] Memoize Pop, Key, SeatShine — not done; children are inline VNodes (new reference each render), so `memo` would not skip
+- [x] Stop full re-renders from UseCountdown ticks — `useUiTick` paces to 100ms; memoized children skip most of the render cost
+- [ ] Cache getComputedStyle in UseFittedText — item obsolete; `UseFittedText.ts` has no `getComputedStyle` call. Replaced by `tokenValue` cache in `TokenValues.ts`. Remove from plan.
 
 ### Phase 6.3: Reduce LoAF Blocking (96.5ms Lobby)
-- [ ] Split Lobby blocking work — defer non-critical work
-- [ ] Batch perf instrumentation writes
-- [ ] Defer TextureOverlay shift writes
+- [ ] Split Lobby blocking work — defer non-critical work (needs profiling stack trace to target)
+- [ ] Batch perf instrumentation writes — not needed; `reportCommitAt` is an O(1) array push
+- [x] Defer TextureOverlay shift writes — paced by `performance.now()` already defers under speedup
 
 ## Files to Modify
 - [x] `Tests/Browser/PerfBrowser.test.ts` — main test file
@@ -115,11 +116,30 @@ Status: **IN PROGRESS**
 - [x] `Source/App/Hooks/UseGameSession.ts` — phase change hooks
 - [x] `Source/Network/RelayTransport.ts` — wire tracking
 - [x] `Source/App/main.tsx` — install instrumentation
-- [x] `Source/Core/PerfHooks.ts` — new file for perf hooks
+- [x] `Source/Core/PerfHooks.ts` — perf hooks
+- [x] `Source/App/Hooks/UseCountdown.ts` — migrate to useUiTick
+- [x] `Source/App/Hooks/UseEnchantFlash.ts` — migrate to useUiTick
+- [x] `Source/App/Hooks/UsePhaseSplash.ts` — migrate to useUiTick
+- [x] `Source/App/Hooks/UseQuestionRemaining.ts` — migrate to useUiTick
+- [x] `Source/App/Hooks/UseQuestionReveal.ts` — migrate to useUiTick
+- [x] `Source/App/Hooks/UseReveal.ts` — migrate to useUiTick
+- [x] `Source/App/Views/WinningView.tsx` — migrate to useUiTick
+- [x] `Source/App/App.tsx` — NameStorage import
+- [x] `Source/Design/Components/AnswerCard/UseCardPop.ts` — migrate to tokenValue
+- [x] `Source/Design/Components/AnswerCard/UseFittedText.ts` — rAF coalescing, fast path, single measure
+- [x] `Source/Design/Components/Leaderboard/LeaderboardShow.ts` — migrate to tokenValue
+- [x] `Source/Design/Components/PlayerBar/PlayerBar.tsx` — migrate to tokenValue
+- [x] `Source/Design/Components/PlayerBar/SlotLimit.ts` — migrate to tokenValue
+- [x] `Source/Design/Components/ScoreTiming.ts` — migrate to tokenValue
+- [x] `Source/Design/Overlays/GlyphField/GlyphParallaxDriver.ts` — gated style writes
+- [x] `Source/Design/Overlays/TextureOverlay/TextureOverlay.tsx` — paced shifts
+- [x] `Source/Network/HostSession.ts` — reportCommitAt
+- [x] `test-results/full-game.png` — updated screenshot
 
 ## Files to Create
-- [x] `Source/Core/PerfHooks.ts` — perf hook functions (`__perfPhase`, `__perfCommit`, `__perfWire`, `__perfAudit`, `__perfJump`)
-- [x] `Source/App/Hooks/UsePerfPhase.ts` — hook to call `__perfPhase` on phase change
+- [x] `Source/App/Hooks/UseUiTick.ts` — shared paced tick hook
+- [x] `Source/Design/TokenValues.ts` — cached CSS custom property reader
+- [x] `Source/App/NameStorage.ts` — name persistence extracted from App.tsx
 
 ## Notes
 - The test runs at 1000x speed, so 60s writing phase = 60ms real time

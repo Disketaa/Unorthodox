@@ -139,7 +139,6 @@ function measureText(element: HTMLElement): TextMeasure {
   range.selectNodeContents(element);
   const height = range.getBoundingClientRect().height;
   const lines = range.getClientRects().length;
-  range.detach();
   const overflow = element.scrollWidth - element.clientWidth;
   const width = overflow > 0 ? element.scrollWidth + overflow : element.clientWidth;
   return { height, lines, width };

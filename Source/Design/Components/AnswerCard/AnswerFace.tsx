@@ -1,11 +1,12 @@
 import { ComponentChildren } from 'preact';
+import { memo } from 'preact/compat';
 import { FittedAnswer } from './FittedAnswer';
 import styles from './AnswerCard.module.css';
 
 /** What is written on the card: the answer, fitted to the box it is given, and the figure behind
  * it. The panel and the grain are decoration on a surface the card paints itself, so they are
  * spans rather than layout elements: a `Card` here would fight the button's own box. */
-export function Face({
+export const Face = memo(function Face({
   text,
   count,
   named,
@@ -33,4 +34,4 @@ export function Face({
       <FittedAnswer text={text} />
     </>
   );
-}
+});

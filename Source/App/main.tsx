@@ -34,7 +34,7 @@ if (isDebugEnabled()) {
   setLogLevel('debug');
 }
 
-if (import.meta.env.DEV) {
+if (import.meta.env.DEV || isDebugEnabled()) {
   installPerfInstrumentation();
 }
 

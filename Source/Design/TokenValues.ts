@@ -18,8 +18,16 @@ export function tokenValue(name: string): string {
   const view = getComputedStyle(document.documentElement);
   let value = view.getPropertyValue(name).trim();
   for (let depth = 0; value.startsWith('var(') && depth < 8; depth += 1) {
-    value = view.getPropertyValue(value.slice(4, -1).trim()).trim();
+    // var(--x, fallback): the name is everything before the first comma.
+    const raw = value.slice(4, -1).trim();
+    const comma = raw.indexOf(',');
+    const inner = comma === -1 ? raw : raw.slice(0, comma).trim();
+    value = view.getPropertyValue(inner).trim();
   }
-  values.set(name, value);
+  // Do not cache an empty value: a read before the stylesheet applies would
+  // otherwise poison the cache until the next resize.
+  if (value !== '') {
+    values.set(name, value);
+  }
   return value;
 }

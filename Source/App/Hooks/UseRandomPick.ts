@@ -1,4 +1,4 @@
-import { useEffect } from 'preact/hooks';
+import { useEffect, useRef } from 'preact/hooks';
 import { GameConfig, isPhaseName, isTimedPhase, phaseGraceMs, questionRevealMs } from '@/Game';
 import type { RandomPick } from '@/Game';
 import { phaseAfterCycling } from '@/Game/PhaseFlow';
@@ -76,17 +76,23 @@ export function useRandomPick(
   isHost: boolean,
   picking: RandomPick | undefined
 ): void {
+  const pickingRef = useRef(picking);
+  pickingRef.current = picking;
+  // Depend on startedAt (a number) rather than the picking object reference:
+  // getPublicState() returns a new object on every call, which would re-arm
+  // the timeout every render and never let it fire.
+  const startedAt = picking?.startedAt;
   useEffect(() => {
-    if (!isHost || picking === undefined) {
+    if (!isHost || pickingRef.current === undefined) {
       return;
     }
     // Measured from the roll's own start rather than from when this ran, so a throttled host
     // commits on time instead of holding the bank open a second time.
-    const startedAt = picking.startedAt - session.getClockOffsetMs();
-    const remaining = Math.max(0, GameConfig.timing.pickingMs - (Date.now() - startedAt));
+    const start = pickingRef.current.startedAt - session.getClockOffsetMs();
+    const remaining = Math.max(0, GameConfig.timing.pickingMs - (Date.now() - start));
     const id = setTimeout(() => session.resolveRandomPick(), remaining);
     return () => clearTimeout(id);
-  }, [isHost, picking, session]);
+  }, [isHost, session, startedAt]);
 }
 
 /** The theme answered, held on screen before the round starts. Its own hook because this is the

@@ -2,6 +2,7 @@ import { CharacterColor, CharacterId } from '@/Core';
 import { Pop } from '@/Design/Primitives';
 import { artFor } from '../../Characters';
 import { useCharacterMotion } from './UseCharacterMotion';
+import { memo } from 'preact/compat';
 import styles from './Character.module.css';
 
 export type CharacterSize = 'Small' | 'Medium' | 'Large' | 'Fill';
@@ -24,7 +25,7 @@ export interface CharacterProps {
 /** A player drawn as one of the characters, in one of the tints. `Fill` takes its size from the
  * space given, which is what the picker needs on a narrow screen; the named sizes are fixed
  * tokens. Decorative: it repeats the name beside it. */
-export function Character({
+export const Character = memo(function Character({
   character,
   color,
   size = 'Medium',
@@ -55,4 +56,4 @@ export function Character({
       </Pop>
     </span>
   );
-}
+});
