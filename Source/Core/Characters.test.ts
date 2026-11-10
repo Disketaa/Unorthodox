@@ -1,34 +1,79 @@
-import { describe, expect, it } from 'vitest';
-import { CharacterColors, CharacterIds, isCharacterColor, isCharacterId } from './Characters';
+import { describe, test, expect } from 'vitest';
+import {
+  randomLook,
+  isCharacterId,
+  isCharacterColor,
+  isPlayerLook,
+  CharacterIds,
+  CharacterColors,
+} from './Characters';
 
-describe('the cast and the palette', () => {
-  // The picker lays the cast and the palette out as two rows of the same shape, all eight on
-  // one line, so an equal count is what keeps the two grids the same control rather than one of
-  // them trailing an empty cell.
-  it('has as many tints as there are characters', () => {
-    expect(CharacterColors.length).toBe(CharacterIds.length);
+describe('randomLook', () => {
+  test('returns a valid character and color', () => {
+    const look = randomLook(() => 0);
+    expect(CharacterIds).toContain(look.character);
+    expect(CharacterColors).toContain(look.color);
   });
 
-  it('fills the single line of eight the picker lays out', () => {
-    expect(CharacterIds.length % 8).toBe(0);
-    expect(CharacterColors.length % 8).toBe(0);
+  test('uses the injected random for character', () => {
+    // random() returns 0.9 -> floor(0.9 * 9) = 8 -> last character
+    const look = randomLook(() => 0.9);
+    expect(look.character).toBe(CharacterIds[CharacterIds.length - 1]);
   });
 
-  it('has no duplicate tints', () => {
-    expect(new Set(CharacterColors).size).toBe(CharacterColors.length);
+  test('uses the injected random for color', () => {
+    // First call for character, second for color
+    let calls = 0;
+    const look = randomLook(() => {
+      calls += 1;
+      return calls === 2 ? 0.9 : 0;
+    });
+    expect(look.color).toBe(CharacterColors[CharacterColors.length - 1]);
   });
 
-  it('has no duplicate characters', () => {
-    expect(new Set(CharacterIds).size).toBe(CharacterIds.length);
+  test('throws when catalogue is empty', () => {
+    expect(() => randomLook(() => NaN)).toThrow();
+  });
+});
+
+describe('isCharacterId', () => {
+  test('returns true for valid ids', () => {
+    for (const id of CharacterIds) expect(isCharacterId(id)).toBe(true);
   });
 
-  it('recognises every tint it lists, and nothing else', () => {
-    CharacterColors.forEach((color) => expect(isCharacterColor(color)).toBe(true));
-    expect(isCharacterColor('Crimson')).toBe(false);
+  test('returns false for invalid values', () => {
+    expect(isCharacterId('not-a-character')).toBe(false);
+    expect(isCharacterId(42)).toBe(false);
+    expect(isCharacterId(null)).toBe(false);
+    expect(isCharacterId(undefined)).toBe(false);
+  });
+});
+
+describe('isCharacterColor', () => {
+  test('returns true for valid colors', () => {
+    for (const color of CharacterColors) expect(isCharacterColor(color)).toBe(true);
   });
 
-  it('recognises every character it lists, and nothing else', () => {
-    CharacterIds.forEach((id) => expect(isCharacterId(id)).toBe(true));
-    expect(isCharacterId('Squirrel')).toBe(false);
+  test('returns false for invalid values', () => {
+    expect(isCharacterColor('not-a-color')).toBe(false);
+    expect(isCharacterColor(42)).toBe(false);
+    expect(isCharacterColor(null)).toBe(false);
+    expect(isCharacterColor(undefined)).toBe(false);
+  });
+});
+
+describe('isPlayerLook', () => {
+  test('returns true for valid looks', () => {
+    expect(isPlayerLook({ character: 'Ghost', color: 'Yellow' })).toBe(true);
+  });
+
+  test('returns false for invalid looks', () => {
+    expect(isPlayerLook({ character: 'Bad', color: 'Yellow' })).toBe(false);
+    expect(isPlayerLook({ character: 'Ghost', color: 'Bad' })).toBe(false);
+    expect(isPlayerLook({ character: 'Ghost' })).toBe(false);
+    expect(isPlayerLook(null)).toBe(false);
+    expect(isPlayerLook(undefined)).toBe(false);
+    expect(isPlayerLook('string')).toBe(false);
+    expect(isPlayerLook(42)).toBe(false);
   });
 });

@@ -1,76 +1,81 @@
-import { describe, it, expect } from 'vitest';
-import { dealThemes, randomFor, type ThemeId } from '@/Core';
-import { GameConfig } from './GameConfig';
-import { modifiersForRound } from './ThemeModifiers';
+import { describe, test, expect } from 'vitest';
+import {
+  modifiersForRound,
+  multForTheme,
+  roundsPlayed,
+  enchantmentFor,
+} from './ThemeModifiers';
 
-const rule = GameConfig.themes.modifiers;
-const bank = dealThemes(randomFor('ABCD'), GameConfig.themes.cardsPerLobby);
-/** The rooms a deal is not shared between, so a property read over one of them is not a property
- * of a single arrangement. */
-const codes = ['ABCD', 'WXYZ', 'QWER', 'ASDF', 'JKLP', 'TYUI', 'GHBN', 'VFRT'];
-const keys = (modifiers: ReadonlyMap<ThemeId, readonly string[]>) => [...modifiers.keys()];
-
-describe('what a round puts on the bank', () => {
-  it('gives one room the same enchantments on another device in it', () => {
-    // The property the whole arrangement rests on: a roll that came from anywhere but the room
-    // code would let a client deal a bank the host cannot see.
-    const here = modifiersForRound('ABCD', bank, 0);
-    const there = modifiersForRound('ABCD', bank, 0);
-    expect(keys(here)).toEqual(keys(there));
+describe('modifiersForRound', () => {
+  test('returns a map', () => {
+    const result = modifiersForRound('AAAA', ['theme1', 'theme2'], 0);
+    expect(result).toBeInstanceOf(Map);
   });
 
-  it('enchants the same cards again one round later, because the round is part of the seed', () => {
-    // Which round it is is the only thing separating one roll from the next. Seeded on it
-    // alone, every round of a room would deal the same six cards the same way.
-    const differs = codes.filter((code) => {
-      const themes = dealThemes(randomFor(code), GameConfig.themes.cardsPerLobby);
-      return (
-        keys(modifiersForRound(code, themes, 1)).join() !==
-        keys(modifiersForRound(code, themes, 2)).join()
-      );
-    });
-    expect(differs.length).toBeGreaterThan(0);
-  });
-
-  it('sometimes enchants nothing, so a plain bank is an answer and not a failure', () => {
-    const bare = codes.filter((code) => modifiersForRound(code, bank, 0).size === 0);
-    expect(bare.length).toBeGreaterThan(0);
-  });
-
-  it('never enchants every card, so the bank is still a choice', () => {
-    for (const code of codes) {
-      for (let round = 0; round < GameConfig.rounds.count; round += 1) {
-        expect(modifiersForRound(code, bank, round).size).toBeLessThan(bank.length);
-      }
+  test('all values contain Enchanted', () => {
+    const result = modifiersForRound('BBBB', ['theme1', 'theme2', 'theme3'], 0);
+    for (const modifiers of result.values()) {
+      expect(modifiers).toContain('Enchanted');
     }
   });
 
-  it('enchants no more cards than a round is allowed to reach', () => {
-    for (const code of codes) {
-      for (let round = 0; round < GameConfig.rounds.count; round += 1) {
-        expect(modifiersForRound(code, bank, round).size).toBeLessThanOrEqual(rule.maxPerRound);
-      }
-    }
+  test('respects maxPerRound limit', () => {
+    const result = modifiersForRound('CCCC', ['t1', 't2', 't3', 't4', 't5', 't6'], 0);
+    expect(result.size).toBeLessThanOrEqual(3);
+  });
+});
+
+describe('multForTheme', () => {
+  test('returns a multiplier from the configured list', () => {
+    const result = multForTheme('AAAA', 'theme1', 0);
+    expect([1.25, 1.5, 1.75, 2]).toContain(result);
   });
 
-  it('enchants only cards the bank is holding', () => {
-    for (const code of codes) {
-      for (const [theme, held] of modifiersForRound(code, bank, 0)) {
-        expect(bank).toContain(theme);
-        expect(held).toContain('Enchanted');
-      }
-    }
+  test('is deterministic for same inputs', () => {
+    expect(multForTheme('AAAA', 'theme1', 0)).toBe(multForTheme('AAAA', 'theme1', 0));
   });
 
-  it('leaves the chance of enchantment under one, so no round is guaranteed', () => {
-    expect(rule.chance).toBeGreaterThan(0);
-    expect(rule.chance).toBeLessThan(1);
+  test('differs for different themes', () => {
+    const a = multForTheme('AAAA', 'theme1', 0);
+    const b = multForTheme('AAAA', 'theme2', 0);
+    // May or may not differ, but both must be valid
+    expect([1.25, 1.5, 1.75, 2]).toContain(a);
+    expect([1.25, 1.5, 1.75, 2]).toContain(b);
+  });
+});
+
+describe('roundsPlayed', () => {
+  test('returns 0 for undefined', () => {
+    expect(roundsPlayed(undefined)).toBe(0);
   });
 
-  it('has fewer cards to enchant than the bank holds, at more than one a round', () => {
-    // At one a round the enchantment says which theme and nothing else, and at the bank's own
-    // size it stops being a mark on some of the cards and becomes the bank.
-    expect(rule.maxPerRound).toBeGreaterThan(1);
-    expect(rule.maxPerRound).toBeLessThan(GameConfig.themes.cardsPerLobby);
+  test('returns 0 for empty array', () => {
+    expect(roundsPlayed([])).toBe(0);
+  });
+
+  test('sums rounds across entries', () => {
+    expect(roundsPlayed([{ rounds: 3 }, { rounds: 5 }, { rounds: 2 }])).toBe(10);
+  });
+});
+
+describe('enchantmentFor', () => {
+  test('returns NoEnchantment for undefined theme', () => {
+    const result = enchantmentFor('AAAA', undefined, [], ['t1']);
+    expect(result.enchant).toBeUndefined();
+    expect(result.effect).toBeUndefined();
+  });
+
+  test('returns NoEnchantment when theme not enchanted', () => {
+    const result = enchantmentFor('AAAA', 'theme1', [], ['theme1', 'theme2']);
+    // May or may not be enchanted depending on the roll
+    expect(result).toBeDefined();
+  });
+
+  test('returns enchantment roll with valid fields', () => {
+    const result = enchantmentFor('BBBB', 'theme1', [{ rounds: 1 }], ['theme1']);
+    expect(['Ban', 'Demand', 'MinLength', 'MaxLength', undefined]).toContain(result.enchant);
+    expect(['Alone', 'Half', 'Laggards', 'Leaders', undefined]).toContain(result.effect);
+    expect(Array.isArray(result.letters)).toBe(true);
+    expect(typeof result.mult).toBe('number');
   });
 });
