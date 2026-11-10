@@ -1,5 +1,58 @@
 import { test, expect } from '@playwright/test';
 
+interface PerfEntryLike extends PerformanceEntry {
+  navigationId?: number;
+  paintTime?: number;
+  presentationTime?: number;
+  renderStart?: number;
+  styleAndLayoutStart?: number;
+  blockingDuration?: number;
+  scripts?: { name: string; entryType: string; startTime: number; duration: number }[];
+  value?: number;
+  hadRecentInput?: boolean;
+  sourceFunctionName?: string;
+  at?: number;
+  phase?: string;
+  dt?: number;
+  ms?: number;
+  toJSON(): unknown;
+}
+
+interface PerfFont {
+  readyAt: number | undefined;
+  loadingDone: { at: number; families: string[] }[];
+  faces: unknown[];
+}
+
+interface PerfSink {
+  phase: string;
+  timers: Record<string, number>;
+  live: Set<number>;
+  renders: Record<string, Record<string, number>>;
+  flushes: { ms: number }[];
+  loaf: PerfEntryLike[];
+  longtask: PerfEntryLike[];
+  event: PerfEntryLike[];
+  shift: number;
+  raf: { dt: number; phase: string; at: number }[];
+  mutations: number;
+  resources: PerfEntryLike[];
+  wire: Record<string, { count: number; bytes: number }>;
+  commits: Record<string, number>;
+  audits: unknown[];
+  font: PerfFont;
+  endedAt: number;
+}
+
+type PerfWindow = {
+  __perf?: PerfSink;
+  __rafTimes?: number[];
+  __perfPhase?: (phase: string) => void;
+  __perfCommit?: () => void;
+  __perfWire?: (dir: string, type: string, bytes: number) => void;
+  __perfAudit?: unknown[];
+};
+
 test.use({ channel: 'chrome' });
 
 test.describe('game performance', () => {
@@ -14,26 +67,27 @@ test.describe('game performance', () => {
     // Install perf sink BEFORE page load so installPerfInstrumentation() in main.tsx
     // sees window.__perf and installs the options.diffed render counter.
     await page.addInitScript(() => {
-      const P = ((window as any).__perf = {
+      const W = window as unknown as PerfWindow;
+      const P: PerfSink = (W.__perf = {
         phase: 'Boot',
-        timers: {} as Record<string, number>,
+        timers: {},
         live: new Set<number>(),
-        renders: {} as Record<string, Record<string, number>>,
-        flushes: [] as any[],
-        loaf: [] as any[],
-        longtask: [] as any[],
-        event: [] as any[],
+        renders: {},
+        flushes: [],
+        loaf: [],
+        longtask: [],
+        event: [],
         shift: 0,
-        raf: [] as any[],
+        raf: [],
         mutations: 0,
-        resources: [] as any[],
-        wire: {} as Record<string, any>,
-        commits: {} as Record<string, number>,
-        audits: [] as any[],
+        resources: [],
+        wire: {},
+        commits: {},
+        audits: [],
         font: {
-          readyAt: undefined as number | undefined,
-          loadingDone: [] as any[],
-          faces: [] as any[],
+          readyAt: undefined,
+          loadingDone: [],
+          faces: [],
         },
         endedAt: 0,
       });
@@ -48,35 +102,36 @@ test.describe('game performance', () => {
       const origClearTimeout = window.clearTimeout;
       const origSetInterval = window.setInterval;
       const origClearInterval = window.clearInterval;
-      window.setTimeout = ((fn: any, ms: number, ...args: any[]) => {
+      window.setTimeout = ((fn: TimerHandler, ms: number, ...args: unknown[]) => {
         const id = origSetTimeout(fn, ms, ...args);
         P.timers[`to ${ms}ms ${site()}`] = (P.timers[`to ${ms}ms ${site()}`] ?? 0) + 1;
         P.live.add(id);
         return id;
       }) as typeof window.setTimeout;
-      window.clearTimeout = ((id?: any) => {
+      window.clearTimeout = ((id: number) => {
         P.live.delete(id);
         return origClearTimeout(id);
       }) as typeof window.clearTimeout;
-      window.setInterval = ((fn: any, ms: number, ...args: any[]) => {
+      window.setInterval = ((fn: TimerHandler, ms: number, ...args: unknown[]) => {
         const id = origSetInterval(fn, ms, ...args);
         P.timers[`iv ${ms}ms ${site()}`] = (P.timers[`iv ${ms}ms ${site()}`] ?? 0) + 1;
         P.live.add(id);
         return id;
       }) as typeof window.setInterval;
-      window.clearInterval = ((id?: any) => {
+      window.clearInterval = ((id: number) => {
         P.live.delete(id);
         return origClearInterval(id);
       }) as typeof window.clearInterval;
       new PerformanceObserver((list: PerformanceObserverEntryList) => {
         for (const raw of list.getEntries()) {
-          const e: any = raw;
-          const entry: any = {
+          const e = raw as PerfEntryLike;
+          const entry: PerfEntryLike = {
             name: e.name,
             entryType: e.entryType,
             startTime: e.startTime,
             duration: e.duration,
             phase: P.phase,
+            toJSON: () => ({}),
           };
           if (e.entryType === 'longtask') {
             entry.at = e.startTime;
@@ -89,7 +144,7 @@ test.describe('game performance', () => {
             entry.renderStart = e.renderStart;
             entry.styleAndLayoutStart = e.styleAndLayoutStart;
             entry.blockingDuration = e.blockingDuration;
-            entry.scripts = (e.scripts ?? []).map((s: any) => ({
+            entry.scripts = (e.scripts ?? []).map((s) => ({
               name: s.name,
               entryType: s.entryType,
               startTime: s.startTime,
@@ -98,7 +153,7 @@ test.describe('game performance', () => {
             P.loaf.push(entry);
           }
           if (e.entryType === 'event') P.event.push({ ...e, phase: P.phase });
-          if (e.entryType === 'layout-shift') P.shift += e.value;
+          if (e.entryType === 'layout-shift') P.shift += e.value ?? 0;
           if (e.entryType === 'resource') P.resources.push({ ...e, phase: P.phase });
         }
       }).observe({
@@ -106,12 +161,12 @@ test.describe('game performance', () => {
       });
       let lastRaf = performance.now();
       const rafTick = (t: number) => {
-        P.raf.push({ dt: t - lastRaf, phase: P.phase });
+        P.raf.push({ dt: t - lastRaf, phase: P.phase, at: t });
         lastRaf = t;
         requestAnimationFrame(rafTick);
       };
       requestAnimationFrame(rafTick);
-      new MutationObserver((records: any[]) => {
+      new MutationObserver((records: MutationRecord[]) => {
         P.mutations += records.length;
       }).observe(document, {
         subtree: true,
@@ -122,33 +177,33 @@ test.describe('game performance', () => {
       if (typeof document.fonts !== 'undefined') {
         document.fonts.ready.then(() => {
           P.font.readyAt = performance.now();
-          P.font.faces = [...document.fonts].map((face: any) => ({
+          P.font.faces = [...document.fonts].map((face) => ({
             family: face.family,
             weight: face.weight,
             style: face.style,
             status: face.status,
           }));
         });
-        document.fonts.addEventListener('loadingdone', (event: any) => {
+        document.fonts.addEventListener('loadingdone', (event: Event) => {
           const faces = (event as FontFaceSetLoadEvent).fontfaces;
           P.font.loadingDone.push({
             at: performance.now(),
-            families: [...faces].map((face: any) => face.family),
+            families: [...faces].map((face) => face.family),
           });
         });
       }
-      (window as any).__perfPhase = (phase: string) => {
+      W.__perfPhase = (phase: string) => {
         P.phase = phase;
       };
-      (window as any).__perfCommit = () => {
+      W.__perfCommit = () => {
         P.commits[P.phase] = (P.commits[P.phase] ?? 0) + 1;
       };
-      (window as any).__perfWire = (dir: string, type: string, bytes: number) => {
+      W.__perfWire = (dir: string, type: string, bytes: number) => {
         P.wire[`${dir}:${type}`] = P.wire[`${dir}:${type}`] ?? { count: 0, bytes: 0 };
         P.wire[`${dir}:${type}`].count += 1;
         P.wire[`${dir}:${type}`].bytes += bytes;
       };
-      (window as any).__perfAudit = [];
+      W.__perfAudit = [];
     });
 
     await page.goto('http://localhost:5173/#/Join/ABCD');
@@ -186,10 +241,11 @@ test.describe('game performance', () => {
     await page.waitForTimeout(1000);
 
     await page.evaluate(() => {
-      (window as any).__rafTimes = [];
+      const W = window as unknown as PerfWindow;
+      W.__rafTimes = [];
       let last = performance.now();
       const tick = (t: number) => {
-        (window as any).__rafTimes.push(t - last);
+        W.__rafTimes!.push(t - last);
         last = t;
         requestAnimationFrame(tick);
       };
@@ -224,10 +280,14 @@ test.describe('game performance', () => {
     console.log(`\nCPU profile: ${profileResult.profile.samples?.length ?? 0} samples`);
     for (const [name, ms] of top) console.log(`  ${ms.toFixed(1)}ms ${name}`);
 
-    const times = await page.evaluate(() => (window as any).__rafTimes as number[]);
+    const times = await page.evaluate(() => {
+      const W = window as unknown as PerfWindow;
+      return W.__rafTimes! as number[];
+    });
     const perfData = await page.evaluate(() => {
-      const P = (window as any).__perf;
-      const commitValues: any[] = Object.values(P.commits || {});
+      const W = window as unknown as PerfWindow;
+      const P = W.__perf!;
+      const commitValues = Object.values(P.commits || {});
       return {
         mutations: P.mutations || 0,
         shift: P.shift || 0,
@@ -252,7 +312,9 @@ test.describe('game performance', () => {
       console.log(`rAF frames: ${times.length}`);
       console.log(`p95: ${p95.toFixed(1)}ms, p99: ${p99.toFixed(1)}ms`);
       console.log(`frames > 25ms: ${slow} (${((slow / times.length) * 100).toFixed(1)}%)`);
-      console.log(`avg: ${(times.reduce((a, b) => a + b, 0) / times.length).toFixed(1)}ms`);
+      console.log(
+        `avg: ${(times.reduce((a: number, b: number) => a + b, 0) / times.length).toFixed(1)}ms`
+      );
       console.log(`DOM mutations: ${perfData.mutations}`);
       console.log(`Layout shift sum: ${perfData.shift.toFixed(3)}`);
       console.log(`Long tasks: ${perfData.longtask}, LoAF: ${perfData.loafCount}`);
@@ -264,7 +326,7 @@ test.describe('game performance', () => {
       console.log(`\n--- Worst LoAF entries ---`);
       for (const e of perfData.loaf) {
         const scripts = (e.scripts ?? [])
-          .map((s: any) => s.name || 'unknown')
+          .map((s) => s.name || 'unknown')
           .filter((n: string) => n && n !== 'unknown')
           .join(',');
         console.log(
@@ -286,7 +348,7 @@ test.describe('game performance', () => {
       console.log(`\n--- Component renders ---`);
       for (const [phase, phaseRenders] of Object.entries(perfData.renders)) {
         const entries = Object.entries(phaseRenders as Record<string, number>)
-          .sort((a: any, b: any) => b[1] - a[1])
+          .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
           .slice(0, 5);
         console.log(`  ${phase}:`);
         for (const [name, count] of entries) console.log(`    ${count}x ${name}`);
@@ -313,26 +375,27 @@ test.describe('game performance', () => {
     const page = await context.newPage();
 
     await page.addInitScript(() => {
-      const P = ((window as any).__perf = {
+      const W = window as unknown as PerfWindow;
+      const P: PerfSink = (W.__perf = {
         phase: 'Boot',
-        timers: {} as Record<string, number>,
+        timers: {},
         live: new Set<number>(),
-        renders: {} as Record<string, Record<string, number>>,
-        flushes: [] as any[],
-        loaf: [] as any[],
-        longtask: [] as any[],
-        event: [] as any[],
+        renders: {},
+        flushes: [],
+        loaf: [],
+        longtask: [],
+        event: [],
         shift: 0,
-        raf: [] as any[],
+        raf: [],
         mutations: 0,
-        resources: [] as any[],
-        wire: {} as Record<string, any>,
-        commits: {} as Record<string, number>,
-        audits: [] as any[],
+        resources: [],
+        wire: {},
+        commits: {},
+        audits: [],
         font: {
-          readyAt: undefined as number | undefined,
-          loadingDone: [] as any[],
-          faces: [] as any[],
+          readyAt: undefined,
+          loadingDone: [],
+          faces: [],
         },
         endedAt: 0,
       });
@@ -354,45 +417,45 @@ test.describe('game performance', () => {
       const origDateNow = Date.now;
       const startTime = origDateNow();
 
-      window.setTimeout = ((fn: any, delay: number, ...args: any[]) => {
+      window.setTimeout = ((fn: TimerHandler, delay: number, ...args: unknown[]) => {
         const id = origSetTimeout(fn, Math.max(1, delay / 100), ...args);
         P.live.add(id);
         const key = `to ${Math.max(1, delay / 100)}ms ${site()}`;
         P.timers[key] = (P.timers[key] ?? 0) + 1;
         return id;
-      }) as any;
+      }) as typeof window.setTimeout;
 
-      window.clearTimeout = ((id: any) => {
+      window.clearTimeout = ((id: number) => {
         P.live.delete(id);
         origClearTimeout(id);
-      }) as any;
+      }) as typeof window.clearTimeout;
 
-      window.setInterval = ((fn: any, delay: number, ...args: any[]) => {
+      window.setInterval = ((fn: TimerHandler, delay: number, ...args: unknown[]) => {
         const id = origSetInterval(fn, Math.max(1, delay / 100), ...args);
         P.live.add(id);
         const key = `iv ${Math.max(1, delay / 100)}ms ${site()}`;
         P.timers[key] = (P.timers[key] ?? 0) + 1;
         return id;
-      }) as any;
+      }) as typeof window.setInterval;
 
-      window.clearInterval = ((id: any) => {
+      window.clearInterval = ((id: number) => {
         P.live.delete(id);
         origClearInterval(id);
-      }) as any;
+      }) as typeof window.clearInterval;
 
-      window.requestAnimationFrame = ((cb: any) => {
+      window.requestAnimationFrame = ((cb: FrameRequestCallback) => {
         const id = origRequestAnimationFrame((t: number) => {
           P.live.delete(id);
           cb(t);
         });
         P.live.add(id);
         return id;
-      }) as any;
+      }) as typeof window.requestAnimationFrame;
 
-      window.cancelAnimationFrame = ((id: any) => {
+      window.cancelAnimationFrame = ((id: number) => {
         P.live.delete(id);
         origCancelAnimationFrame(id);
-      }) as any;
+      }) as typeof window.cancelAnimationFrame;
 
       Date.now = () => {
         const realElapsed = origDateNow() - startTime;
@@ -400,14 +463,20 @@ test.describe('game performance', () => {
       };
 
       // PerformanceObserver for long tasks, LoAF, events, layout shift, resources
-      const watch = (type: string, sink: any[], extra: object = {}) => {
+      const watch = (type: string, sink: PerfEntryLike[], extra: object = {}) => {
         try {
-          new PerformanceObserver((list: any) => {
+          new PerformanceObserver((list: PerformanceObserverEntryList) => {
             for (const entry of list.getEntries()) {
-              sink.push({ ...entry.toJSON(), phase: P.phase, at: performance.now() });
+              sink.push({
+                ...entry.toJSON(),
+                phase: P.phase,
+                at: performance.now(),
+              } as PerfEntryLike);
             }
           }).observe({ type, buffered: true, ...extra });
-        } catch {}
+        } catch {
+          // Intentionally empty: some entry types may not be supported in all browsers.
+        }
       };
 
       watch('longtask', P.longtask);
@@ -415,9 +484,12 @@ test.describe('game performance', () => {
       watch('event', P.event, { durationThreshold: 16 });
       watch('resource', P.resources);
 
-      new PerformanceObserver((list: any) => {
-        for (const entry of list.getEntries() as any[]) {
-          if (!entry.hadRecentInput) P.shift += entry.value;
+      new PerformanceObserver((list: PerformanceObserverEntryList) => {
+        for (const entry of list.getEntries()) {
+          if (entry.entryType === 'layout-shift') {
+            const ls = entry as PerfEntryLike;
+            if (!ls.hadRecentInput) P.shift += ls.value ?? 0;
+          }
         }
       }).observe({ type: 'layout-shift', buffered: true });
 
@@ -431,7 +503,7 @@ test.describe('game performance', () => {
       requestAnimationFrame(tick);
 
       // MutationObserver
-      new MutationObserver((records: any[]) => {
+      new MutationObserver((records: MutationRecord[]) => {
         P.mutations += records.length;
       }).observe(document, {
         subtree: true,
@@ -444,18 +516,18 @@ test.describe('game performance', () => {
       if (typeof document.fonts !== 'undefined') {
         document.fonts.ready.then(() => {
           P.font.readyAt = performance.now();
-          P.font.faces = [...document.fonts].map((face: any) => ({
+          P.font.faces = [...document.fonts].map((face) => ({
             family: face.family,
             weight: face.weight,
             style: face.style,
             status: face.status,
           }));
         });
-        document.fonts.addEventListener('loadingdone', (event: any) => {
+        document.fonts.addEventListener('loadingdone', (event: Event) => {
           const faces = (event as FontFaceSetLoadEvent).fontfaces;
           P.font.loadingDone.push({
             at: performance.now(),
-            families: [...faces].map((face: any) => face.family),
+            families: [...faces].map((face) => face.family),
           });
         });
       }
@@ -541,7 +613,8 @@ test.describe('game performance', () => {
 
     // Collect all instrumentation data from the page
     const perfData = await page.evaluate(() => {
-      const P = (window as any).__perf;
+      const W = window as unknown as PerfWindow;
+      const P = W.__perf!;
       return {
         phase: P.phase,
         timers: Object.entries(P.timers || {}),
@@ -578,16 +651,21 @@ test.describe('game performance', () => {
 
     // 1. Long Animation Frames
     const loaf = perfData.loaf || [];
-    const slowLoaf = loaf.filter((e: any) => (e.blockingDuration || 0) > 50);
+    const slowLoaf = loaf.filter((e) => (e.blockingDuration || 0) > 50);
     console.log(`Long Animation Frames: ${loaf.length} total, ${slowLoaf.length} > 50ms`);
     if (slowLoaf.length > 0) {
       const worst5 = [...slowLoaf]
-        .sort((a: any, b: any) => (b.blockingDuration || 0) - (a.blockingDuration || 0))
+        .sort((a, b) => (b.blockingDuration || 0) - (a.blockingDuration || 0))
         .slice(0, 5);
       console.log('Worst 5 LoAF entries:');
       for (const e of worst5) {
         const scripts = (e.scripts ?? [])
-          .map((script: any) => script.name || script.sourceFunctionName || 'unknown')
+          .map(
+            (script) =>
+              script.name ||
+              (script as { sourceFunctionName?: string }).sourceFunctionName ||
+              'unknown'
+          )
           .filter((name: string) => name && name !== 'unknown')
           .join(',');
         console.log(
@@ -601,7 +679,7 @@ test.describe('game performance', () => {
 
     // 2. rAF frame times
     const raf = perfData.raf || [];
-    const rafDts = raf.map((e: any) => e.dt);
+    const rafDts = raf.map((e) => e.dt);
     if (rafDts.length > 0) {
       rafDts.sort((a: number, b: number) => a - b);
       const p95 = rafDts[Math.min(rafDts.length - 1, Math.floor(rafDts.length * 0.95))];
@@ -624,8 +702,8 @@ test.describe('game performance', () => {
 
     // 6. Timer census
     console.log(`\nTimer census (live timers: ${perfData.live.length}):`);
-    const timerEntries = Object.entries(perfData.timers || {})
-      .sort((a: any, b: any) => b[1] - a[1])
+    const timerEntries = perfData.timers
+      .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
       .slice(0, 10);
     for (const [key, count] of timerEntries) {
       console.log(`  ${count}x ${key}`);
@@ -636,7 +714,7 @@ test.describe('game performance', () => {
     const renders = perfData.renders || {};
     for (const [phase, phaseRenders] of Object.entries(renders)) {
       const entries = Object.entries(phaseRenders as Record<string, number>)
-        .sort((a: any, b: any) => b[1] - a[1])
+        .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
         .slice(0, 5);
       console.log(`  ${phase}:`);
       for (const [name, count] of entries) {
@@ -647,8 +725,8 @@ test.describe('game performance', () => {
     // 8. Flush costs
     const flushes = perfData.flushes || [];
     if (flushes.length > 0) {
-      const maxFlush = Math.max(...flushes.map((f: any) => f.ms));
-      const slowFlushes = flushes.filter((f: any) => f.ms > 8).length;
+      const maxFlush = Math.max(...flushes.map((f) => f.ms));
+      const slowFlushes = flushes.filter((f) => f.ms > 8).length;
       console.log(
         `\nRender flushes: ${flushes.length}, max: ${maxFlush.toFixed(1)}ms, >8ms: ${slowFlushes}`
       );
