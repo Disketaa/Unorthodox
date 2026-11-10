@@ -25,6 +25,12 @@ wide one before handing over.
 - `uq t` — tests RELATED to uncommitted changes (`vitest related`). `uq t <filter>` for one suite.
   `uq ta` is the full 936-test run, and `uq check` is `npm run check` in full.
 - `uq cm` / `uq cf` — comment audit / rewrite comments to the canonical shape.
+- `npx knip` — report candidates for unused files, exports, and dependencies. Use `--files`,
+  `--exports`, or `--dependencies` to focus the report. Knip is a static candidate finder, not a
+  deletion command or proof that code is unused: verify app/server/CLI/config entry points and
+  dynamic references such as `import.meta.glob`, routes, CSS modules, and string-keyed registries
+  before removing anything. Do not silence a finding until its cause is understood. This is
+  separate from test line coverage and cannot prove that all code is used.
 
 A changed `.css` also runs the `Tests/` suites: they read stylesheets with `node:fs` rather than
 importing them, so the import graph alone would report no tests for a token change.
@@ -87,8 +93,9 @@ Naming rules enforced by linter (`@typescript-eslint/naming-convention` + `eslin
 - Host is authoritative. `HostGameState` (with all answers) never leaves host. Outside goes only `PublicGameState`, assembled by `toPublicState` per phase. In Writing, clients see only `submittedCount`, answers only in Reviewing.
 - Time: host sends `{ phase: "Writing", durationMs }` once. Client records `performance.now()` on receipt and counts remainder locally (device clocks not synced). Host closes phase by its timer and accepts late answers until `GameConfig.timing.graceMs`.
 - Player input: name ≤16 chars, answer ≤80, all trimmed. User text rendered as text only, `dangerouslySetInnerHTML` forbidden.
-- Room code: 4 letters, no lookalikes (no O/0, I/1). Also relay room name. `appId` unique to project, lives in constant.
-- Group ids are plain `number`s end to end (they are indices into the grouped answer list). The `GroupId` string type in `Core/Types.ts` is unused and exists only as a placeholder.
+- Room code: four digits (`0-9`), also used as the relay room name. `appId` is unique to the project and lives in a constant.
+- Group ids are plain `number`s end to end (they are indices into the grouped answer list). There
+  is no `GroupId` type alias; do not introduce a string ID type for group indexes.
 - Routing: hash (`#/Join/ABCD`, `#/Gallery`), because GitHub Pages does not SPA path rewriting.
 - Out of v1 scope (do not implement, only do not block): player reconnect, host migration. If host leaves, show "Host left" screen.
 
