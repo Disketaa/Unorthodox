@@ -1,5 +1,4 @@
 import { GameConfig, countStepMs } from '@/Game';
-import type { RevealState } from './UseReveal';
 
 /** Where the count is on the board, read off the phase's own clock rather than off a state of
  * any one browser, so every screen in the room is on the same card at the same moment. Two
@@ -13,11 +12,6 @@ export interface CountBoard {
   /** How long a card's count lasts, which is also how long one of its figures takes. */
   stepMs: number;
 }
-
-/** The board's own beat, shared with the host's clock rather than summed again here: the host
- * asks `scoresDurationMs` how long the count it is about to open will run, and a view with its
- * own copy of the sum is a view that can disagree with the phase it is drawing. */
-export { countStepMs };
 
 /** Which part of a card's cycle the room is in right now. The bar draws a different figure for
  * each one: nothing while the count runs, the addition once it lands, the total once the pause
@@ -50,11 +44,4 @@ export function countBoard(
     payingElapsedMs: index >= 0 ? since - index * stepMs : undefined,
     stepMs,
   };
-}
-
-/** The moment the board is counting from, which is its own clock unless the room is held: a held
- * room stands where it was held rather than counting the hold away, the same rule the board's
- * reveal is under since both are the room's one watch. */
-export function countMoment(reveal: RevealState): number {
-  return reveal.moment;
 }
