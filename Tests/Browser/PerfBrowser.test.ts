@@ -9,7 +9,7 @@ test.describe('game performance', () => {
     const context = await browser.newContext();
     const page = await context.newPage();
 
-page.on('console', (msg) => console.log('CONSOLE:', msg.text()));
+    page.on('console', (msg) => console.log('CONSOLE:', msg.text()));
 
     // Install perf sink BEFORE page load so installPerfInstrumentation() in main.tsx
     // sees window.__perf and installs the options.diffed render counter.
@@ -30,12 +30,19 @@ page.on('console', (msg) => console.log('CONSOLE:', msg.text()));
         wire: {} as Record<string, any>,
         commits: {} as Record<string, number>,
         audits: [] as any[],
-        font: { readyAt: undefined as number | undefined, loadingDone: [] as any[], faces: [] as any[] },
+        font: {
+          readyAt: undefined as number | undefined,
+          loadingDone: [] as any[],
+          faces: [] as any[],
+        },
         endedAt: 0,
       });
       const site = () => {
         const lines = (new Error().stack ?? '').split('\n');
-        return lines.slice(2, 6).map((line) => line.trim().replace(/^at /, '')).join(' | ');
+        return lines
+          .slice(2, 6)
+          .map((line) => line.trim().replace(/^at /, ''))
+          .join(' | ');
       };
       const origSetTimeout = window.setTimeout;
       const origClearTimeout = window.clearTimeout;
@@ -61,8 +68,9 @@ page.on('console', (msg) => console.log('CONSOLE:', msg.text()));
         P.live.delete(id);
         return origClearInterval(id);
       }) as typeof window.clearInterval;
-      new PerformanceObserver((list: any[]) => {
-        for (const e of list.getEntries()) {
+      new PerformanceObserver((list: PerformanceObserverEntryList) => {
+        for (const raw of list.getEntries()) {
+          const e: any = raw;
           const entry: any = {
             name: e.name,
             entryType: e.entryType,
@@ -93,7 +101,9 @@ page.on('console', (msg) => console.log('CONSOLE:', msg.text()));
           if (e.entryType === 'layout-shift') P.shift += e.value;
           if (e.entryType === 'resource') P.resources.push({ ...e, phase: P.phase });
         }
-      }).observe({ entryTypes: ['longtask', 'long-animation-frame', 'event', 'layout-shift', 'resource'] });
+      }).observe({
+        entryTypes: ['longtask', 'long-animation-frame', 'event', 'layout-shift', 'resource'],
+      });
       let lastRaf = performance.now();
       const rafTick = (t: number) => {
         P.raf.push({ dt: t - lastRaf, phase: P.phase });
@@ -103,19 +113,36 @@ page.on('console', (msg) => console.log('CONSOLE:', msg.text()));
       requestAnimationFrame(rafTick);
       new MutationObserver((records: any[]) => {
         P.mutations += records.length;
-      }).observe(document, { subtree: true, childList: true, attributes: true, characterData: true });
+      }).observe(document, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        characterData: true,
+      });
       if (typeof document.fonts !== 'undefined') {
         document.fonts.ready.then(() => {
           P.font.readyAt = performance.now();
-          P.font.faces = [...document.fonts].map((face: any) => ({ family: face.family, weight: face.weight, style: face.style, status: face.status }));
+          P.font.faces = [...document.fonts].map((face: any) => ({
+            family: face.family,
+            weight: face.weight,
+            style: face.style,
+            status: face.status,
+          }));
         });
         document.fonts.addEventListener('loadingdone', (event: any) => {
           const faces = (event as FontFaceSetLoadEvent).fontfaces;
-          P.font.loadingDone.push({ at: performance.now(), families: [...faces].map((face: any) => face.family) });
+          P.font.loadingDone.push({
+            at: performance.now(),
+            families: [...faces].map((face: any) => face.family),
+          });
         });
       }
-      (window as any).__perfPhase = (phase: string) => { P.phase = phase; };
-      (window as any).__perfCommit = () => { P.commits[P.phase] = (P.commits[P.phase] ?? 0) + 1; };
+      (window as any).__perfPhase = (phase: string) => {
+        P.phase = phase;
+      };
+      (window as any).__perfCommit = () => {
+        P.commits[P.phase] = (P.commits[P.phase] ?? 0) + 1;
+      };
       (window as any).__perfWire = (dir: string, type: string, bytes: number) => {
         P.wire[`${dir}:${type}`] = P.wire[`${dir}:${type}`] ?? { count: 0, bytes: 0 };
         P.wire[`${dir}:${type}`].count += 1;
@@ -190,18 +217,17 @@ page.on('console', (msg) => console.log('CONSOLE:', msg.text()));
     for (const node of profileResult.profile.nodes ?? []) {
       const cf = node.callFrame;
       const name = cf?.functionName || cf?.url || 'anonymous';
-      const ms = (node.hitCount * 100) / 1000;
+      const ms = ((node.hitCount ?? 0) * 100) / 1000;
       byFunction.set(name, (byFunction.get(name) ?? 0) + ms);
     }
-    const top = [...byFunction.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10);
-    console.log(`\nCPU profile: ${profileResult.profile.samples.length} samples`);
+    const top = [...byFunction.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+    console.log(`\nCPU profile: ${profileResult.profile.samples?.length ?? 0} samples`);
     for (const [name, ms] of top) console.log(`  ${ms.toFixed(1)}ms ${name}`);
 
     const times = await page.evaluate(() => (window as any).__rafTimes as number[]);
     const perfData = await page.evaluate(() => {
       const P = (window as any).__perf;
+      const commitValues: any[] = Object.values(P.commits || {});
       return {
         mutations: P.mutations || 0,
         shift: P.shift || 0,
@@ -214,7 +240,7 @@ page.on('console', (msg) => console.log('CONSOLE:', msg.text()));
         flushes: (P.flushes || []).slice(0, 5),
         flushCount: (P.flushes || []).length,
         wire: P.wire || {},
-        commits: Object.values(P.commits || {}).reduce((a: number, b: number) => a + b, 0),
+        commits: commitValues.reduce((a: number, b: number) => a + b, 0),
       };
     });
     if (times.length > 0) {
@@ -230,7 +256,9 @@ page.on('console', (msg) => console.log('CONSOLE:', msg.text()));
       console.log(`DOM mutations: ${perfData.mutations}`);
       console.log(`Layout shift sum: ${perfData.shift.toFixed(3)}`);
       console.log(`Long tasks: ${perfData.longtask}, LoAF: ${perfData.loafCount}`);
-      console.log(`Live timers after game: ${perfData.live.length}, Commits: ${perfData.commits}`);
+      console.log(
+        `Live timers after game: ${perfData.live.length}, Commits: ${perfData.commits}`
+      );
 
       // Phase 5 reporting
       console.log(`\n--- Worst LoAF entries ---`);
@@ -239,7 +267,9 @@ page.on('console', (msg) => console.log('CONSOLE:', msg.text()));
           .map((s: any) => s.name || 'unknown')
           .filter((n: string) => n && n !== 'unknown')
           .join(',');
-        console.log(`  ${e.phase} blocking=${(e.blockingDuration || 0).toFixed(1)}ms duration=${(e.duration || 0).toFixed(1)}ms scripts=${scripts || '(none)'}`);
+        console.log(
+          `  ${e.phase} blocking=${(e.blockingDuration || 0).toFixed(1)}ms duration=${(e.duration || 0).toFixed(1)}ms scripts=${scripts || '(none)'}`
+        );
       }
 
       console.log(`\n--- Timer census ---`);
@@ -309,7 +339,10 @@ page.on('console', (msg) => console.log('CONSOLE:', msg.text()));
 
       const site = () => {
         const lines = (new Error().stack ?? '').split('\n');
-        return lines.slice(2, 6).map((line) => line.trim().replace(/^at /, '')).join(' | ');
+        return lines
+          .slice(2, 6)
+          .map((line) => line.trim().replace(/^at /, ''))
+          .join(' | ');
       };
 
       const origSetTimeout = window.setTimeout;
@@ -499,13 +532,11 @@ page.on('console', (msg) => console.log('CONSOLE:', msg.text()));
     for (const node of profileResult.profile.nodes ?? []) {
       const cf = node.callFrame;
       const name = cf?.functionName || cf?.url || 'anonymous';
-      const ms = (node.hitCount * 100) / 1000;
+      const ms = ((node.hitCount ?? 0) * 100) / 1000;
       byFunction.set(name, (byFunction.get(name) ?? 0) + ms);
     }
-    const top = [...byFunction.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10);
-    console.log(`\nCPU profile: ${profileResult.profile.samples.length} samples`);
+    const top = [...byFunction.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+    console.log(`\nCPU profile: ${profileResult.profile.samples?.length ?? 0} samples`);
     for (const [name, ms] of top) console.log(`  ${ms.toFixed(1)}ms ${name}`);
 
     // Collect all instrumentation data from the page
@@ -561,9 +592,9 @@ page.on('console', (msg) => console.log('CONSOLE:', msg.text()));
           .join(',');
         console.log(
           `  ${e.phase} blocking=${(e.blockingDuration || 0).toFixed(1)}ms ` +
-          `duration=${(e.duration || 0).toFixed(1)}ms ` +
-          `scripts=${scripts || '(none)'} ` +
-          `renderStart=${(e.renderStart || 0).toFixed(1)}ms`
+            `duration=${(e.duration || 0).toFixed(1)}ms ` +
+            `scripts=${scripts || '(none)'} ` +
+            `renderStart=${(e.renderStart || 0).toFixed(1)}ms`
         );
       }
     }
@@ -618,7 +649,9 @@ page.on('console', (msg) => console.log('CONSOLE:', msg.text()));
     if (flushes.length > 0) {
       const maxFlush = Math.max(...flushes.map((f: any) => f.ms));
       const slowFlushes = flushes.filter((f: any) => f.ms > 8).length;
-      console.log(`\nRender flushes: ${flushes.length}, max: ${maxFlush.toFixed(1)}ms, >8ms: ${slowFlushes}`);
+      console.log(
+        `\nRender flushes: ${flushes.length}, max: ${maxFlush.toFixed(1)}ms, >8ms: ${slowFlushes}`
+      );
     }
 
     // 9. Memory and DOM

@@ -20,7 +20,7 @@ export interface RelaySocketHandlers {
  * so neither file has to carry the other's shape. */
 export class RelaySocket {
   private ws: WebSocket | null = null;
-  private reconnectTimeout: number | null = null;
+  private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
   private connectWatchdog: (() => void) | null = null;
   private attempts = 0;
 
