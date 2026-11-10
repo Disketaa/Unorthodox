@@ -14,14 +14,12 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "moduleDetection": "force",
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["Source/*"]
+      "@/*": ["./Source/*"]
     },
     "jsx": "preserve",
     "jsxImportSource": "preact",
-    "types": ["vite/client", "vitest"],
-    "ignoreDeprecations": "6.0"
+    "types": ["vite/client", "vitest"]
   },
   "include": ["Source"],
   "references": [{ "path": "./tsconfig.node.json" }]

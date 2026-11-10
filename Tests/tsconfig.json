@@ -3,8 +3,6 @@
   "compilerOptions": {
     "jsx": "preserve",
     "jsxImportSource": "preact",
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": { "@/*": ["../Source/*"] },
     "types": ["node", "vitest/globals", "vite/client"]
   },

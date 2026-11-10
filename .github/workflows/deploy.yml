@@ -31,6 +31,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npm run typecheck
       - run: npm run test:coverage
       # Vite inlines import.meta.env at build time, so the TURN credential has to reach the build
       # as an environment variable rather than as a file in the repository. It is a repository
