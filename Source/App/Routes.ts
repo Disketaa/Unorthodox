@@ -14,7 +14,7 @@ export function parseRoute(hash: string): Route {
   }
   if (segments[0] === 'Room' && segments[1] !== undefined) {
     // The raw segment is checked as well as the normalised one, because normalising
-    // truncates and a five letter path would otherwise join the wrong room. Anything
+    // truncates and a five-digit path would otherwise join the wrong room. Anything
     // after the code is ignored, so old links still open the room they name.
     const raw = segments[1];
     if (raw.length > GameConfig.limits.roomCodeLength) {
