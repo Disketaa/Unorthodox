@@ -81,7 +81,7 @@ The stated long-term target is 100% line coverage. The current phase establishes
 ## Open items (post-commit follow-up)
 
 - Restore stronger behavioral assertions in ThemeModifiers.test.ts (seeded bank constraints, Enchanted-on-empty-map check), Report.test.ts (folded report text/counts, latest timestamps, serializing values, logger calls), and Characters.test.ts (catalogue uniqueness and size invariants).
-- Reach 100% line coverage (currently 63.82%) as a follow-up phase.
+- Reach 100% line coverage (currently 63.82%) — **deferred as a follow-up phase**, not complete.
 
 ## Results
 
@@ -94,6 +94,9 @@ The stated long-term target is 100% line coverage. The current phase establishes
 | Coverage lines     | 62.1%                                          | 63.82%                 | Gate: 63% |
 | Coverage branches  | 51.15%                                         | 53.05%                 | Gate: 52% |
 | Coverage functions | 57.33%                                         | 59.07%                 | Gate: 58% |
+| `npm run check`    | Not run                                        | Passes (all 8 steps)   | Passes    |
+
+Prettier formatting applied to 45 source files (formatting-only line wrapping, no logic changes).
 
 ## Files removed
 

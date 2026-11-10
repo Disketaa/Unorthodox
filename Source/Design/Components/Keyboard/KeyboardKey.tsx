@@ -115,6 +115,8 @@ function keyClass(
 
 /** The language key, which swaps the letters rather than typing one, and so is the one key here
  * that a press does not repeat. Split out so the repeating keys carry no condition at all. */
-export const LangKey = memo(function LangKey(props: Omit<KeyProps, 'repeats' | 'keyName'>): VNode {
+export const LangKey = memo(function LangKey(
+  props: Omit<KeyProps, 'repeats' | 'keyName'>
+): VNode {
   return <Key {...props} keyName={Lang.key} repeats={false} />;
 });

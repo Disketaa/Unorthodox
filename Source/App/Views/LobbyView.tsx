@@ -33,7 +33,10 @@ export function LobbyView({ view }: PhaseViewProps) {
   // The custom themes, merged from this browser's cache and the room's state. Memoized so a
   // re-render that changes nothing here does not hand a new array down to every lobby card.
   const customThemes: readonly CustomTheme[] = useMemo(
-    () => mergeCustomThemes(view.publicState?.phase === 'Lobby' ? view.publicState.customThemes : []),
+    () =>
+      mergeCustomThemes(
+        view.publicState?.phase === 'Lobby' ? view.publicState.customThemes : []
+      ),
     [view.publicState?.customThemes]
   );
   // The name the host has for us, not the one typed on this tab: the character is the

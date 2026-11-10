@@ -33,5 +33,19 @@ export function useGameSession(
   const { marks, actions } = useRoundMarks(session, publicState, roomCode, topic);
   useRoundClocks(session, role === 'Host', phase, actions);
   const { ownLook, bank } = useOwnLookAndBank(session, phase, onLook, roomCode, publicState);
-  return sessionView(session, role, roomCode, publicState, phase, topic, marks, actions, ownLook, bank, hostLeft, editing, markEditing);
+  return sessionView(
+    session,
+    role,
+    roomCode,
+    publicState,
+    phase,
+    topic,
+    marks,
+    actions,
+    ownLook,
+    bank,
+    hostLeft,
+    editing,
+    markEditing
+  );
 }

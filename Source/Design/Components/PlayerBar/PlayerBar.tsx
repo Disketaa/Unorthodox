@@ -67,7 +67,8 @@ export interface PlayerBarProps {
  * guards it cannot drift from the values the drawing is actually made of. */
 function fitsLine(seats: number): boolean {
   const num = (token: string) => Number.parseFloat(tokenValue(token));
-  const room = document.documentElement.clientWidth - 2 * num('--Layout-ScreenPaddingHorizontal');
+  const room =
+    document.documentElement.clientWidth - 2 * num('--Layout-ScreenPaddingHorizontal');
   return seats * num('--Layout-PlayerBarStraight') * num('--Size-PlayerBarSeatMin') <= room;
 }
 
