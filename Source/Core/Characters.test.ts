@@ -36,6 +36,24 @@ describe('randomLook', () => {
   });
 });
 
+describe('catalogue invariants', () => {
+  test('CharacterIds has no duplicates', () => {
+    expect(new Set(CharacterIds).size).toBe(CharacterIds.length);
+  });
+
+  test('CharacterColors has no duplicates', () => {
+    expect(new Set(CharacterColors).size).toBe(CharacterColors.length);
+  });
+
+  test('CharacterIds has 8 entries', () => {
+    expect(CharacterIds.length).toBe(8);
+  });
+
+  test('CharacterColors has 8 entries', () => {
+    expect(CharacterColors.length).toBe(8);
+  });
+});
+
 describe('isCharacterId', () => {
   test('returns true for valid ids', () => {
     for (const id of CharacterIds) expect(isCharacterId(id)).toBe(true);

@@ -24,6 +24,13 @@ describe('reportLine', () => {
     expect(stamp).toMatch(/^\d{2}:\d{2}:\d{2}\.\d{3}$/);
     expect(body).toBe('info hello world');
   });
+
+  test('serializes non-string values', () => {
+    const { body } = reportLine('warn', 'code', [42, { x: 1 }, null]);
+    expect(body).toContain('42');
+    expect(body).toContain('{"x":1}');
+    expect(body).toContain('null');
+  });
 });
 
 describe('fold', () => {

@@ -47,7 +47,6 @@
     "@preact/preset-vite": "^2.10.6",
     "@types/node": "^26.6.3",
     "@vitest/coverage-v8": "^5.1.0",
-    "c8": "^12.0.0",
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-check-file": "^3.3.2",
