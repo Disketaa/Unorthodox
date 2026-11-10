@@ -1,0 +1,10 @@
+{
+  "$schema": "https://unjs.io/schemas/knip.json",
+  "ignore": [
+    "Tools/Comments/CommentShape.d.mts",
+    "Tools/Encoding/Mojibake.d.mts",
+    "Tools/RelaySmoke.mjs"
+  ],
+  "ignoreDependencies": ["playwright", "ws"],
+  "ignoreBinaries": ["vite"]
+}
