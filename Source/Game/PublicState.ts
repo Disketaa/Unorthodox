@@ -12,7 +12,7 @@ import {
 } from './PublicEndgame';
 import { PlayerId, PlayerLook, ThemeId, ThemeMode, CustomTheme, assertNever } from '@/Core';
 import type { RandomPick } from './GameState';
-import type { Pace } from './GameConfig';
+import type { Pace, ScoringMode } from './GameConfig';
 
 /** What a client is told about one player. */
 export interface PublicPlayer {
@@ -21,6 +21,7 @@ export interface PublicPlayer {
   look: PlayerLook;
   /** Whether the host still has this player on the line. */
   isOnline: boolean;
+  isSpectator: boolean;
 }
 
 /** What every phase tells a client about the room itself. The turn and the pace ride on all of
@@ -33,6 +34,8 @@ export interface PublicRoom {
    * the settings card is drawn for clients too, and a card showing one pace while the room
    * plays another is worse than no card. */
   pace: Pace;
+  /** How unique answers earn their base points. */
+  scoringMode?: ScoringMode;
   /** The themes the host has left switched on, which every deal is drawn from. Sent for the
    * pace's reason and the same weight: a client that dealt its own bank out of the whole set
    * would put six different cards on six different screens in one room. */

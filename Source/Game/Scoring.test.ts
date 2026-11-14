@@ -84,6 +84,21 @@ describe('scoreCard', () => {
       fromLikes: 3,
     });
   });
+
+  test('simple mode pays the player count regardless of answer time', () => {
+    const early = card({ scoringMode: 'Simple', playerCount: 12, speedShare: 0 });
+    const late = card({ scoringMode: 'Simple', playerCount: 12, speedShare: 1 });
+    expect(scoreCard(early).points).toBe(12);
+    expect(scoreCard(late).points).toBe(12);
+  });
+
+  test('simple mode multiplies its base and leaves likes alone', () => {
+    expect(
+      scoreCard(
+        card({ scoringMode: 'Simple', playerCount: 12, speedShare: 1, mult: 1.5, likes: 2 })
+      )
+    ).toEqual({ points: 20, fromSpeed: 18, fromLikes: 2 });
+  });
 });
 
 describe('calculateRoundScores', () => {

@@ -16,6 +16,7 @@ export function phaseOf(name: SessionPhaseName, startedAt = Date.now()): Session
     playerNames: new Map(),
     playerLooks: new Map(),
     playerPresence: new Map(),
+    spectatorIds: new Set(),
     playerCount: 2,
     submittedCount: 0,
     submittedIds: new Set(),

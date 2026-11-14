@@ -131,15 +131,15 @@ describe('how long the round runs', () => {
     );
   });
 
-  it('gives the normal pace five seconds more of voting, and the same board', () => {
+  it('gives the normal pace ten seconds more of voting, and the same board', () => {
     // What Normal buys is a settled beat to vote in, and not a slower count of it: the two paces
-    // differ by a flat five at every board size, so a host can say "five seconds longer" and be
+    // differ by a flat ten at every board size, so a host can say "ten seconds longer" and be
     // right whatever the board is.
     for (let cards = 1; cards <= full; cards += 1) {
       expect(
         reviewingDurationMs(soleWriters(cards), standard) -
           reviewingDurationMs(soleWriters(cards), fast)
-      ).toBe(5_000);
+      ).toBe(10_000);
     }
   });
 

@@ -16,6 +16,8 @@ export interface LobbyRoomProps {
   onExit: () => void;
   /** Only the host gets this: the room's way to remove a player. */
   onKick: (playerId: PlayerId) => void;
+  /** Only the host gets this: the room's way to move a seat in or out of play. */
+  onSetSpectator: (playerId: PlayerId, isSpectator: boolean) => void;
   /** Which way the room is given its themes, and which ones are named. */
   themeMode: ThemeMode;
   themes: readonly ThemeId[];
@@ -25,7 +27,7 @@ export interface LobbyRoomProps {
  * whose owner has dropped is still on the roster, but starting would wait on an answer that can
  * no longer arrive, so a room of one live player is one. */
 function enoughPlayers(players: readonly PublicPlayer[]): boolean {
-  const hereCount = players.filter((player) => player.isOnline).length;
+  const hereCount = players.filter((player) => player.isOnline && !player.isSpectator).length;
   return hereCount >= GameConfig.limits.minPlayers;
 }
 
@@ -56,6 +58,7 @@ export function LobbyRoom({
   onStart,
   onExit,
   onKick,
+  onSetSpectator,
   themeMode,
   themes,
 }: LobbyRoomProps) {
@@ -73,6 +76,7 @@ export function LobbyRoom({
         ownPlayerId={ownPlayerId}
         isHost={isHost}
         onKick={onKick}
+        onSetSpectator={onSetSpectator}
         maxPlayers={GameConfig.limits.maxPlayers}
       />
     </LobbyCategory>

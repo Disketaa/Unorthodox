@@ -6,13 +6,15 @@ import type { BoardState } from './GameState';
 import { GameConfig } from './GameConfig';
 import { groupAnswersWithPlayers } from './Grouping';
 import type { PublicReviewingState, PublicScoreGroup, PublicRoom } from './PublicState';
+import { participantAnswers, participantIds } from './Participants';
 
 /** The board's cards: the answers as written, in an order nobody can read off who wrote what,
  * plus one card between all the players who wrote nothing. Seeded from the round and not the
  * clock, since letting a held room go shifts the clock. */
 function reviewGroups(state: BoardState): PublicScoreGroup[] {
-  const written = [...state.answers.values()];
-  const answers = groupAnswersWithPlayers(state.answers).map((group) => ({
+  const eligibleAnswers = participantAnswers(state.players, state.answers);
+  const written = [...eligibleAnswers.values()];
+  const answers = groupAnswersWithPlayers(eligibleAnswers).map((group) => ({
     groupId: group.groupId,
     text: group.answers[0] ?? '',
     playerCount: group.answers.length,
@@ -23,7 +25,9 @@ function reviewGroups(state: BoardState): PublicScoreGroup[] {
   // Everybody who wrote nothing is one card between them, the way everybody who wrote the same
   // thing is. One blank each was a board with more cards than there were people to put in it. The
   // card still says how many, so the room still learns how many sat the round out.
-  const blanked = [...state.players.keys()].filter((playerId) => !state.answers.has(playerId));
+  const blanked = participantIds(state.players).filter(
+    (playerId) => !eligibleAnswers.has(playerId)
+  );
   if (blanked.length > 0) {
     groups.push({
       groupId: groups.length,

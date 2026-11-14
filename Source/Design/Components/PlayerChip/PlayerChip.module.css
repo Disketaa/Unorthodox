@@ -45,6 +45,13 @@
   margin-right: auto;
 }
 
+.Spectator {
+  flex-shrink: 0;
+  font-size: var(--FontSize-Caption);
+  font-weight: 700;
+  color: var(--Color-Text-Muted);
+}
+
 /* In yellow outright, and not the accent, whatever the player picked. The crown is a fact about
  * who is hosting rather than something to aim at, so it holds its colour permanently instead of
  * waiting for a pointer. It cannot follow the accent either: every player now wears their own

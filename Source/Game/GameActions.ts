@@ -2,15 +2,17 @@
  * touch: the roster in `LobbyActions.ts`, the turn in `Turns.ts`, and everything that moves the
  * room between phases in `PhaseActions.ts`. */
 import type { PlayerId, PlayerLook, ThemeId, ThemeMode, CustomTheme } from '@/Core';
-import type { Pace } from './GameConfig';
+import type { Pace, ScoringMode } from './GameConfig';
 import type { PhaseName } from './PhaseFlow';
 
 export type GameAction =
   | { type: 'JOIN'; playerId: PlayerId; name: string; look: PlayerLook }
   | { type: 'SET_ONLINE'; playerId: PlayerId; isOnline: boolean }
+  | { type: 'SET_SPECTATOR'; playerId: PlayerId; isSpectator: boolean }
   | { type: 'KICK'; playerId: PlayerId }
   | { type: 'SET_LOOK'; playerId: PlayerId; look: PlayerLook }
   | { type: 'SET_PACE'; pace: Pace }
+  | { type: 'SET_SCORING_MODE'; scoringMode: ScoringMode }
   /** The themes the host has named and which way the room is given them: the pool every bank is
    * dealt from. The whole selection rather than the one theme pressed, since picking a theme is
    * taking it out of the room. The mode rides along so one press moves the pool. */

@@ -5,6 +5,8 @@ import { Session } from '../Session';
 export function sessionActions(session: Session) {
   return {
     kickPlayer: (playerId: PlayerId) => session.kick(playerId),
+    setSpectator: (playerId: PlayerId, isSpectator: boolean) =>
+      session.setSpectator(playerId, isSpectator),
     setCustomThemes: (themes: readonly CustomTheme[]) => session.setCustomThemes?.(themes),
     removeCustomTheme: (name: string) => session.removeCustomTheme?.(name),
   };

@@ -28,6 +28,8 @@ export interface SessionPhase {
   playerLooks: ReadonlyMap<PlayerId, PlayerLook>;
   /** Who is still on the line, which only the host can see change. */
   playerPresence: ReadonlyMap<PlayerId, boolean>;
+  /** Seats that watch the round without taking part in it. */
+  spectatorIds: ReadonlySet<PlayerId>;
   playerCount: number;
   submittedCount: number;
   /** Who has sent an answer in the phase in view, which is only ever the writing phase. Empty
@@ -48,12 +50,14 @@ function readRoster(players: readonly PublicPlayer[]) {
   const names = new Map<PlayerId, string>();
   const looks = new Map<PlayerId, PlayerLook>();
   const presence = new Map<PlayerId, boolean>();
+  const spectators = new Set<PlayerId>();
   players.forEach((player) => {
     names.set(player.id, player.name);
     looks.set(player.id, player.look);
     presence.set(player.id, player.isOnline);
+    if (player.isSpectator) spectators.add(player.id);
   });
-  return { names, looks, presence };
+  return { names, looks, presence, spectators };
 }
 
 /** Only the timed phases carry a duration; Lobby and Final have none. */
@@ -100,7 +104,10 @@ export function useSessionPhase(
     playerNames: roster.names,
     playerLooks: roster.looks,
     playerPresence: roster.presence,
-    playerCount: roster.names.size,
+    spectatorIds: roster.spectators,
+    playerCount: [...(publicState?.players ?? [])].filter(
+      (player) => player.isOnline && !player.isSpectator
+    ).length,
     submittedCount: publicState?.phase === 'Writing' ? publicState.submittedCount : 0,
     submittedIds:
       publicState?.phase === 'Writing'

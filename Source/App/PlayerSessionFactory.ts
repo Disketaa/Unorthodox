@@ -66,9 +66,11 @@ function playerSeat(
 
 /** Everything a client is only shown, and nothing it decides: the presses that belong to the
  * host alone, refused outright rather than answered late. */
-function playerNoDecisions(): Pick<
+type PlayerNoDecisions = Pick<
   Session,
   | 'setPace'
+  | 'setScoringMode'
+  | 'setSpectator'
   | 'setThemes'
   | 'addBot'
   | 'nextTurn'
@@ -84,11 +86,15 @@ function playerNoDecisions(): Pick<
   | 'reloadPhase'
   | 'finish'
   | 'kick'
-> {
+>;
+
+function playerNoDecisions(): PlayerNoDecisions {
   // A pace press is a local look only, and a theme press would be a client narrowing the bank the
   // whole room is about to be offered: both belong to the host, as does every phase after this.
   return {
     setPace: () => {},
+    setScoringMode: () => {},
+    setSpectator: () => {},
     setThemes: () => {},
     addBot: () => {},
     nextTurn: () => {},

@@ -1,5 +1,5 @@
 import { PlayerId, PlayerLook, ThemeId, ThemeMode, CustomTheme } from '@/Core';
-import { Pace } from './GameConfig';
+import { Pace, ScoringMode } from './GameConfig';
 
 /** What the room remembers about one player: who they are, how they look, and whether they are
  * still on the line. Presence is the host's to record, because only the host sees every peer
@@ -8,6 +8,7 @@ export interface Player {
   name: string;
   look: PlayerLook;
   isOnline: boolean;
+  isSpectator?: boolean;
 }
 
 /** What every phase carries, whatever the room is doing. The roster, the totals and the pace
@@ -23,6 +24,8 @@ export interface RoomMembers {
    * UI, so a client is told the answer rather than guessing it from its own click. The lobby
    * buttons are drawn for clients too, to show what a pace would mean. */
   pace: Pace;
+  /** How unique answers earn their base points. */
+  scoringMode?: ScoringMode;
   /** The themes the host has named, and which way the room is given them: the pool every deal is
    * drawn from. In the state for the pace's reason, since a client that dealt its own bank
    * would put different cards on every screen in one room. A room starts on the random bank. */
@@ -72,6 +75,7 @@ export function membersOf(state: HostState): RoomMembers {
     cumulativeScores: state.cumulativeScores,
     turnPlayerId: state.turnPlayerId,
     pace: state.pace,
+    scoringMode: state.scoringMode ?? 'Smart',
     themes: state.themes,
     themeMode: state.themeMode,
     customThemes: state.customThemes,
@@ -218,6 +222,7 @@ export function freshLobbyState(): LobbyState {
     cumulativeScores: new Map(),
     turnPlayerId: null,
     pace: 'Standard',
+    scoringMode: 'Smart',
     themes: [],
     themeMode: 'Random',
     customThemes: new Map<string, CustomTheme>(),

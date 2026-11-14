@@ -134,6 +134,13 @@ describe('the score', () => {
     expect(label?.querySelector('[class*="Score"]')?.textContent).toBe('0');
   });
 
+  it('shows eyes instead of points for a spectator', () => {
+    const label = mounted(
+      <PlayerBar players={[player({ score: 12, isSpectator: true })]} />
+    ).firstElementChild?.querySelector('[class*="Label"]');
+    expect(label?.querySelector('[class*="Score"]')?.textContent).toBe('👀');
+  });
+
   it('draws one per seat, so twelve players are twelve scores', () => {
     const players = Array.from({ length: 12 }, (_, index) =>
       player({ id: `p${index}`, score: index })

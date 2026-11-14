@@ -2,21 +2,27 @@
 import { describe, it, expect } from 'vitest';
 import { render } from 'preact';
 import { LobbyScreen } from './LobbyScreen';
-import { Pace } from '@/Game';
+import { Pace, type PublicPlayer } from '@/Game';
 import { PlayerLook } from '@/Core';
 
 const look: PlayerLook = { character: 'Butterfly', color: 'Coral' };
 
 /** The lobby as one role sees it, with the presses it makes collected. */
-function lobby(isHost: boolean, pace: Pace = 'Standard') {
+function lobby(
+  isHost: boolean,
+  pace: Pace = 'Standard',
+  players: readonly PublicPlayer[] = []
+) {
   const pickedPaces: Pace[] = [];
+  const spectators: [string, boolean][] = [];
   const container = document.createElement('div');
   document.body.appendChild(container);
   render(
     <LobbyScreen
       roomCode="ABCD"
-      players={[]}
+      players={players}
       pace={pace}
+      scoringMode="Smart"
       themes={[]}
       themeMode="Random"
       customThemes={[]}
@@ -29,14 +35,16 @@ function lobby(isHost: boolean, pace: Pace = 'Standard') {
       isHost={isHost}
       onPickLook={() => {}}
       onPickPace={(next) => pickedPaces.push(next)}
+      onPickScoringMode={() => {}}
       onPickThemes={() => {}}
       onStart={() => {}}
       onExit={() => {}}
       onKick={() => {}}
+      onSetSpectator={(playerId, isSpectator) => spectators.push([playerId, isSpectator])}
     />,
     container
   );
-  return { container, pickedPaces };
+  return { container, pickedPaces, spectators };
 }
 
 /** The pace buttons, found by the settings card they sit in. Not simply every button on the
@@ -77,5 +85,23 @@ describe('the lobby as a whole', () => {
   it('shows both roles the same waits, since the pace is not a secret', () => {
     expect(lobby(true, 'Fast').container.textContent).toContain('40с');
     expect(lobby(false, 'Fast').container.textContent).toContain('40с');
+  });
+
+  it('lets only the host move another player into the spectator seat', () => {
+    const players: readonly PublicPlayer[] = [
+      { id: 'host', name: 'Host', look, isOnline: true, isSpectator: false },
+      { id: 'p2', name: 'Bob', look, isOnline: true, isSpectator: false },
+    ];
+    const host = lobby(true, 'Standard', players);
+    const control = [...host.container.querySelectorAll('button')].find(
+      (button) => button.getAttribute('aria-label') === 'Назначить Bob спектатором'
+    );
+    control?.click();
+    expect(host.spectators).toEqual([['p2', true]]);
+    expect(
+      [...lobby(false, 'Standard', players).container.querySelectorAll('button')].some(
+        (button) => button.getAttribute('aria-label') === 'Назначить Bob спектатором'
+      )
+    ).toBe(false);
   });
 });

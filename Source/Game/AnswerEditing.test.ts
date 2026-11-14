@@ -7,8 +7,15 @@ function writingState(
   answers: Map<string, string>,
   editing: Set<string> | undefined
 ): WritingState {
+  const look = { character: 'Ghost', color: 'Sky' } as const;
   return {
     ...freshLobbyState(),
+    players: new Map(
+      [...answers.keys()].map((id) => [
+        id,
+        { name: id, look, isOnline: true, isSpectator: false },
+      ])
+    ),
     phase: 'Writing',
     topic: 'topic',
     durationMs: 60000,

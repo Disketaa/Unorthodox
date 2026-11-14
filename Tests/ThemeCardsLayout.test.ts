@@ -545,7 +545,7 @@ describe('the theme cards', () => {
   });
 });
 describe('the round ticks along the bottom of a card', () => {
-  it('sits under the name\'s room, which takes the height above it', () => {
+  it("sits under the name's room, which takes the height above it", () => {
     // The name's room fills the card above the bar and centres the fitted name in it. It must
     // not size itself to the writing: the fitter writes a font size onto the name, and a room
     // that grew and shrank with it would answer every fit with another fit — the flicker this
@@ -618,12 +618,9 @@ describe('the round ticks along the bottom of a card', () => {
       expect(tokenValue(token)).toMatch(/em$/);
     }
   });
-  it('plays eight rounds of a theme, which is what fills a round of the game', () => {
-    // `GameConfig.rounds.count` is four rounds of the whole game, and two themes to a round is
-    // what fills it: eight topics across the themes on offer, which is a set of themes big
-    // enough that the cards are a choice rather than a formality.
-    expect(GameConfig.themes.roundsPerTheme).toBe(GameConfig.rounds.count * 2);
-    expect(GameConfig.themes.roundsPerTheme).toBe(8);
+  it('deals enough questions for the six rounds of a standard theme', () => {
+    expect(GameConfig.themes.roundsPerTheme).toBe(GameConfig.themes.roundsPerPace.Standard);
+    expect(GameConfig.themes.roundsPerTheme).toBe(6);
   });
 });
 describe('the tokens behind the bank', () => {

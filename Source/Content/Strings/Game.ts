@@ -34,6 +34,7 @@ export const writing = {
   waitForOthers: 'Ждём остальных',
   submittedCount: (count: number, total: number) => `Ответили: ${count} из ${total}`,
   timeUp: 'Время вышло',
+  spectator: 'Вы наблюдаете за раундом',
   /** Read out on the one on-screen key that has no letter on it. */
   backspaceKey: 'Удалить символ',
   /** Read out on the space bar, which puts a space in the answer. */
@@ -82,6 +83,7 @@ export const reviewing = {
 /** The scores screen: the round's points and the way on. */
 export const scores = {
   headline: 'Очки за раунд',
+  spectating: 'Наблюдает',
   nextRound: 'Следующий раунд',
   waitingForHost: 'Ждём следующий раунд',
 };

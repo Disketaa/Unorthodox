@@ -1,4 +1,4 @@
-﻿import { describe, test, expect } from 'vitest';
+import { describe, test, expect } from 'vitest';
 import { toPublicState } from './PublicState';
 import { HostState } from './GameState';
 
@@ -13,7 +13,26 @@ describe('toPublicState Writing state', () => {
         ['p1', 'Ans1'],
         ['p2', 'Ans2'],
       ]),
-      players: new Map(),
+      players: new Map([
+        [
+          'p1',
+          {
+            name: 'One',
+            look: { character: 'Ghost', color: 'Sky' },
+            isOnline: true,
+            isSpectator: false,
+          },
+        ],
+        [
+          'p2',
+          {
+            name: 'Two',
+            look: { character: 'Ghost', color: 'Sky' },
+            isOnline: true,
+            isSpectator: false,
+          },
+        ],
+      ]),
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',

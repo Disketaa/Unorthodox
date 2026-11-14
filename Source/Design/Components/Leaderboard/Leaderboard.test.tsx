@@ -93,4 +93,24 @@ describe('the room standing', () => {
     expect(root.querySelectorAll('[class*="Offline"]')).toHaveLength(1);
     expect(root.querySelector('li:nth-child(2)')?.className).toContain('Offline');
   });
+
+  it('puts spectators after a divider and gives them no place', () => {
+    const board = rows();
+    board.push({
+      id: 'watcher',
+      name: 'Watcher',
+      character: 'Hat',
+      color: 'Mint',
+      score: 0,
+      rank: 0,
+      isSpectator: true,
+      spectatorText: 'Наблюдает',
+      startsSpectators: true,
+    });
+    const root = mounted(board);
+    const spectator = root.querySelectorAll('li')[3];
+    expect(spectator?.className).toContain('SpectatorStart');
+    expect(spectator?.querySelector('[class*="Place"]')?.textContent).toBe('-');
+    expect(spectator?.querySelector('[class*="Total"]')?.textContent).toBe('Наблюдает');
+  });
 });

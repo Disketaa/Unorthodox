@@ -58,7 +58,7 @@ export function WritingView({ view }: PhaseViewProps) {
   const writing = view.publicState?.phase === 'Writing' ? view.publicState : undefined;
   const theme = writing?.theme;
   flush.publish(() => {
-    if (draft.trim().length > 0) view.submitAnswer(draft);
+    if (!view.isSpectator && draft.trim().length > 0) view.submitAnswer(draft);
   });
   useEffect(() => () => flush.publish(), [flush]);
   const enchantment = enchantmentFor(view, theme, writing?.spent);
@@ -72,12 +72,13 @@ export function WritingView({ view }: PhaseViewProps) {
       durationMs={view.durationMs}
       value={draft}
       held={view.paused}
+      spectator={view.isSpectator}
       onValueChange={setDraft}
       onSubmit={() => {
         // Nothing written is not an answer, and the host is right to refuse one — but a press
         // that sends nothing and gets nothing back reads as a broken button rather than as a
         // word that was never there.
-        if (draft.trim().length > 0) view.submitAnswer(draft);
+        if (!view.isSpectator && draft.trim().length > 0) view.submitAnswer(draft);
       }}
       onEditing={view.setEditing}
       glinted={glintedFor(view)}

@@ -58,7 +58,10 @@ function byFigure(
   figure: (row: LeaderboardRow) => number
 ): LeaderboardRow[] {
   const ordered = [...rows];
-  return ordered.sort((left, right) => figure(right) - figure(left) || left.rank - right.rank);
+  return ordered.sort((left, right) => {
+    if (left.isSpectator !== right.isSpectator) return left.isSpectator ? 1 : -1;
+    return figure(right) - figure(left) || left.rank - right.rank;
+  });
 }
 
 /** The order the room stood in before the round was counted, which is the order the places

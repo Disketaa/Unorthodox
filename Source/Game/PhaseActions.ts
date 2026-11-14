@@ -5,23 +5,29 @@ import { PlayerId } from '@/Core';
 import { HostState, membersOf } from './GameState';
 import { roundsAfter } from './ThemeRounds';
 import { scoreRound } from './RoundScoring';
-import { nextPlayerInTurn, turnOrder } from './Turns';
+import { nextPlayerInTurn } from './Turns';
+import { eligiblePlayerIds, isParticipant } from './Participants';
 import { endsRound } from './PhaseFlow';
 import type { ActionOf } from './GameActions';
 
 export { handleSubmitAnswer } from './AnswerSubmission';
 
 export function handleStartGame(state: HostState, action: ActionOf<'START_GAME'>): HostState {
-  if (state.phase !== 'Lobby' || state.players.size === 0) {
+  if (state.phase !== 'Lobby') {
     return state;
   }
+  const eligible = eligiblePlayerIds(state.players);
+  if (eligible.length === 0) return state;
   return {
     ...membersOf(state),
     phase: 'Choosing',
     // Somebody holds the turn as the room starts: the bar across the top marks whose turn it is,
     // and a game begun with every seat unmarked is a game begun asking a question it cannot
     // answer. Only fills an empty turn, so a host who handed it on in the lobby keeps that seat.
-    turnPlayerId: state.turnPlayerId ?? nextPlayerInTurn(null, turnOrder(state.players)),
+    turnPlayerId:
+      state.turnPlayerId !== null && eligible.includes(state.turnPlayerId)
+        ? state.turnPlayerId
+        : nextPlayerInTurn(null, eligible),
     durationMs: action.durationMs,
     startedAt: action.startedAt,
     theme: undefined,
@@ -46,7 +52,11 @@ export function handleChooseTheme(
   state: HostState,
   action: ActionOf<'CHOOSE_THEME'>
 ): HostState {
-  if (state.phase !== 'Choosing' || state.turnPlayerId !== action.playerId) {
+  if (
+    state.phase !== 'Choosing' ||
+    state.turnPlayerId !== action.playerId ||
+    !isParticipant(state.players.get(action.playerId))
+  ) {
     return state;
   }
   return {
@@ -103,7 +113,7 @@ export function handleStartWriting(
     // Handed on as the round starts, which is the only place it can be handed: choosing a theme is
     // the one thing a turn limits, so a turn that never moved would leave every player after the
     // first with a bank they are not allowed to press and no round to play.
-    turnPlayerId: nextPlayerInTurn(state.turnPlayerId, turnOrder(state.players)),
+    turnPlayerId: nextPlayerInTurn(state.turnPlayerId, eligiblePlayerIds(state.players)),
   };
 }
 

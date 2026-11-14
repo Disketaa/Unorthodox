@@ -1,8 +1,9 @@
-import { Screen } from '@/Design/Primitives';
+import { Screen, Text } from '@/Design/Primitives';
 import { Card, EnchantmentBar } from '@/Design/Components';
 import type { LetterBound } from '@/Core';
 import { AnswerInput } from './AnswerInput';
 import { demandOf, roundAsks, unsent } from './Demand';
+import { Strings } from '@/Content';
 
 export interface WritingScreenProps {
   topic: string;
@@ -18,6 +19,8 @@ export interface WritingScreenProps {
   value: string;
   /** Whether the host is holding the room, which stops the answer being sent. */
   held: boolean;
+  /** Whether this seat watches the round without answering it. */
+  spectator?: boolean;
   onValueChange: (value: string) => void;
   onSubmit: () => void;
   /** Reports that a sent answer is being changed, so the bar above can put the seat back at
@@ -63,7 +66,11 @@ export function WritingScreen(props: WritingScreenProps) {
           mult={props.mult}
           glinted={props.glinted === true && faulted}
         />
-        <AnswerInput {...input} />
+        {props.spectator === true ? (
+          <Text variant="Body">{Strings.writing.spectator}</Text>
+        ) : (
+          <AnswerInput {...input} />
+        )}
       </Card>
     </Screen>
   );

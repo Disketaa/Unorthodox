@@ -1,7 +1,7 @@
 /** The host's game state read back out of plain data, guarded field by field: a cast promises a
  * shape nothing checked. The guards are here; the phase each set of fields describes is in
  * RoomStatePhases, and the writing half is RoomStateEncoder. */
-import type { HostState, Player, Pace } from '@/Game';
+import type { HostState, Player, Pace, ScoringMode } from '@/Game';
 import {
   isCustomTheme,
   isThemeId,
@@ -86,6 +86,12 @@ export function paceFrom(fields: Fields): Pace {
   return value === 'Fast' ? 'Fast' : 'Standard';
 }
 
+/** The stored scoring rule, defaulting to the original rule for older rooms. */
+export function scoringModeFrom(fields: Fields): ScoringMode | undefined {
+  const mode = fields.get('scoringMode');
+  return mode === 'Simple' || mode === 'Smart' ? mode : undefined;
+}
+
 /** The themes the host has named, which the resumed room deals from once it is given them by its
  * own way. A name this build has no bank for is dropped. Strings only, as before custom themes
  * existed: a room saved while they were numbered resumes on the random bank. */
@@ -132,6 +138,7 @@ export interface Members {
   players: Map<PlayerId, Player>;
   turnPlayerId: PlayerId | null;
   pace: Pace;
+  scoringMode?: ScoringMode;
   themes: ThemeId[];
   themeMode: ThemeMode;
   themeRounds: Map<ThemeId, number>;
@@ -163,6 +170,7 @@ function membersFrom(fields: Fields): Members {
     players: toMap(rawPairs(fields, 'players'), isPlayer),
     turnPlayerId: turnFrom(fields),
     pace: paceFrom(fields),
+    scoringMode: scoringModeFrom(fields),
     themes: themesFrom(fields),
     themeMode: themeModeFrom(fields),
     themeRounds: themeRoundsFrom(fields),

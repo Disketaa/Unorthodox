@@ -1,6 +1,12 @@
-﻿import { describe, test, expect } from 'vitest';
+import { describe, test, expect } from 'vitest';
 import { reducer } from './Reducer';
 import { HostState } from './GameState';
+
+const look = { character: 'Ghost', color: 'Sky' } as const;
+
+function players(...ids: string[]) {
+  return new Map(ids.map((id) => [id, { name: id, look, isOnline: true, isSpectator: false }]));
+}
 
 describe('reducer SUBMIT_ANSWER action', () => {
   test('adds answer in Writing phase', () => {
@@ -10,7 +16,7 @@ describe('reducer SUBMIT_ANSWER action', () => {
       durationMs: 60000,
       startedAt: 1000,
       answers: new Map(),
-      players: new Map(),
+      players: players('p1'),
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
@@ -43,7 +49,7 @@ describe('reducer SUBMIT_ANSWER action', () => {
       durationMs: 60000,
       startedAt: 1000,
       answers: new Map([['p1', 'Answer1']]),
-      players: new Map(),
+      players: players('p1'),
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
@@ -80,7 +86,7 @@ describe('reducer SUBMIT_ANSWER action', () => {
       durationMs: 60000,
       startedAt: 1000,
       answers: new Map(),
-      players: new Map(),
+      players: players('p1', 'p2'),
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',
@@ -111,7 +117,7 @@ describe('reducer SUBMIT_ANSWER action', () => {
       durationMs: 60000,
       startedAt: 1000,
       answers: new Map(),
-      players: new Map(),
+      players: players('early', 'late'),
       cumulativeScores: new Map(),
       turnPlayerId: null,
       pace: 'Standard',

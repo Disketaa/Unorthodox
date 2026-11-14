@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'preact/hooks';
-import { Pace, PublicState, questionFor } from '@/Game';
+import { Pace, PublicState, questionFor, ScoringMode } from '@/Game';
 import { CharacterColor, CharacterId, ThemeId, ThemeMode } from '@/Core';
 import { topicAt } from '@/Content';
 import { Session } from '../Session';
@@ -27,6 +27,7 @@ export interface GameActions {
   setPaused: (paused: boolean) => void;
   setLook: (character: CharacterId, color: CharacterColor) => void;
   setPace: (pace: Pace) => void;
+  setScoringMode: (scoringMode: ScoringMode) => void;
   setThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
   addBot: () => void;
   nextTurn: () => void;
@@ -168,6 +169,7 @@ export function useGameActions(
     ...useRoundFlow(session, publicState, roomCode),
     setLook: (character, color) => session.setLook({ character, color }),
     setPace: (pace) => session.setPace(pace),
+    setScoringMode: (scoringMode) => session.setScoringMode(scoringMode),
     setThemes: (mode, themes) => session.setThemes(mode, themes),
     setPaused: (paused) => session.setPaused(paused),
     addBot: () => session.addBot(),

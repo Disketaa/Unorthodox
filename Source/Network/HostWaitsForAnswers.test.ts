@@ -75,6 +75,23 @@ describe('who the round waits for', () => {
     expect(fixture.hostSession.getState()?.phase).toBe('Reviewing');
   });
 
+  it('does not wait for a spectator and refuses their answer', () => {
+    const fixture = joinLobby();
+    const spectator = fixture.clientSessions[0];
+    const spectatorId = spectator.getPlayerId();
+    if (spectatorId === null) throw new Error('spectator has no seat');
+    fixture.hostSession.setSpectator(spectatorId, true);
+    fixture.hostSession.startGame();
+    fixture.hostSession.startWriting('Test topic');
+    spectator.submitAnswer('Spectator answer');
+    fixture.clientSessions.slice(1).forEach((session) => session.submitAnswer('An answer'));
+    fixture.hostSession.submitOwnAnswer('Another answer');
+    const writing = fixture.hostSession.getState();
+    expect(writing?.phase === 'Writing' ? writing.answers.has(spectatorId) : true).toBe(false);
+    fixture.hostSession.endReviewing();
+    expect(fixture.hostSession.getState()?.phase).toBe('Reviewing');
+  });
+
   it('waits for that player again once they come back', () => {
     const fixture = joinLobby();
     dropAndRejoinFirstClient(fixture);

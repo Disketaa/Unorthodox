@@ -10,35 +10,40 @@ import {
   handleSetThemes,
 } from './LobbyThemeActions';
 
+type RosterAction = Extract<
+  GameAction,
+  {
+    type:
+      | 'JOIN'
+      | 'SET_ONLINE'
+      | 'SET_SPECTATOR'
+      | 'KICK'
+      | 'SET_LOOK'
+      | 'SET_PACE'
+      | 'SET_SCORING_MODE'
+      | 'SET_THEMES'
+      | 'SET_CUSTOM_THEMES'
+      | 'REMOVE_CUSTOM_THEME';
+  }
+>;
+
 /** Everything that changes one player rather than moving the room, in one entry. */
-export function handleRoster(
-  state: HostState,
-  action: Extract<
-    GameAction,
-    {
-      type:
-        | 'JOIN'
-        | 'SET_ONLINE'
-        | 'KICK'
-        | 'SET_LOOK'
-        | 'SET_PACE'
-        | 'SET_THEMES'
-        | 'SET_CUSTOM_THEMES'
-        | 'REMOVE_CUSTOM_THEME';
-    }
-  >
-): HostState {
+export function handleRoster(state: HostState, action: RosterAction): HostState {
   switch (action.type) {
     case 'JOIN':
       return handleJoin(state, action);
     case 'SET_ONLINE':
       return handleSetOnline(state, action);
+    case 'SET_SPECTATOR':
+      return handleSetSpectator(state, action);
     case 'KICK':
       return handleKick(state, action);
     case 'SET_LOOK':
       return handleSetLook(state, action);
     case 'SET_PACE':
       return handleSetPace(state, action);
+    case 'SET_SCORING_MODE':
+      return handleSetScoringMode(state, action);
     case 'SET_THEMES':
       return handleSetThemes(state, action);
     case 'SET_CUSTOM_THEMES':
@@ -60,10 +65,31 @@ function withRoster(state: HostState, players: HostState['players']): HostState 
  * a refresh cannot rename a player or repaint their face from the other end of the room. */
 export function handleJoin(state: HostState, action: ActionOf<'JOIN'>): HostState {
   const known = state.players.get(action.playerId);
-  const player = known ?? { name: action.name, look: action.look, isOnline: true };
+  const player = known ?? {
+    name: action.name,
+    look: action.look,
+    isOnline: true,
+    isSpectator: false,
+  };
   return withRoster(
     state,
     new Map(state.players).set(action.playerId, { ...player, isOnline: true })
+  );
+}
+
+export function handleSetSpectator(
+  state: HostState,
+  action: ActionOf<'SET_SPECTATOR'>
+): HostState {
+  if (state.phase !== 'Lobby') return state;
+  const player = state.players.get(action.playerId);
+  if (player === undefined || player.isSpectator === action.isSpectator) return state;
+  return withRoster(
+    state,
+    new Map(state.players).set(action.playerId, {
+      ...player,
+      isSpectator: action.isSpectator,
+    })
   );
 }
 
@@ -120,4 +146,13 @@ export function handleSetPace(state: HostState, action: ActionOf<'SET_PACE'>): H
     return state;
   }
   return { ...state, pace: action.pace };
+}
+
+/** The host changing the scoring rule before play starts. */
+export function handleSetScoringMode(
+  state: HostState,
+  action: ActionOf<'SET_SCORING_MODE'>
+): HostState {
+  if (state.phase !== 'Lobby' || state.scoringMode === action.scoringMode) return state;
+  return { ...state, scoringMode: action.scoringMode };
 }

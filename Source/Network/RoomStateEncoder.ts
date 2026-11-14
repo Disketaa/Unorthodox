@@ -1,7 +1,7 @@
 /** The host's game state, written out as plain data, one shape per phase. Split from the reading
  * side because what a phase writes is a small table, while the guards that read it back are the
  * fiddly half. */
-import type { HostState, Pace, Player, RandomPick } from '@/Game';
+import type { HostState, Pace, Player, RandomPick, ScoringMode } from '@/Game';
 import type { PlayerId, ThemeId, ThemeMode, CustomTheme } from '@/Core';
 import { groupVotesOut } from './RoomGroupVotes';
 
@@ -14,6 +14,7 @@ interface Members {
   scores: [PlayerId, number][];
   turnPlayerId: PlayerId | null;
   pace: Pace;
+  scoringMode?: ScoringMode;
   themes: ThemeId[];
   themeMode: ThemeMode;
   themeRounds: [ThemeId, number][];
@@ -32,6 +33,7 @@ function membersOf(state: HostState): Members {
     scores: [...state.cumulativeScores.entries()],
     turnPlayerId: state.turnPlayerId,
     pace: state.pace,
+    ...(state.scoringMode === undefined ? {} : { scoringMode: state.scoringMode }),
     themes: [...state.themes],
     themeMode: state.themeMode,
     themeRounds: [...state.themeRounds.entries()],

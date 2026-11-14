@@ -4,6 +4,7 @@ import { groupAnswersWithPlayers } from './Grouping';
 import { calculateRoundScores, scoreCard } from './Scoring';
 import type { CardScore } from './Scoring';
 import { GameConfig } from './GameConfig';
+import { participantAnswers, participantIds } from './Participants';
 
 /** A board the scorer can be run over. A board mid-round has no verdicts on it yet — the host
  * has not struck anything out and nobody has liked anything — and a round counted from there
@@ -32,7 +33,9 @@ export function isDeclined(
  * question answered about the same set of numbers. */
 export function declinedGroupIds(state: BoardState): Set<number> {
   const declined = new Set<number>(state.groupRejections.keys());
-  for (const group of groupAnswersWithPlayers(state.answers)) {
+  for (const group of groupAnswersWithPlayers(
+    participantAnswers(state.players, state.answers)
+  )) {
     if (group.playerIds.length > 1) declined.add(group.groupId);
   }
   return declined;
@@ -42,18 +45,21 @@ export function declinedGroupIds(state: BoardState): Set<number> {
  * `isDeclined`: the board shows a shared answer as declined, but a pair still scores, which is
  * the round working rather than the round breaking. */
 export function toScoredGroups(state: BoardState): ScoredGroup[] {
-  return groupAnswersWithPlayers(state.answers).map((group) => ({
-    playerIds: group.playerIds,
-    isRejected: state.groupRejections.has(group.groupId),
-  }));
+  return groupAnswersWithPlayers(participantAnswers(state.players, state.answers)).map(
+    (group) => ({
+      playerIds: group.playerIds,
+      isRejected: state.groupRejections.has(group.groupId),
+    })
+  );
 }
 
 /** How many cards the count has to walk on this board, which is how long it will take and so how
  * long the phase drawing it has to last. Every answer written is a card, and everybody who
  * wrote nothing is one card between them — the same shape the board is drawn in. */
 export function boardCardCount(state: BoardState): number {
-  const written = groupAnswersWithPlayers(state.answers).length;
-  const blanked = [...state.players.keys()].some((playerId) => !state.answers.has(playerId));
+  const answers = participantAnswers(state.players, state.answers);
+  const written = groupAnswersWithPlayers(answers).length;
+  const blanked = participantIds(state.players).some((playerId) => !answers.has(playerId));
   return written + (blanked ? 1 : 0);
 }
 
@@ -85,6 +91,8 @@ export function toCardScore(
     speedShare: author === undefined ? 0 : speedShareOf(state, author),
     likes: state.groupLikes?.get(group.groupId)?.size ?? 0,
     mult: reached ? (state.mult ?? 1) : 1,
+    scoringMode: state.scoringMode ?? 'Smart',
+    playerCount: participantIds(state.players).length,
   };
 }
 
@@ -93,10 +101,12 @@ export function toScoredCards(state: ScoreableBoard): {
   playerIds: PlayerId[];
   card: CardScore;
 }[] {
-  return groupAnswersWithPlayers(state.answers).map((group) => ({
-    playerIds: group.playerIds,
-    card: toCardScore(state, group),
-  }));
+  return groupAnswersWithPlayers(participantAnswers(state.players, state.answers)).map(
+    (group) => ({
+      playerIds: group.playerIds,
+      card: toCardScore(state, group),
+    })
+  );
 }
 
 /** Points for this round, with the running totals carried forward. Returns both, so the caller

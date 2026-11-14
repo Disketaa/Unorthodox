@@ -17,6 +17,7 @@ export * from './GameActions';
 export * from './LobbyActions';
 export * from './Pause';
 export * from './Turns';
+export * from './Participants';
 export * from './Reducer';
 export * from './GameState';
 export * from './PublicState';

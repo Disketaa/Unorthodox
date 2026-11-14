@@ -3,6 +3,7 @@
  * next game on the site gets it by having players rather than by writing the rule again. */
 import { PlayerId } from '@/Core';
 import { HostState } from './GameState';
+import { eligiblePlayerIds } from './Participants';
 
 /** The order turns go in: the room's own roster order, which is the order players took their
  * seats in the lobby. Map insertion is that order for free, and a player coming back keeps the
@@ -29,6 +30,6 @@ export function nextPlayerInTurn(
 export function handleNextTurn(state: HostState): HostState {
   return {
     ...state,
-    turnPlayerId: nextPlayerInTurn(state.turnPlayerId, turnOrder(state.players)),
+    turnPlayerId: nextPlayerInTurn(state.turnPlayerId, eligiblePlayerIds(state.players)),
   };
 }

@@ -1,11 +1,12 @@
 import { HostState, type WritingState } from './GameState';
 import type { ActionOf } from './GameActions';
+import { isParticipant } from './Participants';
 
 export function handleSubmitAnswer(
   state: HostState,
   action: ActionOf<'SUBMIT_ANSWER'>
 ): HostState {
-  if (state.phase !== 'Writing') {
+  if (state.phase !== 'Writing' || !isParticipant(state.players.get(action.playerId))) {
     return state;
   }
   // An empty answer is refused outright: stored, it would be paid as the fastest answer there is

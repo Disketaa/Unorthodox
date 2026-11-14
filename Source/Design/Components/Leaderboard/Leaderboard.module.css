@@ -108,6 +108,16 @@
   animation-delay: var(--Place-Delay, 0ms);
 }
 
+.SpectatorStart::before {
+  position: absolute;
+  top: calc(var(--Space-LeaderboardGap) / -2);
+  left: 0;
+  right: 0;
+  height: var(--Border-Width-Default);
+  background: var(--Color-Border-Default);
+  content: '';
+}
+
 /* The row idles once it has arrived: it rocks where it stands, bar and line together, the way
  * everything else on the page does. The sway takes the row's one `animation` when the arrival
  * is done, since both write `transform` and a row cannot swing and dive at once. The shorthand

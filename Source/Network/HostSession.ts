@@ -3,7 +3,16 @@ import { Transport } from './Transport';
 import { HostInbox } from './HostInbox';
 import { hostFlowMoves, type HostFlowMoves } from './HostFlowMoves';
 import type { FlowHost } from './HostFlow';
-import { addBot, kick, nextTurn, setOwnLook, setPace, setThemes } from './HostRosterActions';
+import {
+  addBot,
+  kick,
+  nextTurn,
+  setOwnLook,
+  setPace,
+  setScoringMode,
+  setSpectator,
+  setThemes,
+} from './HostRosterActions';
 import { answerBots } from './HostBots';
 import { openHostRoom, type HostRoomOpener } from './HostRoomOpen';
 import { HostRoom } from './HostRoom';
@@ -45,7 +54,10 @@ export class HostSession implements HostFlowMoves, HostRoomOpener {
   private get flow(): FlowHost {
     return {
       getState: () => this.room.getState(),
-      expectedAnswers: () => this.room.roster.count,
+      expectedAnswers: () => {
+        const state = this.room.getState();
+        return state === undefined ? 0 : Game.eligiblePlayerIds(state.players).length;
+      },
       commit: (state) => this.write(state),
     };
   }
@@ -81,6 +93,9 @@ export class HostSession implements HostFlowMoves, HostRoomOpener {
   }
   setOwnLook = (look: PlayerLook): void => setOwnLook(this, look);
   setPace = (pace: Game.Pace): void => setPace(this, pace);
+  setScoringMode = (scoringMode: Game.ScoringMode): void => setScoringMode(this, scoringMode);
+  setSpectator = (playerId: PlayerId, isSpectator: boolean): void =>
+    setSpectator(this, playerId, isSpectator);
   setThemes = (mode: ThemeMode, themes: readonly ThemeId[]): void =>
     setThemes(this, mode, themes);
   setCustomThemes = (themes: readonly CustomTheme[]): void =>
@@ -95,39 +110,17 @@ export class HostSession implements HostFlowMoves, HostRoomOpener {
   addBot = (): void => addBot(this);
   kick = (playerId: PlayerId): void => kick(this, playerId);
   nextTurn = (): void => nextTurn(this);
-  finish(): void {
-    this.apply({ type: 'FINAL' });
-  }
-  startGame(): void {
-    this.moves.startGame();
-  }
-  startWriting(topic: string): void {
-    this.moves.startWriting(topic);
-  }
-  revealQuestion(question: string): void {
-    this.moves.revealQuestion(question);
-  }
-  startRandomPick(): void {
-    this.moves.startRandomPick();
-  }
-  resolveRandomPick(): void {
-    this.moves.resolveRandomPick();
-  }
-  setPaused(paused: boolean): void {
-    this.moves.setPaused(paused);
-  }
-  endReviewing(): void {
-    this.moves.endReviewing();
-  }
-  nextRound(): void {
-    this.moves.nextRound();
-  }
-  nextPhase(topic: string): void {
-    this.moves.nextPhase(topic);
-  }
-  reloadPhase(): void {
-    this.moves.reloadPhase();
-  }
+  finish = (): void => this.apply({ type: 'FINAL' });
+  startGame = (): void => this.moves.startGame();
+  startWriting = (topic: string): void => this.moves.startWriting(topic);
+  revealQuestion = (question: string): void => this.moves.revealQuestion(question);
+  startRandomPick = (): void => this.moves.startRandomPick();
+  resolveRandomPick = (): void => this.moves.resolveRandomPick();
+  setPaused = (paused: boolean): void => this.moves.setPaused(paused);
+  endReviewing = (): void => this.moves.endReviewing();
+  nextRound = (): void => this.moves.nextRound();
+  nextPhase = (topic: string): void => this.moves.nextPhase(topic);
+  reloadPhase = (): void => this.moves.reloadPhase();
   get roster() {
     return this.room.roster;
   }

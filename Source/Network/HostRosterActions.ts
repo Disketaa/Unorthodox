@@ -2,7 +2,7 @@
  * a seat invented. Split out of the session so the file that owns the phase flow owns none of
  * the seating, and each of these reads as the one thing it changes. */
 import { PlayerId, PlayerLook, createLogger, type ThemeId, type ThemeMode } from '@/Core';
-import type { GameAction, HostState, Pace } from '@/Game';
+import type { GameAction, HostState, Pace, ScoringMode } from '@/Game';
 import type { HostRoster } from './HostRoster';
 import type { Transport } from './Transport';
 import { botJoin, botsIn } from './Bot';
@@ -33,6 +33,16 @@ export function setOwnLook(host: RosterHost, look: PlayerLook): void {
 /** The host setting how fast the room plays, which every client is then told. */
 export function setPace(host: RosterHost, pace: Pace): void {
   host.apply({ type: 'SET_PACE', pace });
+}
+
+/** The host setting how unique answers earn their base points. */
+export function setScoringMode(host: RosterHost, scoringMode: ScoringMode): void {
+  host.apply({ type: 'SET_SCORING_MODE', scoringMode });
+}
+
+/** The host moving a seat in or out of play before the game starts. */
+export function setSpectator(host: RosterHost, playerId: PlayerId, isSpectator: boolean): void {
+  host.apply({ type: 'SET_SPECTATOR', playerId, isSpectator });
 }
 
 /** The host setting how the room is given its themes, which every client is then told. */

@@ -10,6 +10,7 @@ export interface RoomCardProps {
   onStart: () => void;
   onExit: () => void;
   onKick: (playerId: PlayerId) => void;
+  onSetSpectator: (playerId: PlayerId, isSpectator: boolean) => void;
   themeMode: ThemeMode;
   themes: readonly ThemeId[];
 }
@@ -22,6 +23,7 @@ export function RoomCard({
   onStart,
   onExit,
   onKick,
+  onSetSpectator,
   themeMode,
   themes,
 }: RoomCardProps) {
@@ -34,6 +36,7 @@ export function RoomCard({
       onStart={onStart}
       onExit={onExit}
       onKick={onKick}
+      onSetSpectator={onSetSpectator}
       themeMode={themeMode}
       themes={themes}
     />

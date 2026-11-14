@@ -16,6 +16,7 @@ export function LeaderboardView({ view }: PhaseViewProps) {
     view.playerNames,
     view.playerLooks,
     view.playerPresence,
+    view.spectatorIds,
     view.playerId,
     over
   );

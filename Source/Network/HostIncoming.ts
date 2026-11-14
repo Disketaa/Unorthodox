@@ -7,6 +7,7 @@ import {
   HostState,
   modifiersForRound,
   multForTheme,
+  participantIds,
 } from '@/Game';
 import { GameConfig } from '@/Game';
 import { ThemeEffectId, ThemeId, createLogger, themesForRoom, themePool } from '@/Core';
@@ -45,7 +46,7 @@ export function affectedByChoice(
   }
   const affected = affectedPlayersFor(
     effect,
-    [...state.players.keys()],
+    participantIds(state.players),
     state.cumulativeScores,
     chooserId,
     `${roomCode}:effect:${round}:${theme}`
@@ -191,6 +192,4 @@ export function toAction(context: IncomingContext): GameAction | undefined {
 /** The look already recorded for a returning player. Undefined for a player with no record yet,
  * which sends them on with the look they arrived with. The record is on the roster, so a player
  * four rounds in keeps the drawn character. */
-function knownLook(state: HostState, playerId: string) {
-  return state.players.get(playerId)?.look;
-}
+const knownLook = (state: HostState, playerId: string) => state.players.get(playerId)?.look;

@@ -123,7 +123,7 @@ describe('a room that outlives its tab', () => {
       paused: false,
 
       pausedAt: undefined,
-      players: new Map([['host', { name: 'Danya', look, isOnline: true }]]),
+      players: new Map([['host', { name: 'Danya', look, isOnline: true, isSpectator: true }]]),
     };
     saveRoomState('1234', lobby);
     expect(loadRoomState('1234')).toEqual(lobby);

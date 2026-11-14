@@ -48,9 +48,11 @@ type RoomAction = Extract<
     type:
       | 'JOIN'
       | 'SET_ONLINE'
+      | 'SET_SPECTATOR'
       | 'KICK'
       | 'SET_LOOK'
       | 'SET_PACE'
+      | 'SET_SCORING_MODE'
       | 'SET_THEMES'
       | 'SET_CUSTOM_THEMES'
       | 'REMOVE_CUSTOM_THEME'
@@ -63,9 +65,11 @@ function isRoomAction(action: GameAction): action is RoomAction {
   switch (action.type) {
     case 'JOIN':
     case 'SET_ONLINE':
+    case 'SET_SPECTATOR':
     case 'KICK':
     case 'SET_LOOK':
     case 'SET_PACE':
+    case 'SET_SCORING_MODE':
     case 'SET_THEMES':
     case 'SET_CUSTOM_THEMES':
     case 'REMOVE_CUSTOM_THEME':

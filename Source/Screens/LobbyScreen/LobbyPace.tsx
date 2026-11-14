@@ -6,11 +6,12 @@ import {
   MusicButton,
   VolumeButton,
 } from '@/Design/Components';
-import { GameConfig, Pace } from '@/Game';
+import { GameConfig, Pace, ScoringMode } from '@/Game';
 import { ThemeId, ThemeMode, CustomTheme } from '@/Core';
 import { Strings } from '@/Content';
 import { LobbyCategory } from './LobbyCategory';
 import { LobbyThemes } from './LobbyThemes';
+import { ScoringChoices } from './ScoringChoices';
 
 /** The paces, in the order they are offered: the one the room starts on first. Standard leads
  * because it is what a room is in until somebody says otherwise, and a row that led with the
@@ -20,6 +21,7 @@ const paces: readonly Pace[] = ['Standard', 'Fast'];
 export interface LobbyPaceProps {
   /** The pace the room is set to, which only the host can change. */
   pace: Pace;
+  scoringMode: ScoringMode;
   /** Which way the room is given its themes, and the ones it has named. */
   themeMode: ThemeMode;
   themes: readonly ThemeId[];
@@ -28,6 +30,7 @@ export interface LobbyPaceProps {
   isHost: boolean;
   /** Asking for a pace. Only reached by the host, since a client's buttons are dead. */
   onPick: (pace: Pace) => void;
+  onPickScoringMode: (scoringMode: ScoringMode) => void;
   /** Asking for a different way of taking themes. Only reached by the host, since a client's
    * buttons are dead and the room's pool is told to them in the public state. */
   onPickThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
@@ -79,10 +82,12 @@ function WaitRows({ pace }: Pick<LobbyPaceProps, 'pace'>) {
 /** The room's pace, what it means in seconds, and the themes the bank is dealt from. */
 export function LobbyPace({
   pace,
+  scoringMode,
   themeMode,
   themes,
   isHost,
   onPick,
+  onPickScoringMode,
   onPickThemes,
   onLoadCustomThemes,
   onEditCustomThemes,
@@ -96,6 +101,8 @@ export function LobbyPace({
       <Separator>{Strings.lobby.settings.params}</Separator>
       <PaceChoices pace={pace} isHost={isHost} onPick={onPick} />
       <WaitRows pace={pace} />
+      <Separator>{Strings.lobby.settings.scoring}</Separator>
+      <ScoringChoices scoringMode={scoringMode} isHost={isHost} onPick={onPickScoringMode} />
       <LobbyThemes
         themeMode={themeMode}
         themes={themes}

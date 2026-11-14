@@ -1,7 +1,7 @@
 import { Screen } from '@/Design/Primitives';
 import { memo } from 'preact/compat';
 import { CharacterColor, CharacterId, PlayerId, ThemeId, ThemeMode, CustomTheme } from '@/Core';
-import { Pace, PublicPlayer } from '@/Game';
+import { Pace, PublicPlayer, ScoringMode } from '@/Game';
 import { RoomCard } from './RoomCard';
 import { SettingsCard } from './SettingsCard';
 import { LookPicker } from './LookPicker';
@@ -15,6 +15,8 @@ export interface LobbyScreenProps {
   ownLook: { character: CharacterId; color: CharacterColor } | undefined;
   /** The pace the room is set to, which only the host can change. */
   pace: Pace;
+  /** How unique answers earn their base points. */
+  scoringMode: ScoringMode;
   /** The themes the host has named, and which way the room is given them, which only the host
    * can change. */
   themeMode: ThemeMode;
@@ -29,6 +31,7 @@ export interface LobbyScreenProps {
   /** Asking for a pace. The host's click changes the room; a client's is a local look at what
    * that pace would mean, and the host's choice is what comes back. */
   onPickPace: (pace: Pace) => void;
+  onPickScoringMode: (scoringMode: ScoringMode) => void;
   /** Asking for a different set of themes, on the same terms as the pace: the host's click
    * changes the room and a client's changes nothing. */
   onPickThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
@@ -47,6 +50,25 @@ export interface LobbyScreenProps {
   onExit: () => void;
   /** Kicking a player. Host only. */
   onKick: (playerId: PlayerId) => void;
+  /** Moving a seat in or out of play. Host only. */
+  onSetSpectator: (playerId: PlayerId, isSpectator: boolean) => void;
+}
+
+function LobbyRoomCard(props: LobbyScreenProps) {
+  return (
+    <RoomCard
+      roomCode={props.roomCode}
+      players={props.players}
+      ownPlayerId={props.ownPlayerId}
+      isHost={props.isHost}
+      onStart={props.onStart}
+      onExit={props.onExit}
+      onKick={props.onKick}
+      onSetSpectator={props.onSetSpectator}
+      themeMode={props.themeMode}
+      themes={props.themes}
+    />
+  );
 }
 
 /** Waiting room: room code, roster, character picker. */
@@ -54,17 +76,7 @@ export const LobbyScreen = memo(function LobbyScreen(props: LobbyScreenProps) {
   const popup = useCustomThemesPopup(props.onRemoveCustomTheme, props.onCustomThemes);
   return (
     <Screen>
-      <RoomCard
-        roomCode={props.roomCode}
-        players={props.players}
-        ownPlayerId={props.ownPlayerId}
-        isHost={props.isHost}
-        onStart={props.onStart}
-        onExit={props.onExit}
-        onKick={props.onKick}
-        themeMode={props.themeMode}
-        themes={props.themes}
-      />
+      <LobbyRoomCard {...props} />
       <SettingsCard
         {...props}
         players={props.players.length}

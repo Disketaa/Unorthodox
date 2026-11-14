@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { LobbyPace } from './LobbyPace';
-import { GameConfig, type Pace } from '@/Game';
+import { GameConfig, type Pace, type ScoringMode } from '@/Game';
 import { Strings } from '@/Content';
 
 /** The waits the standard pace sets, as the card writes them. Taken from the config rather than
@@ -23,12 +23,17 @@ function expectWaits(container: HTMLElement, waits: readonly string[]): void {
   waits.forEach((wait) => expect(container.textContent).toContain(wait));
 }
 
-function mount(isHost: boolean, picked: Pace[] = []): HTMLElement {
+function mount(
+  isHost: boolean,
+  picked: Pace[] = [],
+  pickedScoring: ScoringMode[] = []
+): HTMLElement {
   const container = document.createElement('div');
   document.body.appendChild(container);
   render(
     <LobbyPace
       pace="Standard"
+      scoringMode="Smart"
       themes={[]}
       themeMode="Random"
       isHost={isHost}
@@ -36,6 +41,7 @@ function mount(isHost: boolean, picked: Pace[] = []): HTMLElement {
       onEditCustomThemes={() => {}}
       customThemes={[]}
       onPick={(pace) => picked.push(pace)}
+      onPickScoringMode={(mode) => pickedScoring.push(mode)}
       onPickThemes={() => {}}
     />,
     container
@@ -88,6 +94,14 @@ describe('the pace card', () => {
       paceButtons(container)[1].click();
     });
     expect(picked).toEqual(['Fast']);
+  });
+
+  it('lets the host choose simple scoring', () => {
+    const picked: ScoringMode[] = [];
+    const container = mount(true, [], picked);
+    const simple = buttons(container).find((button) => button.textContent === 'Простой');
+    act(() => simple?.click());
+    expect(picked).toEqual(['Simple']);
   });
 
   it('shows a client the same numbers, so the pace is not a secret', () => {

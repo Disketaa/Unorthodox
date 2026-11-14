@@ -9,6 +9,15 @@ import { exitRoom, reportEditing } from './SessionUtils';
 import { sessionActions } from './SessionActions';
 import { GameSessionView } from './GameSessionView';
 
+function sessionFacts(session: Session) {
+  return {
+    blocked: session.getBlocked(),
+    connectionHint: session.getConnectionHint(),
+    roomLimit: session.getRoomLimit(),
+    customThemes: session.getCustomThemes(),
+  };
+}
+
 /** Join a room and expose one uniform view of the game for the screens. */
 export function sessionView(
   session: Session,
@@ -25,13 +34,16 @@ export function sessionView(
   editing: boolean,
   markEditing: (editing: boolean) => void
 ): GameSessionView {
+  const playerId = session.getPlayerId();
   return {
     ...phase,
     ...actions,
     role,
     isHost: role === 'Host',
     roomCode,
-    playerId: session.getPlayerId(),
+    playerId,
+    isSpectator:
+      publicState?.players.find((player) => player.id === playerId)?.isSpectator === true,
     publicState,
     paused: publicState?.paused === true,
     hasSubmitted: hasSubmittedIn(marks, topic),
@@ -39,10 +51,7 @@ export function sessionView(
     ...boardMarks(publicState, marks, topic),
     setEditing: reportEditing(markEditing, actions.setEditingAnswer),
     hostLeft,
-    blocked: session.getBlocked(),
-    connectionHint: session.getConnectionHint(),
-    roomLimit: session.getRoomLimit(),
-    customThemes: session.getCustomThemes(),
+    ...sessionFacts(session),
     bank,
     ownLook,
     exitRoom,

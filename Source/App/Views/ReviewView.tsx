@@ -1,4 +1,4 @@
-﻿import { ReviewScreen, ReviewGroup } from '@/Screens';
+import { ReviewScreen, ReviewGroup } from '@/Screens';
 import { Strings } from '@/Content';
 import { typedOut, type PublicReviewingState, type PublicScoresState } from '@/Game';
 import type { PlayerId } from '@/Core';
@@ -44,7 +44,7 @@ export function ReviewView({ view }: PhaseViewProps) {
       paused={view.paused}
       run={state?.reloadedAt ?? 0}
       onReject={view.isHost && !settling ? view.rejectGroup : undefined}
-      onLike={view.paused || settling ? undefined : view.likeGroup}
+      onLike={view.paused || settling || view.isSpectator ? undefined : view.likeGroup}
     />
   );
 }

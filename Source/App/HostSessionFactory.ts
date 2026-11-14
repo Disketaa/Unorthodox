@@ -54,6 +54,8 @@ function hostRoomActions(
   Session,
   | 'setLook'
   | 'setPace'
+  | 'setScoringMode'
+  | 'setSpectator'
   | 'setThemes'
   | 'setCustomThemes'
   | 'removeCustomTheme'
@@ -69,6 +71,8 @@ function hostRoomActions(
   return {
     setLook: (look) => hostSession.setOwnLook(look),
     setPace: (pace) => hostSession.setPace(pace),
+    setScoringMode: (scoringMode) => hostSession.setScoringMode(scoringMode),
+    setSpectator: (playerId, isSpectator) => hostSession.setSpectator(playerId, isSpectator),
     setThemes: (mode, themes) => hostSession.setThemes(mode, themes),
     setCustomThemes: (themes) => hostSession.setCustomThemes(themes),
     removeCustomTheme: (id) => hostSession.removeCustomTheme(id),

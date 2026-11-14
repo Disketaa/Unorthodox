@@ -4,6 +4,7 @@ import { HostState } from './GameState';
 import { groupAnswersWithPlayers } from './Grouping';
 import { toggleVote } from './GroupVotes';
 import type { ActionOf } from './GameActions';
+import { isParticipant, participantAnswers } from './Participants';
 
 const log = createLogger('AnswerLikes');
 
@@ -24,7 +25,7 @@ export function handleRejectGroup(
 /** Liking an answer. Every player may, unlike a mute: a like is a reaction to what somebody said
  * and not a move in the round, so it does nothing to the score. */
 export function handleLikeGroup(state: HostState, action: ActionOf<'LIKE_GROUP'>): HostState {
-  if (state.phase !== 'Reviewing') {
+  if (state.phase !== 'Reviewing' || !isParticipant(state.players.get(action.playerId))) {
     return state;
   }
   // Refused rather than counted, and the only place a like can be refused: the host knows who
@@ -53,7 +54,7 @@ function wroteThisGroup(
   playerId: PlayerId,
   groupId: number
 ): boolean {
-  return groupAnswersWithPlayers(state.answers).some(
+  return groupAnswersWithPlayers(participantAnswers(state.players, state.answers)).some(
     (group) => group.groupId === groupId && group.playerIds.includes(playerId)
   );
 }

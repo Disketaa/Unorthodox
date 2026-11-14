@@ -46,6 +46,7 @@ function barEntries(view: PhaseViewProps['view'], marks: BarMarks): PlayerBarEnt
       character: look.character,
       color: look.color,
       isOnline: view.playerPresence.get(id) ?? true,
+      isSpectator: view.spectatorIds.has(id),
       isTurning: marks.waitingOnTurn && id === view.turnPlayerId,
       scoredNothing: marks.scoredNothing.has(id),
       isPaying: marks.paying.has(id),
@@ -59,7 +60,8 @@ function barEntries(view: PhaseViewProps['view'], marks: BarMarks): PlayerBarEnt
       // so a row of seats fills up as the answers come in. Writing over an answer already sent
       // counts as work again, and the room is told that too, so it holds for everybody's bar.
       isWorking:
-        (view.phase === 'Writing' &&
+        (!view.spectatorIds.has(id) &&
+          view.phase === 'Writing' &&
           (!view.submittedIds.has(id) ||
             view.editingIds.has(id) ||
             (id === view.playerId && view.editing))) ||
@@ -75,9 +77,10 @@ function standingEntries(
   entries: readonly PlayerBarEntry[]
 ): PlayerBarEntry[] {
   const totals = settledTotals(view.publicState, boardOf(view));
-  return [...entries].sort(
-    (left, right) => (totals.get(right.id) ?? 0) - (totals.get(left.id) ?? 0)
-  );
+  return [...entries].sort((left, right) => {
+    if (left.isSpectator !== right.isSpectator) return left.isSpectator ? 1 : -1;
+    return (totals.get(right.id) ?? 0) - (totals.get(left.id) ?? 0);
+  });
 }
 
 /** What each seat is shown this frame, read off the board and the same clock the count runs on,

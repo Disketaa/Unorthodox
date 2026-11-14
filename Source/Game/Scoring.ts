@@ -1,4 +1,4 @@
-import { GameConfig } from './GameConfig';
+import { GameConfig, type ScoringMode } from './GameConfig';
 import type { PlayerId } from '@/Core';
 
 /** Everything one card is worth. `speedShare` is the share of the writing clock the answer took,
@@ -15,6 +15,10 @@ export interface CardScore {
   likes: number;
   /** What the round's card wears, 1 on a plain round. */
   mult: number;
+  /** Which base-points rule the room selected. Older test fixtures default to Smart. */
+  scoringMode?: ScoringMode;
+  /** How many seats are in the room, used as the Simple mode's fixed base. */
+  playerCount?: number;
 }
 
 /** What an answer sent `speedShare` of the way through the clock is worth, before the card's
@@ -49,7 +53,11 @@ export function scoreCard(
   // Rounded after the multiplier, not before it: a card paying half a point twice would leave a
   // running total at twenty-two and a bit, and a standing is a whole number of points or it is
   // not one. Rounded here so the same figure is on the card, in the bar and on the final screen.
-  const fromSpeed = Math.round(speedPoints(card.speedShare, config) * card.mult);
+  const base =
+    card.scoringMode === 'Simple'
+      ? (card.playerCount ?? 0)
+      : speedPoints(card.speedShare, config);
+  const fromSpeed = Math.round(base * card.mult);
   const fromLikes = card.likes * config.scoring.likePoints;
   return { points: fromSpeed + fromLikes, fromSpeed, fromLikes };
 }
@@ -70,7 +78,10 @@ export function scoreSteps(
   if (card.isEmpty || card.isRejected || card.groupSize > 1) {
     return { base: 0, mult: 0, likes: 0, total: scored.points };
   }
-  const base = Math.round(speedPoints(card.speedShare, config));
+  const base =
+    card.scoringMode === 'Simple'
+      ? (card.playerCount ?? 0)
+      : Math.round(speedPoints(card.speedShare, config));
   return {
     base,
     mult: Math.round(scored.fromSpeed) - base,

@@ -1,5 +1,5 @@
 import { PlayerLook, ThemeId, ThemeMode, CustomTheme } from '@/Core';
-import { PublicState, Pace } from '@/Game';
+import { PublicState, Pace, ScoringMode } from '@/Game';
 import type { ConnectionHint } from '@/Network';
 
 export type SessionRole = 'Host' | 'Player';
@@ -40,6 +40,10 @@ export interface Session {
    * is only looking at what it would mean, so this is a no-op there and the host's answer
    * arrives in the public state instead. */
   setPace(pace: Pace): void;
+  /** The host setting how unique answers earn their base points. */
+  setScoringMode(scoringMode: ScoringMode): void;
+  /** The host moving a seat in or out of play before the game starts. */
+  setSpectator(playerId: string, isSpectator: boolean): void;
   /** The host setting how the room is given its themes. Only the host calls this, for the pace's
    * reason, and the pool travels in the public state rather than in the press. */
   setThemes(mode: ThemeMode, themes: readonly ThemeId[]): void;

@@ -18,6 +18,14 @@ export interface PlayerChipProps {
    * themselves among a dozen identical chips, so the local player is outlined and everybody
    * else is not. */
   isSelf?: boolean;
+  /** Whether this seat watches without taking part in rounds. */
+  isSpectator?: boolean;
+  /** The word shown on a spectator seat. */
+  spectatorStatus?: string;
+  /** When given, the host is offered a way to move this seat in or out of play. */
+  onSetSpectator?: () => void;
+  /** What the spectator control says, for anyone who cannot see the mark. */
+  spectatorLabel?: string;
   /** When given, the host is offered a way to remove this player. Only the host's own roster
    * passes it, so a kick can never appear on the chip of the player who would be removing
    * themselves. */
@@ -34,6 +42,10 @@ export function PlayerChip({
   isHost = false,
   isOnline = true,
   isSelf = false,
+  isSpectator = false,
+  spectatorStatus = '',
+  onSetSpectator,
+  spectatorLabel = '',
   onKick,
   kickLabel = '',
 }: PlayerChipProps) {
@@ -43,10 +55,14 @@ export function PlayerChip({
     >
       <Character character={character} color={color} size="Small" index={index} />
       <span class={styles.Name}>{name}</span>
+      {isSpectator && <span class={styles.Spectator}>{spectatorStatus}</span>}
       {isHost && (
         <span class={styles.Crown} aria-hidden="true">
           <span class={styles.CrownIcon} />
         </span>
+      )}
+      {onSetSpectator !== undefined && (
+        <IconButton icon="Turn" label={spectatorLabel} size="Small" onClick={onSetSpectator} />
       )}
       {onKick !== undefined && (
         <IconButton icon="Kick" label={kickLabel} size="Small" onClick={onKick} />

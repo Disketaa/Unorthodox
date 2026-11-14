@@ -26,6 +26,7 @@ export function commonOf(members: Members): RoomMembers {
     cumulativeScores: scores,
     turnPlayerId,
     pace,
+    ...(members.scoringMode === undefined ? {} : { scoringMode: members.scoringMode }),
     themes,
     themeMode,
     customThemes,

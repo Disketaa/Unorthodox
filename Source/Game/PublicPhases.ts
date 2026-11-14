@@ -9,6 +9,7 @@ import type {
   PublicChoosingState,
   PublicRoom,
 } from './PublicState';
+import { isParticipant } from './Participants';
 
 export { boardOf };
 
@@ -17,7 +18,13 @@ export { boardOf };
 export function publicPlayers(state: HostState): PublicPlayer[] {
   const players: PublicPlayer[] = [];
   state.players.forEach((player, id) => {
-    players.push({ id, name: player.name, look: player.look, isOnline: player.isOnline });
+    players.push({
+      id,
+      name: player.name,
+      look: player.look,
+      isOnline: player.isOnline,
+      isSpectator: player.isSpectator === true,
+    });
   });
   return players;
 }
@@ -27,6 +34,7 @@ export function room(state: HostState): PublicRoom {
   return {
     turnPlayerId: state.turnPlayerId,
     pace: state.pace,
+    scoringMode: state.scoringMode ?? 'Smart',
     themes: [...state.themes],
     themeMode: state.themeMode,
     customThemes: [...(state.customThemes ?? new Map<string, CustomTheme>()).values()].map(
@@ -104,17 +112,23 @@ export function toPublicWritingState(state: HostState): PublicWritingState {
   if (state.phase !== 'Writing') {
     throw new Error('Invalid state for Writing');
   }
+  const submittedIds = [...state.answers.keys()].filter((id) =>
+    isParticipant(state.players.get(id))
+  );
+  const editingIds = [...(state.editing ?? [])].filter((id) =>
+    isParticipant(state.players.get(id))
+  );
   return {
     ...room(state),
     phase: 'Writing',
     topic: state.topic,
     durationMs: state.durationMs,
     startedAt: state.startedAt,
-    submittedCount: state.answers.size,
+    submittedCount: submittedIds.length,
     // The keys and not the values: who has written is what the bar of players draws, and the
     // answers themselves are nobody's business until the review groups them.
-    submittedIds: [...state.answers.keys()],
-    editingIds: [...(state.editing ?? [])],
+    submittedIds,
+    editingIds,
     players: publicPlayers(state),
     ...themeOf(state),
   };

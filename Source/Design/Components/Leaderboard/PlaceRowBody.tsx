@@ -23,7 +23,9 @@ function rowClass(row: LeaderboardRow, counting: boolean, idle: boolean, paused:
     row.isSelf === true ? styles.Mine : ''
   } ${row.isWinner === true ? styles.Winner : ''} ${counting ? styles.Counting : ''} ${
     idle ? styles.Idle : ''
-  } ${row.isOnline === false ? styles.Offline : ''} ${paused && !idle ? styles.Paused : ''}`;
+  } ${row.isOnline === false ? styles.Offline : ''} ${
+    row.startsSpectators === true ? styles.SpectatorStart : ''
+  } ${paused && !idle ? styles.Paused : ''}`;
 }
 
 export function PlaceRowBody({
@@ -51,7 +53,7 @@ export function PlaceRowBody({
         </div>
       </div>
       <span class={styles.Place} aria-hidden="true">
-        {at + 1}
+        {row.isSpectator ? '-' : at + 1}
       </span>
       <span class={styles.Figure}>
         <Character character={row.character} color={row.color} size="Fill" />
@@ -61,7 +63,7 @@ export function PlaceRowBody({
         {showsRound && <span class={styles.Round}>(+{round})</span>}
       </span>
       <span class={styles.Score}>
-        <span class={styles.Total}>{value}</span>
+        <span class={styles.Total}>{row.isSpectator ? row.spectatorText : value}</span>
       </span>
     </li>
   );

@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { useSessionPhase } from './UseSessionPhase';
 import { GameConfig } from '@/Game';
 import type { PublicChoosingState } from '@/Game';
@@ -60,5 +60,30 @@ describe('the phase clock a screen is measured against', () => {
 
   it('never reports a negative length for a phase whose clock is all count-in', () => {
     expect(useSessionPhase(choosing(100, countInMs, 1000), 0).durationMs).toBe(0);
+  });
+});
+
+describe('the players a writing phase waits for', () => {
+  it('counts online players and leaves spectators out', () => {
+    const state = choosing(20_000, 0, 1000);
+    state.players = [
+      {
+        id: 'p1',
+        name: 'One',
+        look: { character: 'Butterfly', color: 'Coral' },
+        isOnline: true,
+        isSpectator: false,
+      },
+      {
+        id: 'p2',
+        name: 'Two',
+        look: { character: 'Hat', color: 'Violet' },
+        isOnline: true,
+        isSpectator: true,
+      },
+    ];
+    const phase = useSessionPhase(state, 0);
+    expect(phase.playerCount).toBe(1);
+    expect(phase.spectatorIds).toEqual(new Set(['p2']));
   });
 });

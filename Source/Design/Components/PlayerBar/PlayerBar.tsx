@@ -23,6 +23,8 @@ export interface PlayerBarEntry {
   color: CharacterColor;
   /** Whether the host still has this player on the line. */
   isOnline?: boolean;
+  /** Whether this seat watches without taking part in the game. */
+  isSpectator?: boolean;
   /** Whether the round gave this player nothing — their card is blank, or the host muted it —
    * which draws their hexagon shattered. Left out, the seat is whole. */
   scoredNothing?: boolean;

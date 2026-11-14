@@ -1,4 +1,4 @@
-import { PublicState, Pace } from '@/Game';
+import { PublicState, Pace, ScoringMode } from '@/Game';
 import { SessionRole } from '../Session';
 import { BlockedReason, ConnectionHint } from '../Session';
 import {
@@ -21,6 +21,8 @@ export interface GameSessionView extends SessionPhase, BoardMarks {
   isHost: boolean;
   roomCode: string;
   playerId: PlayerId | null;
+  /** Whether this seat watches without taking part in the round. */
+  isSpectator: boolean;
   publicState: PublicState | undefined;
   /** Whether the host is holding the room still, which stops every clock and every answer in it.
    * Read from the room rather than kept here, since a screen that guessed for itself would be
@@ -47,6 +49,8 @@ export interface GameSessionView extends SessionPhase, BoardMarks {
   bank: readonly ThemeId[];
   /** The host removing a player from the room. */
   kickPlayer: (playerId: PlayerId) => void;
+  /** The host moving a seat in or out of play before the game starts. */
+  setSpectator: (playerId: PlayerId, isSpectator: boolean) => void;
   /** This player's own character, as the host has it. Not the roll made on this device: a
    * returning player is given the character the host kept, so the picker shows what the rest of
    * the room actually sees. */
@@ -54,6 +58,7 @@ export interface GameSessionView extends SessionPhase, BoardMarks {
   setLook: (character: CharacterId, color: CharacterColor) => void;
   /** Asking for a pace or for the room's themes: both the host's alone. */
   setPace: (pace: Pace) => void;
+  setScoringMode: (scoringMode: ScoringMode) => void;
   setThemes: (mode: ThemeMode, themes: readonly ThemeId[]) => void;
   /** The host pasting in custom themes, which every client is then told. */
   setCustomThemes: (themes: readonly CustomTheme[]) => void;

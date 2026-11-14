@@ -1,4 +1,4 @@
-﻿import { describe, test, expect } from 'vitest';
+import { describe, test, expect } from 'vitest';
 import { toPublicState } from './PublicState';
 import { HostState } from './GameState';
 
@@ -36,12 +36,14 @@ describe('toPublicState Lobby state', () => {
         name: 'Alice',
         look,
         isOnline: true,
+        isSpectator: false,
       });
       expect(publicState.players).toContainEqual({
         id: 'p2',
         name: 'Bob',
         look: otherLook,
         isOnline: false,
+        isSpectator: false,
       });
     }
   });

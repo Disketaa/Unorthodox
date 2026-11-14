@@ -15,6 +15,9 @@ export const lobby = {
   addBot: 'Добавь бота',
   /** What the host's control on a player says, naming who it would remove. */
   kick: (name: string) => `Исключить ${name}`,
+  makeSpectator: (name: string) => `Назначить ${name} спектатором`,
+  returnPlayer: (name: string) => `Вернуть ${name} игроком`,
+  spectator: 'Спектатор',
   settings: {
     title: 'Настройки',
     /** On the rule that opens the body of the card, naming what is under it: the two pace
@@ -26,6 +29,11 @@ export const lobby = {
     paces: {
       Fast: 'Быстро',
       Standard: 'Обычно',
+    },
+    scoring: 'Подсчёт очков',
+    scoringModes: {
+      Smart: 'Умный',
+      Simple: 'Простой',
     },
     writing: 'Написание ответа',
     deciding: 'Просмотр ответов',

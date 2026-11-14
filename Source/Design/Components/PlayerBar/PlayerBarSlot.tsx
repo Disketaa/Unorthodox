@@ -151,7 +151,7 @@ export function PlayerBarSlot({ entry, index, isSelf }: PlayerBarSlotProps) {
       </span>
       <span class={styles.Label}>
         <span class={styles.Name}>{entry.name}</span>
-        <span class={styles.Score}>{entry.score}</span>
+        <span class={styles.Score}>{entry.isSpectator ? '👀' : entry.score}</span>
       </span>
       {entry.mult !== undefined && <span class={styles.Mult}>{entry.mult}x</span>}
     </div>

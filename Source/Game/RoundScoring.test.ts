@@ -47,6 +47,10 @@ function reviewing(times: Record<string, number>, mult?: number): ReviewingState
   };
 }
 
+function simple(times: Record<string, number>, mult?: number): ReviewingState {
+  return { ...reviewing(times, mult), scoringMode: 'Simple' };
+}
+
 function roundOf(state: ReviewingState): Map<string, number> {
   return new Map([...scoreRound(state).roundScores].map(([id, score]) => [id, score]));
 }
@@ -108,6 +112,18 @@ describe('scoreRound', () => {
     const scores = roundOf(reviewing({ early: 0, late: 15_000 }));
     expect(pointsOf(scores, 'early')).toBe(20);
     expect(pointsOf(scores, 'late')).toBe(3);
+  });
+
+  it('pays every unique answer the room size in simple mode', () => {
+    const scores = roundOf(simple({ early: 0, late: 20_000 }));
+    expect(pointsOf(scores, 'early')).toBe(5);
+    expect(pointsOf(scores, 'late')).toBe(5);
+  });
+
+  it('keeps likes and enchantment multipliers in simple mode', () => {
+    const state = liked(simple({ early: 0, late: 20_000 }, 1.5), 0, 'b1');
+    expect(pointsOf(roundOf(state), 'early')).toBe(9);
+    expect(pointsOf(roundOf(state), 'late')).toBe(8);
   });
 
   it('scores a round nobody liked exactly as it scores it with no likes at all', () => {

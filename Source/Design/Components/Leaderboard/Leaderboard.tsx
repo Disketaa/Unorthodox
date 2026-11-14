@@ -34,6 +34,12 @@ export interface LeaderboardRow {
   /** Whether the player is still in the room. One the host has lost keeps their line — the place
    * is still theirs — held back the way the bar holds back a seat that dropped. */
   isOnline?: boolean;
+  /** Whether this row watches without taking a place. */
+  isSpectator?: boolean;
+  /** What the score column says instead of a number for a watching seat. */
+  spectatorText?: string;
+  /** Whether this row begins the spectator section. */
+  startsSpectators?: boolean;
 }
 
 export interface LeaderboardProps {

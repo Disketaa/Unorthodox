@@ -5,7 +5,7 @@ import { answerWords } from './BotWords';
 
 import { PlayerId, PlayerLook, createLogger, randomLook } from '@/Core';
 import type { Random } from '@/Core';
-import { GameConfig } from '@/Game';
+import { GameConfig, isParticipant } from '@/Game';
 import type { ActionOf, HostState } from '@/Game';
 
 const log = createLogger('Bot');
@@ -132,8 +132,10 @@ function word(random: Random): string {
 export function botAnswers(state: HostState, random: Random): ActionOf<'SUBMIT_ANSWER'>[] {
   if (state.phase !== 'Writing') return [];
   const actions: ActionOf<'SUBMIT_ANSWER'>[] = [];
-  for (const playerId of state.players.keys()) {
-    if (botNumber(playerId) === 0 || state.answers.has(playerId)) continue;
+  for (const [playerId, player] of state.players) {
+    if (!isParticipant(player) || botNumber(playerId) === 0 || state.answers.has(playerId)) {
+      continue;
+    }
     actions.push({
       type: 'SUBMIT_ANSWER',
       playerId,

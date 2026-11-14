@@ -3,6 +3,8 @@
  * using cannot drift away from the durations the game actually runs on. */
 export type Pace = 'Fast' | 'Standard';
 
+export type ScoringMode = 'Smart' | 'Simple';
+
 export interface PaceTimings {
   /** Answering a topic. */
   writingMs: number;
@@ -172,12 +174,12 @@ export const GameConfig = {
     Standard: {
       writingMs: timing.writingDurationMs,
       categoryMs: 10000,
-      reviewTailMs: 10000,
+      reviewTailMs: 20000,
     },
     Fast: {
       writingMs: 40000,
       categoryMs: 5000,
-      reviewTailMs: 5000,
+      reviewTailMs: 10000,
     },
   } satisfies Record<Pace, PaceTimings>,
   /** What a card is worth. A unique answer is paid for how early it was sent and how many likes
@@ -218,16 +220,14 @@ export const GameConfig = {
      * two down, and the bank of theme cards is written for that shape, so a different count
      * would be a different arrangement. */
     cardsPerLobby: 6,
-    /** How many rounds a theme is played for. The number of ticks along the bottom of a card,
-     * and the number of topics the theme answers for. Eight because the game is four rounds and
-     * two themes to a round fills it. */
-    roundsPerTheme: 8,
+    /** How many rounds a standard game plays each theme for. Also the largest question deck a
+     * built-in theme needs, since a fast game stops earlier. */
+    roundsPerTheme: 6,
     /** The same figure by pace: the ceiling a theme's bank card counts down from. A theme with
      * fewer questions than this stops at its own count instead. */
-    roundsPerPace: { Fast: 4, Standard: 8 } satisfies Record<Pace, number>,
-    /** Options for rounds per theme the host can pick in the lobby. Four is the floor: at three,
-     * what one good round pays is more than the whole gap between first and second at the end. */
-    roundsPerThemeOptions: [4, 8] as const,
+    roundsPerPace: { Fast: 3, Standard: 6 } satisfies Record<Pace, number>,
+    /** The two round counts represented by the pace choices in the lobby. */
+    roundsPerThemeOptions: [3, 6] as const,
     /** What a round's bank may carry on top of its six themes: how likely it is to enchant
      * anything, and how many cards it may reach. A cap rather than a count, since a bank where
      * every card is enchanted has nothing left to choose between. */
